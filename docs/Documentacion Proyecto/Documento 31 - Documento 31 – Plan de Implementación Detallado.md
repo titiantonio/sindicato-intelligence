@@ -61,7 +61,7 @@ Infraestructura operativa:
 
 ---
 
-# 4. Sprint 1
+# 4. [x] Sprint 1
 
 # Modelo de Datos MVP
 
@@ -73,7 +73,7 @@ Construir el esquema completo MVP.
 
 ---
 
-## T1.1
+## [x] T1.1
 
 Crear migración:
 
@@ -125,7 +125,7 @@ users
 
 ---
 
-## T1.2
+## [x] T1.2
 
 Validar:
 
@@ -149,7 +149,7 @@ postgres-data-architect
 
 ---
 
-## T1.3
+## [x] T1.3
 
 Verificar ejecución Flyway.
 
@@ -165,7 +165,7 @@ Muestra todas las tablas MVP.
 
 ---
 
-## T1.4
+## [x] T1.4
 
 Crear seeds iniciales.
 
@@ -190,7 +190,7 @@ ADMIN
 Estado:
 
 ```text
-Pendiente
+Completado
 ```
 
 ---
