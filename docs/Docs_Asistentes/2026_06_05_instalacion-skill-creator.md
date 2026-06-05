@@ -22,4 +22,3 @@ Se actualizo el `Skills Registry` de `AGENTS.md` para referenciar la skill y su 
 
 La instalacion inicial del comando genero la skill bajo `.agents/skills/skill-creator`. Esa copia se movio a `skills/skill-creator` y se elimino `.agents` para evitar duplicidad fuera de la estructura oficial del proyecto.
 
-No se actualizo `package.json` ni `CHANGELOG.md` porque no existen en la raiz del proyecto en este momento.
