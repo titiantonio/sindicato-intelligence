@@ -282,7 +282,7 @@ Implementación.
 
 ---
 
-## T2.6
+## [x] T2.6
 
 Crear DTOs.
 
