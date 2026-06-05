@@ -195,7 +195,7 @@ Completado
 
 ---
 
-# 5. Sprint 2
+# 5. [x] Sprint 2
 
 # Módulo Source
 
@@ -308,7 +308,7 @@ CreateSourceUseCase
 
 ---
 
-## T2.8
+## [x] T2.8
 
 Crear API REST.
 
@@ -326,7 +326,7 @@ PUT /api/v1/sources/{id}
 
 ---
 
-## T2.9
+## [x] T2.9
 
 Crear tests.
 
@@ -335,7 +335,7 @@ Crear tests.
 Estado:
 
 ```text
-Pendiente
+Completado
 ```
 
 ---

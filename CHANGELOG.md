@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.11-SNAPSHOT] - 2026-06-06
+
+### Added
+
+- Implementada la API REST del modulo `source` con endpoints `GET /api/v1/sources`, `POST /api/v1/sources` y `PUT /api/v1/sources/{id}`, junto con pruebas de integracion REST.
+
 ## [0.0.10-SNAPSHOT] - 2026-06-06
 
 ### Added
