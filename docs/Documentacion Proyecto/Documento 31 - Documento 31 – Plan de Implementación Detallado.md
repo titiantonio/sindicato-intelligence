@@ -296,7 +296,7 @@ SourceResponse
 
 ---
 
-## T2.7
+## [x] T2.7
 
 Crear Use Case.
 
