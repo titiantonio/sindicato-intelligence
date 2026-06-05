@@ -35,9 +35,12 @@ Despues revisa la documentacion tecnica aplicable en `docs/Documentacion Proyect
 
 La referencia principal de implementacion es `Documento 30 - MVP Tecnico Ejecutable`. Respeta su orden de fases, dependencias y entregables.
 
+El control operativo de implementacion se hara con `Documento 31 - Plan de Implementacion Detallado`, que descompone el Documento 30 en sprints, tareas y subtareas verificables. Antes de implementar, localiza la tarea correspondiente en el Documento 31 y mantenlo actualizado como backlog vivo.
+
 Documentos especialmente relevantes:
 
 - `Documento 30 - MVP Tecnico Ejecutable`: plan maestro y secuencia del MVP.
+- `Documento 31 - Plan de Implementacion Detallado`: backlog operativo, sprints, tareas, subtareas y control de avance mediante checks.
 - `Documento 21 - Convenciones de Desarrollo`: convenciones obligatorias de codigo, API, Flyway, SQL, Angular, n8n y Git.
 - `Documento 20 - ERD Final MVP + Estrategia Flyway`: modelo fisico definitivo del MVP.
 - `Documento 19 - Diseno de Casos de Uso (Application Layer)`: casos de uso oficiales.
@@ -393,7 +396,7 @@ Criterios funcionales de aceptacion:
 - Analisis: informacion coherente y sin alucinaciones.
 - Telegram: publicacion generada y enviada.
 
-## Orden de Implementacion
+## Orden de Implementacion y Control de Avance
 
 No saltarse la secuencia definida en el MVP.
 
@@ -413,6 +416,15 @@ Orden de referencia del `Documento 30`:
 - Fase 11: frontend Angular.
 
 Antes de implementar cualquier funcionalidad, explica brevemente el plan de implementacion y valida que encaja con la fase correspondiente del MVP.
+
+Reglas obligatorias de control con el `Documento 31 - Plan de Implementacion Detallado`:
+
+- Usar el Documento 31 como backlog operativo para seleccionar el sprint, tarea o subtarea que se va a implementar.
+- No iniciar una implementacion si no se ha identificado previamente su correspondencia con el Documento 31, salvo tareas documentales o de mantenimiento explicitamente solicitadas.
+- Al completar una tarea, marcarla con check en el Documento 31 usando `✓` o `[x]`, manteniendo legibles sprint, tarea y subtareas.
+- Marcar tambien como completados los sprints o bloques superiores cuando todas sus tareas verificables esten finalizadas.
+- No marcar como hecha una tarea hasta que este implementada, revisada y verificada con pruebas, build o una justificacion documentada si no procede ejecutar pruebas.
+- Registrar en la documentacion del trabajo del asistente que tareas del Documento 31 se han completado o actualizado.
 
 ## Documentacion del Trabajo del Asistente
 
