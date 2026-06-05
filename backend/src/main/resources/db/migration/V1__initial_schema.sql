@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS system_info
+(
+    id BIGSERIAL PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT NOW()
+);

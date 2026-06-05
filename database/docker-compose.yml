@@ -1,0 +1,21 @@
+services:
+
+  postgres:
+
+    image: postgres:17
+
+    container_name: sindicato-postgres
+
+    environment:
+      POSTGRES_DB: sindicato_intelligence
+      POSTGRES_USER: sindicato
+      POSTGRES_PASSWORD: sindicato123
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

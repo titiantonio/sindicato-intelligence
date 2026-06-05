@@ -1,0 +1,16 @@
+spring:
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sindicato_intelligence
+    username: sindicato
+    password: sindicato123
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+
+server:
+  port: 8080
