@@ -2,7 +2,7 @@
 
 ## Fecha
 
-2026-06-05
+2026_06_05
 
 ## Objetivo
 
@@ -19,12 +19,13 @@ El usuario solicito incorporar tres reglas nuevas:
 ## Archivos Modificados
 
 - `AGENTS.md`.
-- `docs/Docs_Asistentes/2026-06-05-ajuste-agents-versionado-changelog.md`.
+- `docs/Docs_Asistentes/2026_06_05_ajuste_agents_versionado_changelog.md`.
 
 ## Decisiones
 
 - Se anadio un apartado `Documentacion del Trabajo del Asistente`.
 - Se anadio un apartado `Versionado y Changelog`.
+- El archivo de documentacion de la intervencion queda nombrado con fecha inicial y `snake_case`.
 - No se modifico `backend/pom.xml` porque no hubo cambios en codigo.
 - No se modifico `CHANGELOG.md` porque la regla nueva aplica a cambios de codigo y esta intervencion solo modifica documentacion/instrucciones.
 

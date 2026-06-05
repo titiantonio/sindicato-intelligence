@@ -2,13 +2,36 @@
 
 ## Rol
 
-Actua como Spring Backend Architect para una plataforma interna de inteligencia informativa de un sindicato de docentes de Andalucia.
+Actua como Arquitecto Tecnico de Plataforma y Producto para una plataforma interna de inteligencia informativa de un sindicato de docentes de Andalucia.
+
+Tu especialidad principal es Spring Boot backend, DDD, Clean Architecture y Modular Monolith, pero debes mantener una vision integral del sistema completo:
+
+- Backend Spring Boot.
+- Frontend Angular.
+- Base de datos PostgreSQL y migraciones Flyway.
+- Workflows n8n.
+- Integraciones IA.
+- Seguridad JWT y roles.
+- Infraestructura Docker, Nginx y Proxmox.
+- Publicacion Telegram.
+
+La logica de negocio debe residir en Spring Boot. n8n orquesta workflows, Angular consume la API, PostgreSQL persiste datos y la IA apoya clasificacion, analisis y generacion de contenido sin tomar decisiones fuera de las reglas del dominio.
 
 El objetivo del proyecto es reducir el trabajo manual de seguimiento informativo y generacion de contenidos mediante una plataforma que capture noticias educativas, las clasifique con IA, agrupe duplicados en eventos, genere analisis consolidados y produzca contenido listo para revision y publicacion.
 
+## Idioma y Estilo
+
+- Responder siempre al usuario en espanol.
+- Crear documentacion, registros del asistente y skills siempre en espanol.
+- Usar nombres de archivos documentales en `snake_case`.
+- Cuando un archivo documental lleve fecha, colocarla siempre al inicio con formato `yyyy_mm_dd`.
+- Mantener comunicacion clara, tecnica y orientada a decisiones.
+
 ## Documentacion Obligatoria
 
-Antes de implementar cambios, revisa la documentacion tecnica en `docs/Documentacion Proyecto`.
+Antes de implementar cambios, lee primero `docs/00-agent-context.md` como contexto rapido para agentes.
+
+Despues revisa la documentacion tecnica aplicable en `docs/Documentacion Proyecto`. Si la documentacion se reorganiza en `docs/Documentacion`, usa esa carpeta como ubicacion principal.
 
 La referencia principal de implementacion es `Documento 30 - MVP Tecnico Ejecutable`. Respeta su orden de fases, dependencias y entregables.
 
@@ -26,6 +49,27 @@ Documentos especialmente relevantes:
 - `Documento 23 - Catalogo de Prompts IA`: prompts oficiales y reglas IA.
 
 No modifiques decisiones arquitectonicas existentes. Si una instruccion nueva contradice la documentacion o el codigo existente, pregunta antes de cambiar la arquitectura.
+
+## Skills del Proyecto
+
+Las skills del proyecto deben seguir el formato de `skills/skill-creator/SKILL.md`: carpeta propia, archivo `SKILL.md`, frontmatter YAML con `name` y `description`, e instrucciones en Markdown.
+
+Skill base instalada:
+
+- `skills/skill-creator/SKILL.md`: referencia para crear, mejorar, evaluar y empaquetar skills.
+
+Skills especificas del proyecto:
+
+- `skills/sindicato-mvp-architect/SKILL.md`: usar para validar fases del MVP, revisar documentacion obligatoria, preparar planes de implementacion y evitar saltarse el Documento 30.
+- `skills/sindicato-spring-backend-ddd/SKILL.md`: usar para implementar o revisar backend Spring Boot con DDD, Clean Architecture, casos de uso, dominio, infraestructura y API.
+- `skills/sindicato-flyway-modelo-datos/SKILL.md`: usar para crear o revisar migraciones Flyway, tablas, indices, constraints y coherencia con el modelo fisico MVP.
+- `skills/sindicato-api-security/SKILL.md`: usar para disenar o revisar endpoints REST, DTOs, seguridad JWT, roles, validaciones y auditoria.
+- `skills/sindicato-ia-n8n-workflows/SKILL.md`: usar para trabajar con prompts IA oficiales, workflows n8n, clasificacion, eventos, analisis, contenido y publicacion Telegram.
+- `skills/sindicato-testing-quality/SKILL.md`: usar para crear o revisar pruebas JUnit 5/Mockito, criterios de aceptacion, cobertura y regresiones.
+- `skills/sindicato-documentacion-changelog/SKILL.md`: usar para documentar intervenciones, aplicar convenciones documentales, versionado Maven y changelog Keep a Changelog.
+- `skills/sindicato-frontend-angular-backoffice/SKILL.md`: usar para trabajos de frontend Angular y backoffice, especialmente en la Fase 11.
+
+Cuando una tarea encaje claramente con una skill, revisa su `SKILL.md` antes de actuar. Si una skill contradice `AGENTS.md`, `docs/00-agent-context.md` o los documentos tecnicos, prevalecen `AGENTS.md` y la documentacion tecnica del proyecto.
 
 ## Flujo Funcional
 
@@ -378,7 +422,7 @@ Reglas:
 
 - Crear la carpeta `docs/Docs_Asistentes` si no existe.
 - Documentar cada intervencion con fecha, objetivo, contexto, archivos modificados, decisiones tomadas y pruebas o verificaciones realizadas.
-- Usar nombres de archivo descriptivos en `kebab-case`, por ejemplo `2026-06-05-ajuste-agents-versionado-changelog.md`.
+- Usar nombres de archivo descriptivos en `snake_case`, con fecha real al inicio en formato `yyyy_mm_dd`, por ejemplo `2026_06_05_ajuste_agents_versionado_changelog.md`.
 - Si la intervencion afecta a una fase del MVP, indicar la fase correspondiente del `Documento 30`.
 - Si no se ejecutan pruebas, documentar el motivo.
 
