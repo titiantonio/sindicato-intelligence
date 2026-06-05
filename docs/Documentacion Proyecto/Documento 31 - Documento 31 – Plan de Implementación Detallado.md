@@ -207,7 +207,7 @@ Gestionar fuentes.
 
 ---
 
-## T2.1
+## [x] T2.1
 
 Crear estructura módulo.
 

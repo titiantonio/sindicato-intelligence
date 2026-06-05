@@ -91,11 +91,11 @@ Infrastructure
 # 4. Estructura Raíz
 
 ```text
-com.sindicato.intelligence
+es.sindicato.intelligence
 ```
 
 ```text
-com.sindicato.intelligence
+es.sindicato.intelligence
 
 ├── shared
 ├── security
@@ -803,7 +803,7 @@ Cobertura > 70%
 # 28. Estructura de Proyecto Final
 
 ```text
-com.sindicato.intelligence
+es.sindicato.intelligence
 
 ├── shared
 ├── security
