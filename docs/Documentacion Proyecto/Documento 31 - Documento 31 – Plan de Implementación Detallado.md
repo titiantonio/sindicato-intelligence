@@ -234,7 +234,7 @@ source
 
 ---
 
-## T2.2
+## [x] T2.2
 
 Crear entidad dominio.
 
@@ -248,7 +248,7 @@ Source
 
 ---
 
-## T2.3
+## [x] T2.3
 
 Crear SourceRepository.
 
@@ -258,7 +258,7 @@ Interface dominio.
 
 ---
 
-## T2.4
+## [x] T2.4
 
 Crear entidad JPA.
 
@@ -272,7 +272,7 @@ SourceEntity
 
 ---
 
-## T2.5
+## [x] T2.5
 
 Crear JpaSourceRepository.
 
