@@ -1,0 +1,112 @@
+{
+  "name": "WF-02-Classify-News",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8080/api/v1/news",
+        "options": {}
+      },
+      "id": "get-news",
+      "name": "Get News",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.filter(item => item.json.processingStatus === 'CAPTURED');"
+      },
+      "id": "filter-captured",
+      "name": "Filter Captured News",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8080/api/v1/classifications/classify",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"newsId\": {{$json.id}}\n}",
+        "options": {}
+      },
+      "id": "classify-news",
+      "name": "Classify News",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get News": {
+      "main": [
+        [
+          {
+            "node": "Filter Captured News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Captured News": {
+      "main": [
+        [
+          {
+            "node": "Classify News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "wf-02-classify-news-mvp",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [
+    {
+      "name": "MVP"
+    },
+    {
+      "name": "WF-02"
+    }
+  ]
+}

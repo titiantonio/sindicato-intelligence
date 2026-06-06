@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.14-SNAPSHOT] - 2026-06-06
+
+### Added
+
+- T5.1: creada la estructura inicial del modulo `classification` con capas `domain`, `application`, `infrastructure` y `api`.
+- T5.2: creada la entidad de dominio `NewsClassification` con taxonomia oficial, niveles de impacto/urgencia y pruebas unitarias.
+- T5.3: creado el puerto de dominio `NewsClassificationRepository` para persistencia y consultas por `newsId`.
+- T5.4: integrada la interfaz `AIProvider` con un adaptador determinista para clasificacion IA en MVP tecnico.
+- T5.5: implementado `ClassifyNewsPromptBuilder` con el prompt oficial WF-02 del Documento 23 y pruebas unitarias.
+- T5.6: creado el workflow n8n exportable `WF-02-Classify-News` para leer noticias capturadas y llamar a la API de clasificacion.
+- T5.7: implementada persistencia de clasificaciones con JPA, `ClassifyNewsUseCase` y endpoint `POST /api/v1/classifications/classify`.
+- T5.8: actualizado `ClassifyNewsUseCase` para marcar la noticia como `CLASSIFIED` tras guardar la clasificacion.
+- Sprint 5 completado y versionado del backend a `0.0.14-SNAPSHOT`.
+
 ## [0.0.13-SNAPSHOT] - 2026-06-06
 
 ### Added

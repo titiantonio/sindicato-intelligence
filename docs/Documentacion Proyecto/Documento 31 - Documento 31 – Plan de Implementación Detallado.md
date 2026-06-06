@@ -492,7 +492,7 @@ Noticias entrando por API
 
 ---
 
-# 8. Sprint 5
+# 8. [x] Sprint 5
 
 # Clasificación IA
 
@@ -504,49 +504,49 @@ Clasificar noticias.
 
 ---
 
-## T5.1
+## [x] T5.1
 
 Crear módulo classification.
 
 ---
 
-## T5.2
+## [x] T5.2
 
 Crear entidad dominio.
 
 ---
 
-## T5.3
+## [x] T5.3
 
 Repositorio.
 
 ---
 
-## T5.4
+## [x] T5.4
 
 Integración AIProvider.
 
 ---
 
-## T5.5
+## [x] T5.5
 
 Implementar prompt WF-02.
 
 ---
 
-## T5.6
+## [x] T5.6
 
 Crear workflow n8n.
 
 ---
 
-## T5.7
+## [x] T5.7
 
 Persistir clasificación.
 
 ---
 
-## T5.8
+## [x] T5.8
 
 Actualizar estado noticia.
 
