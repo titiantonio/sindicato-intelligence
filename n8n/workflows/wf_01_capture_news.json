@@ -1,0 +1,196 @@
+{
+  "name": "WF-01-Capture-News",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8080/api/v1/sources",
+        "options": {}
+      },
+      "id": "get-sources",
+      "name": "Get Sources",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.filter(item => item.json.active === true && String(item.json.type || '').toUpperCase() === 'RSS');"
+      },
+      "id": "filter-active-rss-sources",
+      "name": "Filter Active RSS Sources",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.url}}",
+        "options": {}
+      },
+      "id": "read-rss-feed",
+      "name": "Read RSS Feed",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        0
+      ],
+      "notes": "Lee RSS/XML de cada fuente activa. La fuente original debe mantenerse por ejecucion para mapear sourceId en la normalizacion."
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = [];\n\nfor (const item of items) {\n  const source = item.pairedItem?.item !== undefined ? $('Filter Active RSS Sources').all()[item.pairedItem.item]?.json : {};\n  const sourceId = item.json.sourceId || source?.id;\n  const title = item.json.title || item.json.isoTitle || item.json.name;\n  const url = item.json.link || item.json.url || item.json.guid;\n\n  if (!sourceId || !title || !url) {\n    continue;\n  }\n\n  normalized.push({\n    json: {\n      sourceId,\n      title,\n      url,\n      summary: item.json.contentSnippet || item.json.summary || item.json.description || '',\n      content: item.json.content || item.json['content:encoded'] || item.json.description || item.json.contentSnippet || '',\n      publishedAt: item.json.isoDate || item.json.pubDate || item.json.published || null\n    }\n  });\n}\n\nreturn normalized;"
+      },
+      "id": "normalize-rss-items",
+      "name": "Normalize RSS Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nconst batch = [];\n\nfor (const item of items) {\n  const url = item.json.url;\n\n  if (seen.has(url)) {\n    continue;\n  }\n\n  seen.add(url);\n  batch.push(item.json);\n}\n\nif (batch.length === 0) {\n  return [];\n}\n\nreturn [{ json: { batch } }];"
+      },
+      "id": "build-batch",
+      "name": "Build Batch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8080/api/v1/news/bulk",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json.batch}}",
+        "options": {}
+      },
+      "id": "send-news-bulk",
+      "name": "Send News Bulk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        0
+      ],
+      "notes": "Spring Boot ejecuta IngestNewsBatchUseCase, normalizacion final, hash, deduplicacion y persistencia en news_articles con estado CAPTURED."
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Sources": {
+      "main": [
+        [
+          {
+            "node": "Filter Active RSS Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Active RSS Sources": {
+      "main": [
+        [
+          {
+            "node": "Read RSS Feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read RSS Feed": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize RSS Items": {
+      "main": [
+        [
+          {
+            "node": "Build Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Batch": {
+      "main": [
+        [
+          {
+            "node": "Send News Bulk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "wf-01-capture-news-mvp",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [
+    {
+      "name": "MVP"
+    },
+    {
+      "name": "WF-01"
+    }
+  ]
+}

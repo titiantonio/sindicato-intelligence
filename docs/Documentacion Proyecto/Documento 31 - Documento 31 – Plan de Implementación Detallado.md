@@ -490,6 +490,8 @@ Resultado esperado:
 Noticias entrando por API
 ```
 
+Nota posterior: creado el workflow n8n exportable `n8n/workflows/wf_01_capture_news.json` para materializar WF-01 con ejecucion cada 30 minutos, lectura de fuentes RSS activas y envio de lote a `POST /api/v1/news/bulk`.
+
 ---
 
 # 8. [x] Sprint 5

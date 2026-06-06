@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - T4.3: implementada la normalizacion RSS en backend mediante `NewsCaptureNormalizer` antes de persistir cada item del lote.
 - T4.4: implementada deteccion de duplicados por `url` y `hash` dentro del mismo lote, ademas de la validacion existente contra base de datos.
 - T4.5: añadidas pruebas de integracion para `POST /api/v1/news/bulk` cubriendo lote parcial, duplicados y request vacio.
+- Ajuste Sprint 4: creado el workflow n8n exportable `WF-01-Capture-News` para leer fuentes RSS activas y enviar lotes de noticias a `POST /api/v1/news/bulk`.
 - Sprint 4 completado y versionado del backend a `0.0.13-SNAPSHOT`.
 
 ## [0.0.12-SNAPSHOT] - 2026-06-06
