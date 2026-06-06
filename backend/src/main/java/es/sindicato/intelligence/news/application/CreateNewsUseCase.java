@@ -7,11 +7,7 @@ import es.sindicato.intelligence.source.domain.SourceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.util.HexFormat;
 import java.util.Objects;
 
 @Service
@@ -19,10 +15,16 @@ public class CreateNewsUseCase {
 
     private final NewsRepository newsRepository;
     private final SourceRepository sourceRepository;
+    private final NewsHashGenerator newsHashGenerator;
 
-    public CreateNewsUseCase(NewsRepository newsRepository, SourceRepository sourceRepository) {
+    public CreateNewsUseCase(
+            NewsRepository newsRepository,
+            SourceRepository sourceRepository,
+            NewsHashGenerator newsHashGenerator
+    ) {
         this.newsRepository = newsRepository;
         this.sourceRepository = sourceRepository;
+        this.newsHashGenerator = newsHashGenerator;
     }
 
     @Transactional
@@ -37,7 +39,7 @@ public class CreateNewsUseCase {
             throw new IllegalArgumentException("news url already exists");
         });
 
-        String hash = calculateHash(command);
+        String hash = newsHashGenerator.calculate(command);
         newsRepository.findByHash(hash).ifPresent(newsArticle -> {
             throw new IllegalArgumentException("news hash already exists");
         });
@@ -59,30 +61,5 @@ public class CreateNewsUseCase {
         );
 
         return newsRepository.save(newsArticle);
-    }
-
-    private String calculateHash(CreateNewsCommand command) {
-        String textForHash = hasText(command.content()) ? command.content() : command.summary();
-        String publishedAt = command.publishedAt() == null ? "" : command.publishedAt().toString();
-        String rawHash = normalize(command.title()) + "|" + normalize(textForHash) + "|" + publishedAt;
-
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return HexFormat.of().formatHex(digest.digest(rawHash.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 algorithm not available", exception);
-        }
-    }
-
-    private String normalize(String value) {
-        if (value == null) {
-            return "";
-        }
-
-        return value.trim().replaceAll("\\s+", " ").toLowerCase();
-    }
-
-    private boolean hasText(String value) {
-        return value != null && !value.isBlank();
     }
 }

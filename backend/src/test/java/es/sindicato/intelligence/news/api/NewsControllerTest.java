@@ -17,6 +17,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -113,6 +114,91 @@ class NewsControllerTest {
         mockMvc.perform(get("/api/v1/news/{id}", 999999L))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error", notNullValue()));
+    }
+
+    @Test
+    void ingestsNewsBatchWithPartialProcessing() throws Exception {
+        Source source = sourceRepository.save(source(uniqueUrl("sources")));
+        String duplicatedUrl = uniqueUrl("news-duplicated-url");
+
+        mockMvc.perform(post("/api/v1/news/bulk")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                [
+                                  {
+                                    "sourceId": %d,
+                                    "title": "Convocatoria docente",
+                                    "url": "%s",
+                                    "summary": "Resumen 1",
+                                    "content": "Contenido 1",
+                                    "publishedAt": "2026-06-06T09:00:00Z"
+                                  },
+                                  {
+                                    "sourceId": %d,
+                                    "title": "Convocatoria docente",
+                                    "url": "%s",
+                                    "summary": "Resumen 2",
+                                    "content": "Contenido 2",
+                                    "publishedAt": "2026-06-06T10:00:00Z"
+                                  }
+                                ]
+                                """.formatted(source.getId(), duplicatedUrl, source.getId(), duplicatedUrl)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalReceived").value(2))
+                .andExpect(jsonPath("$.createdCount").value(1))
+                .andExpect(jsonPath("$.failedCount").value(1))
+                .andExpect(jsonPath("$.results", hasSize(2)))
+                .andExpect(jsonPath("$.results[0].created").value(true))
+                .andExpect(jsonPath("$.results[0].newsId", notNullValue()))
+                .andExpect(jsonPath("$.results[1].created").value(false))
+                .andExpect(jsonPath("$.results[1].error").value("news url duplicated in batch"));
+    }
+
+    @Test
+    void ingestsNewsBatchDetectingDuplicateAgainstDatabase() throws Exception {
+        Source source = sourceRepository.save(source(uniqueUrl("sources")));
+        String existingUrl = uniqueUrl("news-existing");
+        newsRepository.save(newsArticle(source.getId(), existingUrl, hash('c')));
+        String newUrl = uniqueUrl("news-new");
+
+        mockMvc.perform(post("/api/v1/news/bulk")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                [
+                                  {
+                                    "sourceId": %d,
+                                    "title": "Noticia existente",
+                                    "url": "%s",
+                                    "summary": "Resumen existente",
+                                    "content": "Contenido existente",
+                                    "publishedAt": "2026-06-06T09:00:00Z"
+                                  },
+                                  {
+                                    "sourceId": %d,
+                                    "title": "Noticia nueva",
+                                    "url": "%s",
+                                    "summary": "Resumen nuevo",
+                                    "content": "Contenido nuevo",
+                                    "publishedAt": "2026-06-06T11:00:00Z"
+                                  }
+                                ]
+                                """.formatted(source.getId(), existingUrl, source.getId(), newUrl)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalReceived").value(2))
+                .andExpect(jsonPath("$.createdCount").value(1))
+                .andExpect(jsonPath("$.failedCount").value(1))
+                .andExpect(jsonPath("$.results[0].created").value(false))
+                .andExpect(jsonPath("$.results[0].error").value("news url already exists"))
+                .andExpect(jsonPath("$.results[1].created").value(true));
+    }
+
+    @Test
+    void rejectsEmptyBatchRequest() throws Exception {
+        mockMvc.perform(post("/api/v1/news/bulk")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("[]"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("news batch cannot be empty"));
     }
 
     private Source source(String url) {

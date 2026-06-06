@@ -3,6 +3,9 @@ package es.sindicato.intelligence.news.api;
 import es.sindicato.intelligence.news.application.CreateNewsCommand;
 import es.sindicato.intelligence.news.application.CreateNewsUseCase;
 import es.sindicato.intelligence.news.application.GetNewsUseCase;
+import es.sindicato.intelligence.news.application.IngestNewsBatchCommand;
+import es.sindicato.intelligence.news.application.IngestNewsBatchResult;
+import es.sindicato.intelligence.news.application.IngestNewsBatchUseCase;
 import es.sindicato.intelligence.news.application.ListNewsUseCase;
 import es.sindicato.intelligence.news.application.NewsNotFoundException;
 import es.sindicato.intelligence.news.domain.NewsArticle;
@@ -26,15 +29,18 @@ import java.util.Map;
 public class NewsController {
 
     private final CreateNewsUseCase createNewsUseCase;
+    private final IngestNewsBatchUseCase ingestNewsBatchUseCase;
     private final ListNewsUseCase listNewsUseCase;
     private final GetNewsUseCase getNewsUseCase;
 
     public NewsController(
             CreateNewsUseCase createNewsUseCase,
+            IngestNewsBatchUseCase ingestNewsBatchUseCase,
             ListNewsUseCase listNewsUseCase,
             GetNewsUseCase getNewsUseCase
     ) {
         this.createNewsUseCase = createNewsUseCase;
+        this.ingestNewsBatchUseCase = ingestNewsBatchUseCase;
         this.listNewsUseCase = listNewsUseCase;
         this.getNewsUseCase = getNewsUseCase;
     }
@@ -51,6 +57,30 @@ public class NewsController {
         ));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(newsArticle));
+    }
+
+    @PostMapping("/bulk")
+    public IngestNewsBatchResponse ingestNewsBatch(@Valid @RequestBody List<@Valid CreateNewsRequest> request) {
+        IngestNewsBatchResult result = ingestNewsBatchUseCase.execute(new IngestNewsBatchCommand(
+                request.stream()
+                        .map(this::toCreateCommand)
+                        .toList()
+        ));
+
+        return new IngestNewsBatchResponse(
+                result.totalReceived(),
+                result.createdCount(),
+                result.failedCount(),
+                result.results().stream()
+                        .map(item -> new IngestNewsBatchItemResponse(
+                                item.index(),
+                                item.url(),
+                                item.created(),
+                                item.newsId(),
+                                item.error()
+                        ))
+                        .toList()
+        );
     }
 
     @GetMapping
@@ -75,6 +105,17 @@ public class NewsController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleBadRequest(IllegalArgumentException exception) {
         return Map.of("error", exception.getMessage());
+    }
+
+    private CreateNewsCommand toCreateCommand(CreateNewsRequest request) {
+        return new CreateNewsCommand(
+                request.sourceId(),
+                request.title(),
+                request.url(),
+                request.summary(),
+                request.content(),
+                request.publishedAt()
+        );
     }
 
     private NewsResponse toResponse(NewsArticle newsArticle) {

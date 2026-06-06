@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.13-SNAPSHOT] - 2026-06-06
+
+### Added
+
+- T4.1: creado `IngestNewsBatchUseCase` con procesamiento parcial por item para alinear WF-01 con el flujo `n8n -> API -> Spring Boot -> PostgreSQL`.
+- T4.2: creado el endpoint de ingestión masiva `POST /api/v1/news/bulk` con respuesta de resumen por lote.
+- T4.3: implementada la normalizacion RSS en backend mediante `NewsCaptureNormalizer` antes de persistir cada item del lote.
+- T4.4: implementada deteccion de duplicados por `url` y `hash` dentro del mismo lote, ademas de la validacion existente contra base de datos.
+- T4.5: añadidas pruebas de integracion para `POST /api/v1/news/bulk` cubriendo lote parcial, duplicados y request vacio.
+- Sprint 4 completado y versionado del backend a `0.0.13-SNAPSHOT`.
+
 ## [0.0.12-SNAPSHOT] - 2026-06-06
 
 ### Added

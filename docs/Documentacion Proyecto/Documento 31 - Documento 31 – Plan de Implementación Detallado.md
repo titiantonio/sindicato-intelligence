@@ -428,7 +428,7 @@ Tests.
 
 ---
 
-# 7. Sprint 4
+# 7. [x] Sprint 4
 
 # WF-01 Captura Noticias
 
@@ -440,7 +440,7 @@ Conectar n8n con Spring Boot.
 
 ---
 
-## T4.1
+## [x] T4.1
 
 Modificar flujo captura.
 
@@ -460,25 +460,25 @@ PostgreSQL
 
 ---
 
-## T4.2
+## [x] T4.2
 
 Crear endpoint ingestión.
 
 ---
 
-## T4.3
+## [x] T4.3
 
 Normalización RSS.
 
 ---
 
-## T4.4
+## [x] T4.4
 
 Detección duplicados.
 
 ---
 
-## T4.5
+## [x] T4.5
 
 Pruebas integración.
 

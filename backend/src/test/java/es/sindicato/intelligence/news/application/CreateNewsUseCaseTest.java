@@ -27,7 +27,8 @@ class CreateNewsUseCaseTest {
     void createsNewsWhenSourceExistsAndNewsIsNotDuplicated() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         SourceRepository sourceRepository = mock(SourceRepository.class);
-        CreateNewsUseCase useCase = new CreateNewsUseCase(newsRepository, sourceRepository);
+        NewsHashGenerator hashGenerator = new NewsHashGenerator();
+        CreateNewsUseCase useCase = new CreateNewsUseCase(newsRepository, sourceRepository, hashGenerator);
         CreateNewsCommand command = command();
         NewsArticle savedNewsArticle = newsArticle(1L, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 
@@ -59,7 +60,8 @@ class CreateNewsUseCaseTest {
     void rejectsUnknownSource() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         SourceRepository sourceRepository = mock(SourceRepository.class);
-        CreateNewsUseCase useCase = new CreateNewsUseCase(newsRepository, sourceRepository);
+        NewsHashGenerator hashGenerator = new NewsHashGenerator();
+        CreateNewsUseCase useCase = new CreateNewsUseCase(newsRepository, sourceRepository, hashGenerator);
         CreateNewsCommand command = command();
 
         when(sourceRepository.findById(command.sourceId())).thenReturn(Optional.empty());
@@ -73,7 +75,8 @@ class CreateNewsUseCaseTest {
     void rejectsDuplicatedUrl() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         SourceRepository sourceRepository = mock(SourceRepository.class);
-        CreateNewsUseCase useCase = new CreateNewsUseCase(newsRepository, sourceRepository);
+        NewsHashGenerator hashGenerator = new NewsHashGenerator();
+        CreateNewsUseCase useCase = new CreateNewsUseCase(newsRepository, sourceRepository, hashGenerator);
         CreateNewsCommand command = command();
 
         when(sourceRepository.findById(command.sourceId())).thenReturn(Optional.of(source(command.sourceId())));
@@ -88,7 +91,8 @@ class CreateNewsUseCaseTest {
     void rejectsDuplicatedHash() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         SourceRepository sourceRepository = mock(SourceRepository.class);
-        CreateNewsUseCase useCase = new CreateNewsUseCase(newsRepository, sourceRepository);
+        NewsHashGenerator hashGenerator = new NewsHashGenerator();
+        CreateNewsUseCase useCase = new CreateNewsUseCase(newsRepository, sourceRepository, hashGenerator);
         CreateNewsCommand command = command();
 
         when(sourceRepository.findById(command.sourceId())).thenReturn(Optional.of(source(command.sourceId())));
@@ -104,7 +108,8 @@ class CreateNewsUseCaseTest {
     void rejectsNullCommand() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         SourceRepository sourceRepository = mock(SourceRepository.class);
-        CreateNewsUseCase useCase = new CreateNewsUseCase(newsRepository, sourceRepository);
+        NewsHashGenerator hashGenerator = new NewsHashGenerator();
+        CreateNewsUseCase useCase = new CreateNewsUseCase(newsRepository, sourceRepository, hashGenerator);
 
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
     }
