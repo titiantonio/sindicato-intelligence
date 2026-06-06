@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.15-SNAPSHOT] - 2026-06-06
+
+### Added
+
+- T6.1: creada la estructura inicial del modulo `event` con capas `domain`, `application`, `infrastructure` y `api`.
+- T6.2: creada la entidad de dominio `Event` con estados, importancia, categorias oficiales e invariantes basicas del agregado.
+- T6.3: creado el puerto de dominio `EventRepository` para persistencia y busqueda de eventos por estado, categoria e importancia.
+- T6.4: convertido `Event` en aggregate root operativo con asociacion de noticias, cambios de estado y bloqueo de nuevas noticias en eventos cerrados o archivados.
+- T6.5: creado el workflow n8n exportable `WF-03-Detect-Events` para procesar noticias clasificadas y delegar la deteccion de eventos en Spring Boot.
+- T6.6: integrada la agrupacion IA de eventos con puerto `EventMatchingAIProvider`, prompt oficial WF-03 y proveedor determinista para el MVP tecnico.
+- T6.7: implementada la asociacion noticia-evento con persistencia JPA en `events` y `event_news`, caso de uso `DetectEventUseCase` y endpoint `POST /api/v1/events/detect`.
+- Sprint 6: añadida la migracion Flyway `V4__add_event_news_confidence_score.sql` para registrar `confidence_score` en `event_news` y cumplir la trazabilidad de asociaciones IA de WF-03.
+- Sprint 6 completado y versionado del backend a `0.0.15-SNAPSHOT`.
+
 ## [0.0.14-SNAPSHOT] - 2026-06-06
 
 ### Added

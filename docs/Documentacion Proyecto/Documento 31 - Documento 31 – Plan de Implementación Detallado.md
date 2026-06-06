@@ -552,7 +552,7 @@ Actualizar estado noticia.
 
 ---
 
-# 9. Sprint 6
+# 9. [x] Sprint 6
 
 # Eventos
 
@@ -564,45 +564,47 @@ Agrupar noticias.
 
 ---
 
-## T6.1
+## [x] T6.1
 
 Crear módulo event.
 
 ---
 
-## T6.2
+## [x] T6.2
 
 Crear entidad Event.
 
 ---
 
-## T6.3
+## [x] T6.3
 
 Crear EventRepository.
 
 ---
 
-## T6.4
+## [x] T6.4
 
 Crear Aggregate Root.
 
 ---
 
-## T6.5
+## [x] T6.5
 
 Crear workflow detección eventos.
 
 ---
 
-## T6.6
+## [x] T6.6
 
 Integrar IA agrupación.
 
 ---
 
-## T6.7
+## [x] T6.7
 
 Crear asociación noticia-evento.
+
+Nota: se ha añadido la migración Flyway `V4__add_event_news_confidence_score.sql` para registrar `confidence_score` en asociaciones IA según RN-022 y WF-03.
 
 ---
 

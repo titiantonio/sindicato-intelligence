@@ -1,0 +1,113 @@
+{
+  "name": "WF-03-Detect-Events",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://backend:8080/api/v1/news",
+        "options": {}
+      },
+      "id": "get-news",
+      "name": "Get News",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.filter(item => item.json.processingStatus === 'CLASSIFIED');"
+      },
+      "id": "filter-classified",
+      "name": "Filter Classified News",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8080/api/v1/events/detect",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"newsId\": {{$json.id}}\n}",
+        "options": {}
+      },
+      "id": "detect-event",
+      "name": "Detect Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ],
+      "notes": "Spring Boot ejecuta MatchEventUseCase, CreateEventUseCase y AddNewsToEventUseCase. n8n solo orquesta WF-03."
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get News": {
+      "main": [
+        [
+          {
+            "node": "Filter Classified News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Classified News": {
+      "main": [
+        [
+          {
+            "node": "Detect Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "wf-03-detect-events-mvp",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [
+    {
+      "name": "MVP"
+    },
+    {
+      "name": "WF-03"
+    }
+  ]
+}
