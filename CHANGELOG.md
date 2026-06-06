@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.12-SNAPSHOT] - 2026-06-06
+
+### Added
+
+- T3.1: creada la estructura inicial del modulo `news` con capas `domain`, `application`, `infrastructure` y `api`.
+- T3.2: creada la entidad de dominio `NewsArticle` con `NewsStatus` y pruebas unitarias.
+- T3.3: creado el puerto de dominio `NewsRepository` para persistencia y consultas de noticias.
+- T3.4: creada la entidad JPA `NewsArticleEntity` mapeada a `news_articles` con pruebas de mapeo.
+- T3.5: implementado `JpaNewsRepository` con persistencia, consultas por `id`, `url`, `hash` y listado de noticias.
+- T3.6: creados los DTOs `CreateNewsRequest` y `NewsResponse` con validaciones de entrada y pruebas.
+- T3.7: creado `CreateNewsUseCase` con validacion de fuente, deteccion de duplicados por URL/hash y calculo interno SHA-256.
+- T3.8: creados `GetNewsUseCase`, `ListNewsUseCase` y `NewsNotFoundException` con pruebas unitarias.
+- T3.9: creada la API REST del modulo `news` con endpoints de creacion, listado y detalle.
+- T3.10: verificado el Sprint 3 completo con 52 tests de backend sin fallos y versionado a `0.0.12-SNAPSHOT`.
+
 ## [0.0.11-SNAPSHOT] - 2026-06-06
 
 ### Added

@@ -340,7 +340,7 @@ Completado
 
 ---
 
-# 6. Sprint 3
+# 6. [x] Sprint 3
 
 # Módulo News
 
@@ -352,13 +352,13 @@ Gestionar noticias.
 
 ---
 
-## T3.1
+## [x] T3.1
 
 Crear módulo news.
 
 ---
 
-## T3.2
+## [x] T3.2
 
 Entidad dominio.
 
@@ -368,43 +368,43 @@ NewsArticle
 
 ---
 
-## T3.3
+## [x] T3.3
 
 Repositorio dominio.
 
 ---
 
-## T3.4
+## [x] T3.4
 
 Entidad JPA.
 
 ---
 
-## T3.5
+## [x] T3.5
 
 Implementación repositorio.
 
 ---
 
-## T3.6
+## [x] T3.6
 
 DTOs.
 
 ---
 
-## T3.7
+## [x] T3.7
 
 CreateNewsUseCase.
 
 ---
 
-## T3.8
+## [x] T3.8
 
 GetNewsUseCase.
 
 ---
 
-## T3.9
+## [x] T3.9
 
 API REST.
 
@@ -422,7 +422,7 @@ GET /api/v1/news/{id}
 
 ---
 
-## T3.10
+## [x] T3.10
 
 Tests.
 
