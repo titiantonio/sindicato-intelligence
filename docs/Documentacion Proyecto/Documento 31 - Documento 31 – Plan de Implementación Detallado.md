@@ -78,7 +78,7 @@ Construir el esquema completo MVP.
 Crear migración:
 
 ```text
-V2__create_mvp_schema.sql
+V1__create_mvp_schema.sql
 ```
 
 ---
@@ -86,7 +86,7 @@ V2__create_mvp_schema.sql
 Rol:
 
 ```text
-postgres-data-architect
+spring-backend-architect / ia-workflow-architect
 ```
 
 ---
@@ -192,6 +192,8 @@ Estado:
 ```text
 Completado
 ```
+
+Nota posterior 2026-06-07: consolidadas las migraciones Flyway iniciales para desarrollo. `V1__create_mvp_schema.sql` crea el esquema MVP completo, incluye `uk_sources_url` en `sources` e integra `event_news.confidence_score` con su check. `V2__seed_admin_user.sql` carga el usuario admin y `V3__seed_rss_sources.sql` carga las 54 fuentes RSS iniciales. La tabla tecnica `system_info` se elimina al no formar parte del modelo MVP.
 
 ---
 
@@ -492,6 +494,14 @@ Noticias entrando por API
 
 Nota posterior: creado el workflow n8n exportable `n8n/workflows/wf_01_capture_news.json` para materializar WF-01 con ejecucion cada 30 minutos, lectura de fuentes RSS activas y envio de lote a `POST /api/v1/news/bulk`.
 
+Nota posterior 2026-06-06: ajustado `n8n/workflows/wf_01_capture_news.json` para sustituir el nodo RSS nativo por `HTTP Request` con headers `User-Agent: Wget/1.21.1` y `Accept: */*`, respuesta como texto, parseo XML y normalizacion compatible con Atom Junta Andalucia y RSS estandar. No se cargan fuentes por Flyway en este ajuste; se revisaran aparte.
+
+Nota posterior 2026-06-06: corregidos los Code nodes de `WF-01-Capture-News` para usar `$input.all()` en lugar de la variable `items`, evitando el error de tipado de n8n `Cannot find name 'items'`.
+
+Nota posterior 2026-06-06: ajustadas las llamadas HTTP de los workflows n8n `WF-01`, `WF-02` y `WF-03` a `http://host.docker.internal:8080` para el entorno de desarrollo donde n8n corre en Docker y el backend Spring Boot corre en la maquina anfitriona.
+
+Nota posterior 2026-06-06: corregido el nodo `Normalize RSS Items` de `WF-01-Capture-News` para aceptar estructuras XML parseadas por n8n con envoltorios `data`, `root`, `body`, `feed`, `rss` o `channel`, evitando que el nodo reciba items pero devuelva una salida vacia.
+
 ---
 
 # 8. [x] Sprint 5
@@ -606,7 +616,7 @@ Integrar IA agrupación.
 
 Crear asociación noticia-evento.
 
-Nota: se ha añadido la migración Flyway `V4__add_event_news_confidence_score.sql` para registrar `confidence_score` en asociaciones IA según RN-022 y WF-03.
+Nota actualizada 2026-06-07: `confidence_score` queda integrado directamente en `event_news` dentro de `V1__create_mvp_schema.sql`, junto con la constraint `ck_event_news_confidence_score`.
 
 ---
 
@@ -834,6 +844,28 @@ Publicaciones.
 
 ---
 
+## T11.9
+
+Configuracion IA para ADMIN.
+
+---
+
+Alcance:
+
+```text
+Seleccion de proveedor IA
+Modelo IA
+Temperatura
+Limite de tokens
+Version de prompt
+```
+
+---
+
+Nota posterior 2026-06-07: inicialmente el proveedor IA se seleccionara por configuracion tecnica del backend mediante `application.yml` o variables de entorno. La seleccion por usuario ADMIN queda pendiente para el backoffice Angular. Las API keys no deben guardarse en base de datos.
+
+---
+
 # 15. Sprint 12
 
 # Optimización
@@ -926,10 +958,10 @@ Sprint 12
 
 # 18. Próxima Tarea
 
-T1.1
+Sprint 7
 
 ```text
-Crear V2__create_mvp_schema.sql
+Continuar con Analisis IA
 ```
 
 Rol:

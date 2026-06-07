@@ -7,7 +7,8 @@ CREATE TABLE sources
     priority INTEGER NOT NULL,
     active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT uk_sources_url UNIQUE (url)
 );
 
 CREATE TABLE users
@@ -77,10 +78,12 @@ CREATE TABLE event_news
     id BIGSERIAL PRIMARY KEY,
     event_id BIGINT NOT NULL,
     news_id BIGINT NOT NULL,
+    confidence_score INTEGER,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_event_news_event FOREIGN KEY (event_id) REFERENCES events (id),
     CONSTRAINT fk_event_news_news FOREIGN KEY (news_id) REFERENCES news_articles (id),
-    CONSTRAINT uk_event_news_event_news UNIQUE (event_id, news_id)
+    CONSTRAINT uk_event_news_event_news UNIQUE (event_id, news_id),
+    CONSTRAINT ck_event_news_confidence_score CHECK (confidence_score IS NULL OR confidence_score BETWEEN 0 AND 100)
 );
 
 CREATE TABLE event_ai_analysis

@@ -1,9 +1,7 @@
 services:
 
   postgres:
-
     image: postgres:17
-
     container_name: sindicato-postgres
 
     environment:
@@ -17,5 +15,20 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: sindicato-n8n-dev
+
+    ports:
+      - "5678:5678"
+
+    environment:
+      N8N_SECURE_COOKIE: "false"
+      GENERIC_TIMEZONE: Europe/Madrid
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+
 volumes:
   postgres_data:
+  n8n_data:

@@ -23,7 +23,7 @@
     },
     {
       "parameters": {
-        "url": "http://backend:8080/api/v1/sources",
+        "url": "http://host.docker.internal:8080/api/v1/sources",
         "options": {}
       },
       "id": "get-sources",
@@ -37,7 +37,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return items.filter(item => item.json.active === true && String(item.json.type || '').toUpperCase() === 'RSS');"
+        "jsCode": "const sourceItems = $input.all().flatMap(item => {\n  if (Array.isArray(item.json)) {\n    return item.json.map(source => ({ json: source }));\n  }\n\n  return [item];\n});\n\nreturn sourceItems\n  .filter(item => item.json.active === true && String(item.json.type || '').toUpperCase() === 'RSS')\n  .sort((left, right) => (left.json.priority || 0) - (right.json.priority || 0));"
       },
       "id": "filter-active-rss-sources",
       "name": "Filter Active RSS Sources",
@@ -51,26 +51,67 @@
     {
       "parameters": {
         "url": "={{$json.url}}",
-        "options": {}
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Wget/1.21.1"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
       },
-      "id": "read-rss-feed",
-      "name": "Read RSS Feed",
-      "type": "n8n-nodes-base.rssFeedRead",
-      "typeVersion": 1.1,
+      "id": "fetch-rss-feed",
+      "name": "Fetch RSS Feed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
       "position": [
         720,
         0
       ],
-      "notes": "Lee RSS/XML de cada fuente activa. La fuente original debe mantenerse por ejecucion para mapear sourceId en la normalizacion."
+      "onError": "continueRegularOutput",
+      "notes": "Descarga cada feed como texto para soportar fuentes que no responden correctamente al nodo RSS nativo."
     },
     {
       "parameters": {
-        "jsCode": "const normalized = [];\n\nfor (const item of items) {\n  const source = item.pairedItem?.item !== undefined ? $('Filter Active RSS Sources').all()[item.pairedItem.item]?.json : {};\n  const sourceId = item.json.sourceId || source?.id;\n  const title = item.json.title || item.json.isoTitle || item.json.name;\n  const url = item.json.link || item.json.url || item.json.guid;\n\n  if (!sourceId || !title || !url) {\n    continue;\n  }\n\n  normalized.push({\n    json: {\n      sourceId,\n      title,\n      url,\n      summary: item.json.contentSnippet || item.json.summary || item.json.description || '',\n      content: item.json.content || item.json['content:encoded'] || item.json.description || item.json.contentSnippet || '',\n      publishedAt: item.json.isoDate || item.json.pubDate || item.json.published || null\n    }\n  });\n}\n\nreturn normalized;"
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "valid-rss-response",
+              "leftValue": "={{ $json && !$json.error && typeof $json.data === 'string' && $json.data.trim() !== '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
-      "id": "normalize-rss-items",
-      "name": "Normalize RSS Items",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "id": "keep-valid-rss-response",
+      "name": "Keep Valid RSS Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
       "position": [
         960,
         0
@@ -78,21 +119,49 @@
     },
     {
       "parameters": {
-        "jsCode": "const seen = new Set();\nconst batch = [];\n\nfor (const item of items) {\n  const url = item.json.url;\n\n  if (seen.has(url)) {\n    continue;\n  }\n\n  seen.add(url);\n  batch.push(item.json);\n}\n\nif (batch.length === 0) {\n  return [];\n}\n\nreturn [{ json: { batch } }];"
+        "options": {}
+      },
+      "id": "parse-rss-xml",
+      "name": "Parse RSS XML",
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "Convierte la respuesta XML/Atom a JSON antes de normalizar noticias."
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = [];\nconst sourceItems = $('Filter Active RSS Sources').all();\n\nfunction asArray(value) {\n  if (value === undefined || value === null) {\n    return [];\n  }\n\n  return Array.isArray(value) ? value : [value];\n}\n\nfunction firstWith(candidates, propertyName) {\n  return candidates\n    .flatMap(asArray)\n    .find(candidate => candidate && candidate[propertyName]);\n}\n\nfunction pickValue(value) {\n  if (value === undefined || value === null) {\n    return '';\n  }\n\n  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {\n    return String(value);\n  }\n\n  if (Array.isArray(value)) {\n    return pickValue(value.find(entry => pickValue(entry).trim() !== '') || value[0]);\n  }\n\n  return pickValue(value._value || value._ || value['#text'] || value.href || value.url || value.guid);\n}\n\nfunction cleanText(value) {\n  return pickValue(value)\n    .replace(/<[^>]*>/g, ' ')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nfunction normalizePublishedAt(value) {\n  const rawValue = pickValue(value).trim();\n\n  if (!rawValue) {\n    return null;\n  }\n\n  const timestamp = Date.parse(rawValue);\n\n  if (Number.isNaN(timestamp)) {\n    return null;\n  }\n\n  return new Date(timestamp).toISOString();\n}\nfunction resolveUrl(value, sourceUrl) {\n  const rawUrl = pickValue(value).trim();\n\n  if (!rawUrl) {\n    return '';\n  }\n\n  if (/^https?:\\/\\//i.test(rawUrl)) {\n    return rawUrl;\n  }\n\n  if (rawUrl.startsWith('//')) {\n    const protocolMatch = String(sourceUrl).match(/^(https?:)/i);\n    return (protocolMatch ? protocolMatch[1] : 'https:') + rawUrl;\n  }\n\n  const originMatch = String(sourceUrl).match(/^(https?:\\/\\/[^/]+)/i);\n  if (!originMatch) {\n    return rawUrl;\n  }\n\n  const origin = originMatch[1];\n\n  if (rawUrl.startsWith('/')) {\n    return origin + rawUrl;\n  }\n\n  const basePath = String(sourceUrl)\n    .replace(/[#?].*$/, '')\n    .replace(/\\/[^/]*$/, '/');\n\n  return basePath + rawUrl;\n}\n\nfunction findAtomUrl(entry, sourceUrl) {\n  const contentLink = entry.content?.div?.a?.href || entry.content?.a?.href;\n  if (contentLink) {\n    return resolveUrl(contentLink, sourceUrl);\n  }\n\n  for (const link of asArray(entry.link)) {\n    const candidate = resolveUrl(link?.href || link, sourceUrl);\n    if (candidate) {\n      return candidate;\n    }\n  }\n\n  return resolveUrl(entry.id, sourceUrl);\n}\n\nfunction atomSummary(entry) {\n  const paragraphs = asArray(entry.content?.div?.p);\n\n  if (paragraphs.length > 0) {\n    return paragraphs\n      .map(paragraph => cleanText(`${pickValue(paragraph.strong)} ${pickValue(paragraph._ || paragraph['#text'])}`))\n      .filter(Boolean)\n      .join(' | ');\n  }\n\n  return cleanText(entry.summary || entry.content || '');\n}\n\nfunction sourceForInput(item, index) {\n  const pairedIndex = item.pairedItem?.item;\n\n  if (pairedIndex !== undefined && sourceItems[pairedIndex]?.json) {\n    return sourceItems[pairedIndex].json;\n  }\n\n  return sourceItems[index]?.json || {};\n}\n\nfor (let index = 0; index < $input.all().length; index++) {\n  const item = $input.all()[index];\n  const source = sourceForInput(item, index);\n  const sourceId = item.json.sourceId || source.id;\n  const sourceUrl = source.url || '';\n\n  if (!sourceId) {\n    continue;\n  }\n\n  const jsonData = item.json.data && typeof item.json.data === 'object' ? item.json.data : item.json;\n\n  const atomRoot = firstWith([\n    jsonData.feed,\n    jsonData.root?.feed,\n    jsonData.body?.feed,\n    jsonData.data?.feed,\n    jsonData.root,\n    jsonData.body,\n    jsonData\n  ], 'entry');\n\n  if (atomRoot?.entry) {\n    for (const entry of asArray(atomRoot.entry)) {\n      const title = cleanText(entry.title) || 'Sin titulo';\n      const url = findAtomUrl(entry, sourceUrl);\n      const summary = atomSummary(entry);\n      const content = cleanText(entry.content || entry.summary || summary);\n\n      if (!url) {\n        continue;\n      }\n\n      normalized.push({\n        json: {\n          sourceId,\n          title,\n          url,\n          summary,\n          content,\n          publishedAt: normalizePublishedAt(entry.published || entry.updated)\n        }\n      });\n    }\n\n    continue;\n  }\n\n  const channel = firstWith([\n    jsonData.rss?.channel,\n    jsonData.channel,\n    jsonData.root?.rss?.channel,\n    jsonData.root?.channel,\n    jsonData.body?.rss?.channel,\n    jsonData.body?.channel,\n    jsonData.data?.rss?.channel,\n    jsonData.data?.channel,\n    jsonData\n  ], 'item');\n\n  if (channel?.item) {\n    for (const article of asArray(channel.item)) {\n      const title = cleanText(article.title) || 'Sin titulo';\n      const url = resolveUrl(article.link || article.guid, sourceUrl);\n      const summary = cleanText(article.description || article.summary);\n      const content = cleanText(article['content:encoded'] || article.content || article.description || summary);\n\n      if (!url) {\n        continue;\n      }\n\n      normalized.push({\n        json: {\n          sourceId,\n          title,\n          url,\n          summary,\n          content,\n          publishedAt: normalizePublishedAt(article.pubDate || article.published || article.updated || article['dc:date'])\n        }\n      });\n    }\n  }\n}\n\nreturn normalized;"
+      },
+      "id": "normalize-rss-items",
+      "name": "Normalize RSS Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nconst batch = [];\n\nfor (const item of $input.all()) {\n  const url = item.json.url;\n\n  if (!url || seen.has(url)) {\n    continue;\n  }\n\n  seen.add(url);\n  batch.push(item.json);\n}\n\nif (batch.length === 0) {\n  return [];\n}\n\nreturn [{ json: { batch } }];"
       },
       "id": "build-batch",
       "name": "Build Batch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1200,
+        1680,
         0
       ]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://backend:8080/api/v1/news/bulk",
+        "url": "http://host.docker.internal:8080/api/v1/news/bulk",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{$json.batch}}",
@@ -103,7 +172,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1440,
+        1920,
         0
       ],
       "notes": "Spring Boot ejecuta IngestNewsBatchUseCase, normalizacion final, hash, deduplicacion y persistencia en news_articles con estado CAPTURED."
@@ -136,14 +205,36 @@
       "main": [
         [
           {
-            "node": "Read RSS Feed",
+            "node": "Fetch RSS Feed",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Read RSS Feed": {
+    "Fetch RSS Feed": {
+      "main": [
+        [
+          {
+            "node": "Keep Valid RSS Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Valid RSS Response": {
+      "main": [
+        [
+          {
+            "node": "Parse RSS XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse RSS XML": {
       "main": [
         [
           {

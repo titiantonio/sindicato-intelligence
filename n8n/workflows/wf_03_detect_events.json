@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "url": "http://backend:8080/api/v1/news",
+        "url": "http://host.docker.internal:8080/api/v1/news",
         "options": {}
       },
       "id": "get-news",
@@ -28,7 +28,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return items.filter(item => item.json.processingStatus === 'CLASSIFIED');"
+        "jsCode": "return $input.all().filter(item => item.json.processingStatus === 'CLASSIFIED');"
       },
       "id": "filter-classified",
       "name": "Filter Classified News",
@@ -42,7 +42,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://backend:8080/api/v1/events/detect",
+        "url": "http://host.docker.internal:8080/api/v1/events/detect",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"newsId\": {{$json.id}}\n}",
