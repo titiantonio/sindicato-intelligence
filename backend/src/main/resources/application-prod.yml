@@ -13,3 +13,12 @@ spring:
 
 server:
   port: 8080
+
+app:
+  ai:
+    provider: ${AI_PROVIDER:deterministic}
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: ${GEMINI_MODEL:models/gemma-4-31b-it}
+      temperature: ${GEMINI_TEMPERATURE:0.2}
+      max-output-tokens: ${GEMINI_MAX_OUTPUT_TOKENS:1024}

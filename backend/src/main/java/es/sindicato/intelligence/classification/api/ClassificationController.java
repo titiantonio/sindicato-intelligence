@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.classification.api;
 
+import es.sindicato.intelligence.classification.application.AIProviderException;
 import es.sindicato.intelligence.classification.application.ClassifyNewsCommand;
 import es.sindicato.intelligence.classification.application.ClassifyNewsUseCase;
 import es.sindicato.intelligence.classification.domain.NewsClassification;
@@ -32,6 +33,12 @@ public class ClassificationController {
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleBadRequest(IllegalArgumentException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(AIProviderException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public Map<String, String> handleAIProviderException(AIProviderException exception) {
         return Map.of("error", exception.getMessage());
     }
 

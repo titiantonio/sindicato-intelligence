@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.17-SNAPSHOT] - 2026-06-07
+
+### Added
+
+- Implementado `GeminiAIProvider` como proveedor real externo para `AIProvider`, activable con `app.ai.provider=gemini` y modelo por defecto `models/gemma-4-31b-it`.
+- Añadida configuracion tecnica `app.ai` con seleccion de proveedor, API key, modelo, temperatura y limite de tokens mediante `application.yml` o variables de entorno.
+- Añadida `AIProviderException` y respuesta HTTP `502 Bad Gateway` para fallos claros del proveedor IA externo sin fallback silencioso.
+- Añadidos tests de parseo de respuesta Gemini, errores de configuracion/respuesta y seleccion de proveedor IA por propiedades.
+
+### Changed
+
+- `DeterministicAIProvider` queda activo por defecto solo cuando `app.ai.provider=deterministic` o no se configura proveedor.
+- Versionado del backend actualizado a `0.0.17-SNAPSHOT`.
+
 ## [0.0.16-SNAPSHOT] - 2026-06-07
 
 ### Added

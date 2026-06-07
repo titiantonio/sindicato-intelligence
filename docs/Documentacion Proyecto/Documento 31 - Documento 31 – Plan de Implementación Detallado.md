@@ -538,6 +538,8 @@ Repositorio.
 
 Integración AIProvider.
 
+Nota posterior 2026-06-07: implementado `GeminiAIProvider` como proveedor IA externo para clasificacion, activable por configuracion tecnica (`app.ai.provider=gemini`) y usando por defecto el modelo `models/gemma-4-31b-it`. `DeterministicAIProvider` se mantiene como proveedor por defecto para desarrollo local y tests. Si Gemini falla, el backend devuelve error claro sin fallback silencioso.
+
 ---
 
 ## [x] T5.5
