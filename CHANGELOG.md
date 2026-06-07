@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.16-SNAPSHOT] - 2026-06-07
+
+### Added
+
+- Añadida la migracion Flyway `V3__seed_rss_sources.sql` con las 54 fuentes RSS iniciales revisadas para pruebas de `WF-01-Capture-News`.
+
+### Changed
+
+- Consolidadas las migraciones Flyway iniciales en `V1__create_mvp_schema.sql`, `V2__seed_admin_user.sql` y `V3__seed_rss_sources.sql` para reconstruir el esquema MVP desde cero en desarrollo.
+- Añadida la constraint `uk_sources_url` en la creacion inicial de `sources` para impedir URLs de fuentes duplicadas.
+- Integrado `event_news.confidence_score` y su check `0..100` en la creacion inicial de `event_news`, eliminando la necesidad de una migracion correctiva posterior.
+- Eliminada la tabla tecnica `system_info` de la migracion inicial al no formar parte del modelo MVP ni estar usada por el codigo.
+- Versionado del backend actualizado a `0.0.16-SNAPSHOT`.
+
 ## [0.0.15-SNAPSHOT] - 2026-06-06
 
 ### Added
@@ -17,7 +31,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - T6.6: integrada la agrupacion IA de eventos con puerto `EventMatchingAIProvider`, prompt oficial WF-03 y proveedor determinista para el MVP tecnico.
 - T6.7: implementada la asociacion noticia-evento con persistencia JPA en `events` y `event_news`, caso de uso `DetectEventUseCase` y endpoint `POST /api/v1/events/detect`.
 - Sprint 6: añadida la migracion Flyway `V4__add_event_news_confidence_score.sql` para registrar `confidence_score` en `event_news` y cumplir la trazabilidad de asociaciones IA de WF-03.
+- Ajustados los workflows n8n `WF-01`, `WF-02` y `WF-03` para usar `http://host.docker.internal:8080` en desarrollo cuando n8n corre en Docker y el backend en la maquina anfitriona.
+- Ajustado `WF-01-Capture-News` para descargar RSS/Atom con `HTTP Request` como texto, parsear XML y normalizar Atom Junta Andalucia y RSS estandar antes de llamar a `POST /api/v1/news/bulk`.
 - Sprint 6 completado y versionado del backend a `0.0.15-SNAPSHOT`.
+
+### Fixed
+
+- Corregido `WF-01-Capture-News` para usar `$input.all()` en los Code nodes y evitar el error de n8n `Cannot find name 'items'`.
+- Corregido `Normalize RSS Items` en `WF-01-Capture-News` para detectar estructuras XML parseadas por n8n con envoltorios `data`, `root`, `body`, `feed`, `rss` o `channel`.
+- Corregidos `WF-02-Classify-News` y `WF-03-Detect-Events` para usar `$input.all()` en los Code nodes de filtrado y evitar el error de n8n `Cannot find name 'items'`.
 
 ## [0.0.14-SNAPSHOT] - 2026-06-06
 
