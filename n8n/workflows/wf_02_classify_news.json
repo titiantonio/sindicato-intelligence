@@ -14,6 +14,26 @@
     },
     {
       "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        -160
+      ]
+    },
+    {
+      "parameters": {
         "url": "http://host.docker.internal:8080/api/v1/news",
         "options": {}
       },
@@ -28,7 +48,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return $input.all().filter(item => item.json.processingStatus === 'CAPTURED');"
+        "jsCode": "const MAX_NEWS_PER_RUN = 10;\n\nreturn $input.all()\n  .filter(item => item.json.processingStatus === 'CAPTURED')\n  .sort((a, b) => (a.json.id ?? 0) - (b.json.id ?? 0))\n  .slice(0, MAX_NEWS_PER_RUN);"
       },
       "id": "filter-captured",
       "name": "Filter Captured News",
@@ -55,11 +75,23 @@
       "position": [
         720,
         0
-      ]
+      ],
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
     "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
       "main": [
         [
           {

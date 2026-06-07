@@ -546,11 +546,19 @@ Nota posterior 2026-06-07: implementado `GeminiAIProvider` como proveedor IA ext
 
 Implementar prompt WF-02.
 
+Nota posterior 2026-06-07: reforzado el prompt oficial WF-02 para que noticias con informacion insuficiente devuelvan JSON valido con categoria `OTROS` en vez de texto libre del proveedor IA.
+
+Nota posterior 2026-06-07: enriquecido el prompt oficial WF-02 con criterios de relevancia, impacto y urgencia orientados al impacto laboral docente andaluz, manteniendo el contrato JSON del backend.
+
+Nota posterior 2026-06-07: diferenciadas explicitamente en WF-02 las noticias fuera de ambito (`OTROS` / `FUERA_DE_AMBITO`) de las noticias con informacion insuficiente (`OTROS` / `INFORMACION_INSUFICIENTE`).
+
 ---
 
 ## [x] T5.6
 
 Crear workflow n8n.
+
+Nota posterior 2026-06-07: ajustado `WF-02-Classify-News` para ejecutarse por schedule cada 5 minutos y limitar la clasificacion a 10 noticias capturadas por ejecucion, evitando saturar el proveedor IA.
 
 ---
 

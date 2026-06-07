@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.20-SNAPSHOT] - 2026-06-07
+
+### Changed
+
+- Ajustado el prompt WF-02 para diferenciar noticias fuera de ambito con `category=OTROS`, `subcategory=FUERA_DE_AMBITO`, `relevance=0`, `impact=LOW` y `urgency=LOW`.
+- Diferenciadas las noticias con informacion insuficiente usando `subcategory=INFORMACION_INSUFICIENTE`, evitando mezclarlas con descartes fuera de ambito.
+- Versionado del backend actualizado a `0.0.20-SNAPSHOT`.
+
+## [0.0.19-SNAPSHOT] - 2026-06-07
+
+### Changed
+
+- Reforzado el prompt oficial WF-02 con criterios de relevancia, impacto y urgencia basados en afectacion laboral al profesorado andaluz, manteniendo el contrato JSON de clasificacion del backend.
+- Ajustado `WF-02-Classify-News` para procesar como maximo 10 noticias `CAPTURED` por ejecucion y poder ejecutarse cada 5 minutos desde n8n.
+- Versionado del backend actualizado a `0.0.19-SNAPSHOT`.
+
+## [0.0.18-SNAPSHOT] - 2026-06-07
+
+### Fixed
+
+- Reforzado el prompt WF-02 de clasificacion para que noticias con informacion insuficiente devuelvan JSON valido con categoria `OTROS`, evitando respuestas libres de Gemini/Gemma que el backend rechaza como no clasificables.
+- Versionado del backend actualizado a `0.0.18-SNAPSHOT`.
+
 ## [0.0.17-SNAPSHOT] - 2026-06-07
 
 ### Added
