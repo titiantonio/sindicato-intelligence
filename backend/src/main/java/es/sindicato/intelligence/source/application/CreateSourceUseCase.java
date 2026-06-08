@@ -2,6 +2,8 @@ package es.sindicato.intelligence.source.application;
 
 import es.sindicato.intelligence.source.domain.Source;
 import es.sindicato.intelligence.source.domain.SourceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +12,8 @@ import java.util.Objects;
 
 @Service
 public class CreateSourceUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(CreateSourceUseCase.class);
 
     private final SourceRepository sourceRepository;
 
@@ -21,7 +25,10 @@ public class CreateSourceUseCase {
     public Source execute(CreateSourceCommand command) {
         Objects.requireNonNull(command, "command is required");
 
+        log.info("source creation started: name='{}', url='{}', type={}, active={}", command.name(), command.url(), command.type(), command.active());
+
         sourceRepository.findByUrl(command.url()).ifPresent(source -> {
+            log.warn("source creation skipped because url already exists: url='{}', existingSourceId={}", command.url(), source.getId());
             throw new IllegalArgumentException("source url already exists");
         });
 
@@ -37,6 +44,9 @@ public class CreateSourceUseCase {
                 now
         );
 
-        return sourceRepository.save(source);
+        Source savedSource = sourceRepository.save(source);
+        log.info("source creation completed: sourceId={}, name='{}', active={}", savedSource.getId(), savedSource.getName(), savedSource.isActive());
+
+        return savedSource;
     }
 }

@@ -48,7 +48,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const MAX_NEWS_PER_RUN = 10;\n\nreturn $input.all()\n  .filter(item => item.json.processingStatus === 'CAPTURED')\n  .sort((a, b) => (a.json.id ?? 0) - (b.json.id ?? 0))\n  .slice(0, MAX_NEWS_PER_RUN);"
+        "jsCode": "const MAX_NEWS_PER_RUN = 1;\n\nconst news = $input.all()\n  .flatMap(item => Array.isArray(item.json) ? item.json : [item.json])\n  .filter(item => item && item.processingStatus === 'CAPTURED')\n  .sort((a, b) => (a.id ?? 0) - (b.id ?? 0))\n  .slice(0, MAX_NEWS_PER_RUN);\n\nreturn news.map(item => ({ json: item }));"
       },
       "id": "filter-captured",
       "name": "Filter Captured News",

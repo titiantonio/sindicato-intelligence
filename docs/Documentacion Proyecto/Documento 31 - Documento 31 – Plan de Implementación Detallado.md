@@ -59,6 +59,14 @@ Infraestructura operativa:
 ✓ Health Endpoint
 ```
 
+Nota posterior 2026-06-07: añadida configuracion transversal de logging backend con Logback, consola, archivo diario, archivo de errores, carpetas mensuales, compresion y retencion de 90 dias. Esta intervencion se registra como mantenimiento tecnico de Fase 1/backend base.
+
+Nota posterior 2026-06-07: extendidos logs operativos a los casos de uso existentes de `source`, `news` y `event`, y añadido reintento/diagnostico en respuestas recuperables de Gemini sin texto o sin JSON.
+
+Nota posterior 2026-06-08: verificada la intervencion transversal de logs y reintento Gemini con `mvn test` en backend: 101 tests ejecutados, 0 fallos, 0 errores.
+
+Nota posterior 2026-06-08: ajustada la salida de consola de Logback para colorear niveles de log y activada salida ANSI configurable con `SPRING_OUTPUT_ANSI_ENABLED`, manteniendo los archivos persistidos sin codigos ANSI y conservando la rotacion diaria por tamaño.
+
 ---
 
 # 4. [x] Sprint 1
@@ -540,6 +548,10 @@ Integración AIProvider.
 
 Nota posterior 2026-06-07: implementado `GeminiAIProvider` como proveedor IA externo para clasificacion, activable por configuracion tecnica (`app.ai.provider=gemini`) y usando por defecto el modelo `models/gemma-4-31b-it`. `DeterministicAIProvider` se mantiene como proveedor por defecto para desarrollo local y tests. Si Gemini falla, el backend devuelve error claro sin fallback silencioso.
 
+Nota posterior 2026-06-07: ajustado `GeminiAIProvider` para enviar `systemInstruction` y `responseSchema` en la peticion a Gemini, evitando respuestas que reformulan el prompt en lugar de devolver el JSON de clasificacion.
+
+Nota posterior 2026-06-08: verificada la integracion IA y sus pruebas de seleccion/proveedor Gemini con `mvn test` en backend: 101 tests ejecutados, 0 fallos, 0 errores.
+
 ---
 
 ## [x] T5.5
@@ -560,11 +572,17 @@ Crear workflow n8n.
 
 Nota posterior 2026-06-07: ajustado `WF-02-Classify-News` para ejecutarse por schedule cada 5 minutos y limitar la clasificacion a 10 noticias capturadas por ejecucion, evitando saturar el proveedor IA.
 
+Nota posterior 2026-06-07: hecho robusto el filtro de noticias capturadas de `WF-02-Classify-News` para soportar respuestas API entregadas por n8n como array en un unico item o como items individuales.
+
+Nota posterior 2026-06-07: reducido temporalmente `WF-02-Classify-News` a 1 noticia por ejecucion para evitar rafagas paralelas mientras se estabiliza la respuesta JSON del proveedor IA externo.
+
 ---
 
 ## [x] T5.7
 
 Persistir clasificación.
+
+Nota posterior 2026-06-07: añadida trazabilidad por logs al caso de uso de clasificacion para registrar inicio, exito, duplicados y fallos por noticia.
 
 ---
 

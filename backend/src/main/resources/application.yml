@@ -1,5 +1,9 @@
 spring:
 
+  output:
+    ansi:
+      enabled: ${SPRING_OUTPUT_ANSI_ENABLED:always}
+
   datasource:
     url: jdbc:postgresql://localhost:5432/sindicato_intelligence
     username: sindicato

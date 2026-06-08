@@ -32,6 +32,9 @@ class GeminiAIProviderTest {
         server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=test-key"))
                 .andExpect(method(POST))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("SIPRI publica adjudicaciones")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("systemInstruction")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("responseSchema")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Tu salida debe ser el objeto JSON final de clasificacion")))
                 .andRespond(withSuccess(geminiResponse("""
                         {
                           "category": "SIPRI",
@@ -102,10 +105,41 @@ class GeminiAIProviderTest {
         GeminiAIProvider provider = new GeminiAIProvider(builder, new ObjectMapper(), properties("test-key"));
         server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=test-key"))
                 .andRespond(withSuccess(geminiResponse("sin json"), MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=test-key"))
+                .andRespond(withSuccess(geminiResponse("sin json"), MediaType.APPLICATION_JSON));
 
         AIProviderException exception = assertThrows(AIProviderException.class, () -> provider.classify(request()));
 
         assertEquals("Gemini response does not contain a JSON object", exception.getMessage());
+        server.verify();
+    }
+
+    @Test
+    void retriesWhenGeminiResponseDoesNotContainText() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        GeminiAIProvider provider = new GeminiAIProvider(builder, new ObjectMapper(), properties("test-key"));
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=test-key"))
+                .andRespond(withSuccess(geminiResponseWithoutText(), MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=test-key"))
+                .andRespond(withSuccess(geminiResponse("""
+                        {
+                          "category": "OTROS",
+                          "subcategory": "INFORMACION_INSUFICIENTE",
+                          "relevance": 0,
+                          "impact": "LOW",
+                          "urgency": "LOW",
+                          "keywords": [],
+                          "entities": [],
+                          "summary": "Informacion insuficiente"
+                        }
+                        """), MediaType.APPLICATION_JSON));
+
+        ClassificationAIResponse response = provider.classify(request());
+
+        assertEquals(ClassificationCategory.OTROS, response.category());
+        assertEquals("INFORMACION_INSUFICIENTE", response.subcategory());
+        assertEquals(BigDecimal.ZERO, response.relevance());
         server.verify();
     }
 
@@ -145,6 +179,21 @@ class GeminiAIProviderTest {
                   ]
                 }
                 """.formatted(toJsonString(text));
+    }
+
+    private String geminiResponseWithoutText() {
+        return """
+                {
+                  "candidates": [
+                    {
+                      "finishReason": "MAX_TOKENS",
+                      "content": {
+                        "parts": []
+                      }
+                    }
+                  ]
+                }
+                """;
     }
 
     private String toJsonString(String value) {

@@ -71,6 +71,7 @@ Skills especificas del proyecto:
 - `skills/sindicato-testing-quality/SKILL.md`: usar para crear o revisar pruebas JUnit 5/Mockito, criterios de aceptacion, cobertura y regresiones.
 - `skills/sindicato-documentacion-changelog/SKILL.md`: usar para documentar intervenciones, aplicar convenciones documentales, versionado Maven y changelog Keep a Changelog.
 - `skills/sindicato-frontend-angular-backoffice/SKILL.md`: usar para trabajos de frontend Angular y backoffice, especialmente en la Fase 11.
+- `skills/sindicato-logging-observabilidad/SKILL.md`: usar para configurar o revisar logs, Logback, trazabilidad operativa, diagnostico de errores e incorporacion de logs en nuevas funcionalidades backend.
 
 Cuando una tarea encaje claramente con una skill, revisa su `SKILL.md` antes de actuar. Si una skill contradice `AGENTS.md`, `docs/00-agent-context.md` o los documentos tecnicos, prevalecen `AGENTS.md` y la documentacion tecnica del proyecto.
 
@@ -375,6 +376,12 @@ Logging:
 - Usar Logback.
 - Niveles permitidos: `INFO`, `WARN`, `ERROR`.
 - No usar `System.out.println()`.
+- Toda nueva funcionalidad backend debe incorporar logs operativos utiles en casos de uso e integraciones relevantes.
+- Registrar inicio y finalizacion de casos de uso relevantes con ids de entidades y resultado de negocio.
+- Registrar en `WARN` situaciones recuperables como duplicados, descartes, datos insuficientes o respuestas inesperadas.
+- Registrar en `ERROR` fallos que impidan completar una operacion, incluyendo errores de IA, Telegram, n8n, PostgreSQL o servicios externos.
+- No registrar API keys, JWT completos, refresh tokens, passwords, prompts completos extensos ni payloads sensibles.
+- La configuracion de Logback debe mantener consola y archivo diario con rotacion, compresion, carpeta mensual y retencion de 90 dias.
 
 ## Testing
 

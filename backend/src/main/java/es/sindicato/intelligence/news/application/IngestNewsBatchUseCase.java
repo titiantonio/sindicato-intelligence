@@ -1,6 +1,8 @@
 package es.sindicato.intelligence.news.application;
 
 import es.sindicato.intelligence.news.domain.NewsArticle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,6 +13,8 @@ import java.util.Set;
 
 @Service
 public class IngestNewsBatchUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(IngestNewsBatchUseCase.class);
 
     private final CreateNewsUseCase createNewsUseCase;
     private final NewsCaptureNormalizer newsCaptureNormalizer;
@@ -31,8 +35,11 @@ public class IngestNewsBatchUseCase {
         Objects.requireNonNull(command.items(), "items are required");
 
         if (command.items().isEmpty()) {
+            log.warn("news batch ingestion rejected because batch is empty");
             throw new IllegalArgumentException("news batch cannot be empty");
         }
+
+        log.info("news batch ingestion started: totalItems={}", command.items().size());
 
         List<IngestNewsBatchItemResult> itemResults = new ArrayList<>();
         int createdCount = 0;
@@ -44,6 +51,7 @@ public class IngestNewsBatchUseCase {
             String hash = newsHashGenerator.calculate(createNewsCommand);
 
             if (!seenUrlsInBatch.add(createNewsCommand.url())) {
+                log.warn("news batch item skipped because url duplicated in batch: index={}, url='{}'", index, createNewsCommand.url());
                 itemResults.add(new IngestNewsBatchItemResult(
                         index,
                         createNewsCommand.url(),
@@ -55,6 +63,7 @@ public class IngestNewsBatchUseCase {
             }
 
             if (!seenHashesInBatch.add(hash)) {
+                log.warn("news batch item skipped because hash duplicated in batch: index={}, url='{}'", index, createNewsCommand.url());
                 itemResults.add(new IngestNewsBatchItemResult(
                         index,
                         createNewsCommand.url(),
@@ -76,6 +85,7 @@ public class IngestNewsBatchUseCase {
                         null
                 ));
             } catch (RuntimeException exception) {
+                log.warn("news batch item failed: index={}, url='{}', reason={}", index, createNewsCommand.url(), exception.getMessage());
                 itemResults.add(new IngestNewsBatchItemResult(
                         index,
                         createNewsCommand.url(),
@@ -87,6 +97,9 @@ public class IngestNewsBatchUseCase {
         }
 
         int total = command.items().size();
-        return new IngestNewsBatchResult(total, createdCount, total - createdCount, itemResults);
+        IngestNewsBatchResult result = new IngestNewsBatchResult(total, createdCount, total - createdCount, itemResults);
+        log.info("news batch ingestion completed: totalItems={}, createdCount={}, failedCount={}", result.totalReceived(), result.createdCount(), result.failedCount());
+
+        return result;
     }
 }

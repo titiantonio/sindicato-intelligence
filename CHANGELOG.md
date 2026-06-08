@@ -5,6 +5,58 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.25-SNAPSHOT] - 2026-06-08
+
+### Changed
+
+- Ajustada la salida de consola de Logback para colorear los niveles de log con el conversor ANSI de Spring Boot, manteniendo los archivos persistidos sin codigos de color.
+- Activada la salida ANSI por defecto mediante `spring.output.ansi.enabled`, configurable con `SPRING_OUTPUT_ANSI_ENABLED`.
+- Versionado del backend actualizado a `0.0.25-SNAPSHOT`.
+
+## [0.0.24-SNAPSHOT] - 2026-06-07
+
+### Added
+
+- Añadidos logs operativos a los casos de uso existentes de `source`, `news` y `event`, cubriendo inicio, fin, conteos, descartes, duplicados y fallos recuperables.
+- Añadido reintento controlado en `GeminiAIProvider` para respuestas recuperables sin texto, sin JSON o con JSON invalido.
+- Añadido diagnostico acotado de respuestas Gemini sin `candidates[0].content.parts[0].text`, incluyendo `finishReason`, `blockReason` y `safetyRatings` sin registrar prompts completos ni secretos.
+
+### Changed
+
+- Los fallos de clasificacion IA ahora registran la excepcion completa en backend para facilitar diagnostico desde archivo de log.
+- Versionado del backend actualizado a `0.0.24-SNAPSHOT`.
+
+## [0.0.23-SNAPSHOT] - 2026-06-07
+
+### Added
+
+- Añadida configuracion `logback-spring.xml` con salida a consola, archivo general, archivo de errores, rotacion diaria por tamaño, compresion `.gz`, carpetas mensuales y retencion de 90 dias.
+- Añadida variable `LOG_PATH` para configurar la ubicacion de logs, con valor por defecto `logs`.
+- Creada la skill `sindicato-logging-observabilidad` para guiar la incorporacion de logs seguros y utiles en nuevas implementaciones backend.
+
+### Changed
+
+- Actualizado `AGENTS.md` para exigir logs operativos en nuevas funcionalidades backend y registrar la nueva skill de logging.
+- Versionado del backend actualizado a `0.0.23-SNAPSHOT`.
+
+## [0.0.22-SNAPSHOT] - 2026-06-07
+
+### Fixed
+
+- Corregida la llamada a Gemini para enviar el prompt de sistema como `systemInstruction` y el texto de la noticia como contenido de usuario, evitando que el modelo responda con una reformulacion de las instrucciones.
+- Añadido `responseSchema` en `GeminiAIProvider` para forzar una salida JSON con las claves y enums esperados por el contrato de clasificacion.
+- Reducido temporalmente `WF-02-Classify-News` a 1 noticia por ejecucion mientras se estabiliza la salida JSON del proveedor IA y se evita lanzar rafagas paralelas.
+- Versionado del backend actualizado a `0.0.22-SNAPSHOT`.
+
+## [0.0.21-SNAPSHOT] - 2026-06-07
+
+### Changed
+
+- Añadidos logs `INFO`, `WARN` y `ERROR` al caso de uso de clasificacion para trazar inicio, finalizacion, duplicados y fallos por noticia.
+- Añadido log `WARN` con fragmento acotado de respuesta Gemini cuando el proveedor IA no devuelve un objeto JSON clasificable.
+- Hecho robusto el filtro de `WF-02-Classify-News` para procesar correctamente respuestas de `GET /api/v1/news` tanto si n8n las entrega como array en un item como si las entrega item a item.
+- Versionado del backend actualizado a `0.0.21-SNAPSHOT`.
+
 ## [0.0.20-SNAPSHOT] - 2026-06-07
 
 ### Changed

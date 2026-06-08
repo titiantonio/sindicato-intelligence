@@ -12,6 +12,8 @@ import es.sindicato.intelligence.classification.domain.ImpactLevel;
 import es.sindicato.intelligence.classification.domain.UrgencyLevel;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -28,7 +30,9 @@ import java.util.Map;
 @ConditionalOnProperty(name = "app.ai.provider", havingValue = "gemini")
 public class GeminiAIProvider implements AIProvider {
 
+    private static final Logger log = LoggerFactory.getLogger(GeminiAIProvider.class);
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
+    private static final int MAX_CLASSIFICATION_ATTEMPTS = 2;
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
@@ -50,9 +54,23 @@ public class GeminiAIProvider implements AIProvider {
         String apiKey = requireText(gemini.getApiKey(), "Gemini API key is required when app.ai.provider=gemini");
         String model = normalizeModel(requireText(gemini.getModel(), "Gemini model is required when app.ai.provider=gemini"));
 
-        JsonNode response = callGemini(request, gemini, apiKey, model);
-        String responseText = extractResponseText(response);
-        return parseClassificationResponse(responseText);
+        AIProviderException lastException = null;
+        for (int attempt = 1; attempt <= MAX_CLASSIFICATION_ATTEMPTS; attempt++) {
+            try {
+                JsonNode response = callGemini(request, gemini, apiKey, model);
+                String responseText = extractResponseText(response);
+                return parseClassificationResponse(responseText);
+            } catch (AIProviderException exception) {
+                lastException = exception;
+                if (attempt >= MAX_CLASSIFICATION_ATTEMPTS || !isRetryable(exception)) {
+                    throw exception;
+                }
+
+                log.warn("Gemini classification response invalid, retrying: attempt={}, maxAttempts={}, reason={}", attempt, MAX_CLASSIFICATION_ATTEMPTS, exception.getMessage());
+            }
+        }
+
+        throw lastException;
     }
 
     private JsonNode callGemini(
@@ -62,14 +80,18 @@ public class GeminiAIProvider implements AIProvider {
             String model
     ) {
         Map<String, Object> body = Map.of(
+                "systemInstruction", Map.of(
+                        "parts", List.of(Map.of("text", request.systemPrompt()))
+                ),
                 "contents", List.of(Map.of(
                         "role", "user",
-                        "parts", List.of(Map.of("text", buildPrompt(request)))
+                        "parts", List.of(Map.of("text", buildUserPrompt(request)))
                 )),
                 "generationConfig", Map.of(
                         "temperature", gemini.getTemperature(),
                         "maxOutputTokens", gemini.getMaxOutputTokens(),
-                        "responseMimeType", "application/json"
+                        "responseMimeType", "application/json",
+                        "responseSchema", classificationResponseSchema()
                 )
         );
 
@@ -94,10 +116,12 @@ public class GeminiAIProvider implements AIProvider {
         }
     }
 
-    private String buildPrompt(ClassificationAIRequest request) {
-        return request.systemPrompt() + "\n\n" + request.userPrompt() + """
+    private String buildUserPrompt(ClassificationAIRequest request) {
+        return request.userPrompt() + """
 
                 Reglas obligatorias de respuesta:
+                - Tu salida debe ser el objeto JSON final de clasificacion, no un resumen de estas instrucciones.
+                - Empieza directamente por { y termina directamente por }.
                 - Devuelve solo JSON valido, sin markdown.
                 - Usa una categoria exacta de esta lista: OPOSICIONES, INTERINOS, SIPRI, PLANTILLAS, RETRIBUCIONES, FORMACION, INSPECCION, LEGISLACION, CURRICULO, UNIVERSIDAD, FP, DIGITALIZACION, INCLUSION, INFRAESTRUCTURAS, CONFLICTO_LABORAL, SINDICAL, OTROS.
                 - Usa impact exacto de esta lista: LOW, MEDIUM, HIGH, CRITICAL.
@@ -107,6 +131,39 @@ public class GeminiAIProvider implements AIProvider {
                 """;
     }
 
+    private Map<String, Object> classificationResponseSchema() {
+        return Map.of(
+                "type", "OBJECT",
+                "properties", Map.of(
+                        "category", Map.of(
+                                "type", "STRING",
+                                "enum", List.of("OPOSICIONES", "INTERINOS", "SIPRI", "PLANTILLAS", "RETRIBUCIONES", "FORMACION", "INSPECCION", "LEGISLACION", "CURRICULO", "UNIVERSIDAD", "FP", "DIGITALIZACION", "INCLUSION", "INFRAESTRUCTURAS", "CONFLICTO_LABORAL", "SINDICAL", "OTROS")
+                        ),
+                        "subcategory", Map.of("type", "STRING"),
+                        "relevance", Map.of("type", "NUMBER"),
+                        "impact", Map.of(
+                                "type", "STRING",
+                                "enum", List.of("LOW", "MEDIUM", "HIGH", "CRITICAL")
+                        ),
+                        "urgency", Map.of(
+                                "type", "STRING",
+                                "enum", List.of("LOW", "MEDIUM", "HIGH")
+                        ),
+                        "keywords", Map.of(
+                                "type", "ARRAY",
+                                "items", Map.of("type", "STRING")
+                        ),
+                        "entities", Map.of(
+                                "type", "ARRAY",
+                                "items", Map.of("type", "STRING")
+                        ),
+                        "summary", Map.of("type", "STRING")
+                ),
+                "required", List.of("category", "subcategory", "relevance", "impact", "urgency", "keywords", "entities", "summary"),
+                "propertyOrdering", List.of("category", "subcategory", "relevance", "impact", "urgency", "keywords", "entities", "summary")
+        );
+    }
+
     private String extractResponseText(JsonNode response) {
         if (response == null) {
             throw new AIProviderException("Gemini response is empty");
@@ -114,6 +171,7 @@ public class GeminiAIProvider implements AIProvider {
 
         JsonNode textNode = response.at("/candidates/0/content/parts/0/text");
         if (!textNode.isTextual() || textNode.asText().isBlank()) {
+            log.warn("Gemini response does not contain text. diagnostics='{}'", geminiDiagnostics(response));
             throw new AIProviderException("Gemini response does not contain candidates[0].content.parts[0].text");
         }
 
@@ -158,10 +216,45 @@ public class GeminiAIProvider implements AIProvider {
         int lastBrace = text.lastIndexOf('}');
 
         if (firstBrace < 0 || lastBrace <= firstBrace) {
+            log.warn("Gemini response does not contain JSON object. responseSnippet='{}'", abbreviate(text));
             throw new AIProviderException("Gemini response does not contain a JSON object");
         }
 
         return text.substring(firstBrace, lastBrace + 1);
+    }
+
+    private boolean isRetryable(AIProviderException exception) {
+        String message = exception.getMessage();
+        if (message == null) {
+            return false;
+        }
+
+        return message.startsWith("Gemini response is empty")
+                || message.startsWith("Gemini response does not contain")
+                || message.startsWith("Gemini response is not valid classification JSON")
+                || message.startsWith("Gemini response field '");
+    }
+
+    private String geminiDiagnostics(JsonNode response) {
+        if (response == null) {
+            return "empty response";
+        }
+
+        JsonNode finishReason = response.at("/candidates/0/finishReason");
+        JsonNode blockReason = response.at("/promptFeedback/blockReason");
+        JsonNode safetyRatings = response.at("/candidates/0/safetyRatings");
+
+        return "finishReason=" + textOrMissing(finishReason)
+                + ", blockReason=" + textOrMissing(blockReason)
+                + ", safetyRatings=" + abbreviate(safetyRatings.isMissingNode() ? "" : safetyRatings.toString());
+    }
+
+    private String textOrMissing(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return "missing";
+        }
+
+        return node.asText();
     }
 
     private String optionalText(JsonNode root, String fieldName) {
@@ -242,5 +335,18 @@ public class GeminiAIProvider implements AIProvider {
 
     private String normalizeModel(String model) {
         return model.startsWith("/") ? model.substring(1) : model;
+    }
+
+    private String abbreviate(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+
+        String trimmed = value.replaceAll("\\s+", " ").trim();
+        if (trimmed.length() <= 500) {
+            return trimmed;
+        }
+
+        return trimmed.substring(0, 497) + "...";
     }
 }

@@ -11,6 +11,8 @@ import es.sindicato.intelligence.event.domain.Importance;
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import es.sindicato.intelligence.news.domain.NewsRepository;
 import es.sindicato.intelligence.news.domain.NewsStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ import java.util.Set;
 @Service
 public class DetectEventUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(DetectEventUseCase.class);
     private static final int AUTOMATIC_MATCH_THRESHOLD = 85;
 
     private final NewsRepository newsRepository;
@@ -49,14 +52,18 @@ public class DetectEventUseCase {
         Objects.requireNonNull(command, "command is required");
         Objects.requireNonNull(command.newsId(), "newsId is required");
 
+        log.info("event detection started: newsId={}", command.newsId());
+
         NewsArticle newsArticle = newsRepository.findById(command.newsId())
                 .orElseThrow(() -> new IllegalArgumentException("news not found: " + command.newsId()));
 
         if (newsArticle.getProcessingStatus() != NewsStatus.CLASSIFIED) {
+            log.warn("event detection skipped because news is not classified: newsId={}, status={}", newsArticle.getId(), newsArticle.getProcessingStatus());
             throw new IllegalArgumentException("news must be CLASSIFIED before event detection");
         }
 
         if (eventRepository.existsNewsAssociation(newsArticle.getId())) {
+            log.warn("event detection skipped because news already belongs to an event: newsId={}", newsArticle.getId());
             throw new IllegalArgumentException("news already belongs to an event");
         }
 
@@ -70,15 +77,22 @@ public class DetectEventUseCase {
         List<EventMatchCandidate> candidates = activeEvents.stream()
                 .map(event -> new EventMatchCandidate(event.getId(), event.getTitle(), event.getDescription(), event.getCategory()))
                 .toList();
+        log.info("event detection candidates loaded: newsId={}, category={}, candidateCount={}", newsArticle.getId(), category, candidates.size());
         EventMatchPrompt prompt = promptBuilder.build(newsArticle.getTitle(), newsArticle.getSummary(), newsArticle.getContent(), candidates);
-        EventMatchingAIResponse aiResponse = aiProvider.match(new EventMatchingAIRequest(
-                newsArticle.getTitle(),
-                newsArticle.getSummary(),
-                newsArticle.getContent(),
-                candidates,
-                prompt.systemPrompt(),
-                prompt.userPrompt()
-        ));
+        EventMatchingAIResponse aiResponse;
+        try {
+            aiResponse = aiProvider.match(new EventMatchingAIRequest(
+                    newsArticle.getTitle(),
+                    newsArticle.getSummary(),
+                    newsArticle.getContent(),
+                    candidates,
+                    prompt.systemPrompt(),
+                    prompt.userPrompt()
+            ));
+        } catch (RuntimeException exception) {
+            log.error("event detection failed during AI matching: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
+            throw exception;
+        }
 
         Event event = findAutomaticMatch(activeEvents, aiResponse);
         boolean created = false;
@@ -87,8 +101,10 @@ public class DetectEventUseCase {
         if (event == null) {
             event = createEvent(newsArticle, category, importanceOf(classification.getImpactLevel()));
             created = true;
+            log.info("event detection creating new event: newsId={}, category={}, importance={}", newsArticle.getId(), category, importanceOf(classification.getImpactLevel()));
         } else {
             event.addNews(newsArticle.getId(), OffsetDateTime.now());
+            log.info("event detection matched existing event: newsId={}, eventId={}, confidence={}", newsArticle.getId(), event.getId(), aiResponse.confidence());
         }
 
         Event savedEvent = eventRepository.save(event);
@@ -96,7 +112,7 @@ public class DetectEventUseCase {
         newsArticle.markEventMatched();
         newsRepository.save(newsArticle);
 
-        return new DetectEventResult(
+        DetectEventResult result = new DetectEventResult(
                 savedEvent.getId(),
                 newsArticle.getId(),
                 created,
@@ -105,6 +121,17 @@ public class DetectEventUseCase {
                 aiResponse.reason(),
                 savedEvent.getStatus()
         );
+        log.info(
+                "event detection completed: newsId={}, eventId={}, created={}, matched={}, confidence={}, status={}",
+                result.newsId(),
+                result.eventId(),
+                result.created(),
+                result.matched(),
+                result.confidence(),
+                result.eventStatus()
+        );
+
+        return result;
     }
 
     private Event findAutomaticMatch(List<Event> activeEvents, EventMatchingAIResponse aiResponse) {
