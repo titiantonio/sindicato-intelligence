@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.26-SNAPSHOT] - 2026-06-08
+
+### Added
+
+- T7.1: creado el modulo backend `analysis` con capas `domain`, `application`, `infrastructure` y `api`, entidad de dominio `EventAIAnalysis` y puerto `EventAIAnalysisRepository`.
+- T7.2: implementado `GenerateAnalysisUseCase` con contratos de aplicacion para IA de analisis, carga de evento/noticias asociadas, persistencia mediante puerto y logs operativos `INFO`, `WARN` y `ERROR`.
+- T7.3: implementado el prompt oficial `WF-04` para analisis de eventos, proveedor determinista de analisis y proveedor Gemini especifico con salida JSON estructurada, diagnostico acotado y reintentos recuperables.
+- T7.4: añadida persistencia JPA de `event_ai_analysis`, endpoint `POST /api/v1/analysis/generate` y workflow n8n `WF-04-Generate-Analysis` para orquestar la generacion de analisis por `eventId`.
+
+### Changed
+
+- Sprint 7 de Analisis IA completado y versionado del backend actualizado a `0.0.26-SNAPSHOT`.
+
 ## [0.0.25-SNAPSHOT] - 2026-06-08
 
 ### Changed

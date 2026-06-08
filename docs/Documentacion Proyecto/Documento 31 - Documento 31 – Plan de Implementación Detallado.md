@@ -648,7 +648,7 @@ Nota actualizada 2026-06-07: `confidence_score` queda integrado directamente en 
 
 ---
 
-# 10. Sprint 7
+# 10. [x] Sprint 7
 
 # Análisis IA
 
@@ -660,27 +660,37 @@ Generar conocimiento consolidado.
 
 ---
 
-## T7.1
+## [x] T7.1
 
 Crear módulo analysis.
 
+Nota posterior 2026-06-08: creado el modulo `analysis` con capas `domain`, `application`, `infrastructure` y `api`, entidad de dominio `EventAIAnalysis`, puerto `EventAIAnalysisRepository` y pruebas unitarias de dominio.
+
 ---
 
-## T7.2
+## [x] T7.2
 
 Implementar GenerateAnalysisUseCase.
 
+Nota posterior 2026-06-08: implementado `GenerateAnalysisUseCase` con contratos de aplicacion para IA de analisis, carga de evento/noticias, persistencia mediante puerto `EventAIAnalysisRepository` y logs operativos de inicio, contexto, exito, descartes y errores.
+
 ---
 
-## T7.3
+## [x] T7.3
 
 Implementar Prompt WF-04.
 
+Nota posterior 2026-06-08: implementado `GenerateAnalysisPromptBuilder` basado en el Prompt WF-04 oficial, proveedor determinista de analisis y `GeminiAnalysisAIProvider` con `systemInstruction`, `responseSchema`, diagnostico acotado y reintentos recuperables.
+
 ---
 
-## T7.4
+## [x] T7.4
 
 Persistir análisis.
+
+Nota posterior 2026-06-08: añadida persistencia JPA de `event_ai_analysis`, endpoint `POST /api/v1/analysis/generate`, DTOs REST, pruebas de repositorio/API y workflow n8n `WF-04-Generate-Analysis` para generar analisis por `eventId`.
+
+Nota posterior 2026-06-08: Sprint 7 completado con T7.1, T7.2, T7.3 y T7.4 verificadas mediante pruebas especificas y suite completa backend `mvn test`: 116 tests ejecutados, 0 fallos, 0 errores.
 
 ---
 
