@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.27-SNAPSHOT] - 2026-06-09
+
+### Added
+
+- T8.1: creado el modulo backend `content` con capas `domain`, `application`, `infrastructure` y `api`, entidad de dominio `GeneratedContent`, enum `ContentStatus` y puerto `GeneratedContentRepository`.
+- T8.2: implementado `GenerateContentUseCase` con puerto `ContentAIProvider`, resolucion de evento/analisis, autor transitorio mediante `CurrentContentAuthorProvider` y logs operativos.
+- T8.3: implementado el prompt oficial `WF-05` para contenido Telegram, proveedor determinista de contenido y proveedor Gemini especifico con salida JSON estructurada y reintentos recuperables.
+- T8.4: añadida persistencia JPA de `generated_content`, API `POST /api/v1/content/generate`, endpoints de aprobacion/rechazo y workflow n8n `WF-05-Generate-Content`.
+
+### Changed
+
+- Sprint 8 de Contenido completado y versionado del backend actualizado a `0.0.27-SNAPSHOT`.
+
 ## [0.0.26-SNAPSHOT] - 2026-06-08
 
 ### Added

@@ -1,0 +1,138 @@
+package es.sindicato.intelligence.content.application;
+
+import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
+import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
+import es.sindicato.intelligence.content.domain.ContentStatus;
+import es.sindicato.intelligence.content.domain.GeneratedContent;
+import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
+import es.sindicato.intelligence.event.domain.Event;
+import es.sindicato.intelligence.event.domain.EventRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Objects;
+
+@Service
+public class GenerateContentUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(GenerateContentUseCase.class);
+    private static final String DEFAULT_CHANNEL = "TELEGRAM";
+    private static final String DEFAULT_TONE = "INFORMATIVO";
+    private static final String DEFAULT_LENGTH = "STANDARD";
+
+    private final EventRepository eventRepository;
+    private final EventAIAnalysisRepository analysisRepository;
+    private final GeneratedContentRepository contentRepository;
+    private final GenerateContentPromptBuilder promptBuilder;
+    private final ContentAIProvider aiProvider;
+    private final CurrentContentAuthorProvider authorProvider;
+
+    public GenerateContentUseCase(
+            EventRepository eventRepository,
+            EventAIAnalysisRepository analysisRepository,
+            GeneratedContentRepository contentRepository,
+            GenerateContentPromptBuilder promptBuilder,
+            ContentAIProvider aiProvider,
+            CurrentContentAuthorProvider authorProvider
+    ) {
+        this.eventRepository = eventRepository;
+        this.analysisRepository = analysisRepository;
+        this.contentRepository = contentRepository;
+        this.promptBuilder = promptBuilder;
+        this.aiProvider = aiProvider;
+        this.authorProvider = authorProvider;
+    }
+
+    @Transactional
+    public GeneratedContent execute(GenerateContentCommand command) {
+        Objects.requireNonNull(command, "command is required");
+        Objects.requireNonNull(command.eventId(), "eventId is required");
+
+        String channel = normalize(command.channel(), DEFAULT_CHANNEL);
+        String tone = normalize(command.tone(), DEFAULT_TONE);
+        String length = normalize(command.length(), DEFAULT_LENGTH);
+        Long createdBy = authorProvider.currentAuthorId();
+
+        log.info("content generation started: eventId={}, analysisId={}, channel={}, tone={}, length={}, createdBy={}", command.eventId(), command.analysisId(), channel, tone, length, createdBy);
+
+        Event event = eventRepository.findById(command.eventId())
+                .orElseThrow(() -> new IllegalArgumentException("event not found: " + command.eventId()));
+        EventAIAnalysis analysis = resolveAnalysis(command, event.getId());
+        GenerateContentPrompt prompt = promptBuilder.build(new ContentAIRequest(
+                event,
+                analysis,
+                channel,
+                tone,
+                length,
+                "",
+                ""
+        ));
+        log.info("content generation context loaded: eventId={}, analysisId={}", event.getId(), analysis.getId());
+
+        ContentAIResponse aiResponse;
+        try {
+            aiResponse = aiProvider.generate(new ContentAIRequest(event, analysis, channel, tone, length, prompt.systemPrompt(), prompt.userPrompt()));
+        } catch (RuntimeException exception) {
+            log.error("content generation failed during AI generation: eventId={}, analysisId={}, reason={}", event.getId(), analysis.getId(), exception.getMessage(), exception);
+            throw exception;
+        }
+
+        GeneratedContent content = new GeneratedContent(
+                null,
+                event.getId(),
+                createdBy,
+                channel,
+                tone,
+                aiResponse.title(),
+                buildContent(aiResponse),
+                ContentStatus.PENDING_REVIEW,
+                OffsetDateTime.now(),
+                null
+        );
+        GeneratedContent savedContent = contentRepository.save(content);
+
+        log.info("content generation completed: eventId={}, analysisId={}, contentId={}, status={}, channel={}, tone={}", event.getId(), analysis.getId(), savedContent.getId(), savedContent.getStatus(), savedContent.getChannel(), savedContent.getTone());
+
+        return savedContent;
+    }
+
+    private EventAIAnalysis resolveAnalysis(GenerateContentCommand command, Long eventId) {
+        if (command.analysisId() != null) {
+            EventAIAnalysis analysis = analysisRepository.findById(command.analysisId())
+                    .orElseThrow(() -> new IllegalArgumentException("analysis not found: " + command.analysisId()));
+            if (!analysis.getEventId().equals(eventId)) {
+                log.warn("content generation skipped because analysis belongs to another event: eventId={}, analysisId={}, analysisEventId={}", eventId, analysis.getId(), analysis.getEventId());
+                throw new IllegalArgumentException("analysis does not belong to event");
+            }
+            return analysis;
+        }
+
+        List<EventAIAnalysis> analyses = analysisRepository.findByEventId(eventId);
+        if (analyses.isEmpty()) {
+            log.warn("content generation skipped because event has no analysis: eventId={}", eventId);
+            throw new IllegalArgumentException("event analysis not found: " + eventId);
+        }
+
+        return analyses.getFirst();
+    }
+
+    private String buildContent(ContentAIResponse response) {
+        if (response.hashtags() == null || response.hashtags().isEmpty()) {
+            return response.message();
+        }
+
+        return response.message() + "\n\n" + String.join(" ", response.hashtags());
+    }
+
+    private String normalize(String value, String defaultValue) {
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+
+        return value.trim().toUpperCase();
+    }
+}

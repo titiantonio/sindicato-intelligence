@@ -20,6 +20,9 @@ server:
   port: 8080
 
 app:
+  content:
+    default-created-by: ${CONTENT_DEFAULT_CREATED_BY:1}
+
   ai:
     provider: ${AI_PROVIDER:deterministic}
     gemini:

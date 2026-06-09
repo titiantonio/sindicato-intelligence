@@ -1,0 +1,76 @@
+{
+  "name": "WF-05-Generate-Content",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wf-05-generate-content",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, -160]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.flatMap(item => {\n  const json = item.json ?? {};\n  const body = json.body ?? {};\n  const eventId = Number(body.eventId ?? json.eventId ?? json.id);\n  const analysisIdValue = body.analysisId ?? json.analysisId;\n  const analysisId = analysisIdValue === undefined || analysisIdValue === null || analysisIdValue === '' ? null : Number(analysisIdValue);\n\n  if (!Number.isInteger(eventId) || eventId <= 0) {\n    return [];\n  }\n\n  return [{\n    json: {\n      eventId,\n      analysisId: Number.isInteger(analysisId) && analysisId > 0 ? analysisId : null,\n      channel: body.channel ?? json.channel ?? 'TELEGRAM',\n      tone: body.tone ?? json.tone ?? 'INFORMATIVO',\n      length: body.length ?? json.length ?? 'STANDARD'\n    }\n  }];\n});"
+      },
+      "id": "normalize-content-request",
+      "name": "Normalize Content Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0],
+      "notes": "WF-05 recibe eventId y opcionalmente analysisId, channel, tone y length. Spring Boot genera y persiste el contenido."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/api/v1/content/generate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"eventId\": {{$json.eventId}},\n  \"analysisId\": {{$json.analysisId}},\n  \"channel\": \"{{$json.channel}}\",\n  \"tone\": \"{{$json.tone}}\",\n  \"length\": \"{{$json.length}}\"\n}",
+        "options": {}
+      },
+      "id": "generate-content",
+      "name": "Generate Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 0],
+      "notes": "Spring Boot ejecuta GenerateContentUseCase. n8n solo orquesta WF-05."
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node": "Normalize Content Request", "type": "main", "index": 0}]]
+    },
+    "Webhook Trigger": {
+      "main": [[{"node": "Normalize Content Request", "type": "main", "index": 0}]]
+    },
+    "Normalize Content Request": {
+      "main": [[{"node": "Generate Content", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "wf-05-generate-content-mvp",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [
+    {"name": "MVP"},
+    {"name": "WF-05"}
+  ]
+}

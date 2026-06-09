@@ -1,0 +1,86 @@
+package es.sindicato.intelligence.content.api;
+
+import es.sindicato.intelligence.content.application.ApproveContentUseCase;
+import es.sindicato.intelligence.content.application.ContentAIProviderException;
+import es.sindicato.intelligence.content.application.GenerateContentCommand;
+import es.sindicato.intelligence.content.application.GenerateContentUseCase;
+import es.sindicato.intelligence.content.application.RejectContentUseCase;
+import es.sindicato.intelligence.content.domain.GeneratedContent;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/v1/content")
+public class ContentController {
+
+    private final GenerateContentUseCase generateContentUseCase;
+    private final ApproveContentUseCase approveContentUseCase;
+    private final RejectContentUseCase rejectContentUseCase;
+
+    public ContentController(
+            GenerateContentUseCase generateContentUseCase,
+            ApproveContentUseCase approveContentUseCase,
+            RejectContentUseCase rejectContentUseCase
+    ) {
+        this.generateContentUseCase = generateContentUseCase;
+        this.approveContentUseCase = approveContentUseCase;
+        this.rejectContentUseCase = rejectContentUseCase;
+    }
+
+    @PostMapping("/generate")
+    public GeneratedContentResponse generateContent(@Valid @RequestBody GenerateContentRequest request) {
+        return toResponse(generateContentUseCase.execute(new GenerateContentCommand(
+                request.eventId(),
+                request.analysisId(),
+                request.channel(),
+                request.tone(),
+                request.length()
+        )));
+    }
+
+    @PostMapping("/{id}/approve")
+    public GeneratedContentResponse approveContent(@PathVariable Long id) {
+        return toResponse(approveContentUseCase.execute(id));
+    }
+
+    @PostMapping("/{id}/reject")
+    public GeneratedContentResponse rejectContent(@PathVariable Long id) {
+        return toResponse(rejectContentUseCase.execute(id));
+    }
+
+    @ExceptionHandler(ContentAIProviderException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public Map<String, String> handleAIProviderException(ContentAIProviderException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleBadRequest(RuntimeException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    private GeneratedContentResponse toResponse(GeneratedContent content) {
+        return new GeneratedContentResponse(
+                content.getId(),
+                content.getEventId(),
+                content.getCreatedBy(),
+                content.getChannel(),
+                content.getTone(),
+                content.getTitle(),
+                content.getContent(),
+                content.getStatus(),
+                content.getGeneratedAt(),
+                content.getApprovedAt()
+        );
+    }
+}

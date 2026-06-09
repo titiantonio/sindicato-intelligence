@@ -694,7 +694,7 @@ Nota posterior 2026-06-08: Sprint 7 completado con T7.1, T7.2, T7.3 y T7.4 verif
 
 ---
 
-# 11. Sprint 8
+# 11. [x] Sprint 8
 
 # Contenido
 
@@ -706,27 +706,39 @@ Generar contenido.
 
 ---
 
-## T8.1
+## [x] T8.1
 
 Crear módulo content.
 
+Nota posterior 2026-06-08: creado el modulo `content` con capas `domain`, `application`, `infrastructure` y `api`, entidad de dominio `GeneratedContent`, enum `ContentStatus`, puerto `GeneratedContentRepository` y pruebas unitarias de dominio.
+
 ---
 
-## T8.2
+## [x] T8.2
 
 Implementar GenerateContentUseCase.
 
+Nota posterior 2026-06-08: implementado `GenerateContentUseCase` con puerto `ContentAIProvider`, resolucion de evento y analisis, estado `PENDING_REVIEW`, logs operativos y `CurrentContentAuthorProvider` transitorio basado en `app.content.default-created-by` hasta disponer de modulo `user` o JWT real.
+
 ---
 
-## T8.3
+## [x] T8.3
 
 Implementar Prompt WF-05.
 
+Nota posterior 2026-06-08: implementado `GenerateContentPromptBuilder` basado en el Prompt WF-05 oficial, proveedor determinista de contenido y `GeminiContentAIProvider` con `systemInstruction`, `responseSchema`, diagnostico acotado y reintentos recuperables.
+
 ---
 
-## T8.4
+## [x] T8.4
 
 Persistir contenido.
+
+Nota posterior 2026-06-09: añadida persistencia JPA de `generated_content`, API `POST /api/v1/content/generate`, endpoints `POST /api/v1/content/{id}/approve` y `POST /api/v1/content/{id}/reject`, pruebas de repositorio/API y workflow n8n `WF-05-Generate-Content` para generar contenido por `eventId` y `analysisId` opcional.
+
+Nota posterior 2026-06-09: Sprint 8 completado con T8.1, T8.2, T8.3 y T8.4 verificadas mediante pruebas especificas de contenido: 17 tests ejecutados, 0 fallos, 0 errores. WF-05 validado como JSON correcto.
+
+Nota posterior 2026-06-09: cierre verificado con suite completa backend `mvn test`: 133 tests ejecutados, 0 fallos, 0 errores.
 
 ---
 
