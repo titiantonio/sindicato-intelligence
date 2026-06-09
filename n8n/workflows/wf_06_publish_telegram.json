@@ -1,0 +1,77 @@
+{
+  "name": "WF-06-Publish-Telegram",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wf-06-publish-telegram",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, -160]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.flatMap(item => {\n  const json = item.json ?? {};\n  const body = json.body ?? {};\n  const contentId = Number(body.contentId ?? body.id ?? json.contentId ?? json.id);\n\n  if (!Number.isInteger(contentId) || contentId <= 0) {\n    return [];\n  }\n\n  return [{\n    json: {\n      contentId\n    }\n  }];\n});"
+      },
+      "id": "normalize-publication-request",
+      "name": "Normalize Publication Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0],
+      "notes": "WF-06 recibe contentId. Spring Boot valida estado APPROVED, publica en Telegram y registra la publicacion."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:8080/api/v1/publications/{{$json.contentId}}/publish",
+        "sendBody": false,
+        "options": {}
+      },
+      "id": "publish-telegram",
+      "name": "Publish Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "notes": "Spring Boot ejecuta PublishContentUseCase. n8n solo orquesta WF-06 y reintenta errores de publicacion."
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node": "Normalize Publication Request", "type": "main", "index": 0}]]
+    },
+    "Webhook Trigger": {
+      "main": [[{"node": "Normalize Publication Request", "type": "main", "index": 0}]]
+    },
+    "Normalize Publication Request": {
+      "main": [[{"node": "Publish Telegram", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "wf-06-publish-telegram-mvp",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [
+    {"name": "MVP"},
+    {"name": "WF-06"}
+  ]
+}

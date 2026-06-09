@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.28-SNAPSHOT] - 2026-06-09
+
+### Added
+
+- T9.1: creado el modulo backend `publication` con capas `domain`, `application`, `infrastructure` y `api`, entidad de dominio `Publication`, enum `PublicationStatus` y puerto `PublicationRepository`.
+- T9.2: creado el puerto `PublishingProvider` con contratos `PublishingRequest`, `PublishingResult` y excepcion `PublishingProviderException` para integraciones de publicacion.
+- T9.3: implementado `TelegramPublisher` con Bot API de Telegram, configuracion por variables de entorno, logs seguros y parseo acotado de respuestas.
+- T9.4: creado el workflow n8n `WF-06-Publish-Telegram` para publicar contenido aprobado mediante la API backend y reintentar errores Telegram.
+- T9.5: implementado `PublishContentUseCase`, persistencia JPA de `publications` y API `POST /api/v1/publications/{id}/publish` para registrar publicaciones `PENDING`, `PUBLISHED` y `FAILED`.
+
+### Changed
+
+- Sprint 9 de Publicacion Telegram completado y versionado del backend actualizado a `0.0.28-SNAPSHOT`.
+
 ## [0.0.27-SNAPSHOT] - 2026-06-09
 
 ### Added

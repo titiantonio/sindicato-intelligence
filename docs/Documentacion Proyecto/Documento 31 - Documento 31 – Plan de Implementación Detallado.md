@@ -742,7 +742,7 @@ Nota posterior 2026-06-09: cierre verificado con suite completa backend `mvn tes
 
 ---
 
-# 12. Sprint 9
+# 12. Sprint 9 [x]
 
 # Publicación Telegram
 
@@ -754,13 +754,15 @@ Publicar contenido.
 
 ---
 
-## T9.1
+## T9.1 [x]
 
 Crear módulo publication.
 
+Nota posterior 2026-06-09: creado el modulo backend `publication` con dominio `Publication`, estados `PublicationStatus`, puerto `PublicationRepository` y prueba unitaria de dominio. Verificado con `mvn -Dtest=PublicationTest test`.
+
 ---
 
-## T9.2
+## T9.2 [x]
 
 Crear interfaz:
 
@@ -768,9 +770,11 @@ Crear interfaz:
 PublishingProvider
 ```
 
+Nota posterior 2026-06-09: creado el puerto `PublishingProvider` con contratos `PublishingRequest`, `PublishingResult` y excepcion `PublishingProviderException`. Verificado con `mvn "-Dtest=Publishing*Test" test`.
+
 ---
 
-## T9.3
+## T9.3 [x]
 
 Implementar:
 
@@ -778,17 +782,27 @@ Implementar:
 TelegramPublisher
 ```
 
+Nota posterior 2026-06-09: implementado `TelegramPublisher` con Bot API de Telegram, configuracion por `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` y `TELEGRAM_BASE_URL`, logs seguros y parseo acotado de respuestas. Verificado con `mvn "-Dtest=TelegramPublisherTest" test`.
+
 ---
 
-## T9.4
+## T9.4 [x]
 
 Crear workflow publicación.
 
+Nota posterior 2026-06-09: creado `n8n/workflows/wf_06_publish_telegram.json` con trigger manual/webhook, normalizacion de `contentId`, llamada a `POST /api/v1/publications/{contentId}/publish` y 3 reintentos en el nodo HTTP. JSON validado con Node.
+
 ---
 
-## T9.5
+## T9.5 [x]
 
 Registrar publicación.
+
+Nota posterior 2026-06-09: implementado `PublishContentUseCase`, persistencia JPA de `publications`, DTO/API `POST /api/v1/publications/{contentId}/publish` y registro de estados `PENDING`, `PUBLISHED` y `FAILED`. Verificado con `mvn "-Dtest=PublishContentUseCaseTest,JpaPublicationRepositoryTest,PublicationControllerTest" test`.
+
+Nota posterior 2026-06-09: Sprint 9 completado con T9.1, T9.2, T9.3, T9.4 y T9.5 verificadas. Pendiente documentado para Sprint 10: Seguridad.
+
+Nota posterior 2026-06-09: cierre verificado con suite completa backend `mvn test`: 151 tests ejecutados, 0 fallos, 0 errores.
 
 ---
 
@@ -1008,10 +1022,10 @@ Sprint 12
 
 # 18. Próxima Tarea
 
-Sprint 7
+Sprint 10
 
 ```text
-Continuar con Analisis IA
+Continuar con Seguridad
 ```
 
 Rol:
