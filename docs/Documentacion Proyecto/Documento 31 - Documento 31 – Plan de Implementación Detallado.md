@@ -806,7 +806,7 @@ Nota posterior 2026-06-09: cierre verificado con suite completa backend `mvn tes
 
 ---
 
-# 13. Sprint 10
+# 13. Sprint 10 [x]
 
 # Seguridad
 
@@ -818,13 +818,15 @@ Autenticación y autorización.
 
 ---
 
-## T10.1
+## T10.1 [x]
 
 JWT.
 
+Nota posterior 2026-06-10: creada base JWT con `JwtTokenService`, configuracion `app.security.jwt`, emision de access token (15 min) y refresh token (7 dias), configuracion de `JwtEncoder`/`JwtDecoder` HS256 y logs operativos de emision sin exponer secretos. Verificado con `mvn "-Dtest=JwtTokenServiceTest" test`.
+
 ---
 
-## T10.2
+## T10.2 [x]
 
 Roles.
 
@@ -834,17 +836,27 @@ ADMIN
 EDITOR
 ```
 
+Nota posterior 2026-06-10: implementado soporte de roles `ADMIN` y `EDITOR` con modelo de usuario, repositorio JPA y `DatabaseUserDetailsService` mapeando authorities `ROLE_ADMIN` y `ROLE_EDITOR`. Verificado con `mvn "-Dtest=DatabaseUserDetailsServiceTest" test`.
+
 ---
 
-## T10.3
+## T10.3 [x]
 
 Protección endpoints.
 
+Nota posterior 2026-06-10: aplicada proteccion de endpoints con JWT stateless y matriz de autorizacion por rol (`ADMIN`/`EDITOR`), incluyendo endpoints publicos de health/login y conversion de authorities desde claim `roles`. Verificado con `mvn "-Dtest=SecurityConfigTest" test`.
+
 ---
 
-## T10.4
+## T10.4 [x]
 
 Login.
+
+Nota posterior 2026-06-10: implementado login con `POST /api/v1/auth/login`, autenticacion por email/password mediante `AuthenticationManager`, emision de access/refresh tokens y respuesta con datos de usuario. Verificado con `mvn "-Dtest=AuthControllerTest,LoginUseCaseTest,SecurityConfigTest" test`.
+
+Nota posterior 2026-06-10: Sprint 10 completado con T10.1, T10.2, T10.3 y T10.4 verificadas.
+
+Nota posterior 2026-06-10: intentado cierre con `mvn clean test`, bloqueado por entorno local sin PostgreSQL disponible en `localhost:5432` (Docker daemon no activo). Verificacion funcional realizada con bateria de seguridad `mvn "-Dtest=JwtTokenServiceTest,DatabaseUserDetailsServiceTest,SecurityConfigTest,LoginUseCaseTest,AuthControllerTest" test`: 11 tests, 0 fallos, 0 errores.
 
 ---
 

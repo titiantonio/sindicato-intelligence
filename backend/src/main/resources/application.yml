@@ -20,6 +20,13 @@ server:
   port: 8080
 
 app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:change-this-jwt-secret-in-production-min-32-bytes}
+      issuer: ${JWT_ISSUER:sindicato-intelligence}
+      access-token-minutes: ${JWT_ACCESS_TOKEN_MINUTES:15}
+      refresh-token-days: ${JWT_REFRESH_TOKEN_DAYS:7}
+
   content:
     default-created-by: ${CONTENT_DEFAULT_CREATED_BY:1}
 

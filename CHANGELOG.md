@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- T10.1: creada base JWT con `JwtTokenService`, configuracion `app.security.jwt`, soporte access/refresh tokens y pruebas unitarias de claims y expiracion.
+- T10.2: implementado soporte de roles `ADMIN` y `EDITOR` con modelo `UserAccount`, repositorio `UserRepository`, adaptador JPA y `DatabaseUserDetailsService` para Spring Security.
+- T10.3: protegidos endpoints con seguridad stateless JWT, reglas por rol `ADMIN/EDITOR` y conversion de authorities desde claim `roles`.
+- T10.4: implementado endpoint `POST /api/v1/auth/login` con autenticacion email/password, respuesta con access/refresh tokens y datos de usuario, y manejo `401` para credenciales invalidas.
+
+### Changed
+
+- Sprint 10 de Seguridad completado y versionado del backend actualizado a `0.0.29-SNAPSHOT`.
+- Ajustada la configuracion de Spring Security para API stateless JWT desactivando `formLogin` y `httpBasic`.
+
 ## [0.0.28-SNAPSHOT] - 2026-06-09
 
 ### Added
