@@ -1,0 +1,142 @@
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 32%),
+    linear-gradient(135deg, #0f172a 0%, #1d4ed8 42%, #f8fafc 42%, #f8fafc 100%);
+}
+
+.login-page__intro {
+  padding: 4rem;
+  color: #ffffff;
+  display: grid;
+  align-content: center;
+  gap: 1.5rem;
+}
+
+.login-page__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+  color: #bfdbfe;
+}
+
+.login-page__intro h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 4vw, 4rem);
+  line-height: 1;
+}
+
+.login-page__intro p {
+  max-width: 38rem;
+  font-size: 1.05rem;
+  color: #dbeafe;
+}
+
+.login-page__highlights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.login-page__highlights div {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.32);
+  border: 1px solid rgba(191, 219, 254, 0.18);
+}
+
+.login-page__highlights span {
+  color: #cbd5e1;
+}
+
+.login-page__card {
+  display: grid;
+  align-content: center;
+  padding: 3rem;
+}
+
+.login-page__card-header,
+.login-page__form {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+}
+
+.login-page__card-header {
+  padding: 2rem 2rem 1rem;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.login-page__card-header h2 {
+  margin: 0 0 0.5rem;
+  color: #0f172a;
+}
+
+.login-page__card-header p {
+  margin: 0;
+  color: #475569;
+}
+
+.login-page__form {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 2rem 2rem;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.login-page__field {
+  display: grid;
+  gap: 0.45rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.login-page__field input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.9rem;
+  padding: 0.95rem 1rem;
+  font: inherit;
+}
+
+.login-page__error {
+  margin: 0;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.login-page__submit {
+  border: 0;
+  border-radius: 0.9rem;
+  padding: 0.95rem 1rem;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-page__submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+@media (max-width: 960px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-page__intro,
+  .login-page__card {
+    padding: 2rem 1.25rem;
+  }
+
+  .login-page__highlights {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,52 @@
+<section class="split-layout">
+  <article class="panel panel--editorial">
+    <span class="page-header__eyebrow">Contenido</span>
+    <h1>Bandeja editorial mock</h1>
+    <p>
+      Esta vista adelanta la revision humana del contenido generado mientras se completan los endpoints
+      reales de listado y detalle.
+    </p>
+
+    <div class="editor-preview">
+      <div>
+        <span class="editor-preview__label">Evento</span>
+        <strong>Convocatoria extraordinaria de SIPRI con cambios de baremacion</strong>
+      </div>
+      <div>
+        <span class="editor-preview__label">Borrador Telegram</span>
+        <p>
+          La nueva convocatoria extraordinaria de SIPRI introduce elementos que afectan a la planificacion
+          laboral del profesorado interino. Desde el sindicato se considera prioritario revisar el impacto
+          sobre adjudicaciones, tiempos y transparencia del proceso.
+        </p>
+      </div>
+    </div>
+  </article>
+
+  <article class="panel">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Canal</th>
+            <th>Titulo</th>
+            <th>Estado</th>
+            <th>Creado</th>
+            <th>Aprobado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of items(); track item.id) {
+            <tr>
+              <td>{{ item.channel }}</td>
+              <td>{{ item.title }}</td>
+              <td><app-status-badge [value]="item.status" /></td>
+              <td>{{ item.createdAt }}</td>
+              <td>{{ item.approvedAt ?? 'Pendiente' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>

@@ -1,0 +1,23 @@
+<section class="page-header">
+  <div>
+    <span class="page-header__eyebrow">Publicaciones</span>
+    <h1>Historico operativo del canal</h1>
+    <p>Vista visual mock hasta disponer de listado real de publicaciones desde backend.</p>
+  </div>
+</section>
+
+<section class="timeline-grid">
+  @for (publication of publications(); track publication.id) {
+    <article class="publication-card">
+      <div class="publication-card__top">
+        <strong>{{ publication.channel }}</strong>
+        <app-status-badge [value]="publication.status" />
+      </div>
+
+      <div class="publication-card__body">
+        <span class="publication-card__date">{{ publication.publishedAt }}</span>
+        <p>{{ publication.result }}</p>
+      </div>
+    </article>
+  }
+</section>

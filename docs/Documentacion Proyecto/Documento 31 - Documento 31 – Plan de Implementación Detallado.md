@@ -872,33 +872,43 @@ Backoffice MVP.
 
 ---
 
-## T11.1
+## T11.1 [x]
 
 Crear proyecto Angular.
 
+Nota posterior 2026-06-10: creado el proyecto Angular 20 del backoffice en `frontend/` con routing, SCSS, configuracion npm, proxy local hacia `http://localhost:8080` para `/api` y estructura inicial alineada con `core`, `shared`, `layout` y `features`.
+
 ---
 
-## T11.2
+## T11.2 [x]
 
 Layout principal.
 
+Nota posterior 2026-06-10: implementado layout principal responsive con `ShellComponent`, sidebar, cabecera, menu dinamico por rol `ADMIN/EDITOR` y navegacion base para Dashboard, Eventos, Contenido, Publicaciones y Fuentes.
+
 ---
 
-## T11.3
+## T11.3 [x]
 
 Login.
 
+Nota posterior 2026-06-10: implementada la pantalla de login conectada a `POST /api/v1/auth/login`, con `AuthService`, almacenamiento de sesion, interceptor JWT y guards de autenticacion y rol.
+
 ---
 
-## T11.4
+## T11.4 [x]
 
 Dashboard.
 
+Nota posterior 2026-06-10: creada una primera version visual del dashboard con tarjetas metricas y tabla de eventos prioritarios usando datos mock temporales, a la espera de endpoints reales de dashboard/eventos.
+
 ---
 
-## T11.5
+## T11.5 [x]
 
 Eventos.
+
+Nota posterior 2026-06-10: creada la pantalla de eventos con tabla y filtros visuales mock para validar UX del backoffice. Pendiente conexion real cuando existan `GET /api/v1/events` y `GET /api/v1/events/{id}`.
 
 ---
 
@@ -906,17 +916,25 @@ Eventos.
 
 Detalle Evento.
 
+Pendiente: bloqueado por ausencia de endpoint real de detalle de evento en backend.
+
 ---
 
-## T11.7
+## T11.7 [x]
 
 Contenido.
 
+Nota posterior 2026-06-10: creada vista editorial mock de contenido con bandeja de revision y vista previa, manteniendo la navegacion y el flujo UX mientras se completan endpoints reales de listado/detalle.
+
 ---
 
-## T11.8
+## T11.8 [x]
 
 Publicaciones.
+
+Nota posterior 2026-06-10: creada vista mock de historico de publicaciones para avanzar la experiencia visual del backoffice. Pendiente listado real desde backend.
+
+Nota posterior 2026-06-10: validado el arranque del frontend con `npm run build` y `npm test -- --watch=false --browsers=ChromeHeadless` en `frontend`.
 
 ---
 
@@ -1034,14 +1052,14 @@ Sprint 12
 
 # 18. Próxima Tarea
 
-Sprint 10
+Sprint 11
 
 ```text
-Continuar con Seguridad
+Completar Detalle Evento y sustituir vistas mock por integracion real con API
 ```
 
 Rol:
 
 ```text
-postgres-data-architect
+frontend-angular-backoffice / spring-backend-architect
 ```

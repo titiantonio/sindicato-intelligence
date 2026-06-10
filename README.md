@@ -24,7 +24,7 @@ La entidad central del sistema es `Event`. Las noticias son materia prima y no d
 ```text
 sindicato-intelligence/
 ├── docs/
-├── fronted/
+├── frontend/
 ├── n8n/
 ├── backend/
 ├── database/
@@ -46,11 +46,11 @@ Documentos clave:
 - `docs/Documentacion Proyecto/Documento 31 - Documento 31 – Plan de Implementación Detallado.md`: backlog operativo por sprints y tareas.
 - `docs/Documentacion Proyecto/Documento 20 – ERD Final MVP + Estrategia Flyway.md`: modelo fisico definitivo del MVP.
 
-### `fronted/`
+### `frontend/`
 
 Directorio destinado al frontend Angular del backoffice.
 
-Nota: el nombre actual de la carpeta es `fronted/`. Se mantiene asi mientras no se apruebe un cambio de nombre para evitar romper referencias existentes.
+Incluye el proyecto Angular del backoffice MVP con layout, autenticacion JWT y pantallas iniciales del Sprint 11.
 
 ### `n8n/`
 

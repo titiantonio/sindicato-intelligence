@@ -1,0 +1,48 @@
+import { CommonModule } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+
+import { UserRole } from '../../core/models/auth.models';
+import { AuthService } from '../../core/services/auth.service';
+
+interface NavigationItem {
+  label: string;
+  route: string;
+  roles: UserRole[];
+}
+
+@Component({
+  selector: 'app-shell',
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
+  templateUrl: './shell.component.html',
+  styleUrl: './shell.component.scss'
+})
+export class ShellComponent {
+  private readonly authService = inject(AuthService);
+
+  protected readonly sidebarOpen = signal(false);
+  protected readonly currentUser = this.authService.currentUser;
+  protected readonly navigationItems = computed(() => {
+    const items: NavigationItem[] = [
+      { label: 'Dashboard', route: '/dashboard', roles: ['ADMIN', 'EDITOR'] },
+      { label: 'Eventos', route: '/events', roles: ['ADMIN', 'EDITOR'] },
+      { label: 'Contenido', route: '/content', roles: ['ADMIN', 'EDITOR'] },
+      { label: 'Publicaciones', route: '/publications', roles: ['ADMIN', 'EDITOR'] },
+      { label: 'Fuentes', route: '/sources', roles: ['ADMIN'] }
+    ];
+
+    return items.filter((item) => this.authService.hasRole(item.roles));
+  });
+
+  protected toggleSidebar(): void {
+    this.sidebarOpen.update((value) => !value);
+  }
+
+  protected closeSidebar(): void {
+    this.sidebarOpen.set(false);
+  }
+
+  protected logout(): void {
+    this.authService.logout();
+  }
+}

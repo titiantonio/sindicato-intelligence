@@ -1,0 +1,47 @@
+<section class="page-header">
+  <div>
+    <span class="page-header__eyebrow">Eventos</span>
+    <h1>Centro operativo del sistema</h1>
+    <p>
+      Vista mock basada en la UX oficial mientras se completan los endpoints reales de listado y detalle.
+    </p>
+  </div>
+
+  <div class="filter-strip">
+    <span>SIPRI</span>
+    <span>OPEN</span>
+    <span>HIGH</span>
+    <span>Ultimas 48h</span>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Titulo</th>
+          <th>Categoria</th>
+          <th>Impacto</th>
+          <th>Noticias</th>
+          <th>Estado</th>
+          <th>Actualizado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (event of events(); track event.id) {
+          <tr>
+            <td>#{{ event.id }}</td>
+            <td>{{ event.title }}</td>
+            <td>{{ event.category }}</td>
+            <td><app-status-badge [value]="event.importance" /></td>
+            <td>{{ event.newsCount }}</td>
+            <td><app-status-badge [value]="event.status" /></td>
+            <td>{{ event.updatedAt }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

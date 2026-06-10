@@ -13,11 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - T10.2: implementado soporte de roles `ADMIN` y `EDITOR` con modelo `UserAccount`, repositorio `UserRepository`, adaptador JPA y `DatabaseUserDetailsService` para Spring Security.
 - T10.3: protegidos endpoints con seguridad stateless JWT, reglas por rol `ADMIN/EDITOR` y conversion de authorities desde claim `roles`.
 - T10.4: implementado endpoint `POST /api/v1/auth/login` con autenticacion email/password, respuesta con access/refresh tokens y datos de usuario, y manejo `401` para credenciales invalidas.
+- T11.1: creado el proyecto Angular 20 del backoffice en `frontend/` con routing, SCSS, proxy local hacia `/api/v1` y estructura inicial `core/shared/layout/features`.
+- T11.2: implementado layout principal responsive con shell, sidebar, cabecera y menu dinamico por rol `ADMIN/EDITOR`.
+- T11.3: implementada la pantalla de login conectada a `POST /api/v1/auth/login`, guardas de autenticacion/rol e interceptor JWT.
+- Sprint 11 visual: creadas pantallas mock de `dashboard`, `events`, `content` y `publications` para avanzar la experiencia de backoffice mientras se completan los endpoints reales.
 
 ### Changed
 
 - Sprint 10 de Seguridad completado y versionado del backend actualizado a `0.0.29-SNAPSHOT`.
 - Ajustada la configuracion de Spring Security para API stateless JWT desactivando `formLogin` y `httpBasic`.
+- Renombrada la carpeta del frontend de `fronted/` a `frontend/` para alinear el repositorio con la documentacion y el nuevo proyecto Angular.
+- Versionado del proyecto actualizado a `0.0.30-SNAPSHOT` para reflejar el arranque del Sprint 11 de frontend.
 
 ## [0.0.28-SNAPSHOT] - 2026-06-09
 

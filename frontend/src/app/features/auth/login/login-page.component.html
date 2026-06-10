@@ -1,0 +1,48 @@
+<section class="login-page">
+  <article class="login-page__intro">
+    <span class="login-page__eyebrow">Fase 11 · Backoffice Angular</span>
+    <h1>Seguimiento editorial de eventos educativos andaluces</h1>
+    <p>
+      El editor trabaja sobre eventos consolidados, con analisis, contenido y publicaciones
+      listas para revision humana.
+    </p>
+
+    <div class="login-page__highlights">
+      <div>
+        <strong>Evento como centro</strong>
+        <span>Las noticias son materia prima; la decision editorial se toma sobre eventos.</span>
+      </div>
+      <div>
+        <strong>Revision humana</strong>
+        <span>La IA apoya, pero no sustituye el criterio sindical ni la aprobacion final.</span>
+      </div>
+    </div>
+  </article>
+
+  <article class="login-page__card">
+    <div class="login-page__card-header">
+      <h2>Acceso al backoffice</h2>
+      <p>Usa tus credenciales JWT del backend.</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login-page__form">
+      <label class="login-page__field">
+        <span>Email</span>
+        <input type="email" formControlName="email" placeholder="admin@sindicato.es" />
+      </label>
+
+      <label class="login-page__field">
+        <span>Password</span>
+        <input type="password" formControlName="password" placeholder="Introduce tu password" />
+      </label>
+
+      @if (errorMessage(); as error) {
+        <p class="login-page__error">{{ error }}</p>
+      }
+
+      <button type="submit" class="login-page__submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Accediendo...' : 'Entrar' }}
+      </button>
+    </form>
+  </article>
+</section>

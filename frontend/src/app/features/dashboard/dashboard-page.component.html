@@ -1,0 +1,54 @@
+<section class="page-header">
+  <div>
+    <span class="page-header__eyebrow">Dashboard</span>
+    <h1>Visor operativo del backoffice</h1>
+    <p>Lectura rapida del estado editorial, eventos prioritarios y carga de revision.</p>
+  </div>
+</section>
+
+<section class="metric-grid">
+  @for (metric of metricCards(); track metric.label) {
+    <app-metric-card
+      [label]="metric.label"
+      [value]="metric.value"
+      [trend]="metric.trend"
+      [tone]="metric.tone"
+    />
+  }
+</section>
+
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <span class="page-header__eyebrow">Eventos prioritarios</span>
+      <h2>Lo que necesita decision editorial hoy</h2>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Titulo</th>
+          <th>Categoria</th>
+          <th>Impacto</th>
+          <th>Noticias</th>
+          <th>Actualizacion</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (event of priorityEvents(); track event.id) {
+          <tr>
+            <td>{{ event.title }}</td>
+            <td>{{ event.category }}</td>
+            <td><app-status-badge [value]="event.importance" /></td>
+            <td>{{ event.relatedNews }}</td>
+            <td>{{ event.updatedAt }}</td>
+            <td><app-status-badge [value]="event.status" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
