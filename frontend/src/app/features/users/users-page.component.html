@@ -1,0 +1,106 @@
+﻿<section class="users-page">
+  <header class="users-page__header">
+    <h1>Gestion de usuarios</h1>
+    <p>Solo administradores pueden crear, editar y gestionar el estado de las cuentas.</p>
+  </header>
+
+  <article class="users-page__layout">
+    <section class="users-page__card users-page__card--form">
+      <h2>{{ editingUserId() === null ? 'Alta de usuario' : 'Editar usuario' }}</h2>
+
+      <form [formGroup]="userForm" (ngSubmit)="submit()" class="users-page__form">
+        <label>
+          <span>Email</span>
+          <input type="email" formControlName="email" placeholder="editor@sindicato.es" />
+        </label>
+
+        <label>
+          <span>Nombre</span>
+          <input type="text" formControlName="name" placeholder="Nombre completo" />
+        </label>
+
+        <label>
+          <span>Rol</span>
+          <select formControlName="role">
+            @for (role of availableRoles; track role) {
+              <option [value]="role">{{ role }}</option>
+            }
+          </select>
+        </label>
+
+        @if (errorMessage(); as error) {
+          <p class="users-page__alert users-page__alert--error">{{ error }}</p>
+        }
+
+        @if (successMessage(); as message) {
+          <p class="users-page__alert users-page__alert--success">{{ message }}</p>
+        }
+
+        <div class="users-page__actions">
+          <button type="submit" class="users-page__button users-page__button--primary" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'Guardando...' : (editingUserId() === null ? 'Crear usuario' : 'Guardar cambios') }}
+          </button>
+          <button type="button" class="users-page__button users-page__button--secondary" (click)="startCreate()">
+            Limpiar
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="users-page__card">
+      <h2>Usuarios registrados</h2>
+
+      @if (isLoading()) {
+        <p>Cargando usuarios...</p>
+      } @else {
+        <div class="users-page__table-wrapper">
+          <table class="users-page__table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Ultimo login</th>
+                <th>Ultimo cambio password</th>
+                <th>Expira temporal</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr>
+                  <td>{{ user.name }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.role }}</td>
+                  <td>
+                    <span class="users-page__status" [class]="'users-page__status users-page__status--' + user.status.toLowerCase().replace('_', '-')">
+                      {{ statusLabel(user.status) }}
+                    </span>
+                  </td>
+                  <td>{{ formatDate(user.lastLoginAt) }}</td>
+                  <td>{{ formatDate(user.lastPasswordChangeAt) }}</td>
+                  <td>{{ formatDate(user.temporaryPasswordExpiresAt) }}</td>
+                  <td class="users-page__row-actions">
+                    <button type="button" class="users-page__button users-page__button--secondary" (click)="startEdit(user)">Editar</button>
+                    @if (user.status === 'INACTIVE') {
+                      <button type="button" class="users-page__button users-page__button--success" (click)="changeStatus(user.id, 'activate')">Activar</button>
+                    } @else {
+                      <button type="button" class="users-page__button users-page__button--danger" (click)="changeStatus(user.id, 'disable')">Desactivar</button>
+                    }
+                    @if (user.status === 'LOCKED') {
+                      <button type="button" class="users-page__button users-page__button--success" (click)="changeStatus(user.id, 'unlock')">Desbloquear</button>
+                    } @else {
+                      <button type="button" class="users-page__button users-page__button--danger" (click)="changeStatus(user.id, 'lock')">Bloquear</button>
+                    }
+                    <button type="button" class="users-page__button users-page__button--warning" (click)="resetTemporaryPassword(user.id)">Reset temporal</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </article>
+</section>

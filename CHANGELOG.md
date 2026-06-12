@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- T10.5/T11.10: anadido puerto `UserAccountNotificationSender` e implementacion SMTP compatible con MailHog para notificar cambio de password, bloqueo, desactivacion y reset temporal; normalizada la UI de cambio obligatorio y gestion de usuarios con mensajes de confirmacion y botones semanticos.
+- T10.5/T11.10: reforzado el flujo de gestion de usuarios con alta exclusiva para `ADMIN` sin password en request, generacion automatica de password temporal por email, estado inicial `PENDING_ACTIVATION`, expiracion configurable, regeneracion de password temporal expirada, auditoria de acciones, bloqueo/desbloqueo, fechas de ultimo login y ultimo cambio de password, y pantalla Angular de cambio obligatorio en primer login.
+- T10.5: implementada la gestion de usuarios para `ADMIN` con API `GET /api/v1/users`, `GET /api/v1/users/{id}`, `POST /api/v1/users`, `PUT /api/v1/users/{id}` y `POST /api/v1/users/{id}/disable`, junto con casos de uso de alta, consulta, listado, edicion y desactivacion.
+- T10.5: implementado flujo completo de recuperacion de password con `POST /api/v1/auth/forgot-password`, `POST /api/v1/auth/reset-password`, tokens temporales con expiracion y repositorio JPA dedicado.
+- T10.5: añadido envio de correo SMTP para recuperacion de password y configuracion `spring.mail`/`app.security.password-reset`.
+- T11.10: añadidas pantallas Angular `forgot-password`, `reset-password` y `users`, enlace "Olvide mi password" en login, ruta protegida de usuarios para `ADMIN` y servicios frontend para integracion con API de auth/users.
+
 - T10.1: creada base JWT con `JwtTokenService`, configuracion `app.security.jwt`, soporte access/refresh tokens y pruebas unitarias de claims y expiracion.
 - T10.2: implementado soporte de roles `ADMIN` y `EDITOR` con modelo `UserAccount`, repositorio `UserRepository`, adaptador JPA y `DatabaseUserDetailsService` para Spring Security.
 - T10.3: protegidos endpoints con seguridad stateless JWT, reglas por rol `ADMIN/EDITOR` y conversion de authorities desde claim `roles`.
@@ -20,10 +27,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- WF-01: separada la cuenta tecnica de n8n en un usuario propio `n8n@sindicato.es` con credenciales dedicadas y seeding Flyway especifico para automatizaciones.
+- WF-01: añadido login tecnico de servicio para obtener JWT antes de llamar a endpoints protegidos del backend desde n8n, con credenciales de desarrollo en `database/docker-compose.yml`.
+- Flyway inicial consolidado de nuevo para fase de implementacion: `V1__create_mvp_schema.sql` incorpora `password_reset_tokens` (antes `V5`) y `V2__seed_admin_user.sql` incorpora la semilla de `n8n@sindicato.es` (antes `V4`), dejando la secuencia en `V1..V3` para reinicios desde cero.
 - Sprint 10 de Seguridad completado y versionado del backend actualizado a `0.0.29-SNAPSHOT`.
 - Ajustada la configuracion de Spring Security para API stateless JWT desactivando `formLogin` y `httpBasic`.
 - Renombrada la carpeta del frontend de `fronted/` a `frontend/` para alinear el repositorio con la documentacion y el nuevo proyecto Angular.
-- Versionado del proyecto actualizado a `0.0.30-SNAPSHOT` para reflejar el arranque del Sprint 11 de frontend.
+- Versionado del proyecto actualizado a `0.0.32-SNAPSHOT` para reflejar la separacion de la cuenta tecnica de n8n.
+- Añadido servicio `mailhog` en `database/docker-compose.yml` para pruebas locales del flujo de recuperacion por email.
+- Versionado del backend actualizado a `0.0.33-SNAPSHOT`.
+- Versionado del backend actualizado a `0.0.34-SNAPSHOT`.
+- Versionado del backend actualizado a `0.0.35-SNAPSHOT`.
+- Versionado del backend actualizado a `0.0.36-SNAPSHOT`.
 
 ## [0.0.28-SNAPSHOT] - 2026-06-09
 

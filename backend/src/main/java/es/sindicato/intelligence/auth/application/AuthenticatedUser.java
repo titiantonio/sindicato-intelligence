@@ -4,7 +4,8 @@ public record AuthenticatedUser(
         Long id,
         String email,
         String name,
-        String role
+    String role,
+    boolean mustChangePassword
 ) {
     public AuthenticatedUser {
         if (id == null) {

@@ -15,6 +15,10 @@ server:
   port: 8080
 
 app:
+  security:
+    temporary-password:
+      expiration-days: ${TEMPORARY_PASSWORD_EXPIRATION_DAYS:7}
+
   ai:
     provider: ${AI_PROVIDER:deterministic}
     gemini:

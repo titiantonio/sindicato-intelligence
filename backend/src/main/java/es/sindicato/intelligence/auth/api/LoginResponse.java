@@ -9,7 +9,8 @@ public record LoginResponse(
     public record UserResponse(
             Long id,
             String name,
-            String role
+            String role,
+            boolean mustChangePassword
     ) {
     }
 }

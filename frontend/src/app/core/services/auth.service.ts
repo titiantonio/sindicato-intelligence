@@ -3,7 +3,17 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs';
 
-import { AuthSession, LoginRequest, LoginResponse, UserRole } from '../models/auth.models';
+import {
+  AuthSession,
+  ChangePasswordRequest,
+  ForgotPasswordRequest,
+  LoginRequest,
+  LoginResponse,
+  MessageResponse,
+  RequestTemporaryPasswordRequest,
+  ResetPasswordRequest,
+  UserRole
+} from '../models/auth.models';
 import { StorageService } from './storage.service';
 
 const SESSION_STORAGE_KEY = 'sindicato-intelligence.session';
@@ -37,6 +47,22 @@ export class AuthService {
         this.storageService.setItem(SESSION_STORAGE_KEY, session);
       })
     );
+  }
+
+  requestPasswordReset(request: ForgotPasswordRequest) {
+    return this.httpClient.post<MessageResponse>('/api/v1/auth/forgot-password', request);
+  }
+
+  resetPassword(request: ResetPasswordRequest) {
+    return this.httpClient.post<MessageResponse>('/api/v1/auth/reset-password', request);
+  }
+
+  requestTemporaryPassword(request: RequestTemporaryPasswordRequest) {
+    return this.httpClient.post<MessageResponse>('/api/v1/auth/request-temporary-password', request);
+  }
+
+  changePassword(request: ChangePasswordRequest) {
+    return this.httpClient.post<MessageResponse>('/api/v1/auth/change-password', request);
   }
 
   logout(): void {

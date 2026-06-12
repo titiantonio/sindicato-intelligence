@@ -19,7 +19,7 @@ class DatabaseUserDetailsServiceTest {
     void loadsUserAndMapsRoleToAuthority() {
         UserRepository userRepository = mock(UserRepository.class);
         DatabaseUserDetailsService service = new DatabaseUserDetailsService(userRepository);
-        UserAccount user = new UserAccount(1L, "admin@sindicato.es", "$2a$10$hash", "Admin Sindicato", UserRole.ADMIN, true);
+        UserAccount user = new UserAccount(1L, "admin@sindicato.es", "$2a$10$hash", "Admin Sindicato", UserRole.ADMIN, true, false);
 
         when(userRepository.findByEmail("admin@sindicato.es")).thenReturn(Optional.of(user));
 

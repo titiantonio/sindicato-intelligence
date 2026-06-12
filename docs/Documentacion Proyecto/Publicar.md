@@ -4,6 +4,8 @@ Versión: 1.0
 
 Estado: Operativo
 
+Fecha de verificación de este documento: 2026-06-11
+
 ---
 
 # 1. Objetivo
@@ -63,14 +65,16 @@ IP:
 Servicios:
 
 ```text
-PostgreSQL
+PostgreSQL (objetivo)
 
-n8n
+n8n (objetivo)
 
-Backend Spring Boot
+Backend Spring Boot (objetivo)
 
 Frontend Angular (futuro)
 ```
+
+Importante: en este repositorio no existe un `docker-compose.yml` de servidor. La única composición Docker versionada actualmente es `database/docker-compose.yml` para entorno local/desarrollo.
 
 ---
 
@@ -103,6 +107,37 @@ Validación
 ---
 
 # 4. Desarrollo Local
+
+Stack Docker local disponible en el repositorio:
+
+```text
+database/docker-compose.yml
+      - postgres (5432)
+      - n8n (5678)
+      - mailhog (SMTP 1025, UI 8025)
+```
+
+Arranque recomendado de servicios Docker locales:
+
+```bash
+cd database
+docker compose up -d
+```
+
+Arranque backend local (fuera de Docker en este flujo):
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+Arranque frontend local (fuera de Docker en este flujo):
+
+```bash
+cd frontend
+npm install
+npm start
+```
 
 Realizar cambios en:
 
@@ -260,6 +295,8 @@ Desplegar:
 docker compose up -d --build backend
 ```
 
+Nota: este comando aplica solo cuando existe compose de servidor con servicio `backend`. No hay ese compose en este repositorio.
+
 ---
 
 Ver logs:
@@ -318,6 +355,13 @@ Flyway ejecutará automáticamente:
 
 ```text
 Migraciones pendientes
+```
+
+Regla de consolidación Flyway:
+
+```text
+Solo consolidar/unificar migraciones si se resetea la base de datos de destino.
+En entornos persistentes ya migrados, no reescribir migraciones publicadas.
 ```
 
 ---
@@ -496,6 +540,12 @@ sindicato-n8n
 sindicato-backend
 ```
 
+En local/desarrollo también debe aparecer:
+
+```text
+sindicato-mailhog
+```
+
 ---
 
 Comprobar logs:
@@ -614,6 +664,32 @@ Verificar health
  ↓
 
 Continuar desarrollo
+```
+
+---
+
+# 19. Diferencias por Entorno (Local, Desarrollo, Producción)
+
+## Local
+
+```text
+Docker: postgres + n8n + mailhog (desde database/docker-compose.yml)
+Backend: spring-boot local
+Frontend: angular local
+```
+
+## Desarrollo
+
+```text
+Mismo patrón que Local, con validaciones E2E y pruebas focalizadas.
+MailHog se usa para validar forgot/reset password sin SMTP real.
+```
+
+## Producción
+
+```text
+No hay compose de producción versionado en este repositorio.
+MailHog no debe usarse en producción; usar SMTP real y credenciales seguras.
 ```
 
 ---

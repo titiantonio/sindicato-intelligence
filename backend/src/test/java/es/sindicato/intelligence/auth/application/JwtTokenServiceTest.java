@@ -31,7 +31,7 @@ class JwtTokenServiceTest {
                 new JwtSecurityProperties(secret, "sindicato-intelligence", 15, 7),
                 clock
         );
-        AuthenticatedUser user = new AuthenticatedUser(1L, "admin@sindicato.es", "Admin Sindicato", "ADMIN");
+        AuthenticatedUser user = new AuthenticatedUser(1L, "admin@sindicato.es", "Admin Sindicato", "ADMIN", true);
 
         String accessToken = service.generateAccessToken(user);
         String refreshToken = service.generateRefreshToken(user);
@@ -42,6 +42,7 @@ class JwtTokenServiceTest {
         assertEquals("ACCESS", accessJwt.getClaimAsString("tokenType"));
         assertEquals("ADMIN", accessJwt.getClaimAsString("role"));
         assertEquals(List.of("ADMIN"), accessJwt.getClaimAsStringList("roles"));
+        assertEquals(true, accessJwt.getClaimAsBoolean("mustChangePassword"));
         assertEquals(Instant.parse("2026-06-10T10:15:00Z"), accessJwt.getExpiresAt());
 
         assertEquals("admin@sindicato.es", refreshJwt.getSubject());

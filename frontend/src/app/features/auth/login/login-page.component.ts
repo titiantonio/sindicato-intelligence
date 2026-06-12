@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login-page',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss'
 })
@@ -34,9 +34,9 @@ export class LoginPageComponent {
     this.errorMessage.set(null);
 
     this.authService.login(this.loginForm.getRawValue()).subscribe({
-      next: () => {
+      next: (response) => {
         this.isSubmitting.set(false);
-        void this.router.navigate(['/dashboard']);
+        void this.router.navigate([response.user.mustChangePassword ? '/change-password' : '/dashboard']);
       },
       error: (error: { error?: { error?: string } }) => {
         this.isSubmitting.set(false);

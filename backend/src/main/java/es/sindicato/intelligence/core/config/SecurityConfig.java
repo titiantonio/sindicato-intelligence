@@ -9,20 +9,32 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
+        @Bean
+        ForcePasswordChangeFilter forcePasswordChangeFilter() {
+                return new ForcePasswordChangeFilter();
+        }
+
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, JwtDecoder jwtDecoder) throws Exception {
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtDecoder jwtDecoder,
+            ForcePasswordChangeFilter forcePasswordChangeFilter
+    ) throws Exception {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/health", "/api/v1/auth/login").permitAll()
+                        .requestMatchers("/api/v1/health", "/api/v1/auth/login", "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password", "/api/v1/auth/request-temporary-password").permitAll()
+                        .requestMatchers("/api/v1/auth/change-password").authenticated()
+                        .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/sources/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/news/bulk").hasRole("ADMIN")
                         .requestMatchers("/api/v1/classifications/**").hasRole("ADMIN")
@@ -32,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/content/**", "/api/v1/publications/**").hasAnyRole("ADMIN", "EDITOR")
                         .anyRequest().authenticated()
                 )
+                .addFilterAfter(forcePasswordChangeFilter, BearerTokenAuthenticationFilter.class)
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder)

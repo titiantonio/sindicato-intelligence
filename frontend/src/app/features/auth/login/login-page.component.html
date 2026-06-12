@@ -36,6 +36,10 @@
         <input type="password" formControlName="password" placeholder="Introduce tu password" />
       </label>
 
+      <a class="login-page__forgot-link" routerLink="/forgot-password">
+        Olvide mi password
+      </a>
+
       @if (errorMessage(); as error) {
         <p class="login-page__error">{{ error }}</p>
       }

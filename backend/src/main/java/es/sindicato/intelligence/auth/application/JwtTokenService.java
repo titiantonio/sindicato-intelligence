@@ -77,6 +77,7 @@ public class JwtTokenService {
                 .claim("name", user.name())
                 .claim("role", user.role())
                 .claim("roles", List.of(user.role()))
+                .claim("mustChangePassword", user.mustChangePassword())
                 .claim("tokenType", tokenType.name())
                 .claim("aud", List.of("sindicato-intelligence-api"))
                 .claim("ctx", Map.of("module", "auth"))

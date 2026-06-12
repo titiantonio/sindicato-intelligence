@@ -28,7 +28,8 @@ export class ShellComponent {
       { label: 'Eventos', route: '/events', roles: ['ADMIN', 'EDITOR'] },
       { label: 'Contenido', route: '/content', roles: ['ADMIN', 'EDITOR'] },
       { label: 'Publicaciones', route: '/publications', roles: ['ADMIN', 'EDITOR'] },
-      { label: 'Fuentes', route: '/sources', roles: ['ADMIN'] }
+      { label: 'Fuentes', route: '/sources', roles: ['ADMIN'] },
+      { label: 'Usuarios', route: '/users', roles: ['ADMIN'] }
     ];
 
     return items.filter((item) => this.authService.hasRole(item.roles));

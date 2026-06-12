@@ -203,6 +203,8 @@ Completado
 
 Nota posterior 2026-06-07: consolidadas las migraciones Flyway iniciales para desarrollo. `V1__create_mvp_schema.sql` crea el esquema MVP completo, incluye `uk_sources_url` en `sources` e integra `event_news.confidence_score` con su check. `V2__seed_admin_user.sql` carga el usuario admin y `V3__seed_rss_sources.sql` carga las 54 fuentes RSS iniciales. La tabla tecnica `system_info` se elimina al no formar parte del modelo MVP.
 
+Nota posterior 2026-06-11: nueva consolidacion de arranque para fase de implementacion con reset de BBDD permitido. `V1__create_mvp_schema.sql` incorpora `password_reset_tokens` (antes migracion separada) y `V2__seed_admin_user.sql` incorpora tambien la semilla de `n8n@sindicato.es` (antes migracion separada), quedando la secuencia operativa en `V1`, `V2` y `V3`.
+
 ---
 
 # 5. [x] Sprint 2
@@ -509,6 +511,10 @@ Nota posterior 2026-06-06: corregidos los Code nodes de `WF-01-Capture-News` par
 Nota posterior 2026-06-06: ajustadas las llamadas HTTP de los workflows n8n `WF-01`, `WF-02` y `WF-03` a `http://host.docker.internal:8080` para el entorno de desarrollo donde n8n corre en Docker y el backend Spring Boot corre en la maquina anfitriona.
 
 Nota posterior 2026-06-06: corregido el nodo `Normalize RSS Items` de `WF-01-Capture-News` para aceptar estructuras XML parseadas por n8n con envoltorios `data`, `root`, `body`, `feed`, `rss` o `channel`, evitando que el nodo reciba items pero devuelva una salida vacia.
+
+Nota posterior 2026-06-11: añadido al WF-01 un paso de autenticacion tecnica contra `POST /api/v1/auth/login` y cabeceras `Authorization: Bearer` en las llamadas a `GET /api/v1/sources` y `POST /api/v1/news/bulk` para resolver el `401 Unauthorized` al ejecutar el workflow desde n8n.
+
+Nota posterior 2026-06-11: separada la cuenta tecnica de n8n del usuario humano `admin` mediante un usuario propio `n8n@sindicato.es`, con credenciales dedicadas en `database/docker-compose.yml` y seeding Flyway en migracion inicial consolidada (actualmente integrada en `V2__seed_admin_user.sql`).
 
 ---
 
@@ -860,6 +866,49 @@ Nota posterior 2026-06-10: intentado cierre con `mvn clean test`, bloqueado por 
 
 ---
 
+## T10.5 [x]
+
+Gestion de usuarios y recuperacion de password.
+
+---
+
+Alcance:
+
+```text
+Backend user management para ADMIN:
+- alta de usuario
+- listado de usuarios
+- edicion de usuario
+- desactivacion de usuario
+
+Backend password recovery:
+- POST /api/v1/auth/forgot-password
+- POST /api/v1/auth/reset-password
+- token temporal con expiracion
+- envio de email (entorno dev con MailHog)
+```
+
+---
+
+Subtareas:
+
+```text
+T10.5.1 Crear migracion Flyway para password_reset_tokens
+T10.5.2 Implementar casos de uso de gestion de usuarios (Create/Update/Disable/List/Get)
+T10.5.3 Exponer API REST /api/v1/users para ADMIN
+T10.5.4 Implementar casos de uso forgot/reset password
+T10.5.5 Integrar servicio de email para recuperacion (MailHog en local)
+T10.5.6 Añadir pruebas unitarias e integracion de auth/user
+```
+
+Nota posterior 2026-06-11: implementadas las subtareas T10.5.1..T10.5.6 con API `POST /api/v1/auth/forgot-password`, `POST /api/v1/auth/reset-password` y CRUD administrativo `GET/POST/PUT /api/v1/users` + `POST /api/v1/users/{id}/disable`. El esquema de `password_reset_tokens` queda consolidado en `V1__create_mvp_schema.sql` para arranques limpios con reset de BBDD. Integrado envio SMTP para recuperacion y configuracion local de MailHog en Docker. Verificado con `mvn -Dtest=AuthControllerTest,UserControllerTest,SecurityConfigTest test`: 13 tests, 0 fallos, 0 errores.
+
+Nota posterior 2026-06-12: ampliado T10.5 con flujo de alta sin password solicitado/proporcionado, password temporal generada y enviada por email, estado inicial `PENDING_ACTIVATION`, expiracion configurable de password temporal, regeneracion por expiracion, bloqueo/desbloqueo/activacion/desactivacion sin borrado fisico, auditoria `user_audit_log`, fechas `last_login_at` y `last_password_change_at`, y bloqueo de login cuando la password temporal expira. Build backend no ejecutado por `JAVA_HOME` no definido en el entorno WSL; build frontend verificado.
+
+Nota posterior 2026-06-12: incorporado puerto `UserAccountNotificationSender` y sender SMTP basado en `JavaMailSender` para MailHog/local o SMTP productivo por variables existentes. Se notifican cambios de password, bloqueo, desactivacion y regeneracion de password temporal sin registrar secretos. Verificado con `mvn "-Dtest=ChangePasswordUseCaseTest,ResetPasswordUseCaseTest,ChangeUserStatusUseCaseTest,ResetTemporaryPasswordUseCaseTest,AuthControllerTest,UserControllerTest" test`: 16 tests, 0 fallos, 0 errores.
+
+---
+
 # 14. Sprint 11
 
 # Frontend Angular
@@ -960,6 +1009,48 @@ Nota posterior 2026-06-07: inicialmente el proveedor IA se seleccionara por conf
 
 ---
 
+## T11.10
+
+Usuarios y recuperacion de password en frontend.
+
+---
+
+Alcance:
+
+```text
+Auth:
+- enlace "Olvide mi password" en login
+- pantalla solicitar recuperacion
+- pantalla reset de password con token
+
+Admin:
+- menu "Usuarios" visible solo para ADMIN
+- listado de usuarios
+- alta de usuario
+- edicion de usuario
+- desactivacion de usuario
+```
+
+---
+
+Subtareas:
+
+```text
+T11.10.1 Crear rutas y pantallas forgot/reset password
+T11.10.2 Integrar llamadas API de forgot/reset en AuthService
+T11.10.3 Crear modulo/pantalla de usuarios para ADMIN
+T11.10.4 Integrar CRUD de usuarios con API backend
+T11.10.5 Añadir tests de frontend para formularios y servicios
+```
+
+Nota posterior 2026-06-11: completadas T11.10.1, T11.10.2, T11.10.3 y T11.10.4 con nuevas rutas/pantallas de recuperacion, enlace en login, menu `Usuarios` solo ADMIN, pantalla de gestion de usuarios e integracion HTTP con backend. Verificado build frontend con `node node_modules/@angular/cli/bin/ng.js build`. Pendiente T11.10.5 (tests frontend especificos de formularios y servicios).
+
+Nota posterior 2026-06-12: ajustado T11.10 para retirar password del alta de usuarios, mostrar estado/ultimo login/ultimo cambio de password/expiracion temporal, añadir acciones de activar, desactivar, bloquear, desbloquear y reset temporal, y crear pantalla `change-password` con guard de cambio obligatorio tras primer login. Verificado con `npm run build` en `frontend`.
+
+Nota posterior 2026-06-12: normalizada la pantalla `change-password` con el patron visual de recuperacion/reset de password, validacion `PASSWORD_PATTERN`, mensaje de exito previo al logout y feedback de exito/error en gestion de usuarios. Los botones administrativos quedan alineados por semantica: activar/desbloquear en verde, reset temporal en amarillo y bloquear/desactivar en rojo. Verificado con `npm.cmd run build`.
+
+---
+
 # 15. Sprint 12
 
 # Optimización
@@ -1055,7 +1146,7 @@ Sprint 12
 Sprint 11
 
 ```text
-Completar Detalle Evento y sustituir vistas mock por integracion real con API
+Completar T11.10 (usuarios + recuperacion de password) y continuar T11.6 (detalle evento)
 ```
 
 Rol:

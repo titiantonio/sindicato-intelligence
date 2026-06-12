@@ -57,6 +57,18 @@ class SecurityConfigTest {
                 .andExpect(status().isOk());
     }
 
+        @Test
+        void allowsForgotPasswordWithoutAuthentication() throws Exception {
+                mockMvc.perform(post("/api/v1/auth/forgot-password")
+                                                .contentType(MediaType.APPLICATION_JSON)
+                                                .content("""
+                                                                {
+                                                                    "email": "admin@sindicato.es"
+                                                                }
+                                                                """))
+                                .andExpect(status().isNotFound());
+        }
+
     @Test
     void rejectsProtectedEndpointWithoutAuthentication() throws Exception {
         mockMvc.perform(post("/api/v1/content/generate")

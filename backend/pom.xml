@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>es.sindicato</groupId>
 	<artifactId>intelligence</artifactId>
-		<version>0.0.30-SNAPSHOT</version>
+		<version>0.0.36-SNAPSHOT</version>
 	<name/>
 	<description/>
 	<url/>
@@ -49,6 +49,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>

@@ -25,9 +25,20 @@ services:
     environment:
       N8N_SECURE_COOKIE: "false"
       GENERIC_TIMEZONE: Europe/Madrid
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      BACKEND_N8N_AUTH_EMAIL: n8n@sindicato.es
+      BACKEND_N8N_AUTH_PASSWORD: Admin@123
 
     volumes:
       - n8n_data:/home/node/.n8n
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: sindicato-mailhog
+
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   postgres_data:

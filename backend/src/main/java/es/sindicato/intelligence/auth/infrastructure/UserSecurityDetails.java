@@ -1,10 +1,12 @@
 package es.sindicato.intelligence.auth.infrastructure;
 
 import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -26,6 +28,18 @@ public class UserSecurityDetails implements UserDetails {
 
     public String role() {
         return user.getRole().name();
+    }
+
+    public boolean mustChangePassword() {
+        return user.mustChangePassword();
+    }
+
+    public UserStatus status() {
+        return user.getStatus();
+    }
+
+    public boolean isTemporaryPasswordExpired(OffsetDateTime now) {
+        return user.isTemporaryPasswordExpired(now);
     }
 
     @Override
@@ -50,7 +64,7 @@ public class UserSecurityDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !user.isLocked();
     }
 
     @Override
@@ -60,6 +74,6 @@ public class UserSecurityDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.isActive();
+        return user.canAuthenticate();
     }
 }

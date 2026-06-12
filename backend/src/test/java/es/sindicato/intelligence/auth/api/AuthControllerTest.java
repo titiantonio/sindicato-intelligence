@@ -2,6 +2,10 @@ package es.sindicato.intelligence.auth.api;
 
 import es.sindicato.intelligence.auth.application.LoginResult;
 import es.sindicato.intelligence.auth.application.LoginUseCase;
+import es.sindicato.intelligence.auth.application.RequestPasswordResetUseCase;
+import es.sindicato.intelligence.auth.application.ResetPasswordUseCase;
+import es.sindicato.intelligence.auth.application.ChangePasswordUseCase;
+import es.sindicato.intelligence.user.application.ResetTemporaryPasswordUseCase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -14,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,6 +34,18 @@ class AuthControllerTest {
     private LoginUseCase loginUseCase;
 
     @MockBean
+    private RequestPasswordResetUseCase requestPasswordResetUseCase;
+
+    @MockBean
+    private ResetPasswordUseCase resetPasswordUseCase;
+
+    @MockBean
+    private ChangePasswordUseCase changePasswordUseCase;
+
+    @MockBean
+    private ResetTemporaryPasswordUseCase resetTemporaryPasswordUseCase;
+
+    @MockBean
     private JwtDecoder jwtDecoder;
 
     @Test
@@ -38,7 +55,8 @@ class AuthControllerTest {
                 "refresh-token",
                 1L,
                 "Admin Sindicato",
-                "ADMIN"
+                "ADMIN",
+                false
         ));
 
         mockMvc.perform(post("/api/v1/auth/login")
@@ -53,7 +71,8 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.accessToken").value("access-token"))
                 .andExpect(jsonPath("$.refreshToken").value("refresh-token"))
                 .andExpect(jsonPath("$.user.id").value(1L))
-                .andExpect(jsonPath("$.user.role").value("ADMIN"));
+                .andExpect(jsonPath("$.user.role").value("ADMIN"))
+                .andExpect(jsonPath("$.user.mustChangePassword").value(false));
     }
 
     @Test
@@ -70,5 +89,60 @@ class AuthControllerTest {
                                 """))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("invalid credentials"));
+    }
+
+    @Test
+    void requestsPasswordReset() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "admin@sindicato.es"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Si el email existe, se ha enviado un enlace de recuperacion."));
+    }
+
+    @Test
+    void resetsPassword() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "token": "token-123",
+                                  "newPassword": "Password#123"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Password actualizada correctamente."));
+    }
+
+    @Test
+    void requestsNewTemporaryPassword() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/request-temporary-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "editor@sindicato.es"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Si el email existe y la password temporal ha expirado, se ha enviado una nueva password temporal."));
+    }
+
+    @Test
+    void changesPasswordForAuthenticatedUser() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/change-password")
+                        .with(jwt().jwt(jwt -> jwt.subject("admin@sindicato.es")).authorities(() -> "ROLE_ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "currentPassword": "Admin@123",
+                                  "newPassword": "AdminNueva#123"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Password cambiada correctamente."));
     }
 }

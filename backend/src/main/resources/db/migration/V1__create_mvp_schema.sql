@@ -24,6 +24,18 @@ CREATE TABLE users
     CONSTRAINT uk_users_email UNIQUE (email)
 );
 
+CREATE TABLE password_reset_tokens
+(
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    used_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_password_reset_tokens_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT uk_password_reset_tokens_token UNIQUE (token)
+);
+
 CREATE TABLE news_articles
 (
     id BIGSERIAL PRIMARY KEY,
@@ -157,3 +169,5 @@ CREATE INDEX idx_publication_channel ON publications (channel);
 
 CREATE INDEX idx_users_email ON users (email);
 CREATE INDEX idx_users_role ON users (role);
+CREATE INDEX idx_password_reset_tokens_user_id ON password_reset_tokens (user_id);
+CREATE INDEX idx_password_reset_tokens_expires_at ON password_reset_tokens (expires_at);

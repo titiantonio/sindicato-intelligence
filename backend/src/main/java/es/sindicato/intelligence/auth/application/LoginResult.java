@@ -5,6 +5,7 @@ public record LoginResult(
         String refreshToken,
         Long userId,
         String userName,
-        String userRole
+        String userRole,
+        boolean mustChangePassword
 ) {
 }
