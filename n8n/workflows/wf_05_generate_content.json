@@ -7,7 +7,29 @@
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [0, 0]
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/api/v1/auth/login",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"email\": \"{{$env.BACKEND_N8N_AUTH_EMAIL}}\",\n  \"password\": \"{{$env.BACKEND_N8N_AUTH_PASSWORD}}\"\n}",
+        "options": {}
+      },
+      "id": "authenticate-backend",
+      "name": "Authenticate Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -260
+      ],
+      "notes": "Obtiene un JWT de servicio antes de invocar endpoints protegidos del backend."
     },
     {
       "parameters": {
@@ -20,17 +42,23 @@
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [0, -160]
+      "position": [
+        0,
+        -160
+      ]
     },
     {
       "parameters": {
-        "jsCode": "const items = $input.all();\n\nreturn items.flatMap(item => {\n  const json = item.json ?? {};\n  const body = json.body ?? {};\n  const eventId = Number(body.eventId ?? json.eventId ?? json.id);\n  const analysisIdValue = body.analysisId ?? json.analysisId;\n  const analysisId = analysisIdValue === undefined || analysisIdValue === null || analysisIdValue === '' ? null : Number(analysisIdValue);\n\n  if (!Number.isInteger(eventId) || eventId <= 0) {\n    return [];\n  }\n\n  return [{\n    json: {\n      eventId,\n      analysisId: Number.isInteger(analysisId) && analysisId > 0 ? analysisId : null,\n      channel: body.channel ?? json.channel ?? 'TELEGRAM',\n      tone: body.tone ?? json.tone ?? 'INFORMATIVO',\n      length: body.length ?? json.length ?? 'STANDARD'\n    }\n  }];\n});"
+        "jsCode": "function sourceItems() {\n  const names = ['Manual Trigger', 'Webhook Trigger'];\n  const items = [];\n\n  for (const name of names) {\n    try {\n      items.push(...$(name).all());\n    } catch (error) {\n      // The other trigger is not executed in this run.\n    }\n  }\n\n  return items;\n}\n\nconst items = sourceItems();\n\nreturn items.flatMap(item => {\n  const json = item.json ?? {};\n  const body = json.body ?? {};\n  const eventId = Number(body.eventId ?? json.eventId ?? json.id);\n  const analysisIdValue = body.analysisId ?? json.analysisId;\n  const analysisId = analysisIdValue === undefined || analysisIdValue === null || analysisIdValue === '' ? null : Number(analysisIdValue);\n\n  if (!Number.isInteger(eventId) || eventId <= 0) {\n    return [];\n  }\n\n  return [{\n    json: {\n      eventId,\n      analysisId: Number.isInteger(analysisId) && analysisId > 0 ? analysisId : null,\n      channel: body.channel ?? json.channel ?? 'TELEGRAM',\n      tone: body.tone ?? json.tone ?? 'INFORMATIVO',\n      length: body.length ?? json.length ?? 'STANDARD'\n    }\n  }];\n});"
       },
       "id": "normalize-content-request",
       "name": "Normalize Content Request",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [240, 0],
+      "position": [
+        480,
+        0
+      ],
       "notes": "WF-05 recibe eventId y opcionalmente analysisId, channel, tone y length. Spring Boot genera y persiste el contenido."
     },
     {
@@ -40,37 +68,88 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"eventId\": {{$json.eventId}},\n  \"analysisId\": {{$json.analysisId}},\n  \"channel\": \"{{$json.channel}}\",\n  \"tone\": \"{{$json.tone}}\",\n  \"length\": \"{{$json.length}}\"\n}",
-        "options": {}
+        "options": {},
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Authenticate Backend').first().json.accessToken }}"
+            }
+          ]
+        }
       },
       "id": "generate-content",
       "name": "Generate Content",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [480, 0],
+      "position": [
+        720,
+        0
+      ],
       "notes": "Spring Boot ejecuta GenerateContentUseCase. n8n solo orquesta WF-05."
     }
   ],
   "connections": {
     "Manual Trigger": {
-      "main": [[{"node": "Normalize Content Request", "type": "main", "index": 0}]]
+      "main": [
+        [
+          {
+            "node": "Authenticate Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Webhook Trigger": {
-      "main": [[{"node": "Normalize Content Request", "type": "main", "index": 0}]]
+      "main": [
+        [
+          {
+            "node": "Authenticate Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Normalize Content Request": {
-      "main": [[{"node": "Generate Content", "type": "main", "index": 0}]]
+      "main": [
+        [
+          {
+            "node": "Generate Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authenticate Backend": {
+      "main": [
+        [
+          {
+            "node": "Normalize Content Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "wf-05-generate-content-mvp",
+  "versionId": "wf-05-generate-content-jwt",
   "meta": {
     "templateCredsSetupCompleted": true
   },
   "tags": [
-    {"name": "MVP"},
-    {"name": "WF-05"}
+    {
+      "name": "MVP"
+    },
+    {
+      "name": "WF-05"
+    }
   ]
 }

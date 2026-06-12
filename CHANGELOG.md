@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- n8n: alineada autenticacion JWT en `WF-02` a `WF-06` con login tecnico `Authenticate Backend` y cabeceras `Authorization: Bearer` en endpoints protegidos.
 - T11.10.5: anadida cobertura frontend focal para AuthService, UserAdminService, StorageService, guards de auth/roles/cambio de password y pantallas criticas de login, recuperacion, reset, cambio obligatorio y gestion de usuarios.
 - Sprint 11: anadidos endpoints reales de lectura para eventos, detalle de evento, contenido generado, publicaciones y dashboard; el backoffice Angular consume APIs reales para dashboard, eventos, detalle de evento, contenido, publicaciones y fuentes, eliminando `MockDashboardService`.
 - T10.5/T11.10: anadido puerto `UserAccountNotificationSender` e implementacion SMTP compatible con MailHog para notificar cambio de password, bloqueo, desactivacion y reset temporal; normalizada la UI de cambio obligatorio y gestion de usuarios con mensajes de confirmacion y botones semanticos.
@@ -29,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.39-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.38-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.37-SNAPSHOT`.
 - WF-01: separada la cuenta tecnica de n8n en un usuario propio `n8n@sindicato.es` con credenciales dedicadas y seeding Flyway especifico para automatizaciones.

@@ -1208,7 +1208,7 @@ Implementado:
 Parcial o faltante:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
-| Autenticacion uniforme en WF-02..WF-06 | WF-01 usa login/JWT; revisar y alinear los demas workflows si endpoints protegidos rechazan llamadas sin token. | High | 23 |
+| Autenticacion uniforme en WF-02..WF-06 | Completado el 2026-06-13: WF-02..WF-06 autentican con `Authenticate Backend` y envian `Authorization: Bearer` a endpoints protegidos. | Completed | - |
 | Validacion automatizada de workflows | Hay validacion JSON/manual historica; falta test automatizado o checklist ejecutable. | Medium | 24 |
 | Monitorizacion de workflows | Sprint 12 pendiente; sin metricas/alertas de ejecucion. | Medium | 25 |
 | Reintentos/errores operativos | Parcial en backend IA; n8n necesita politica uniforme documentada y validada. | Medium | 26 |
@@ -1316,7 +1316,7 @@ Inconsistencias y deuda:
 20. Medium: reforzar tests de auditoria de role change/unlock/activate/reset.
 21. Medium: actualizar seeds admin/n8n para cumplir politica de password o documentar excepcion de bootstrap.
 22. Low: definir tablas o exportadores para metricas IA si T12.2 lo requiere.
-23. High: alinear autenticacion JWT en todos los workflows n8n protegidos.
+23. Completed 2026-06-13: autenticacion JWT alineada en WF-02..WF-06.
 24. Medium: anadir validacion automatizada de workflows n8n.
 25. Medium: implementar monitorizacion de workflows y observabilidad Sprint 12.
 26. Medium: documentar politica uniforme de reintentos n8n/backend.
@@ -1336,8 +1336,8 @@ Inconsistencias y deuda:
 
 - Sprint actual real: Sprint 11 en progreso.
 - Bloqueador principal anterior resuelto: ya existen contratos de lectura para backoffice real de eventos, contenido, publicaciones y dashboard.
-- No iniciar Sprint 12 hasta revisar autenticacion n8n WF-02..WF-06 y decidir `events/merge` y scheduling.
-- La siguiente tarea debe ser operativa: validacion n8n JWT en WF-02..WF-06 y decision de alcance para merge/scheduling/editor manual.
+- No iniciar Sprint 12 hasta decidir `events/merge`, scheduling y editor manual de contenido.
+- La siguiente tarea debe ser de alcance MVP: decidir merge de eventos, scheduling de publicaciones, editor manual de contenido y consulta ADMIN de auditoria.
 
 ---
 ## 16.14 Actualizacion de implementacion - 2026-06-13
@@ -1350,9 +1350,23 @@ Completado en esta iteracion:
 - Build frontend validado con `npm.cmd run build`.
 
 Pendiente tras esta iteracion:
-- n8n: revisar WF-02..WF-06 para autenticacion JWT uniforme contra endpoints protegidos.
 - Decisiones de alcance: `POST /api/v1/events/merge`, scheduling de publicaciones y editor manual de contenido.
 - API/pantalla ADMIN para consultar auditoria de usuario si se requiere operacion visible.
+
+---
+
+## 16.15 Actualizacion de workflows n8n - 2026-06-13
+
+Completado en esta iteracion:
+- `WF-02-Classify-News`, `WF-03-Detect-Events`, `WF-04-Generate-Analysis`, `WF-05-Generate-Content` y `WF-06-Publish-Telegram` incorporan el nodo `Authenticate Backend`.
+- Todos los endpoints protegidos invocados por WF-02..WF-06 envian `Authorization: Bearer {{ accessToken }}` usando la cuenta tecnica configurada por `BACKEND_N8N_AUTH_EMAIL` y `BACKEND_N8N_AUTH_PASSWORD`.
+- WF-04..WF-06 conservan el payload original del trigger despues de autenticar mediante normalizadores que leen el trigger ejecutado.
+- Validado JSON de `wf_01` a `wf_06` con `ConvertFrom-Json`.
+
+Pendiente tras esta iteracion:
+- Decidir alcance MVP de `POST /api/v1/events/merge`, scheduling de publicaciones y editor manual de contenido.
+- Anadir validacion automatizada o checklist ejecutable de workflows n8n.
+- Exponer consulta ADMIN de auditoria si se requiere operacion visible.
 
 ---
 
@@ -1421,10 +1435,10 @@ Sprint 12
 Sprint 11 en progreso
 
 ```text
-1. Revisar y alinear autenticacion JWT en n8n WF-02..WF-06.
-2. Decidir alcance MVP de POST /api/v1/events/merge, scheduling de publicaciones y editor manual de contenido.
-3. Exponer consulta ADMIN de auditoria si se requiere para operacion del backoffice.
-4. Preparar cierre de Sprint 11 si las validaciones operativas quedan OK.
+1. Decidir alcance MVP de POST /api/v1/events/merge, scheduling de publicaciones y editor manual de contenido.
+2. Exponer consulta ADMIN de auditoria si se requiere para operacion del backoffice.
+3. Anadir validacion automatizada/checklist ejecutable de workflows n8n.
+4. Preparar cierre de Sprint 11 si las decisiones de alcance quedan resueltas.
 ```
 
 Rol:

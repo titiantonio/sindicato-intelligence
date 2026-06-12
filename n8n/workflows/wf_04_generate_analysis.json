@@ -14,6 +14,25 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/api/v1/auth/login",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"email\": \"{{$env.BACKEND_N8N_AUTH_EMAIL}}\",\n  \"password\": \"{{$env.BACKEND_N8N_AUTH_PASSWORD}}\"\n}",
+        "options": {}
+      },
+      "id": "authenticate-backend",
+      "name": "Authenticate Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -260
+      ],
+      "notes": "Obtiene un JWT de servicio antes de invocar endpoints protegidos del backend."
+    },
+    {
+      "parameters": {
         "httpMethod": "POST",
         "path": "wf-04-generate-analysis",
         "responseMode": "lastNode",
@@ -30,14 +49,14 @@
     },
     {
       "parameters": {
-        "jsCode": "const items = $input.all();\n\nconst eventIds = items\n  .flatMap(item => {\n    const json = item.json ?? {};\n    const body = json.body ?? {};\n    return [json.eventId, json.id, body.eventId, body.id];\n  })\n  .filter(value => value !== undefined && value !== null && value !== '')\n  .map(value => Number(value))\n  .filter(value => Number.isInteger(value) && value > 0);\n\nconst uniqueEventIds = [...new Set(eventIds)];\n\nreturn uniqueEventIds.map(eventId => ({ json: { eventId } }));"
+        "jsCode": "function sourceItems() {\n  const names = ['Manual Trigger', 'Webhook Trigger'];\n  const items = [];\n\n  for (const name of names) {\n    try {\n      items.push(...$(name).all());\n    } catch (error) {\n      // The other trigger is not executed in this run.\n    }\n  }\n\n  return items;\n}\n\nconst items = sourceItems();\n\nconst eventIds = items\n  .flatMap(item => {\n    const json = item.json ?? {};\n    const body = json.body ?? {};\n    return [json.eventId, json.id, body.eventId, body.id];\n  })\n  .filter(value => value !== undefined && value !== null && value !== '')\n  .map(value => Number(value))\n  .filter(value => Number.isInteger(value) && value > 0);\n\nconst uniqueEventIds = [...new Set(eventIds)];\n\nreturn uniqueEventIds.map(eventId => ({ json: { eventId } }));"
       },
       "id": "normalize-event-ids",
       "name": "Normalize Event IDs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
+        480,
         0
       ],
       "notes": "WF-04 recibe eventId desde un webhook, desde otro workflow o mediante datos manuales/pinned data. Spring Boot genera y persiste el analisis."
@@ -49,14 +68,23 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"eventId\": {{$json.eventId}}\n}",
-        "options": {}
+        "options": {},
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Authenticate Backend').first().json.accessToken }}"
+            }
+          ]
+        }
       },
       "id": "generate-analysis",
       "name": "Generate Analysis",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        480,
+        720,
         0
       ],
       "notes": "Spring Boot ejecuta GenerateAnalysisUseCase. n8n solo orquesta WF-04."
@@ -67,7 +95,7 @@
       "main": [
         [
           {
-            "node": "Normalize Event IDs",
+            "node": "Authenticate Backend",
             "type": "main",
             "index": 0
           }
@@ -78,7 +106,7 @@
       "main": [
         [
           {
-            "node": "Normalize Event IDs",
+            "node": "Authenticate Backend",
             "type": "main",
             "index": 0
           }
@@ -95,13 +123,24 @@
           }
         ]
       ]
+    },
+    "Authenticate Backend": {
+      "main": [
+        [
+          {
+            "node": "Normalize Event IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "wf-04-generate-analysis-mvp",
+  "versionId": "wf-04-generate-analysis-jwt",
   "meta": {
     "templateCredsSetupCompleted": true
   },

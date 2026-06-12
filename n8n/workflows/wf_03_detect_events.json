@@ -14,15 +14,43 @@
     },
     {
       "parameters": {
-        "url": "http://host.docker.internal:8080/api/v1/news",
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/api/v1/auth/login",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"email\": \"{{$env.BACKEND_N8N_AUTH_EMAIL}}\",\n  \"password\": \"{{$env.BACKEND_N8N_AUTH_PASSWORD}}\"\n}",
         "options": {}
+      },
+      "id": "authenticate-backend",
+      "name": "Authenticate Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -180
+      ],
+      "notes": "Obtiene un JWT de servicio antes de invocar endpoints protegidos del backend."
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8080/api/v1/news",
+        "options": {},
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Authenticate Backend').first().json.accessToken }}"
+            }
+          ]
+        }
       },
       "id": "get-news",
       "name": "Get News",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        240,
+        480,
         0
       ]
     },
@@ -35,7 +63,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        480,
+        720,
         0
       ]
     },
@@ -46,14 +74,23 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"newsId\": {{$json.id}}\n}",
-        "options": {}
+        "options": {},
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Authenticate Backend').first().json.accessToken }}"
+            }
+          ]
+        }
       },
       "id": "detect-event",
       "name": "Detect Event",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        720,
+        960,
         0
       ],
       "notes": "Spring Boot ejecuta MatchEventUseCase, CreateEventUseCase y AddNewsToEventUseCase. n8n solo orquesta WF-03."
@@ -64,7 +101,7 @@
       "main": [
         [
           {
-            "node": "Get News",
+            "node": "Authenticate Backend",
             "type": "main",
             "index": 0
           }
@@ -92,13 +129,24 @@
           }
         ]
       ]
+    },
+    "Authenticate Backend": {
+      "main": [
+        [
+          {
+            "node": "Get News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "wf-03-detect-events-mvp",
+  "versionId": "wf-03-detect-events-jwt",
   "meta": {
     "templateCredsSetupCompleted": true
   },

@@ -14,6 +14,25 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/api/v1/auth/login",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"email\": \"{{$env.BACKEND_N8N_AUTH_EMAIL}}\",\n  \"password\": \"{{$env.BACKEND_N8N_AUTH_PASSWORD}}\"\n}",
+        "options": {}
+      },
+      "id": "authenticate-backend",
+      "name": "Authenticate Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -260
+      ],
+      "notes": "Obtiene un JWT de servicio antes de invocar endpoints protegidos del backend."
+    },
+    {
+      "parameters": {
         "rule": {
           "interval": [
             {
@@ -35,14 +54,23 @@
     {
       "parameters": {
         "url": "http://host.docker.internal:8080/api/v1/news",
-        "options": {}
+        "options": {},
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Authenticate Backend').first().json.accessToken }}"
+            }
+          ]
+        }
       },
       "id": "get-news",
       "name": "Get News",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        240,
+        480,
         0
       ]
     },
@@ -55,7 +83,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        480,
+        720,
         0
       ]
     },
@@ -66,14 +94,23 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"newsId\": {{$json.id}}\n}",
-        "options": {}
+        "options": {},
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Authenticate Backend').first().json.accessToken }}"
+            }
+          ]
+        }
       },
       "id": "classify-news",
       "name": "Classify News",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        720,
+        960,
         0
       ],
       "onError": "continueRegularOutput"
@@ -84,7 +121,7 @@
       "main": [
         [
           {
-            "node": "Get News",
+            "node": "Authenticate Backend",
             "type": "main",
             "index": 0
           }
@@ -95,7 +132,7 @@
       "main": [
         [
           {
-            "node": "Get News",
+            "node": "Authenticate Backend",
             "type": "main",
             "index": 0
           }
@@ -123,13 +160,24 @@
           }
         ]
       ]
+    },
+    "Authenticate Backend": {
+      "main": [
+        [
+          {
+            "node": "Get News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "wf-02-classify-news-mvp",
+  "versionId": "wf-02-classify-news-jwt",
   "meta": {
     "templateCredsSetupCompleted": true
   },
