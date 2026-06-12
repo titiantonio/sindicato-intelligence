@@ -945,31 +945,31 @@ Nota posterior 2026-06-10: implementada la pantalla de login conectada a `POST /
 
 ---
 
-## T11.4 [~]
+## T11.4 [x]
 
 Dashboard.
 
 Nota posterior 2026-06-10: creada una primera version visual del dashboard con tarjetas metricas y tabla de eventos prioritarios usando datos mock temporales, a la espera de endpoints reales de dashboard/eventos.
 
-Estado auditado 2026-06-12: tarea parcial, no completada funcionalmente. La pantalla sigue dependiendo de `MockDashboardService` y debe integrarse con API real antes de considerarse cerrada.
+Estado actualizado 2026-06-13: tarea completada funcionalmente para MVP. Se anadio `GET /api/v1/dashboard`, `DashboardService` Angular y se elimino `MockDashboardService`.
 
 ---
 
-## T11.5 [~]
+## T11.5 [x]
 
 Eventos.
 
 Nota posterior 2026-06-10: creada la pantalla de eventos con tabla y filtros visuales mock para validar UX del backoffice. Pendiente conexion real cuando existan `GET /api/v1/events` y `GET /api/v1/events/{id}`.
 
-Estado auditado 2026-06-12: tarea parcial. El backend solo expone `POST /api/v1/events/detect`; faltan listado, detalle y operaciones editoriales sobre eventos.
+Estado actualizado 2026-06-13: tarea completada funcionalmente para MVP. Se anadieron `GET /api/v1/events` y detalle real con pantalla `/events/:id`. La operacion `POST /api/v1/events/merge` sigue pendiente de decision/implementacion.
 
 ---
 
-## T11.6
+## T11.6 [x]
 
 Detalle Evento.
 
-Pendiente: bloqueado por ausencia de endpoint real de detalle de evento en backend.
+Nota posterior 2026-06-13: implementado GET /api/v1/events/{id} con evento, noticias asociadas, clasificacion, analisis y contenido relacionado; creada pantalla Angular /events/:id enlazada desde el listado real.
 
 ---
 
@@ -979,7 +979,7 @@ Contenido.
 
 Nota posterior 2026-06-10: creada vista editorial mock de contenido con bandeja de revision y vista previa, manteniendo la navegacion y el flujo UX mientras se completan endpoints reales de listado/detalle.
 
-Estado auditado 2026-06-12: tarea parcial. El backend expone generacion/aprobacion/rechazo, pero no listado, detalle ni edicion manual de contenido para el backoffice.
+Estado actualizado 2026-06-13: tarea parcial avanzada. El backend expone listado/detalle y la pantalla Angular consume datos reales para bandeja editorial, aprobacion y rechazo. Sigue pendiente edicion manual si se mantiene como requisito MVP.
 
 ---
 
@@ -989,7 +989,7 @@ Publicaciones.
 
 Nota posterior 2026-06-10: creada vista mock de historico de publicaciones para avanzar la experiencia visual del backoffice. Pendiente listado real desde backend.
 
-Estado auditado 2026-06-12: tarea parcial. El backend solo expone `POST /api/v1/publications/{id}/publish`; faltan listado, detalle, historial real y scheduling documentado.
+Estado actualizado 2026-06-13: tarea parcial avanzada. El backend expone listado/detalle/historial real y Angular consume publicaciones reales. Sigue pendiente decidir o implementar scheduling.
 
 Nota posterior 2026-06-10: validado el arranque del frontend con `npm run build` y `npm test -- --watch=false --browsers=ChromeHeadless` en `frontend`.
 
@@ -1103,20 +1103,20 @@ Funcionalidades completadas:
 - Publicacion Telegram backend con registro de publicacion.
 
 Funcionalidades en progreso:
-- Sprint 11 backoffice Angular: login y usuarios estan integrados con API real; dashboard, eventos, contenido y publicaciones siguen siendo visuales/mock.
-- Gestion de fuentes en frontend existe como ruta ADMIN, pero no tiene CRUD real.
+- Sprint 11 backoffice Angular: login, usuarios, dashboard, eventos, detalle de evento, contenido, publicaciones y fuentes estan integrados con API real.
+- Gestion de fuentes en frontend integrada contra API real de listado, alta, edicion y activacion/desactivacion.
 - Configuracion IA para ADMIN esta documentada como pendiente.
 - Sprint 12 de optimizacion no iniciado.
 
 Implementaciones parciales principales:
-- Eventos: backend detecta eventos, pero no expone `GET /api/v1/events`, `GET /api/v1/events/{id}` ni `POST /api/v1/events/merge` documentados.
-- Contenido: backend genera, aprueba y rechaza contenido, pero no expone listado/detalle/edicion para backoffice.
-- Publicaciones: backend publica en Telegram, pero no expone listado/detalle/historial ni scheduling documentado.
-- Dashboard: no existe API agregada de metricas; frontend usa `MockDashboardService`.
+- Eventos: backend detecta, lista y detalla eventos; `POST /api/v1/events/merge` documentado sigue pendiente de decision/implementacion.
+- Contenido: backend genera, aprueba, rechaza, lista y detalla contenido; la edicion manual sigue pendiente si se mantiene como requisito editorial.
+- Publicaciones: backend publica en Telegram y expone listado/detalle/historial; scheduling documentado sigue pendiente de decision.
+- Dashboard: existe API MVP de metricas y eventos prioritarios; frontend consume `DashboardService` real.
 - Auditoria: existe persistencia de acciones de usuario, pero no hay API ni pantalla para consultar el log.
 
 Pendientes criticos:
-- Sustituir mocks del backoffice por contratos backend reales de eventos, contenido, publicaciones y dashboard.
+- Cerrar funcionalidades pendientes tras sustituir mocks: edicion manual de contenido, merge de eventos, scheduling de publicaciones y consulta de auditoria.
 - Completar integracion frontend de fuentes.
 - Cerrar tests frontend de auth/users/guards y pruebas de integracion UI.
 
@@ -1131,14 +1131,14 @@ Implementado:
 Parcial o faltante:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
-| Listar eventos `GET /api/v1/events` | Documentado en Documento 12 y requerido por UI; no existe controller/use case de listado. | Critical | 1 |
-| Detalle evento `GET /api/v1/events/{id}` | Documentado y bloquea T11.6; no implementado. | Critical | 2 |
+| Listar eventos `GET /api/v1/events` | Implementado el 2026-06-13 con controller/use case/repositorio y consumo Angular real. | Completed | - |
+| Detalle evento `GET /api/v1/events/{id}` | Implementado el 2026-06-13 con noticias, clasificacion, analisis y contenido asociado; pantalla Angular `/events/:id`. | Completed | - |
 | Merge de eventos `POST /api/v1/events/merge` | Documentado en API REST; no implementado. | Medium | 9 |
-| Listado/detalle de contenido | UI lo necesita; backend solo genera/aprueba/rechaza. | Critical | 3 |
+| Listado/detalle de contenido | Implementado el 2026-06-13 y consumido por bandeja editorial Angular. | Completed | - |
 | Edicion manual de contenido generado | UX/editorial lo presupone; no hay endpoint ni caso de uso. | High | 6 |
-| Listado/detalle/historial de publicaciones | UI lo muestra con mock; backend solo publica por contentId. | Critical | 4 |
+| Listado/detalle/historial de publicaciones | Implementado el 2026-06-13 y consumido por pantalla Angular real. | Completed | - |
 | Scheduling de publicaciones `POST /api/v1/publications/{id}/schedule` | Documentado; no implementado. | Medium | 10 |
-| Dashboard/metricas backend | Requerido por UI; no hay API agregada. | High | 5 |
+| Dashboard/metricas backend | Implementado el 2026-06-13 con endpoint MVP `GET /api/v1/dashboard`. | Completed | - |
 | API de auditoria de usuarios | Tabla y escritura existen; no hay endpoint de consulta. | Medium | 12 |
 | Errores API uniformes | Hay manejo basico por controllers/tests; falta contrato transversal documentado/validado. | Medium | 13 |
 
@@ -1152,15 +1152,15 @@ Implementado:
 Parcial o faltante:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
-| Dashboard con datos reales | Usa `MockDashboardService`; sin API backend. | High | 7 |
-| Listado de eventos real | Usa mock; faltan APIs backend de list/detail. | Critical | 8 |
-| Detalle de evento | T11.6 pendiente; sin endpoint backend. | Critical | 9 |
-| Bandeja de contenido real | Usa mock; backend sin list/detail. | Critical | 10 |
+| Dashboard con datos reales | Implementado el 2026-06-13 mediante `DashboardService`; eliminado `MockDashboardService`. | Completed | - |
+| Listado de eventos real | Implementado el 2026-06-13 contra `GET /api/v1/events`. | Completed | - |
+| Detalle de evento | Implementado el 2026-06-13 con ruta Angular `/events/:id`. | Completed | - |
+| Bandeja de contenido real | Implementada el 2026-06-13 contra API real de contenido. | Completed | - |
 | Editor de contenido real | UX documentada; no implementado contra API. | High | 11 |
-| Historico de publicaciones real | Usa mock; backend sin listado/historial. | Critical | 12 |
-| Gestion de fuentes | Ruta ADMIN y placeholder; falta CRUD UI real. | High | 13 |
+| Historico de publicaciones real | Implementado el 2026-06-13 contra API real de publicaciones. | Completed | - |
+| Gestion de fuentes | Implementada el 2026-06-13 contra API real de fuentes. | Completed | - |
 | Tests frontend auth/users/guards | T11.10.5 pendiente; solo existe test base de app. | High | 14 |
-| Eliminacion de mocks | Bloqueada por APIs backend faltantes. | High | 15 |
+| Eliminacion de mocks | `MockDashboardService` eliminado el 2026-06-13; revisar si quedan datos fixture puntuales en pantallas no criticas. | Completed | - |
 
 ## 16.4 Database
 
@@ -1225,7 +1225,7 @@ Parcial o faltante:
 | Configuracion IA por ADMIN | Documentada como pendiente; hoy se selecciona por configuracion tecnica. | Medium | 27 |
 | Versionado de prompts | Sprint 12 T12.1 pendiente. | Medium | 28 |
 | Metricas IA | Sprint 12 T12.2 pendiente. | Medium | 29 |
-| Revision humana completa | Hay aprobar/rechazar contenido, pero falta editor real y listado de cola. | High | 11 |
+| Revision humana completa | Hay listado real, aprobar/rechazar y vista previa; falta editor manual si se mantiene como requisito. | High | 11 |
 
 ## 16.8 Publishing & Social Media
 
@@ -1237,7 +1237,7 @@ Implementado:
 Parcial o faltante:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
-| Historial real de publicaciones | No hay API/listado para backoffice; UI usa mock. | Critical | 12 |
+| Historial real de publicaciones | Implementado el 2026-06-13 con API y pantalla Angular reales. | Completed | - |
 | Scheduling | Documentado; no implementado. Decidir implementar o declarar post-MVP. | Medium | 10 |
 | Gestion de errores/reintentos de publicacion en UI | Backend registra fallos; UI no consume estado real. | Medium | 30 |
 | Otros canales sociales | Fuera del MVP; mantener Telegram como unico canal salvo decision explicita. | Low | 31 |
@@ -1271,7 +1271,7 @@ Parcial o faltante:
 | Tests frontend especificos | T11.10.5 pendiente; faltan tests de formularios auth/users, guards y servicios. | High | 14 |
 | E2E del flujo completo | No hay suite E2E versionada para RSS -> evento -> contenido -> publicacion. | High | 35 |
 | Tests de workflows n8n | No hay validacion automatizada de JSON/contratos por workflow. | Medium | 24 |
-| Tests de APIs faltantes | Deben crearse junto con list/detail/merge/scheduling. | Critical | 1 |
+| Tests de APIs de lectura Sprint 11 | Anadidos tests focales para eventos, contenido, publicaciones y dashboard. Siguen pendientes merge/scheduling si se implementan. | Completed | - |
 | Pruebas manuales MailHog | Documentadas como pendientes para verificacion visual de emails. | Low | 36 |
 
 ## 16.11 Documentation
@@ -1285,28 +1285,28 @@ Inconsistencias y deuda:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
 | Documento 31 como fuente unica | Esta seccion corrige el estado operativo y debe prevalecer sobre notas antiguas. | Critical | 0 |
-| Tareas visuales marcadas como completadas | T11.4/T11.5/T11.7/T11.8 pasan a estado parcial `[~]` hasta integracion real. | High | 7 |
+| Tareas visuales marcadas como completadas | T11.4/T11.5/T11.6 ya integradas con API real; T11.7/T11.8 quedan parciales por editor manual/scheduling. | Medium | 7 |
 | Proxima tarea desactualizada | Debe priorizar contratos backend para eliminar mocks, no solo T11.10. | High | 0 |
 | Codificacion/mojibake en documentos antiguos | Existen textos con caracteres corruptos visibles; no bloquea funcionalidad, pero dificulta lectura. | Low | 37 |
 | Contratos documentados no implementados | Documento 12 incluye eventos merge y scheduling de publicaciones; deben implementarse o reclasificarse como post-MVP. | Medium | 9 |
 
 ## 16.12 Roadmap recomendado
 
-1. Critical: implementar `GET /api/v1/events` con filtros minimos para backoffice y tests.
-2. Critical: implementar `GET /api/v1/events/{id}` con noticias, clasificacion, analisis y contenido asociado.
-3. Critical: implementar listado/detalle de contenido generado para bandeja editorial.
-4. Critical: implementar listado/detalle/historial de publicaciones.
-5. High: crear API de dashboard/metricas MVP o endpoints agregados suficientes para sustituir mocks.
+1. Completed 2026-06-13: `GET /api/v1/events` con tests e integracion Angular.
+2. Completed 2026-06-13: `GET /api/v1/events/{id}` con noticias, clasificacion, analisis, contenido y pantalla Angular.
+3. Completed 2026-06-13: listado/detalle de contenido generado para bandeja editorial real.
+4. Completed 2026-06-13: listado/detalle/historial de publicaciones reales.
+5. Completed 2026-06-13: API de dashboard/metricas MVP e integracion Angular real.
 6. High: implementar edicion manual de contenido y conectar aprobar/rechazar desde UI real.
-7. High: integrar dashboard Angular con datos reales.
-8. Critical: integrar eventos Angular con APIs reales y completar detalle de evento T11.6.
+7. Completed 2026-06-13: dashboard Angular integrado con datos reales.
+8. Completed 2026-06-13: eventos Angular y detalle T11.6 integrados con APIs reales.
 9. Medium: implementar o descartar formalmente `POST /api/v1/events/merge`.
 10. Medium: implementar o marcar post-MVP el scheduling de publicaciones.
-11. High: completar editor/bandeja de contenido Angular con API real.
-12. Critical: integrar publicaciones Angular con historial real.
-13. High: completar gestion de fuentes Angular contra API existente.
+11. High: completar editor manual de contenido si se mantiene como requisito MVP; la bandeja ya consume API real.
+12. Completed 2026-06-13: publicaciones Angular integradas con historial real.
+13. Completed 2026-06-13: gestion de fuentes Angular contra API existente.
 14. High: cerrar T11.10.5 con tests frontend de auth/users/guards/services.
-15. High: eliminar `MockDashboardService` cuando los contratos reales esten disponibles.
+15. Completed 2026-06-13: eliminado `MockDashboardService`.
 16. Medium: decidir estrategia Flyway: mantener V1..V5 o reconsolidar solo si se resetea BBDD de desarrollo.
 17. Medium: ampliar auditoria a eventos/contenido/publicaciones si se requiere trazabilidad editorial completa.
 18. Medium: modelar scheduling de publicaciones si se mantiene en MVP.
@@ -1333,11 +1333,28 @@ Inconsistencias y deuda:
 ## 16.13 Estado operativo recomendado
 
 - Sprint actual real: Sprint 11 en progreso.
-- Bloqueador principal: backend no expone contratos de lectura necesarios para backoffice real.
-- No iniciar Sprint 12 hasta cerrar la integracion real del backoffice MVP o aceptar formalmente que Sprint 12 empieza con UI mock.
-- La siguiente tarea debe ser backend-first: eventos list/detail, luego contenido/publicaciones list/detail, despues frontend.
+- Bloqueador principal anterior resuelto: ya existen contratos de lectura para backoffice real de eventos, contenido, publicaciones y dashboard.
+- No iniciar Sprint 12 hasta cerrar T11.10.5, revisar autenticacion n8n WF-02..WF-06 y decidir `events/merge` y scheduling.
+- La siguiente tarea debe ser testing/operativa: tests frontend T11.10.5, validacion n8n JWT y decision de alcance para merge/scheduling/editor manual.
 
 ---
+## 16.14 Actualizacion de implementacion - 2026-06-13
+
+Completado en esta iteracion:
+- Backend: `GET /api/v1/events`, `GET /api/v1/events/{id}`, `GET /api/v1/content`, `GET /api/v1/content/{id}`, `GET /api/v1/publications`, `GET /api/v1/publications/{id}` y `GET /api/v1/dashboard`.
+- Frontend: `DashboardService`, `EventService`, `ContentService`, `PublicationService` y `SourceService` reales; dashboard, eventos, detalle de evento, contenido, publicaciones y fuentes consumen API backend.
+- Eliminado `MockDashboardService`.
+- Tests focales backend para APIs de lectura y dashboard: `EventControllerTest`, `ContentControllerTest`, `PublicationControllerTest` y `DashboardControllerTest`.
+- Build frontend validado con `npm.cmd run build`.
+
+Pendiente tras esta iteracion:
+- T11.10.5: tests frontend de formularios auth/users, guards y servicios.
+- n8n: revisar WF-02..WF-06 para autenticacion JWT uniforme contra endpoints protegidos.
+- Decisiones de alcance: `POST /api/v1/events/merge`, scheduling de publicaciones y editor manual de contenido.
+- API/pantalla ADMIN para consultar auditoria de usuario si se requiere operacion visible.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:
@@ -1403,18 +1420,14 @@ Sprint 12
 Sprint 11 en progreso
 
 ```text
-1. Implementar contratos backend reales para eliminar mocks del backoffice:
-   - GET /api/v1/events
-   - GET /api/v1/events/{id}
-   - listado/detalle de contenido
-   - listado/detalle/historial de publicaciones
-2. Integrar pantallas Angular con APIs reales y eliminar MockDashboardService.
-3. Completar gestion de fuentes en frontend.
-4. Cerrar T11.10.5 con tests frontend de auth/users/guards/services.
+1. Cerrar T11.10.5 con tests frontend de auth/users/guards/services.
+2. Revisar y alinear autenticacion JWT en n8n WF-02..WF-06.
+3. Decidir alcance MVP de POST /api/v1/events/merge, scheduling de publicaciones y editor manual de contenido.
+4. Exponer consulta ADMIN de auditoria si se requiere para operacion del backoffice.
 ```
 
 Rol:
 
 ```text
-spring-backend-architect / frontend-angular-backoffice / testing-quality
+testing-quality / n8n-workflow-architect / spring-backend-architect / frontend-angular-backoffice
 ```

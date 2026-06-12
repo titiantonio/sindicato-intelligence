@@ -36,6 +36,16 @@ public class JpaGeneratedContentRepository implements GeneratedContentRepository
     }
 
     @Override
+    public List<GeneratedContent> findAll() {
+        return entityManager.createQuery(
+                        "SELECT content FROM GeneratedContentEntity content ORDER BY content.generatedAt DESC, content.id DESC",
+                        GeneratedContentEntity.class
+                )
+                .getResultStream()
+                .map(this::toDomain)
+                .toList();
+    }
+    @Override
     public List<GeneratedContent> findByEventId(Long eventId) {
         return entityManager.createQuery(
                         "SELECT content FROM GeneratedContentEntity content WHERE content.eventId = :eventId ORDER BY content.generatedAt DESC, content.id DESC",

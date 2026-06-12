@@ -11,6 +11,8 @@ import es.sindicato.intelligence.event.domain.Importance;
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import es.sindicato.intelligence.news.domain.NewsRepository;
 import es.sindicato.intelligence.news.domain.NewsStatus;
+import es.sindicato.intelligence.publication.domain.Publication;
+import es.sindicato.intelligence.publication.domain.PublicationRepository;
 import es.sindicato.intelligence.publication.application.PublishingProvider;
 import es.sindicato.intelligence.publication.application.PublishingRequest;
 import es.sindicato.intelligence.publication.application.PublishingResult;
@@ -25,15 +27,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -55,6 +60,9 @@ class PublicationControllerTest {
     @Autowired
     private GeneratedContentRepository contentRepository;
 
+    @Autowired
+    private PublicationRepository publicationRepository;
+
     @Test
     void publishesApprovedContent() throws Exception {
         Source source = sourceRepository.save(source());
@@ -62,7 +70,7 @@ class PublicationControllerTest {
         Event event = eventRepository.save(event(newsArticle.getId()));
         GeneratedContent content = contentRepository.save(content(event.getId(), ContentStatus.APPROVED, OffsetDateTime.now()));
 
-        mockMvc.perform(post("/api/v1/publications/{id}/publish", content.getId()))
+        mockMvc.perform(post("/api/v1/publications/{id}/publish", content.getId()).with(adminJwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.contentId").value(content.getId()))
@@ -82,13 +90,36 @@ class PublicationControllerTest {
         Event event = eventRepository.save(event(newsArticle.getId()));
         GeneratedContent content = contentRepository.save(content(event.getId(), ContentStatus.PENDING_REVIEW, null));
 
-        mockMvc.perform(post("/api/v1/publications/{id}/publish", content.getId()))
+        mockMvc.perform(post("/api/v1/publications/{id}/publish", content.getId()).with(adminJwt()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("only approved content can be published"));
     }
 
+
+    @Test
+    void listsAndGetsPublications() throws Exception {
+        Source source = sourceRepository.save(source());
+        NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId()));
+        Event event = eventRepository.save(event(newsArticle.getId()));
+        GeneratedContent content = contentRepository.save(content(event.getId(), ContentStatus.APPROVED, OffsetDateTime.now()));
+        Publication publication = publicationRepository.save(Publication.pending(content.getId(), "TELEGRAM"));
+
+        mockMvc.perform(get("/api/v1/publications").with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(publication.getId()))
+                .andExpect(jsonPath("$[0].contentId").value(content.getId()));
+
+        mockMvc.perform(get("/api/v1/publications/{id}", publication.getId()).with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(publication.getId()))
+                .andExpect(jsonPath("$.status").value("PENDING"));
+    }
+    private RequestPostProcessor adminJwt() {
+        return jwt().authorities(() -> "ROLE_ADMIN");
+    }
     private GeneratedContent content(Long eventId, ContentStatus status, OffsetDateTime approvedAt) {
-        return new GeneratedContent(null, eventId, 1L, "TELEGRAM", "INFORMATIVO", "Titulo", "Mensaje", status, OffsetDateTime.now(), approvedAt);
+        OffsetDateTime generatedAt = approvedAt == null ? OffsetDateTime.now() : approvedAt.minusMinutes(1);
+        return new GeneratedContent(null, eventId, 1L, "TELEGRAM", "INFORMATIVO", "Titulo", "Mensaje", status, generatedAt, approvedAt);
     }
 
     private Source source() {

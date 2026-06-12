@@ -9,5 +9,7 @@ public interface PublicationRepository {
 
     Optional<Publication> findById(Long id);
 
+    List<Publication> findAll();
+
     List<Publication> findByContentId(Long contentId);
 }

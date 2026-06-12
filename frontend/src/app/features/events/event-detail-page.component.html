@@ -1,0 +1,107 @@
+<a class="back-link" routerLink="/events">Volver a eventos</a>
+
+@if (errorMessage()) {
+  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+}
+
+@if (isLoading()) {
+  <p class="page-alert">Cargando detalle del evento...</p>
+}
+
+@if (event(); as item) {
+  <section class="page-header">
+    <div>
+      <span class="page-header__eyebrow">Evento #{{ item.id }}</span>
+      <h1>{{ item.title }}</h1>
+      <p>{{ item.description || 'Sin descripcion registrada.' }}</p>
+    </div>
+
+    <div class="event-status">
+      <app-status-badge [value]="item.importance" />
+      <app-status-badge [value]="item.status" />
+      <span>{{ item.category }}</span>
+    </div>
+  </section>
+
+  <section class="summary-grid">
+    <div class="metric-tile">
+      <span>Noticias</span>
+      <strong>{{ item.news.length }}</strong>
+    </div>
+    <div class="metric-tile">
+      <span>Analisis</span>
+      <strong>{{ item.analyses.length }}</strong>
+    </div>
+    <div class="metric-tile">
+      <span>Contenidos</span>
+      <strong>{{ item.contents.length }}</strong>
+    </div>
+    <div class="metric-tile">
+      <span>Actualizado</span>
+      <strong>{{ formatDate(item.updatedAt) }}</strong>
+    </div>
+  </section>
+
+  <section class="panel detail-section">
+    <h2>Noticias asociadas</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Titulo</th>
+            <th>Estado</th>
+            <th>Categoria</th>
+            <th>Urgencia</th>
+            <th>Capturada</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (news of item.news; track news.id) {
+            <tr>
+              <td>#{{ news.id }}</td>
+              <td><a [href]="news.url" target="_blank" rel="noreferrer">{{ news.title }}</a></td>
+              <td><app-status-badge [value]="news.processingStatus" /></td>
+              <td>{{ news.classification?.category || '-' }}</td>
+              <td>{{ news.classification?.urgencyLevel || '-' }}</td>
+              <td>{{ formatDate(news.capturedAt) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">No hay noticias asociadas.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="detail-grid">
+    <div class="panel detail-section">
+      <h2>Analisis IA</h2>
+      @for (analysis of item.analyses; track analysis.id) {
+        <article class="stack-item">
+          <span>{{ formatDate(analysis.generatedAt) }} · {{ analysis.modelUsed }}</span>
+          <h3>{{ analysis.executiveSummary }}</h3>
+          <p>{{ analysis.unionSummary }}</p>
+        </article>
+      } @empty {
+        <p class="empty-state">No hay analisis generados.</p>
+      }
+    </div>
+
+    <div class="panel detail-section">
+      <h2>Contenido generado</h2>
+      @for (content of item.contents; track content.id) {
+        <article class="stack-item">
+          <span>{{ content.channel }} · {{ content.tone }}</span>
+          <h3>{{ content.title }}</h3>
+          <p>{{ content.content }}</p>
+          <app-status-badge [value]="content.status" />
+        </article>
+      } @empty {
+        <p class="empty-state">No hay contenido generado.</p>
+      }
+    </div>
+  </section>
+}

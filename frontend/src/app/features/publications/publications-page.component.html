@@ -2,9 +2,17 @@
   <div>
     <span class="page-header__eyebrow">Publicaciones</span>
     <h1>Historico operativo del canal</h1>
-    <p>Vista visual mock hasta disponer de listado real de publicaciones desde backend.</p>
+    <p>Publicaciones registradas por el backend para Telegram.</p>
   </div>
 </section>
+
+@if (errorMessage()) {
+  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+}
+
+@if (isLoading()) {
+  <p class="page-alert">Cargando publicaciones...</p>
+}
 
 <section class="timeline-grid">
   @for (publication of publications(); track publication.id) {
@@ -15,8 +23,14 @@
       </div>
 
       <div class="publication-card__body">
-        <span class="publication-card__date">{{ publication.publishedAt }}</span>
-        <p>{{ publication.result }}</p>
+        <span class="publication-card__date">{{ formatDate(publication.publishedAt) }}</span>
+        <p>{{ publicationResult(publication) }}</p>
+      </div>
+    </article>
+  } @empty {
+    <article class="publication-card">
+      <div class="publication-card__body">
+        <p>No hay publicaciones registradas.</p>
       </div>
     </article>
   }

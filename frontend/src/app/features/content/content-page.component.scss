@@ -79,3 +79,34 @@ th {
     grid-template-columns: 1fr;
   }
 }
+
+.content-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.content-actions button {
+  background: #e2e8f0;
+  border: 0;
+  border-radius: 0.5rem;
+  color: #0f172a;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.45rem 0.65rem;
+}
+
+.content-actions button:first-child {
+  background: #bbf7d0;
+  color: #14532d;
+}
+
+.content-actions button:last-child {
+  background: #fecaca;
+  color: #7f1d1d;
+}
+
+.content-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

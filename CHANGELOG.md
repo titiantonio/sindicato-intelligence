@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11: anadidos endpoints reales de lectura para eventos, detalle de evento, contenido generado, publicaciones y dashboard; el backoffice Angular consume APIs reales para dashboard, eventos, detalle de evento, contenido, publicaciones y fuentes, eliminando `MockDashboardService`.
 - T10.5/T11.10: anadido puerto `UserAccountNotificationSender` e implementacion SMTP compatible con MailHog para notificar cambio de password, bloqueo, desactivacion y reset temporal; normalizada la UI de cambio obligatorio y gestion de usuarios con mensajes de confirmacion y botones semanticos.
 - T10.5/T11.10: reforzado el flujo de gestion de usuarios con alta exclusiva para `ADMIN` sin password en request, generacion automatica de password temporal por email, estado inicial `PENDING_ACTIVATION`, expiracion configurable, regeneracion de password temporal expirada, auditoria de acciones, bloqueo/desbloqueo, fechas de ultimo login y ultimo cambio de password, y pantalla Angular de cambio obligatorio en primer login.
 - T10.5: implementada la gestion de usuarios para `ADMIN` con API `GET /api/v1/users`, `GET /api/v1/users/{id}`, `POST /api/v1/users`, `PUT /api/v1/users/{id}` y `POST /api/v1/users/{id}/disable`, junto con casos de uso de alta, consulta, listado, edicion y desactivacion.
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.37-SNAPSHOT`.
 - WF-01: separada la cuenta tecnica de n8n en un usuario propio `n8n@sindicato.es` con credenciales dedicadas y seeding Flyway especifico para automatizaciones.
 - WF-01: añadido login tecnico de servicio para obtener JWT antes de llamar a endpoints protegidos del backend desde n8n, con credenciales de desarrollo en `database/docker-compose.yml`.
 - Flyway inicial consolidado de nuevo para fase de implementacion: `V1__create_mvp_schema.sql` incorpora `password_reset_tokens` (antes `V5`) y `V2__seed_admin_user.sql` incorpora la semilla de `n8n@sindicato.es` (antes `V4`), dejando la secuencia en `V1..V3` para reinicios desde cero.

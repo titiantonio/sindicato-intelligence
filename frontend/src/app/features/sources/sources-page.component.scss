@@ -1,0 +1,150 @@
+.sources-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.sources-page__header h1 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.sources-page__header p {
+  margin: 0.5rem 0 0;
+  color: #475569;
+}
+
+.sources-page__layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 22rem 1fr;
+}
+
+.sources-page__card {
+  background: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  padding: 1rem;
+}
+
+.sources-page__card h2 {
+  margin: 0 0 1rem;
+}
+
+.sources-page__form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.sources-page__form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.sources-page__form input,
+.sources-page__form select {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.8rem;
+}
+
+.sources-page__checkbox {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.sources-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.sources-page__button {
+  border: 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.55rem 0.75rem;
+  white-space: nowrap;
+}
+
+.sources-page__button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.sources-page__button--primary {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.sources-page__button--secondary {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.sources-page__alert {
+  margin: 0;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  padding: 0.65rem 0.75rem;
+}
+
+.sources-page__alert--error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.sources-page__alert--success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.sources-page__table-wrapper {
+  overflow-x: auto;
+}
+
+.sources-page__table {
+  border-collapse: collapse;
+  min-width: 54rem;
+  width: 100%;
+}
+
+.sources-page__table th,
+.sources-page__table td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.65rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.sources-page__table td span {
+  color: #64748b;
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.sources-page__status {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+}
+
+.sources-page__status--active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.sources-page__status--inactive {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+@media (max-width: 1060px) {
+  .sources-page__layout {
+    grid-template-columns: 1fr;
+  }
+}

@@ -22,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -33,9 +34,11 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -64,6 +67,7 @@ class EventControllerTest {
         classificationRepository.save(classification(newsArticle.getId()));
 
         mockMvc.perform(post("/api/v1/events/detect")
+                        .with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -90,6 +94,7 @@ class EventControllerTest {
         classificationRepository.save(classification(newNews.getId()));
 
         mockMvc.perform(post("/api/v1/events/detect")
+                        .with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -109,6 +114,30 @@ class EventControllerTest {
         assertEquals(NewsStatus.EVENT_MATCHED, newsRepository.findById(newNews.getId()).orElseThrow().getProcessingStatus());
     }
 
+
+    @Test
+    void listsAndGetsEventDetail() throws Exception {
+        Source source = sourceRepository.save(source());
+        NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-list-event"), hash('d'), NewsStatus.EVENT_MATCHED));
+        classificationRepository.save(classification(newsArticle.getId()));
+        Event event = eventRepository.save(event(newsArticle.getId()));
+
+        mockMvc.perform(get("/api/v1/events").with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(event.getId()))
+                .andExpect(jsonPath("$[0].newsCount").value(1));
+
+        mockMvc.perform(get("/api/v1/events/{id}", event.getId()).with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(event.getId()))
+                .andExpect(jsonPath("$.news[0].id").value(newsArticle.getId()))
+                .andExpect(jsonPath("$.news[0].classification.newsId").value(newsArticle.getId()))
+                .andExpect(jsonPath("$.contents").isArray())
+                .andExpect(jsonPath("$.analyses").isArray());
+    }
+    private RequestPostProcessor adminJwt() {
+        return jwt().authorities(() -> "ROLE_ADMIN");
+    }
     private Source source() {
         OffsetDateTime now = OffsetDateTime.now().minusDays(1);
         return new Source(

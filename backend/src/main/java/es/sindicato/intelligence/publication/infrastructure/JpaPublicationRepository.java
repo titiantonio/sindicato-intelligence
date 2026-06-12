@@ -41,6 +41,16 @@ public class JpaPublicationRepository implements PublicationRepository {
     }
 
     @Override
+    public List<Publication> findAll() {
+        return entityManager.createQuery(
+                        "SELECT publication FROM PublicationEntity publication ORDER BY publication.id DESC",
+                        PublicationEntity.class
+                )
+                .getResultStream()
+                .map(this::toDomain)
+                .toList();
+    }
+    @Override
     public List<Publication> findByContentId(Long contentId) {
         return entityManager.createQuery(
                         "SELECT publication FROM PublicationEntity publication WHERE publication.contentId = :contentId ORDER BY publication.id DESC",

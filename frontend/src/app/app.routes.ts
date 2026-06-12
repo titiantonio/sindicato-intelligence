@@ -6,6 +6,7 @@ import { roleGuard } from './core/guards/role.guard';
 import { ChangePasswordPageComponent } from './features/auth/change-password/change-password-page.component';
 import { ContentPageComponent } from './features/content/content-page.component';
 import { DashboardPageComponent } from './features/dashboard/dashboard-page.component';
+import { EventDetailPageComponent } from './features/events/event-detail-page.component';
 import { EventsPageComponent } from './features/events/events-page.component';
 import { ForgotPasswordPageComponent } from './features/auth/forgot-password/forgot-password-page.component';
 import { LoginPageComponent } from './features/auth/login/login-page.component';
@@ -46,6 +47,10 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         component: DashboardPageComponent
+      },
+      {
+        path: 'events/:id',
+        component: EventDetailPageComponent
       },
       {
         path: 'events',

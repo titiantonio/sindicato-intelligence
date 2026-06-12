@@ -9,5 +9,7 @@ public interface GeneratedContentRepository {
 
     Optional<GeneratedContent> findById(Long id);
 
+    List<GeneratedContent> findAll();
+
     List<GeneratedContent> findByEventId(Long eventId);
 }

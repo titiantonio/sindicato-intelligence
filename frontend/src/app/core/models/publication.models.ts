@@ -1,7 +1,9 @@
 export interface PublicationListItem {
   id: number;
+  contentId: number;
   channel: string;
-  publishedAt: string;
+  externalId: string | null;
   status: string;
-  result: string;
+  publishedAt: string | null;
+  responsePayload: string | null;
 }

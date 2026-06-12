@@ -27,3 +27,17 @@ h3,
 p {
   margin-top: 0;
 }
+
+.page-alert {
+  background: #e2e8f0;
+  border-radius: 0.5rem;
+  color: #334155;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.page-alert--error {
+  background: #fee2e2;
+  color: #991b1b;
+}

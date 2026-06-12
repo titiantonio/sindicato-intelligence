@@ -1,26 +1,29 @@
 <section class="split-layout">
   <article class="panel panel--editorial">
     <span class="page-header__eyebrow">Contenido</span>
-    <h1>Bandeja editorial mock</h1>
-    <p>
-      Esta vista adelanta la revision humana del contenido generado mientras se completan los endpoints
-      reales de listado y detalle.
-    </p>
+    <h1>Bandeja editorial</h1>
+    <p>Revision humana del contenido generado por IA antes de publicacion.</p>
 
-    <div class="editor-preview">
-      <div>
-        <span class="editor-preview__label">Evento</span>
-        <strong>Convocatoria extraordinaria de SIPRI con cambios de baremacion</strong>
+    @if (errorMessage()) {
+      <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+    }
+
+    @if (isLoading()) {
+      <p class="page-alert">Cargando contenidos...</p>
+    }
+
+    @if (selectedItem(); as selected) {
+      <div class="editor-preview">
+        <div>
+          <span class="editor-preview__label">Evento</span>
+          <strong>#{{ selected.eventId }} - {{ selected.title }}</strong>
+        </div>
+        <div>
+          <span class="editor-preview__label">Borrador {{ selected.channel }}</span>
+          <p>{{ selected.content }}</p>
+        </div>
       </div>
-      <div>
-        <span class="editor-preview__label">Borrador Telegram</span>
-        <p>
-          La nueva convocatoria extraordinaria de SIPRI introduce elementos que afectan a la planificacion
-          laboral del profesorado interino. Desde el sindicato se considera prioritario revisar el impacto
-          sobre adjudicaciones, tiempos y transparencia del proceso.
-        </p>
-      </div>
-    </div>
+    }
   </article>
 
   <article class="panel">
@@ -33,6 +36,7 @@
             <th>Estado</th>
             <th>Creado</th>
             <th>Aprobado</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -41,8 +45,16 @@
               <td>{{ item.channel }}</td>
               <td>{{ item.title }}</td>
               <td><app-status-badge [value]="item.status" /></td>
-              <td>{{ item.createdAt }}</td>
-              <td>{{ item.approvedAt ?? 'Pendiente' }}</td>
+              <td>{{ formatDate(item.generatedAt) }}</td>
+              <td>{{ formatDate(item.approvedAt) }}</td>
+              <td class="content-actions">
+                <button type="button" [disabled]="item.status !== 'PENDING_REVIEW'" (click)="approve(item)">Aprobar</button>
+                <button type="button" [disabled]="item.status !== 'PENDING_REVIEW'" (click)="reject(item)">Rechazar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">No hay contenido generado.</td>
             </tr>
           }
         </tbody>

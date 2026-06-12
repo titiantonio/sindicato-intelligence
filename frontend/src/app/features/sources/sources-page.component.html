@@ -1,4 +1,110 @@
-<app-empty-state
-  title="Fuentes disponibles solo para ADMIN"
-  description="La pantalla de administracion de fuentes queda preparada en navegacion, pendiente de completarse con la API y flujos CRUD del backoffice."
-/>
+<section class="sources-page">
+  <header class="sources-page__header">
+    <span class="page-header__eyebrow">Fuentes</span>
+    <h1>Gestion de fuentes RSS</h1>
+    <p>Alta y mantenimiento de fuentes activas para los workflows de captura.</p>
+  </header>
+
+  @if (errorMessage()) {
+    <p class="sources-page__alert sources-page__alert--error">{{ errorMessage() }}</p>
+  }
+
+  @if (successMessage()) {
+    <p class="sources-page__alert sources-page__alert--success">{{ successMessage() }}</p>
+  }
+
+  <section class="sources-page__layout">
+    <article class="sources-page__card">
+      <h2>{{ editingSourceId() === null ? 'Nueva fuente' : 'Editar fuente' }}</h2>
+
+      <form class="sources-page__form" [formGroup]="sourceForm" (ngSubmit)="submit()">
+        <label>
+          Nombre
+          <input type="text" formControlName="name" />
+        </label>
+
+        <label>
+          URL
+          <input type="url" formControlName="url" />
+        </label>
+
+        <label>
+          Tipo
+          <select formControlName="type">
+            <option value="RSS">RSS</option>
+            <option value="ATOM">ATOM</option>
+          </select>
+        </label>
+
+        <label>
+          Prioridad
+          <input type="number" formControlName="priority" min="0" />
+        </label>
+
+        <label class="sources-page__checkbox">
+          <input type="checkbox" formControlName="active" />
+          Activa
+        </label>
+
+        <div class="sources-page__actions">
+          <button class="sources-page__button sources-page__button--primary" type="submit" [disabled]="isSubmitting()">
+            {{ editingSourceId() === null ? 'Crear' : 'Guardar' }}
+          </button>
+          <button class="sources-page__button sources-page__button--secondary" type="button" (click)="startCreate()">
+            Limpiar
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="sources-page__card">
+      <h2>Fuentes registradas</h2>
+
+      @if (isLoading()) {
+        <p>Cargando fuentes...</p>
+      }
+
+      <div class="sources-page__table-wrapper">
+        <table class="sources-page__table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Prioridad</th>
+              <th>Estado</th>
+              <th>Actualizada</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (source of sources(); track source.id) {
+              <tr>
+                <td>
+                  <strong>{{ source.name }}</strong>
+                  <span>{{ source.url }}</span>
+                </td>
+                <td>{{ source.type }}</td>
+                <td>{{ source.priority }}</td>
+                <td>
+                  <span class="sources-page__status" [ngClass]="source.active ? 'sources-page__status--active' : 'sources-page__status--inactive'">
+                    {{ source.active ? 'Activa' : 'Inactiva' }}
+                  </span>
+                </td>
+                <td>{{ formatDate(source.updatedAt) }}</td>
+                <td>
+                  <button class="sources-page__button sources-page__button--secondary" type="button" (click)="startEdit(source)">
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6">No hay fuentes registradas.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</section>

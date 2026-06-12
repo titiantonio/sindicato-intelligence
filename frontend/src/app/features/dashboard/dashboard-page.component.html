@@ -6,6 +6,14 @@
   </div>
 </section>
 
+@if (errorMessage()) {
+  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+}
+
+@if (isLoading()) {
+  <p class="page-alert">Cargando dashboard...</p>
+}
+
 <section class="metric-grid">
   @for (metric of metricCards(); track metric.label) {
     <app-metric-card
@@ -44,8 +52,12 @@
             <td>{{ event.category }}</td>
             <td><app-status-badge [value]="event.importance" /></td>
             <td>{{ event.relatedNews }}</td>
-            <td>{{ event.updatedAt }}</td>
+            <td>{{ formatDate(event.updatedAt) }}</td>
             <td><app-status-badge [value]="event.status" /></td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6">No hay eventos activos.</td>
           </tr>
         }
       </tbody>

@@ -4,11 +4,14 @@ import es.sindicato.intelligence.content.application.ApproveContentUseCase;
 import es.sindicato.intelligence.content.application.ContentAIProviderException;
 import es.sindicato.intelligence.content.application.GenerateContentCommand;
 import es.sindicato.intelligence.content.application.GenerateContentUseCase;
+import es.sindicato.intelligence.content.application.GetGeneratedContentUseCase;
+import es.sindicato.intelligence.content.application.ListGeneratedContentUseCase;
 import es.sindicato.intelligence.content.application.RejectContentUseCase;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,15 +29,33 @@ public class ContentController {
     private final GenerateContentUseCase generateContentUseCase;
     private final ApproveContentUseCase approveContentUseCase;
     private final RejectContentUseCase rejectContentUseCase;
+    private final ListGeneratedContentUseCase listGeneratedContentUseCase;
+    private final GetGeneratedContentUseCase getGeneratedContentUseCase;
 
     public ContentController(
             GenerateContentUseCase generateContentUseCase,
             ApproveContentUseCase approveContentUseCase,
-            RejectContentUseCase rejectContentUseCase
+            RejectContentUseCase rejectContentUseCase,
+            ListGeneratedContentUseCase listGeneratedContentUseCase,
+            GetGeneratedContentUseCase getGeneratedContentUseCase
     ) {
         this.generateContentUseCase = generateContentUseCase;
         this.approveContentUseCase = approveContentUseCase;
         this.rejectContentUseCase = rejectContentUseCase;
+        this.listGeneratedContentUseCase = listGeneratedContentUseCase;
+        this.getGeneratedContentUseCase = getGeneratedContentUseCase;
+    }
+
+    @GetMapping
+    public List<GeneratedContentResponse> listContent() {
+        return listGeneratedContentUseCase.execute().stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @GetMapping("/{id}")
+    public GeneratedContentResponse getContent(@PathVariable Long id) {
+        return toResponse(getGeneratedContentUseCase.execute(id));
     }
 
     @PostMapping("/generate")
