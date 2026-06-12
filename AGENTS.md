@@ -21,8 +21,9 @@ El objetivo del proyecto es reducir el trabajo manual de seguimiento informativo
 
 ## Idioma y Estilo
 
-- Responder siempre al usuario en espanol.
-- Crear documentacion, registros del asistente y skills siempre en espanol.
+- Responder siempre al usuario en español a sus preguntas.
+- Las respuestas que realizas cuando terminas de implementar codigo deben ser cortas, claras y concisas, que ahorren tokens
+- Crear documentacion, registros del asistente y skills siempre en español.
 - Usar nombres de archivos documentales en `snake_case`.
 - Cuando un archivo documental lleve fecha, colocarla siempre al inicio con formato `yyyy_mm_dd`.
 - Mantener comunicacion clara, tecnica y orientada a decisiones.
@@ -115,6 +116,7 @@ Backend:
 - Flyway.
 - Spring Security.
 - JWT.
+- MailHog.
 
 Frontend:
 
