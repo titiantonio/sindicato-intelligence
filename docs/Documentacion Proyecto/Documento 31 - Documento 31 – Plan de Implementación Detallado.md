@@ -1017,7 +1017,7 @@ Nota posterior 2026-06-07: inicialmente el proveedor IA se seleccionara por conf
 
 ---
 
-## T11.10 [~]
+## T11.10 [x]
 
 Usuarios y recuperacion de password en frontend.
 
@@ -1048,14 +1048,16 @@ T11.10.1 Crear rutas y pantallas forgot/reset password
 T11.10.2 Integrar llamadas API de forgot/reset en AuthService
 T11.10.3 Crear modulo/pantalla de usuarios para ADMIN
 T11.10.4 Integrar CRUD de usuarios con API backend
-T11.10.5 Añadir tests de frontend para formularios y servicios
+T11.10.5 [x] Anadir tests de frontend para formularios y servicios
 ```
 
-Nota posterior 2026-06-11: completadas T11.10.1, T11.10.2, T11.10.3 y T11.10.4 con nuevas rutas/pantallas de recuperacion, enlace en login, menu `Usuarios` solo ADMIN, pantalla de gestion de usuarios e integracion HTTP con backend. Verificado build frontend con `node node_modules/@angular/cli/bin/ng.js build`. Pendiente T11.10.5 (tests frontend especificos de formularios y servicios).
+Nota posterior 2026-06-11: completadas T11.10.1, T11.10.2, T11.10.3 y T11.10.4 con nuevas rutas/pantallas de recuperacion, enlace en login, menu `Usuarios` solo ADMIN, pantalla de gestion de usuarios e integracion HTTP con backend. Verificado build frontend con `node node_modules/@angular/cli/bin/ng.js build`. T11.10.5 quedaba pendiente hasta la cobertura especifica posterior.
 
 Nota posterior 2026-06-12: ajustado T11.10 para retirar password del alta de usuarios, mostrar estado/ultimo login/ultimo cambio de password/expiracion temporal, añadir acciones de activar, desactivar, bloquear, desbloquear y reset temporal, y crear pantalla `change-password` con guard de cambio obligatorio tras primer login. Verificado con `npm run build` en `frontend`.
 
 Nota posterior 2026-06-12: normalizada la pantalla `change-password` con el patron visual de recuperacion/reset de password, validacion `PASSWORD_PATTERN`, mensaje de exito previo al logout y feedback de exito/error en gestion de usuarios. Los botones administrativos quedan alineados por semantica: activar/desbloquear en verde, reset temporal en amarillo y bloquear/desactivar en rojo. Verificado con `npm.cmd run build`.
+
+Nota posterior 2026-06-13: cerrada T11.10.5 con 44 tests frontend nuevos para servicios auth/users/storage, guards auth/password/role y pantallas login, forgot-password, reset-password, change-password y users. Suite final: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` con 45 tests OK; build final `npm.cmd run build` OK.
 
 ---
 
@@ -1159,7 +1161,7 @@ Parcial o faltante:
 | Editor de contenido real | UX documentada; no implementado contra API. | High | 11 |
 | Historico de publicaciones real | Implementado el 2026-06-13 contra API real de publicaciones. | Completed | - |
 | Gestion de fuentes | Implementada el 2026-06-13 contra API real de fuentes. | Completed | - |
-| Tests frontend auth/users/guards | T11.10.5 pendiente; solo existe test base de app. | High | 14 |
+| Tests frontend auth/users/guards | Completado el 2026-06-13 con cobertura focal de servicios, guards y pantallas criticas. | Completed | - |
 | Eliminacion de mocks | `MockDashboardService` eliminado el 2026-06-13; revisar si quedan datos fixture puntuales en pantallas no criticas. | Completed | - |
 
 ## 16.4 Database
@@ -1268,7 +1270,7 @@ Implementado:
 Parcial o faltante:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
-| Tests frontend especificos | T11.10.5 pendiente; faltan tests de formularios auth/users, guards y servicios. | High | 14 |
+| Tests frontend especificos | Completado el 2026-06-13: 45 tests Angular en ChromeHeadless. | Completed | - |
 | E2E del flujo completo | No hay suite E2E versionada para RSS -> evento -> contenido -> publicacion. | High | 35 |
 | Tests de workflows n8n | No hay validacion automatizada de JSON/contratos por workflow. | Medium | 24 |
 | Tests de APIs de lectura Sprint 11 | Anadidos tests focales para eventos, contenido, publicaciones y dashboard. Siguen pendientes merge/scheduling si se implementan. | Completed | - |
@@ -1305,7 +1307,7 @@ Inconsistencias y deuda:
 11. High: completar editor manual de contenido si se mantiene como requisito MVP; la bandeja ya consume API real.
 12. Completed 2026-06-13: publicaciones Angular integradas con historial real.
 13. Completed 2026-06-13: gestion de fuentes Angular contra API existente.
-14. High: cerrar T11.10.5 con tests frontend de auth/users/guards/services.
+14. Completed 2026-06-13: T11.10.5 cerrado con tests frontend de auth/users/guards/services.
 15. Completed 2026-06-13: eliminado `MockDashboardService`.
 16. Medium: decidir estrategia Flyway: mantener V1..V5 o reconsolidar solo si se resetea BBDD de desarrollo.
 17. Medium: ampliar auditoria a eventos/contenido/publicaciones si se requiere trazabilidad editorial completa.
@@ -1334,8 +1336,8 @@ Inconsistencias y deuda:
 
 - Sprint actual real: Sprint 11 en progreso.
 - Bloqueador principal anterior resuelto: ya existen contratos de lectura para backoffice real de eventos, contenido, publicaciones y dashboard.
-- No iniciar Sprint 12 hasta cerrar T11.10.5, revisar autenticacion n8n WF-02..WF-06 y decidir `events/merge` y scheduling.
-- La siguiente tarea debe ser testing/operativa: tests frontend T11.10.5, validacion n8n JWT y decision de alcance para merge/scheduling/editor manual.
+- No iniciar Sprint 12 hasta revisar autenticacion n8n WF-02..WF-06 y decidir `events/merge` y scheduling.
+- La siguiente tarea debe ser operativa: validacion n8n JWT en WF-02..WF-06 y decision de alcance para merge/scheduling/editor manual.
 
 ---
 ## 16.14 Actualizacion de implementacion - 2026-06-13
@@ -1348,7 +1350,6 @@ Completado en esta iteracion:
 - Build frontend validado con `npm.cmd run build`.
 
 Pendiente tras esta iteracion:
-- T11.10.5: tests frontend de formularios auth/users, guards y servicios.
 - n8n: revisar WF-02..WF-06 para autenticacion JWT uniforme contra endpoints protegidos.
 - Decisiones de alcance: `POST /api/v1/events/merge`, scheduling de publicaciones y editor manual de contenido.
 - API/pantalla ADMIN para consultar auditoria de usuario si se requiere operacion visible.
@@ -1420,14 +1421,14 @@ Sprint 12
 Sprint 11 en progreso
 
 ```text
-1. Cerrar T11.10.5 con tests frontend de auth/users/guards/services.
-2. Revisar y alinear autenticacion JWT en n8n WF-02..WF-06.
-3. Decidir alcance MVP de POST /api/v1/events/merge, scheduling de publicaciones y editor manual de contenido.
-4. Exponer consulta ADMIN de auditoria si se requiere para operacion del backoffice.
+1. Revisar y alinear autenticacion JWT en n8n WF-02..WF-06.
+2. Decidir alcance MVP de POST /api/v1/events/merge, scheduling de publicaciones y editor manual de contenido.
+3. Exponer consulta ADMIN de auditoria si se requiere para operacion del backoffice.
+4. Preparar cierre de Sprint 11 si las validaciones operativas quedan OK.
 ```
 
 Rol:
 
 ```text
-testing-quality / n8n-workflow-architect / spring-backend-architect / frontend-angular-backoffice
+n8n-workflow-architect / spring-backend-architect / frontend-angular-backoffice / testing-quality
 ```
