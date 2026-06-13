@@ -1390,6 +1390,44 @@ Pendiente recomendado:
 - Validacion manual local con PostgreSQL, backend, frontend, n8n y MailHog levantados.
 - Checklist ejecutable de workflows n8n.
 - Preparar Sprint 12: versionado de prompts, metricas IA, monitorizacion workflows y dashboard de metricas.
+
+---
+
+## 16.17 Cierre tecnico Sprint 11 - 2026-06-13
+
+Evidencia ejecutada en esta iteracion:
+- Backend: `mvn test` ejecutado en `backend/` con resultado OK. Total: 191 tests, 0 failures, 0 errors, 0 skipped.
+- Flyway: validacion integrada durante `mvn test` con 6 migraciones validadas; esquema `public` actualizado sin migraciones pendientes.
+- Frontend tests: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` ejecutado en `frontend/` con resultado OK. Total: 53 specs, 0 failures.
+- Frontend build: `npm.cmd run build` ejecutado en `frontend/` con resultado OK. Artefacto generado en `frontend/dist/frontend`.
+- Workflows n8n: creado y ejecutado `n8n/validate-workflows.ps1` con resultado OK para `WF-01` a `WF-06`.
+
+Alcance del validador n8n:
+- Valida que los JSON exportados de `WF-01` a `WF-06` son parseables.
+- Confirma la presencia del nodo `Authenticate Backend`.
+- Confirma uso de cabecera `Authorization` con `Bearer` y `accessToken` en llamadas protegidas.
+- Confirma endpoints esperados sin modificar contratos:
+  - `WF-01`: `/api/v1/auth/login`, `/api/v1/sources`, `/api/v1/news/bulk`.
+  - `WF-02`: `/api/v1/auth/login`, `/api/v1/news`, `/api/v1/classifications/classify`.
+  - `WF-03`: `/api/v1/auth/login`, `/api/v1/news`, `/api/v1/events/detect`.
+  - `WF-04`: `/api/v1/auth/login`, `/api/v1/analysis/generate`.
+  - `WF-05`: `/api/v1/auth/login`, `/api/v1/content/generate`.
+  - `WF-06`: `/api/v1/auth/login`, `/api/v1/publications/{contentId}/publish`.
+
+Infraestructura local confirmada por configuracion:
+- `database/docker-compose.yml` mantiene PostgreSQL en `5432`, n8n en `5678` y MailHog con SMTP `1025` y UI `8025`.
+- n8n conserva credenciales tecnicas de desarrollo mediante `BACKEND_N8N_AUTH_EMAIL` y `BACKEND_N8N_AUTH_PASSWORD`.
+
+Estado operativo:
+- Sprint 11 queda cerrado tecnicamente para builds, tests, Flyway y validacion estatica de workflows.
+- La validacion manual end-to-end con servicios levantados queda pendiente como aceptacion funcional final.
+- No se detectaron cambios necesarios en contratos backend/frontend ni en los JSON de workflows.
+
+Pendiente de aceptacion manual:
+- Levantar PostgreSQL, MailHog, n8n, backend y frontend.
+- Ejecutar flujo completo `source/news -> classification -> event -> analysis -> content -> approval/edit -> publication/scheduling`.
+- Confirmar correos en MailHog (`http://localhost:8025`), auditoria visible en `/audit`, merge de eventos y publicaciones `SCHEDULED`.
+- Si la aceptacion manual es OK, abrir Sprint 12.
 ---
 
 # 17. Regla Operativa
@@ -1454,13 +1492,14 @@ Sprint 12
 
 # 19. Proxima Tarea
 
-Sprint 11 en cierre tecnico
+Sprint 11 listo para aceptacion manual final
 
 ```text
-1. Revisar manualmente flujo MVP completo News -> Event -> Analysis -> Content -> Publication.
-2. Anadir validacion automatizada/checklist ejecutable de workflows n8n.
-3. Preparar cierre formal de Sprint 11 con evidencia de build/tests/Flyway.
-4. Preparar Sprint 12: versionado de prompts, metricas IA, monitorizacion workflows y dashboard de metricas.
+1. Levantar PostgreSQL + MailHog + n8n + backend + frontend en local.
+2. Ejecutar validacion manual MVP completa News -> Event -> Analysis -> Content -> Publication, incluyendo approval/edit, scheduling, merge y /audit.
+3. Confirmar correos en MailHog y ejecucion de workflows n8n desde la UI local.
+4. Si la aceptacion manual es OK, cerrar Sprint 11 y abrir Sprint 12.
+5. Sprint 12: versionado de prompts, metricas IA, monitorizacion workflows y dashboard de metricas.
 ```
 
 Rol:

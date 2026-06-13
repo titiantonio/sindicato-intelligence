@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
 - Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
 - Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+- Cierre tecnico Sprint 11: anadido `n8n/validate-workflows.ps1` para validar JSON, autenticacion JWT/Bearer y endpoints esperados en `WF-01` a `WF-06`.
 
 - n8n: alineada autenticacion JWT en `WF-02` a `WF-06` con login tecnico `Authenticate Backend` y cabeceras `Authorization: Bearer` en endpoints protegidos.
 - T11.10.5: anadida cobertura frontend focal para AuthService, UserAdminService, StorageService, guards de auth/roles/cambio de password y pantallas criticas de login, recuperacion, reset, cambio obligatorio y gestion de usuarios.
@@ -33,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sprint 11 visual: creadas pantallas mock de `dashboard`, `events`, `content` y `publications` para avanzar la experiencia de backoffice mientras se completan los endpoints reales.
 
 ### Changed
+
+- Documento 31 actualizado con evidencia final de `mvn test`, Flyway, tests/build frontend y validacion n8n; la proxima tarea queda como aceptacion manual final de Sprint 11 antes de abrir Sprint 12.
 
 - Versionado del backend actualizado a .0.40-SNAPSHOT.
 
