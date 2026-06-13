@@ -1,5 +1,35 @@
-<article class="metric-card" [class]="'metric-card metric-card--' + tone()">
-  <p class="metric-card__label">{{ label() }}</p>
-  <strong class="metric-card__value">{{ value() }}</strong>
-  <span class="metric-card__trend">{{ trend() }}</span>
+<article class="metric-card" [class]="'metric-card metric-card--' + card().tone">
+  <header class="metric-card__header">
+    <span class="metric-card__main-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" focusable="false">
+        <path [attr.d]="iconPath(card().icon)" />
+      </svg>
+    </span>
+    <div class="metric-card__title">
+      <h2>{{ card().title }}</h2>
+      <p>{{ card().subtitle }}</p>
+    </div>
+    <span class="metric-card__badge">{{ card().badgeLabel }}</span>
+  </header>
+
+  <div class="metric-card__body">
+    @for (item of card().items; track item.label) {
+      <section class="metric-card__item">
+        <span class="metric-card__item-label">{{ item.label }}</span>
+        <div class="metric-card__item-value" [class]="'metric-card__item-value metric-card__item-value--' + valueTone(item)">
+          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path [attr.d]="iconPath(item.icon)" />
+          </svg>
+          <strong>{{ formattedValue(item) }}</strong>
+        </div>
+      </section>
+    }
+  </div>
+
+  <footer class="metric-card__footer">
+    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+      <path [attr.d]="iconPath('clock')" />
+    </svg>
+    <span>Ultima actualizacion: {{ formattedLastUpdatedAt() }}</span>
+  </footer>
 </article>

@@ -9,6 +9,7 @@ import { ThemeService } from '../../core/services/theme.service';
 interface NavigationItem {
   label: string;
   route: string;
+  icon: string;
   roles: UserRole[];
 }
 
@@ -23,16 +24,17 @@ export class ShellComponent {
   protected readonly themeService = inject(ThemeService);
 
   protected readonly sidebarOpen = signal(false);
+  protected readonly sidebarCollapsed = signal(false);
   protected readonly currentUser = this.authService.currentUser;
   protected readonly navigationItems = computed(() => {
     const items: NavigationItem[] = [
-      { label: 'Dashboard', route: '/dashboard', roles: ['ADMIN', 'EDITOR'] },
-      { label: 'Eventos', route: '/events', roles: ['ADMIN', 'EDITOR'] },
-      { label: 'Contenido', route: '/content', roles: ['ADMIN', 'EDITOR'] },
-      { label: 'Publicaciones', route: '/publications', roles: ['ADMIN', 'EDITOR'] },
-      { label: 'Fuentes', route: '/sources', roles: ['ADMIN'] },
-      { label: 'Usuarios', route: '/users', roles: ['ADMIN'] },
-      { label: 'Auditoria', route: '/audit', roles: ['ADMIN'] }
+      { label: 'Dashboard', route: '/dashboard', icon: 'D', roles: ['ADMIN', 'EDITOR'] },
+      { label: 'Eventos', route: '/events', icon: 'E', roles: ['ADMIN', 'EDITOR'] },
+      { label: 'Contenido', route: '/content', icon: 'C', roles: ['ADMIN', 'EDITOR'] },
+      { label: 'Publicaciones', route: '/publications', icon: 'P', roles: ['ADMIN', 'EDITOR'] },
+      { label: 'Fuentes', route: '/sources', icon: 'F', roles: ['ADMIN'] },
+      { label: 'Usuarios', route: '/users', icon: 'U', roles: ['ADMIN'] },
+      { label: 'Auditoria', route: '/audit', icon: 'A', roles: ['ADMIN'] }
     ];
 
     return items.filter((item) => this.authService.hasRole(item.roles));
@@ -44,6 +46,10 @@ export class ShellComponent {
 
   protected closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  protected toggleSidebarCollapsed(): void {
+    this.sidebarCollapsed.update((value) => !value);
   }
 
   protected logout(): void {

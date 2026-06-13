@@ -23,7 +23,7 @@
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(17rem, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -64,6 +64,16 @@ th {
 td {
   color: var(--color-text);
   vertical-align: top;
+}
+
+.event-row {
+  cursor: pointer;
+}
+
+.event-row:hover,
+.event-row:focus-visible {
+  background: var(--color-page-accent);
+  outline: none;
 }
 
 @media (max-width: 1200px) {

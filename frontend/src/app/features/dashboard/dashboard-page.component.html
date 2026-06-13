@@ -16,12 +16,7 @@
 
 <section class="metric-grid">
   @for (metric of metricCards(); track metric.label) {
-    <app-metric-card
-      [label]="metric.label"
-      [value]="metric.value"
-      [trend]="metric.trend"
-      [tone]="metric.tone"
-    />
+    <app-metric-card [card]="metric" />
   }
 </section>
 
@@ -47,7 +42,7 @@
       </thead>
       <tbody>
         @for (event of priorityEvents(); track event.id) {
-          <tr>
+          <tr class="event-row" [routerLink]="['/events', event.id]" tabindex="0">
             <td>{{ event.title }}</td>
             <td>{{ event.category }}</td>
             <td><app-status-badge [value]="event.importance" /></td>
@@ -57,7 +52,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="6">No hay eventos activos.</td>
+            <td colspan="6">No hay eventos prioritarios que requieran atencion inmediata.</td>
           </tr>
         }
       </tbody>

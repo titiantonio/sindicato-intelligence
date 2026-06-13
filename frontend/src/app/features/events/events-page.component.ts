@@ -6,6 +6,9 @@ import { EventListItem } from '../../core/models/event.models';
 import { EventService } from '../../core/services/event.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
+type EventSortColumn = 'id' | 'title' | 'category' | 'importance' | 'newsCount' | 'status' | 'updatedAt';
+type SortDirection = 'asc' | 'desc';
+
 @Component({
   selector: 'app-events-page',
   imports: [FormsModule, RouterLink, StatusBadgeComponent],
@@ -22,6 +25,20 @@ export class EventsPageComponent implements OnInit {
   protected readonly targetEventId = signal<number | null>(null);
   protected readonly sourceEventIds = signal<number[]>([]);
   protected readonly activeEvents = computed(() => this.events().filter((event) => event.status === 'OPEN' || event.status === 'MONITORING'));
+  protected readonly globalFilter = signal('');
+  protected readonly idFilter = signal('');
+  protected readonly titleFilter = signal('');
+  protected readonly categoryFilter = signal('');
+  protected readonly importanceFilter = signal('');
+  protected readonly newsCountFilter = signal('');
+  protected readonly statusFilter = signal('');
+  protected readonly updatedAtFilter = signal('');
+  protected readonly sortColumn = signal<EventSortColumn>('updatedAt');
+  protected readonly sortDirection = signal<SortDirection>('desc');
+  protected readonly categoryOptions = computed(() => this.uniqueOptions((event) => event.category));
+  protected readonly importanceOptions = computed(() => this.uniqueOptions((event) => event.importance));
+  protected readonly statusOptions = computed(() => this.uniqueOptions((event) => event.status));
+  protected readonly displayedEvents = computed(() => this.sortEvents(this.filterEvents(this.events())));
 
   ngOnInit(): void {
     this.loadEvents();
@@ -51,6 +68,56 @@ export class EventsPageComponent implements OnInit {
       dateStyle: 'short',
       timeStyle: 'short'
     }).format(new Date(value));
+  }
+
+  protected setGlobalFilter(value: string): void {
+    this.globalFilter.set(value);
+  }
+
+  protected setIdFilter(value: string): void {
+    this.idFilter.set(value);
+  }
+
+  protected setTitleFilter(value: string): void {
+    this.titleFilter.set(value);
+  }
+
+  protected setCategoryFilter(value: string): void {
+    this.categoryFilter.set(value);
+  }
+
+  protected setImportanceFilter(value: string): void {
+    this.importanceFilter.set(value);
+  }
+
+  protected setNewsCountFilter(value: string): void {
+    this.newsCountFilter.set(value);
+  }
+
+  protected setStatusFilter(value: string): void {
+    this.statusFilter.set(value);
+  }
+
+  protected setUpdatedAtFilter(value: string): void {
+    this.updatedAtFilter.set(value);
+  }
+
+  protected changeSort(column: EventSortColumn): void {
+    if (this.sortColumn() === column) {
+      this.sortDirection.update((direction) => direction === 'asc' ? 'desc' : 'asc');
+      return;
+    }
+
+    this.sortColumn.set(column);
+    this.sortDirection.set(column === 'updatedAt' ? 'desc' : 'asc');
+  }
+
+  protected sortLabel(column: EventSortColumn): string {
+    if (this.sortColumn() !== column) {
+      return '';
+    }
+
+    return this.sortDirection() === 'asc' ? '↑' : '↓';
   }
 
   protected setTargetEventId(value: string): void {
@@ -96,5 +163,71 @@ export class EventsPageComponent implements OnInit {
         this.errorMessage.set(error.error?.error ?? 'No se pudo fusionar los eventos.');
       }
     });
+  }
+
+  private filterEvents(events: EventListItem[]): EventListItem[] {
+    return events.filter((event) => this.matchesGlobalFilter(event))
+      .filter((event) => this.matchesText(event.id.toString(), this.idFilter()))
+      .filter((event) => this.matchesText(event.title, this.titleFilter()))
+      .filter((event) => this.matchesSelect(event.category, this.categoryFilter()))
+      .filter((event) => this.matchesSelect(event.importance, this.importanceFilter()))
+      .filter((event) => this.matchesText(event.newsCount.toString(), this.newsCountFilter()))
+      .filter((event) => this.matchesSelect(event.status, this.statusFilter()))
+      .filter((event) => this.matchesText(this.formatDate(event.updatedAt), this.updatedAtFilter()));
+  }
+
+  private matchesGlobalFilter(event: EventListItem): boolean {
+    const filter = this.normalize(this.globalFilter());
+    if (!filter) {
+      return true;
+    }
+
+    return [
+      event.id.toString(),
+      `#${event.id}`,
+      event.title,
+      event.category,
+      event.importance,
+      event.newsCount.toString(),
+      event.status,
+      event.updatedAt,
+      this.formatDate(event.updatedAt)
+    ].some((value) => this.normalize(value).includes(filter));
+  }
+
+  private sortEvents(events: EventListItem[]): EventListItem[] {
+    const direction = this.sortDirection() === 'asc' ? 1 : -1;
+    const column = this.sortColumn();
+
+    return [...events].sort((left, right) => direction * this.compareEvents(left, right, column));
+  }
+
+  private compareEvents(left: EventListItem, right: EventListItem, column: EventSortColumn): number {
+    if (column === 'id' || column === 'newsCount') {
+      return left[column] - right[column];
+    }
+
+    if (column === 'updatedAt') {
+      return new Date(left.updatedAt).getTime() - new Date(right.updatedAt).getTime();
+    }
+
+    return left[column].localeCompare(right[column], 'es', { sensitivity: 'base' });
+  }
+
+  private matchesText(value: string, filter: string): boolean {
+    const normalizedFilter = this.normalize(filter);
+    return !normalizedFilter || this.normalize(value).includes(normalizedFilter);
+  }
+
+  private matchesSelect(value: string, filter: string): boolean {
+    return !filter || value === filter;
+  }
+
+  private uniqueOptions(selector: (event: EventListItem) => string): string[] {
+    return [...new Set(this.events().map(selector))].sort((left, right) => left.localeCompare(right, 'es'));
+  }
+
+  private normalize(value: string): string {
+    return value.trim().toLocaleLowerCase('es');
   }
 }

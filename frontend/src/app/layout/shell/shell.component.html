@@ -1,8 +1,23 @@
-<div class="shell">
-  <aside class="shell__sidebar" [class.shell__sidebar--open]="sidebarOpen()">
-    <div class="shell__brand">
-      <span class="shell__eyebrow">Sindicato Intelligence</span>
-      <strong>Backoffice editorial</strong>
+<div class="shell" [class.shell--collapsed]="sidebarCollapsed()">
+  <aside
+    class="shell__sidebar"
+    [class.shell__sidebar--open]="sidebarOpen()"
+    [class.shell__sidebar--collapsed]="sidebarCollapsed()"
+  >
+    <div class="shell__brand-row">
+      <div class="shell__brand">
+        <span class="shell__eyebrow">Sindicato Intelligence</span>
+        <strong>Backoffice editorial</strong>
+      </div>
+      <button
+        type="button"
+        class="shell__collapse-button"
+        [attr.aria-label]="sidebarCollapsed() ? 'Expandir menu lateral' : 'Ocultar menu lateral'"
+        [title]="sidebarCollapsed() ? 'Expandir menu lateral' : 'Ocultar menu lateral'"
+        (click)="toggleSidebarCollapsed()"
+      >
+        <span aria-hidden="true">{{ sidebarCollapsed() ? '>' : '<' }}</span>
+      </button>
     </div>
 
     <nav class="shell__nav">
@@ -12,16 +27,13 @@
           routerLinkActive="shell__nav-link--active"
           class="shell__nav-link"
           (click)="closeSidebar()"
+          [title]="sidebarCollapsed() ? item.label : null"
         >
-          {{ item.label }}
+          <span class="shell__nav-icon" aria-hidden="true">{{ item.icon }}</span>
+          <span class="shell__nav-text">{{ item.label }}</span>
         </a>
       }
     </nav>
-
-    <section class="shell__spotlight">
-      <p class="shell__spotlight-title">Foco editorial</p>
-      <p>La navegacion gira sobre eventos, no sobre noticias aisladas.</p>
-    </section>
   </aside>
 
   <div class="shell__content">

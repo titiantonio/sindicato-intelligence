@@ -1496,6 +1496,68 @@ Estado:
 
 ---
 
+## 16.20 Mejora de dashboard y tabla de eventos - 2026-06-13
+
+Tarea de mejora sobre Sprint 11 Frontend Angular y API real de dashboard.
+
+Completado en esta iteracion:
+- Backend: `GET /api/v1/dashboard` devuelve metricas comparativas con valores de hoy, ayer y diferencia.
+- Backend: los rangos diarios se calculan con zona `Europe/Madrid`.
+- Backend: eventos prioritarios limitados a 10 eventos activos `OPEN`/`MONITORING`, con importancia `HIGH` o `CRITICAL`, excluyendo categoria `OTROS`.
+- Frontend: las tarjetas metricas muestran por separado hoy, ayer y la diferencia con signo.
+- Frontend: la tabla prioritaria del dashboard permite navegar al detalle del evento.
+- Frontend: la pantalla `/events` incorpora busqueda global, filtros por columna y ordenacion por cualquier campo visible.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=DashboardControllerTest" test` OK.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/shared/components/metric-card/metric-card.component.spec.ts --include=src/app/features/dashboard/dashboard-page.component.spec.ts --include=src/app/features/events/events-page.component.spec.ts` OK.
+- Frontend build: `npm.cmd run build` OK.
+
+Estado:
+- Mejora completada sin cambiar `GET /api/v1/events` ni adelantar Sprint 12.
+
+---
+
+## 16.21 Rediseño de tarjetas métricas del dashboard - 2026-06-13
+
+Tarea de mejora visual y contractual sobre Sprint 11 Frontend Angular y API real de dashboard.
+
+Completado en esta iteracion:
+- Backend: `GET /api/v1/dashboard` amplia cada tarjeta con titulo, subtitulo, icono, etiqueta, ultima actualizacion e indicadores internos.
+- Backend: las tarjetas usan datos reales del dominio para totales de noticias, eventos criticos, contenidos por estado y publicaciones programadas/fallidas.
+- Frontend: `MetricCardComponent` recibe la tarjeta completa y renderiza cabecera, tres indicadores, iconos SVG inline y pie de ultima actualizacion.
+- Frontend: el rediseño respeta los tokens de tema claro/oscuro existentes y no introduce nuevas dependencias.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=DashboardControllerTest" test` OK.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/shared/components/metric-card/metric-card.component.spec.ts --include=src/app/features/dashboard/dashboard-page.component.spec.ts` OK.
+- Frontend build: `npm.cmd run build` OK.
+
+Estado:
+- Mejora implementada sin crear nuevos estados de dominio ni adelantar Sprint 12.
+
+---
+
+## 16.22 Ajuste de metricas y sidebar colapsable - 2026-06-14
+
+Tarea de mejora visual y contractual sobre Sprint 11 Frontend Angular y API real de dashboard.
+
+Completado en esta iteracion:
+- Backend: cada tarjeta de `GET /api/v1/dashboard` devuelve su propia `lastUpdatedAt` calculada desde los datos de noticias, eventos, contenidos o publicaciones.
+- Frontend: las tarjetas metricas mantienen cabeceras y valores largos en una misma linea mediante tamanos responsivos y sin cortes agresivos de numeros.
+- Frontend: el shell reduce el ancho del menu lateral, anade modo colapsado en escritorio y mantiene solo iconos para reabrir/navegar.
+- Frontend: el layout principal usa columnas estables y `min-width: 0` para que pantallas con tablas anchas no deformen el sidebar.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=DashboardControllerTest" test` OK.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/shared/components/metric-card/metric-card.component.spec.ts --include=src/app/layout/shell/shell.component.spec.ts --include=src/app/features/dashboard/dashboard-page.component.spec.ts` OK.
+- Frontend build: `npm.cmd run build` OK.
+
+Estado:
+- Mejora implementada sin crear nuevas dependencias frontend ni adelantar Sprint 12.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { MetricCardComponent } from '../../shared/components/metric-card/metric-card.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
@@ -7,7 +8,7 @@ import { MetricCard, PriorityEvent } from '../../core/models/dashboard.models';
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [MetricCardComponent, StatusBadgeComponent],
+  imports: [MetricCardComponent, RouterLink, StatusBadgeComponent],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.scss'
 })

@@ -7,16 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- Frontend/auth: renovada automaticamente la sesion con `POST /api/v1/auth/refresh` cuando el access token caduca, reintentando la peticion original para evitar el error "No se pudo cargar el dashboard" tras inactividad.
-
-### Security
-
-- Backend auth: los refresh tokens dejan de incluir claims `role`/`roles`, evitando que puedan actuar como bearer token de autorizacion en endpoints protegidos.
-
 ### Added
 
+- Frontend shell: anadido modo colapsado del menu lateral en escritorio con navegacion por iconos y boton de expandir/ocultar.
+- Dashboard: contrato ampliado de tarjetas metricas con titulo, subtitulo, icono, etiqueta, ultima actualizacion e indicadores internos por tarjeta.
+- Dashboard: metricas comparativas con valores de hoy, ayer y diferencia para noticias capturadas, eventos detectados, contenidos pendientes y publicaciones realizadas.
+- Frontend eventos: busqueda global, filtros por columna y ordenacion ascendente/descendente por todos los campos visibles de la tabla `/events`.
 - Backend auth: anadido endpoint `POST /api/v1/auth/refresh` y caso de uso `RefreshTokenUseCase` para emitir nuevos access/refresh tokens a partir de refresh tokens validos.
 - Frontend UI: anadido modo claro/oscuro global con `ThemeService`, preferencia persistida, interruptor transversal y tokens CSS aplicados al backoffice y pantallas de autenticacion.
 - Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
@@ -47,6 +43,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Dashboard: cada tarjeta metrica calcula y muestra su propia fecha y hora de ultima actualizacion segun los datos de noticias, eventos, contenidos o publicaciones.
+- Dashboard: ajustado el layout de indicadores para mantener cabeceras y valores largos en una misma linea mediante tamanos responsivos.
+- Frontend shell: reducido y estabilizado el ancho del sidebar para evitar que pantallas con tablas anchas desconfiguren el layout.
+- Versionado del backend actualizado a `0.0.44-SNAPSHOT`.
+- Dashboard: redisenadas las cuatro tarjetas metricas con cabecera, tres indicadores internos, iconos SVG inline y estilos adaptados a tema claro/oscuro.
+- Versionado del backend actualizado a `0.0.43-SNAPSHOT`.
+- Dashboard: la tabla de eventos prioritarios muestra hasta 10 eventos activos de importancia `HIGH` o `CRITICAL`, excluye categoria `OTROS` y permite navegar al detalle del evento desde la fila.
+- Versionado del backend actualizado a `0.0.42-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.41-SNAPSHOT`.
 - Frontend UI: sustituido el interruptor textual de tema por un boton con icono de luna/sol integrado en la cabecera del backoffice, antes del bloque de usuario/logout.
 - Frontend auth: ocultado el token en la pantalla de establecimiento de nueva password; se mantiene internamente desde el enlace de recuperacion y se muestra error si falta.
@@ -71,6 +75,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Versionado del backend actualizado a `0.0.34-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.35-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.36-SNAPSHOT`.
+
+### Fixed
+
+- Frontend/auth: renovada automaticamente la sesion con `POST /api/v1/auth/refresh` cuando el access token caduca, reintentando la peticion original para evitar el error "No se pudo cargar el dashboard" tras inactividad.
+
+### Security
+
+- Backend auth: los refresh tokens dejan de incluir claims `role`/`roles`, evitando que puedan actuar como bearer token de autorizacion en endpoints protegidos.
 
 ## [0.0.28-SNAPSHOT] - 2026-06-09
 
