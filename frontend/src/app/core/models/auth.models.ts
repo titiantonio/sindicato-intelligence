@@ -40,6 +40,10 @@ export interface LoginResponse {
   user: AuthUser;
 }
 
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
 export interface AuthSession {
   accessToken: string;
   refreshToken: string;

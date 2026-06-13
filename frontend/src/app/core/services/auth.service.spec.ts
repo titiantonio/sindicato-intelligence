@@ -84,6 +84,26 @@ describe('AuthService', () => {
     request.flush({ message: 'ok' });
   });
 
+  it('refreshes the stored session', () => {
+    service.login({ email: 'admin@sindicato.es', password: 'Admin@12345' }).subscribe();
+    httpTestingController.expectOne('/api/v1/auth/login').flush(loginResponse);
+
+    service.refreshSession().subscribe();
+
+    const request = httpTestingController.expectOne('/api/v1/auth/refresh');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ refreshToken: 'refresh-token' });
+    request.flush({
+      ...loginResponse,
+      accessToken: 'new-access-token',
+      refreshToken: 'new-refresh-token'
+    });
+
+    expect(service.accessToken()).toBe('new-access-token');
+    expect(service.refreshToken()).toBe('new-refresh-token');
+    expect(localStorage.getItem('sindicato-intelligence.session')).toContain('new-access-token');
+  });
+
   it('changes password', () => {
     service.changePassword({ currentPassword: 'TempPass1!', newPassword: 'ValidPass1!' }).subscribe();
 

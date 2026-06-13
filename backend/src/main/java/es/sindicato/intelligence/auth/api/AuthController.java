@@ -3,6 +3,7 @@ package es.sindicato.intelligence.auth.api;
 import es.sindicato.intelligence.auth.application.LoginCommand;
 import es.sindicato.intelligence.auth.application.LoginResult;
 import es.sindicato.intelligence.auth.application.LoginUseCase;
+import es.sindicato.intelligence.auth.application.RefreshTokenUseCase;
 import es.sindicato.intelligence.auth.application.RequestPasswordResetUseCase;
 import es.sindicato.intelligence.auth.application.ResetPasswordUseCase;
 import es.sindicato.intelligence.auth.application.ChangePasswordUseCase;
@@ -27,6 +28,7 @@ import java.util.Map;
 public class AuthController {
 
     private final LoginUseCase loginUseCase;
+    private final RefreshTokenUseCase refreshTokenUseCase;
     private final RequestPasswordResetUseCase requestPasswordResetUseCase;
     private final ResetPasswordUseCase resetPasswordUseCase;
     private final ChangePasswordUseCase changePasswordUseCase;
@@ -34,12 +36,14 @@ public class AuthController {
 
     public AuthController(
             LoginUseCase loginUseCase,
+            RefreshTokenUseCase refreshTokenUseCase,
             RequestPasswordResetUseCase requestPasswordResetUseCase,
             ResetPasswordUseCase resetPasswordUseCase,
             ChangePasswordUseCase changePasswordUseCase,
             ResetTemporaryPasswordUseCase resetTemporaryPasswordUseCase
     ) {
         this.loginUseCase = loginUseCase;
+        this.refreshTokenUseCase = refreshTokenUseCase;
         this.requestPasswordResetUseCase = requestPasswordResetUseCase;
         this.resetPasswordUseCase = resetPasswordUseCase;
         this.changePasswordUseCase = changePasswordUseCase;
@@ -49,6 +53,11 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return toResponse(loginUseCase.execute(new LoginCommand(request.email(), request.password())));
+    }
+
+    @PostMapping("/refresh")
+    public LoginResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return toResponse(refreshTokenUseCase.execute(request.refreshToken()));
     }
 
     @PostMapping("/forgot-password")

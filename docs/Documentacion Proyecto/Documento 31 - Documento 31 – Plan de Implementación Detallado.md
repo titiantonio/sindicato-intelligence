@@ -1475,6 +1475,27 @@ Estado final:
 - Siguiente foco: Sprint 12 (`T12.1` versionado prompts, `T12.2` metricas IA, `T12.3` monitorizacion workflows, `T12.4` dashboard metricas).
 ---
 
+## 16.19 Correccion de sesion inactiva en backoffice - 2026-06-13
+
+Tarea de mantenimiento correctivo sobre Sprint 10 Seguridad y Sprint 11 Frontend Angular.
+
+Completado en esta iteracion:
+- Backend: anadido `POST /api/v1/auth/refresh` como endpoint publico de renovacion controlada de sesion con refresh token.
+- Backend: creado `RefreshTokenUseCase`, validando JWT de tipo `REFRESH`, expiracion, usuario existente y estado autenticable antes de emitir nuevos tokens.
+- Backend: los refresh tokens dejan de incluir claims de rol para impedir su uso como bearer token de autorizacion.
+- Frontend: `AuthService` expone `refreshSession` y conserva access/refresh token renovados en almacenamiento local.
+- Frontend: `jwtInterceptor` detecta respuestas `401`, renueva sesion y reintenta la peticion original con el nuevo access token.
+- Regresion cubierta: el dashboard y el listado de eventos dejan de fallar tras inactividad mientras el refresh token siga vigente.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=JwtTokenServiceTest,RefreshTokenUseCaseTest,AuthControllerTest,SecurityConfigTest" test` OK, 15 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/core/services/auth.service.spec.ts --include=src/app/core/interceptors/jwt.interceptor.spec.ts` OK, 9 specs.
+
+Estado:
+- Correccion completada sin cambiar decisiones arquitectonicas ni adelantar Sprint 12.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

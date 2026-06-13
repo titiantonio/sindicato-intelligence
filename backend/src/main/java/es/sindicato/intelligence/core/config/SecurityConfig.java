@@ -32,8 +32,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/health", "/api/v1/auth/login", "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password", "/api/v1/auth/request-temporary-password").permitAll()
-                        .requestMatchers("/api/v1/auth/change-password").authenticated()
+                        .requestMatchers("/api/v1/health", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password", "/api/v1/auth/request-temporary-password").permitAll()
+                        .requestMatchers("/api/v1/auth/change-password").hasAnyRole("ADMIN", "EDITOR")
                         .requestMatchers("/api/v1/audit/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/sources/**").hasRole("ADMIN")
@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/events/detect").hasRole("ADMIN")
                         .requestMatchers("/api/v1/news/**", "/api/v1/events/**").hasAnyRole("ADMIN", "EDITOR")
                         .requestMatchers("/api/v1/content/**", "/api/v1/publications/**").hasAnyRole("ADMIN", "EDITOR")
-                        .anyRequest().authenticated()
+                        .anyRequest().hasAnyRole("ADMIN", "EDITOR")
                 )
                 .addFilterAfter(forcePasswordChangeFilter, BearerTokenAuthenticationFilter.class)
                 .oauth2ResourceServer(oauth2 -> oauth2

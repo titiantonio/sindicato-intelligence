@@ -2,6 +2,7 @@ package es.sindicato.intelligence.auth.api;
 
 import es.sindicato.intelligence.auth.application.LoginResult;
 import es.sindicato.intelligence.auth.application.LoginUseCase;
+import es.sindicato.intelligence.auth.application.RefreshTokenUseCase;
 import es.sindicato.intelligence.auth.application.RequestPasswordResetUseCase;
 import es.sindicato.intelligence.auth.application.ResetPasswordUseCase;
 import es.sindicato.intelligence.auth.application.ChangePasswordUseCase;
@@ -32,6 +33,9 @@ class AuthControllerTest {
 
     @MockBean
     private LoginUseCase loginUseCase;
+
+    @MockBean
+    private RefreshTokenUseCase refreshTokenUseCase;
 
     @MockBean
     private RequestPasswordResetUseCase requestPasswordResetUseCase;
@@ -89,6 +93,31 @@ class AuthControllerTest {
                                 """))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("invalid credentials"));
+    }
+
+    @Test
+    void refreshesTokens() throws Exception {
+        when(refreshTokenUseCase.execute("refresh-token")).thenReturn(new LoginResult(
+                "new-access-token",
+                "new-refresh-token",
+                1L,
+                "Admin Sindicato",
+                "ADMIN",
+                false
+        ));
+
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "refreshToken": "refresh-token"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("new-access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("new-refresh-token"))
+                .andExpect(jsonPath("$.user.id").value(1L))
+                .andExpect(jsonPath("$.user.role").value("ADMIN"));
     }
 
     @Test

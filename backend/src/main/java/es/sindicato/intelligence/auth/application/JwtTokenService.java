@@ -68,20 +68,25 @@ public class JwtTokenService {
     }
 
     private String encode(AuthenticatedUser user, TokenType tokenType, Instant issuedAt, Instant expiresAt) {
-        JwtClaimsSet claimsSet = JwtClaimsSet.builder()
+        JwtClaimsSet.Builder claimsSetBuilder = JwtClaimsSet.builder()
                 .issuer(jwtSecurityProperties.issuer())
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
                 .subject(user.email())
                 .claim("userId", user.id())
                 .claim("name", user.name())
-                .claim("role", user.role())
-                .claim("roles", List.of(user.role()))
-                .claim("mustChangePassword", user.mustChangePassword())
                 .claim("tokenType", tokenType.name())
                 .claim("aud", List.of("sindicato-intelligence-api"))
-                .claim("ctx", Map.of("module", "auth"))
-                .build();
+                .claim("ctx", Map.of("module", "auth"));
+
+        if (tokenType == TokenType.ACCESS) {
+            claimsSetBuilder
+                    .claim("role", user.role())
+                    .claim("roles", List.of(user.role()))
+                    .claim("mustChangePassword", user.mustChangePassword());
+        }
+
+        JwtClaimsSet claimsSet = claimsSetBuilder.build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(() -> "HS256").build(), claimsSet)).getTokenValue();
     }

@@ -16,6 +16,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class JwtTokenServiceTest {
 
@@ -47,6 +48,8 @@ class JwtTokenServiceTest {
 
         assertEquals("admin@sindicato.es", refreshJwt.getSubject());
         assertEquals("REFRESH", refreshJwt.getClaimAsString("tokenType"));
+        assertNull(refreshJwt.getClaimAsStringList("roles"));
+        assertNull(refreshJwt.getClaimAsString("role"));
         assertEquals(Instant.parse("2026-06-17T10:00:00Z"), refreshJwt.getExpiresAt());
     }
 }

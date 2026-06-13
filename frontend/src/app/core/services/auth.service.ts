@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { tap } from 'rxjs';
+import { tap, throwError } from 'rxjs';
 
 import {
   AuthSession,
@@ -10,6 +10,7 @@ import {
   LoginRequest,
   LoginResponse,
   MessageResponse,
+  RefreshTokenRequest,
   RequestTemporaryPasswordRequest,
   ResetPasswordRequest,
   UserRole
@@ -33,18 +34,27 @@ export class AuthService {
   readonly currentUser = computed(() => this.sessionState()?.user ?? null);
   readonly currentRole = computed(() => this.sessionState()?.user.role ?? null);
   readonly accessToken = computed(() => this.sessionState()?.accessToken ?? null);
+  readonly refreshToken = computed(() => this.sessionState()?.refreshToken ?? null);
 
   login(request: LoginRequest) {
     return this.httpClient.post<LoginResponse>('/api/v1/auth/login', request).pipe(
       tap((response) => {
-        const session: AuthSession = {
-          accessToken: response.accessToken,
-          refreshToken: response.refreshToken,
-          user: response.user
-        };
+        this.storeSession(response);
+      })
+    );
+  }
 
-        this.sessionState.set(session);
-        this.storageService.setItem(SESSION_STORAGE_KEY, session);
+  refreshSession() {
+    const refreshToken = this.refreshToken();
+    if (!refreshToken) {
+      this.logout();
+      return throwError(() => new Error('refresh token is not available'));
+    }
+
+    const request: RefreshTokenRequest = { refreshToken };
+    return this.httpClient.post<LoginResponse>('/api/v1/auth/refresh', request).pipe(
+      tap((response) => {
+        this.storeSession(response);
       })
     );
   }
@@ -74,5 +84,16 @@ export class AuthService {
   hasRole(roles: UserRole[]): boolean {
     const role = this.currentRole();
     return role !== null && roles.includes(role);
+  }
+
+  private storeSession(response: LoginResponse): void {
+    const session: AuthSession = {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+      user: response.user
+    };
+
+    this.sessionState.set(session);
+    this.storageService.setItem(SESSION_STORAGE_KEY, session);
   }
 }
