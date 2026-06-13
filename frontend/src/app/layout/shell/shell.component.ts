@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { UserRole } from '../../core/models/auth.models';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 interface NavigationItem {
   label: string;
@@ -19,6 +20,7 @@ interface NavigationItem {
 })
 export class ShellComponent {
   private readonly authService = inject(AuthService);
+  protected readonly themeService = inject(ThemeService);
 
   protected readonly sidebarOpen = signal(false);
   protected readonly currentUser = this.authService.currentUser;
@@ -46,5 +48,9 @@ export class ShellComponent {
 
   protected logout(): void {
     this.authService.logout();
+  }
+
+  protected toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
 }

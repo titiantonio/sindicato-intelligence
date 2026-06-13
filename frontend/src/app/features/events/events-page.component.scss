@@ -1,9 +1,9 @@
 .page-header,
 .panel {
-  background: #ffffff;
+  background: var(--color-surface);
   border-radius: 1.25rem;
-  border: 1px solid #dbe4f0;
-  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.07);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
 }
 
 .page-header {
@@ -17,7 +17,7 @@
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 0.75rem;
-  color: #1d4ed8;
+  color: var(--color-primary);
 }
 
 .page-header h1 {
@@ -26,7 +26,7 @@
 
 .page-header p {
   margin: 0;
-  color: #475569;
+  color: var(--color-text-muted);
 }
 
 .filter-strip {
@@ -38,8 +38,8 @@
 .filter-strip span {
   padding: 0.5rem 0.8rem;
   border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: var(--color-page-accent);
+  color: var(--color-primary);
   font-size: 0.85rem;
   font-weight: 700;
 }
@@ -57,19 +57,19 @@ table {
 th,
 td {
   padding: 0.9rem 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-neutral-soft);
   text-align: left;
 }
 
 th {
-  color: #475569;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
 }
 
 .table-action {
-  background: #e2e8f0;
+  background: var(--color-neutral-soft);
   border-radius: 0.5rem;
-  color: #0f172a;
+  color: var(--color-text);
   display: inline-flex;
   font-weight: 700;
   padding: 0.45rem 0.65rem;
@@ -94,12 +94,12 @@ th {
 .merge-panel__sources {
   display: grid;
   gap: 0.45rem;
-  color: #334155;
+  color: var(--color-field-text);
   font-weight: 700;
 }
 
 .merge-panel select {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-input-border);
   border-radius: 0.5rem;
   padding: 0.65rem 0.75rem;
 }
@@ -119,10 +119,10 @@ th {
 }
 
 .merge-panel__button {
-  background: #1d4ed8;
+  background: var(--color-primary);
   border: 0;
   border-radius: 0.5rem;
-  color: #ffffff;
+  color: var(--color-page);
   cursor: pointer;
   font-weight: 800;
   justify-self: start;

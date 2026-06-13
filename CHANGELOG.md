@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend UI: anadido modo claro/oscuro global con `ThemeService`, preferencia persistida, interruptor transversal y tokens CSS aplicados al backoffice y pantallas de autenticacion.
 - Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
 - Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
 - Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
@@ -37,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend UI: sustituido el interruptor textual de tema por un boton con icono de luna/sol integrado en la cabecera del backoffice, antes del bloque de usuario/logout.
 - Frontend auth: ocultado el token en la pantalla de establecimiento de nueva password; se mantiene internamente desde el enlace de recuperacion y se muestra error si falta.
 - Frontend auth: simplificada la pantalla de recuperacion de password para dejar una unica accion de envio de enlace de restablecimiento, retirando el boton de password temporal de esa vista.
 - Documento 31 actualizado con evidencia final de `mvn test`, Flyway, tests/build frontend y validacion n8n; la proxima tarea queda como aceptacion manual final de Sprint 11 antes de abrir Sprint 12.

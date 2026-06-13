@@ -1,9 +1,9 @@
 .page-header,
 .panel {
-  background: #ffffff;
-  border: 1px solid #dbe4f0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 1.25rem;
-  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.07);
+  box-shadow: var(--shadow-soft);
 }
 
 .page-header {
@@ -16,7 +16,7 @@
 }
 
 .page-header__eyebrow {
-  color: #1d4ed8;
+  color: var(--color-primary);
   font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -27,7 +27,7 @@
 }
 
 .page-header p {
-  color: #475569;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -41,8 +41,8 @@
 }
 
 .page-header button {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: var(--color-neutral-soft);
+  color: var(--color-text);
 }
 
 .audit-tabs {
@@ -52,13 +52,13 @@
 }
 
 .audit-tabs button {
-  background: #e2e8f0;
-  color: #334155;
+  background: var(--color-neutral-soft);
+  color: var(--color-field-text);
 }
 
 .audit-tabs__button--active {
-  background: #1d4ed8 !important;
-  color: #ffffff !important;
+  background: var(--color-primary) !important;
+  color: var(--color-page) !important;
 }
 
 .table-wrap {
@@ -73,13 +73,13 @@ table {
 
 th,
 td {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-neutral-soft);
   padding: 0.9rem 0.75rem;
   text-align: left;
   vertical-align: top;
 }
 
 th {
-  color: #475569;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
 }

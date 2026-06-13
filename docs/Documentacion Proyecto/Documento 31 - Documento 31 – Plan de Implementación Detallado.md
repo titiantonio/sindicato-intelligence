@@ -935,6 +935,8 @@ Layout principal.
 
 Nota posterior 2026-06-10: implementado layout principal responsive con `ShellComponent`, sidebar, cabecera, menu dinamico por rol `ADMIN/EDITOR` y navegacion base para Dashboard, Eventos, Contenido, Publicaciones y Fuentes.
 
+Nota posterior 2026-06-13: anadido modo claro/oscuro global para todo el frontend mediante `ThemeService`, preferencia persistida en `localStorage`, interruptor transversal en `App` y tokens CSS aplicados al shell, login, recuperacion de password y pantallas de backoffice.
+
 ---
 
 ## T11.3 [x]

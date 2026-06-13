@@ -35,6 +35,18 @@
         <span class="shell__header-subtitle">Seguimiento educativo andaluz con foco sindical</span>
       </div>
 
+      <button
+        type="button"
+        class="shell__theme-button"
+        [class.shell__theme-button--dark]="themeService.theme() === 'dark'"
+        [attr.aria-pressed]="themeService.theme() === 'dark'"
+        [attr.aria-label]="themeService.theme() === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+        [title]="themeService.theme() === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+        (click)="toggleTheme()"
+      >
+        <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
+      </button>
+
       @if (currentUser(); as user) {
         <div class="shell__user">
           <div>

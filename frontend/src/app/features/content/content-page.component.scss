@@ -5,10 +5,10 @@
 }
 
 .panel {
-  background: #ffffff;
+  background: var(--color-surface);
   border-radius: 1.25rem;
-  border: 1px solid #dbe4f0;
-  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.07);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
 }
 
 .panel--editorial {
@@ -19,7 +19,7 @@
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 0.75rem;
-  color: #1d4ed8;
+  color: var(--color-primary);
 }
 
 .panel h1 {
@@ -27,7 +27,7 @@
 }
 
 .panel p {
-  color: #475569;
+  color: var(--color-text-muted);
 }
 
 .editor-preview {
@@ -39,14 +39,14 @@
 .editor-preview > div {
   padding: 1rem;
   border-radius: 1rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-muted-surface);
+  border: 1px solid var(--color-neutral-soft);
 }
 
 .editor-preview__label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #475569;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -61,7 +61,7 @@
 
 .editor-form label,
 .schedule-form label {
-  color: #334155;
+  color: var(--color-field-text);
   display: grid;
   font-weight: 700;
   gap: 0.35rem;
@@ -70,7 +70,7 @@
 .editor-form input,
 .editor-form textarea,
 .schedule-form input {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-input-border);
   border-radius: 0.5rem;
   padding: 0.65rem 0.75rem;
 }
@@ -86,13 +86,13 @@
 }
 
 .editor-form button {
-  background: #e2e8f0;
-  color: #0f172a;
+  background: var(--color-neutral-soft);
+  color: var(--color-text);
 }
 
 .schedule-form button {
-  background: #fde68a;
-  color: #78350f;
+  background: var(--color-warning-button);
+  color: var(--color-warning-button-text);
 }
 
 .table-wrap {
@@ -108,12 +108,12 @@ table {
 th,
 td {
   padding: 0.9rem 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-neutral-soft);
   text-align: left;
 }
 
 th {
-  color: #475569;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
 }
 
@@ -130,23 +130,23 @@ th {
 }
 
 .content-actions button {
-  background: #e2e8f0;
+  background: var(--color-neutral-soft);
   border: 0;
   border-radius: 0.5rem;
-  color: #0f172a;
+  color: var(--color-text);
   cursor: pointer;
   font-weight: 700;
   padding: 0.45rem 0.65rem;
 }
 
 .content-actions button:nth-child(2) {
-  background: #bbf7d0;
-  color: #14532d;
+  background: var(--color-success-soft);
+  color: var(--color-success-text);
 }
 
 .content-actions button:nth-child(3) {
-  background: #fecaca;
-  color: #7f1d1d;
+  background: var(--color-danger-button);
+  color: var(--color-danger-button-text);
 }
 
 .content-actions button:disabled {

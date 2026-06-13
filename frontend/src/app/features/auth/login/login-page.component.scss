@@ -2,14 +2,12 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 32%),
-    linear-gradient(135deg, #0f172a 0%, #1d4ed8 42%, #f8fafc 42%, #f8fafc 100%);
+  background: var(--login-page-background);
 }
 
 .login-page__intro {
   padding: 4rem;
-  color: #ffffff;
+  color: var(--color-sidebar-text);
   display: grid;
   align-content: center;
   gap: 1.5rem;
@@ -19,7 +17,7 @@
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 0.75rem;
-  color: #bfdbfe;
+  color: var(--color-primary-muted);
 }
 
 .login-page__intro h1 {
@@ -31,7 +29,7 @@
 .login-page__intro p {
   max-width: 38rem;
   font-size: 1.05rem;
-  color: #dbeafe;
+  color: var(--color-primary-muted);
 }
 
 .login-page__highlights {
@@ -45,12 +43,12 @@
   gap: 0.4rem;
   padding: 1rem;
   border-radius: 1rem;
-  background: rgba(15, 23, 42, 0.32);
-  border: 1px solid rgba(191, 219, 254, 0.18);
+  background: var(--color-login-highlight);
+  border: 1px solid var(--color-login-highlight-border);
 }
 
 .login-page__highlights span {
-  color: #cbd5e1;
+  color: var(--color-input-border);
 }
 
 .login-page__card {
@@ -61,9 +59,9 @@
 
 .login-page__card-header,
 .login-page__form {
-  background: #ffffff;
+  background: var(--color-surface);
   border-radius: 1.5rem;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+  box-shadow: var(--shadow-elevated);
 }
 
 .login-page__card-header {
@@ -74,12 +72,12 @@
 
 .login-page__card-header h2 {
   margin: 0 0 0.5rem;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .login-page__card-header p {
   margin: 0;
-  color: #475569;
+  color: var(--color-text-muted);
 }
 
 .login-page__form {
@@ -94,12 +92,12 @@
   display: grid;
   gap: 0.45rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--color-field-text);
 }
 
 .login-page__field input {
   width: 100%;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-input-border);
   border-radius: 0.9rem;
   padding: 0.95rem 1rem;
   font: inherit;
@@ -107,13 +105,13 @@
 
 .login-page__error {
   margin: 0;
-  color: #b91c1c;
+  color: var(--color-danger-text);
   font-weight: 600;
 }
 
 .login-page__forgot-link {
   justify-self: end;
-  color: #1d4ed8;
+  color: var(--color-primary);
   text-decoration: none;
   font-weight: 600;
 }
@@ -122,8 +120,8 @@
   border: 0;
   border-radius: 0.9rem;
   padding: 0.95rem 1rem;
-  background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-text) 100%);
+  color: var(--color-page);
   font-weight: 700;
   cursor: pointer;
 }

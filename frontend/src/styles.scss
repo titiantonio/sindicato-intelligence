@@ -1,13 +1,117 @@
+:root {
+  --color-page: #f8fafc;
+  --color-page-accent: #eff6ff;
+  --color-page-accent-strong: #eef2ff;
+  --color-surface: #ffffff;
+  --color-muted-surface: #f8fafc;
+  --color-raised-surface: #ffffff;
+  --color-sidebar: #0f172a;
+  --color-sidebar-alt: #1e293b;
+  --color-sidebar-text: #e2e8f0;
+  --color-sidebar-muted: #cbd5e1;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-text-soft: #64748b;
+  --color-field-text: #334155;
+  --color-border: #dbe4f0;
+  --color-border-soft: #e2e8f0;
+  --color-input-border: #cbd5e1;
+  --color-primary: #1d4ed8;
+  --color-primary-strong: #2563eb;
+  --color-primary-soft: #dbeafe;
+  --color-primary-muted: #93c5fd;
+  --color-primary-contrast: #ffffff;
+  --color-neutral-soft: #e2e8f0;
+  --color-success-soft: #dcfce7;
+  --color-success-text: #166534;
+  --color-success-strong: #16a34a;
+  --color-warning-soft: #fef3c7;
+  --color-warning-text: #92400e;
+  --color-warning-button: #fde68a;
+  --color-warning-button-text: #78350f;
+  --color-warning-strong: #d97706;
+  --color-danger-soft: #fee2e2;
+  --color-danger-text: #991b1b;
+  --color-danger-button: #fecaca;
+  --color-danger-button-text: #7f1d1d;
+  --color-danger-strong: #dc2626;
+  --shadow-soft: 0 14px 40px rgba(15, 23, 42, 0.07);
+  --shadow-card: 0 18px 42px rgba(15, 23, 42, 0.12);
+  --shadow-elevated: 0 24px 60px rgba(15, 23, 42, 0.14);
+  --shadow-compact: 0 12px 30px rgba(15, 23, 42, 0.08);
+  --color-overlay-primary: rgba(59, 130, 246, 0.18);
+  --color-overlay-soft: rgba(148, 163, 184, 0.12);
+  --color-overlay-border: rgba(148, 163, 184, 0.18);
+  --color-header-surface: rgba(255, 255, 255, 0.78);
+  --color-login-highlight: rgba(15, 23, 42, 0.32);
+  --color-login-highlight-border: rgba(191, 219, 254, 0.18);
+  --auth-page-background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 28%), var(--color-page);
+  --login-page-background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 32%), linear-gradient(135deg, #0f172a 0%, #1d4ed8 42%, #f8fafc 42%, #f8fafc 100%);
+  --shell-background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 40%, #eef2ff 100%);
+}
+
+:root[data-theme='dark'] {
+  --color-page: #0b1120;
+  --color-page-accent: #111827;
+  --color-page-accent-strong: #172033;
+  --color-surface: #111827;
+  --color-muted-surface: #0f172a;
+  --color-raised-surface: #1e293b;
+  --color-sidebar: #020617;
+  --color-sidebar-alt: #111827;
+  --color-sidebar-text: #f8fafc;
+  --color-sidebar-muted: #cbd5e1;
+  --color-text: #f8fafc;
+  --color-text-muted: #cbd5e1;
+  --color-text-soft: #94a3b8;
+  --color-field-text: #e2e8f0;
+  --color-border: #334155;
+  --color-border-soft: #263449;
+  --color-input-border: #475569;
+  --color-primary: #60a5fa;
+  --color-primary-strong: #93c5fd;
+  --color-primary-soft: #1e3a8a;
+  --color-primary-muted: #bfdbfe;
+  --color-primary-contrast: #0f172a;
+  --color-neutral-soft: #263449;
+  --color-success-soft: #14532d;
+  --color-success-text: #bbf7d0;
+  --color-success-strong: #22c55e;
+  --color-warning-soft: #78350f;
+  --color-warning-text: #fde68a;
+  --color-warning-button: #92400e;
+  --color-warning-button-text: #fef3c7;
+  --color-warning-strong: #f59e0b;
+  --color-danger-soft: #7f1d1d;
+  --color-danger-text: #fecaca;
+  --color-danger-button: #991b1b;
+  --color-danger-button-text: #fee2e2;
+  --color-danger-strong: #f87171;
+  --shadow-soft: 0 14px 40px rgba(0, 0, 0, 0.28);
+  --shadow-card: 0 18px 42px rgba(0, 0, 0, 0.34);
+  --shadow-elevated: 0 24px 60px rgba(0, 0, 0, 0.38);
+  --shadow-compact: 0 12px 30px rgba(0, 0, 0, 0.32);
+  --color-overlay-primary: rgba(96, 165, 250, 0.22);
+  --color-overlay-soft: rgba(148, 163, 184, 0.14);
+  --color-overlay-border: rgba(148, 163, 184, 0.22);
+  --color-header-surface: rgba(17, 24, 39, 0.82);
+  --color-login-highlight: rgba(2, 6, 23, 0.52);
+  --color-login-highlight-border: rgba(191, 219, 254, 0.24);
+  --auth-page-background: radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 28%), var(--color-page);
+  --login-page-background: radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 32%), linear-gradient(135deg, #020617 0%, #1e3a8a 42%, #0b1120 42%, #0b1120 100%);
+  --shell-background: linear-gradient(180deg, #020617 0%, #0b1120 45%, #111827 100%);
+}
+
 html {
   font-family: Inter, "Segoe UI", sans-serif;
-  color: #0f172a;
-  background: #f8fafc;
+  color: var(--color-text);
+  background: var(--color-page);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--color-page);
 }
 
 * {
@@ -19,6 +123,8 @@ input,
 textarea,
 select {
   font: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 h1,
@@ -29,20 +135,20 @@ p {
 }
 
 .page-alert {
-  background: #e2e8f0;
+  background: var(--color-neutral-soft);
   border-radius: 0.5rem;
-  color: #334155;
+  color: var(--color-field-text);
   font-weight: 600;
   margin: 0 0 1rem;
   padding: 0.65rem 0.75rem;
 }
 
 .page-alert--error {
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--color-danger-soft);
+  color: var(--color-danger-text);
 }
 
 .page-alert--success {
-  background: #dcfce7;
-  color: #14532d;
+  background: var(--color-success-soft);
+  color: var(--color-success-text);
 }

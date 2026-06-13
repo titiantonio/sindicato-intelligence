@@ -308,7 +308,6 @@ Desde el enlace "Olvidé mi password" en login.
 
 - Campo Email.
 - Botón "Enviar enlace de recuperación".
-- Botón "Solicitar nueva password temporal".
 - Enlace de vuelta al login.
 
 ### Resultado esperado
@@ -323,7 +322,6 @@ Definir una password nueva usando un token de recuperación.
 
 ### Elementos visibles
 
-- Token de recuperación.
 - Nueva password.
 - Confirmar password.
 - Botón "Actualizar password".
