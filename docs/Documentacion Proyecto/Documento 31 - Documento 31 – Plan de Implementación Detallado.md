@@ -1558,6 +1558,27 @@ Estado:
 
 ---
 
+## 16.23 Ajuste de gestion de fuentes - 2026-06-14
+
+Tarea de mejora correctiva sobre Sprint 11 Frontend Angular y pantalla ADMIN de fuentes.
+
+Completado en esta iteracion:
+- Frontend: eliminada la tarjeta fija `sources-page__card` de "Nueva fuente" de la pantalla `/sources`.
+- Frontend: anadido boton principal "Anadir fuente" que abre modal de creacion.
+- Frontend: la accion "Editar" abre modal de edicion con los datos de la fuente seleccionada.
+- Frontend: la tabla de fuentes permite busqueda global, filtros por columna y ordenacion por ID, nombre, URL, tipo, prioridad, estado, fecha de creacion y fecha de actualizacion.
+- Frontend: ajustado el layout para que la pagina no sea mas ancha que la pantalla; el scroll horizontal queda contenido dentro del wrapper de la tabla.
+
+Verificacion:
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/sources/sources-page.component.spec.ts` OK, 7 tests.
+- Frontend build: `npm.cmd run build` OK.
+- Browser local: `/sources` verificada con 54 filas reales en desktop y viewport movil 390x844; sin overflow horizontal de pagina, con scroll interno de tabla, modal de alta/edicion y filtro global operativos.
+
+Estado:
+- Mejora implementada sin cambiar contratos backend ni abrir Sprint 12.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

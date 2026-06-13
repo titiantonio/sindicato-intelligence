@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend fuentes: anadido boton "Anadir fuente", modal de alta, modal de edicion y tests focales de la pantalla `/sources`.
+- Frontend fuentes: anadida busqueda global, filtros por columna y ordenacion por todos los campos visibles de la tabla de fuentes.
 - Frontend shell: anadido modo colapsado del menu lateral en escritorio con navegacion por iconos y boton de expandir/ocultar.
 - Dashboard: contrato ampliado de tarjetas metricas con titulo, subtitulo, icono, etiqueta, ultima actualizacion e indicadores internos por tarjeta.
 - Dashboard: metricas comparativas con valores de hoy, ayer y diferencia para noticias capturadas, eventos detectados, contenidos pendientes y publicaciones realizadas.
@@ -43,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend fuentes: eliminado el formulario fijo "Nueva fuente" de la pantalla y ajustado el layout para que el ancho sobrante quede contenido en el scroll interno de la tabla.
+- Versionado del backend actualizado a `0.0.45-SNAPSHOT`.
 - Dashboard: cada tarjeta metrica calcula y muestra su propia fecha y hora de ultima actualizacion segun los datos de noticias, eventos, contenidos o publicaciones.
 - Dashboard: ajustado el layout de indicadores para mantener cabeceras y valores largos en una misma linea mediante tamanos responsivos.
 - Frontend shell: reducido y estabilizado el ancho del sidebar para evitar que pantallas con tablas anchas desconfiguren el layout.
