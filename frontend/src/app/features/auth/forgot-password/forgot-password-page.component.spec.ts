@@ -11,10 +11,7 @@ describe('ForgotPasswordPageComponent', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
-    authService = jasmine.createSpyObj<AuthService>('AuthService', [
-      'requestPasswordReset',
-      'requestTemporaryPassword'
-    ]);
+    authService = jasmine.createSpyObj<AuthService>('AuthService', ['requestPasswordReset']);
 
     await TestBed.configureTestingModule({
       imports: [ForgotPasswordPageComponent],
@@ -44,16 +41,6 @@ describe('ForgotPasswordPageComponent', () => {
     expect(authService.requestPasswordReset).toHaveBeenCalledWith({ email: 'editor@sindicato.es' });
     expect((component as any).successMessage()).toBe('Correo enviado');
     expect((component as any).isSubmitting()).toBeFalse();
-  });
-
-  it('requests a new temporary password', () => {
-    authService.requestTemporaryPassword.and.returnValue(of({ message: 'Password temporal enviada' }));
-    (component as any).forgotPasswordForm.setValue({ email: 'editor@sindicato.es' });
-
-    (component as any).requestTemporaryPassword();
-
-    expect(authService.requestTemporaryPassword).toHaveBeenCalledWith({ email: 'editor@sindicato.es' });
-    expect((component as any).successMessage()).toBe('Password temporal enviada');
   });
 
   it('shows request errors', () => {

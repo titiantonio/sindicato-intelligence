@@ -41,6 +41,26 @@ describe('ResetPasswordPageComponent', () => {
     expect((component as any).resetPasswordForm.controls.token.value).toBe('query-token');
   });
 
+  it('does not show the recovery token field', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.textContent).not.toContain('Token de recuperacion');
+    expect(compiled.querySelector('input[formControlName="token"]')).toBeNull();
+  });
+
+  it('rejects submit when the recovery token is missing', () => {
+    (component as any).resetPasswordForm.setValue({
+      token: '',
+      newPassword: 'ValidPass1!',
+      confirmPassword: 'ValidPass1!'
+    });
+
+    (component as any).submit();
+
+    expect(authService.resetPassword).not.toHaveBeenCalled();
+    expect((component as any).errorMessage()).toBe('El enlace de recuperacion no es valido o ha caducado.');
+  });
+
   it('does not submit invalid password pattern', () => {
     (component as any).resetPasswordForm.setValue({
       token: 'query-token',

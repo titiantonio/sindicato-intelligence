@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend auth: ocultado el token en la pantalla de establecimiento de nueva password; se mantiene internamente desde el enlace de recuperacion y se muestra error si falta.
+- Frontend auth: simplificada la pantalla de recuperacion de password para dejar una unica accion de envio de enlace de restablecimiento, retirando el boton de password temporal de esa vista.
 - Documento 31 actualizado con evidencia final de `mvn test`, Flyway, tests/build frontend y validacion n8n; la proxima tarea queda como aceptacion manual final de Sprint 11 antes de abrir Sprint 12.
 - Documento 31 actualizado con aceptacion local final de Sprint 11 y roadmap corregido para abrir Sprint 12.
 

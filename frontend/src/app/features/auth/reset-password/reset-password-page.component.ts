@@ -29,6 +29,11 @@ export class ResetPasswordPageComponent {
   });
 
   protected submit(): void {
+    if (!this.resetPasswordForm.controls.token.value) {
+      this.errorMessage.set('El enlace de recuperacion no es valido o ha caducado.');
+      return;
+    }
+
     if (this.resetPasswordForm.invalid) {
       this.resetPasswordForm.markAllAsTouched();
       return;

@@ -1021,6 +1021,10 @@ Nota posterior 2026-06-07: inicialmente el proveedor IA se seleccionara por conf
 
 Usuarios y recuperacion de password en frontend.
 
+Nota posterior 2026-06-13: ajustada la pantalla `forgot-password` para dejar una unica accion visible de recuperacion mediante enlace de restablecimiento. Se retira de esa vista el boton de solicitud de password temporal, manteniendo el flujo administrativo separado de reset temporal de usuarios.
+
+Nota posterior 2026-06-13: ajustada la pantalla `reset-password` para no mostrar el token de recuperacion al usuario. El token se conserva internamente desde el enlace del correo y se informa error si el enlace no lo incluye.
+
 ---
 
 Alcance:
