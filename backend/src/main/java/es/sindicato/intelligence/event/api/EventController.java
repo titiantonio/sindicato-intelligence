@@ -12,6 +12,8 @@ import es.sindicato.intelligence.event.application.GetEventDetailUseCase;
 import es.sindicato.intelligence.event.application.GetEventDetailUseCase.EventDetail;
 import es.sindicato.intelligence.event.application.GetEventDetailUseCase.EventNewsDetail;
 import es.sindicato.intelligence.event.application.ListEventsUseCase;
+import es.sindicato.intelligence.event.application.MergeEventsCommand;
+import es.sindicato.intelligence.event.application.MergeEventsUseCase;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import jakarta.validation.Valid;
@@ -35,15 +37,18 @@ public class EventController {
     private final DetectEventUseCase detectEventUseCase;
     private final ListEventsUseCase listEventsUseCase;
     private final GetEventDetailUseCase getEventDetailUseCase;
+    private final MergeEventsUseCase mergeEventsUseCase;
 
     public EventController(
             DetectEventUseCase detectEventUseCase,
             ListEventsUseCase listEventsUseCase,
-            GetEventDetailUseCase getEventDetailUseCase
+            GetEventDetailUseCase getEventDetailUseCase,
+            MergeEventsUseCase mergeEventsUseCase
     ) {
         this.detectEventUseCase = detectEventUseCase;
         this.listEventsUseCase = listEventsUseCase;
         this.getEventDetailUseCase = getEventDetailUseCase;
+        this.mergeEventsUseCase = mergeEventsUseCase;
     }
 
     @GetMapping
@@ -61,6 +66,15 @@ public class EventController {
     @PostMapping("/detect")
     public DetectEventResponse detectEvent(@Valid @RequestBody DetectEventRequest request) {
         return toResponse(detectEventUseCase.execute(new DetectEventCommand(request.newsId())));
+    }
+
+    @PostMapping("/merge")
+    public EventDetailResponse mergeEvents(@Valid @RequestBody MergeEventsRequest request) {
+        Event mergedEvent = mergeEventsUseCase.execute(new MergeEventsCommand(
+                request.targetEventId(),
+                request.sourceEventIds()
+        ));
+        return toDetailResponse(getEventDetailUseCase.execute(mergedEvent.getId()));
     }
 
     @ExceptionHandler(EventNotFoundException.class)

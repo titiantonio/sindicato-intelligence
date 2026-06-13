@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - n8n: alineada autenticacion JWT en `WF-02` a `WF-06` con login tecnico `Authenticate Backend` y cabeceras `Authorization: Bearer` en endpoints protegidos.
 - T11.10.5: anadida cobertura frontend focal para AuthService, UserAdminService, StorageService, guards de auth/roles/cambio de password y pantallas criticas de login, recuperacion, reset, cambio obligatorio y gestion de usuarios.
 - Sprint 11: anadidos endpoints reales de lectura para eventos, detalle de evento, contenido generado, publicaciones y dashboard; el backoffice Angular consume APIs reales para dashboard, eventos, detalle de evento, contenido, publicaciones y fuentes, eliminando `MockDashboardService`.
@@ -30,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
+
 - Versionado del backend actualizado a `0.0.39-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.38-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.37-SNAPSHOT`.
@@ -50,6 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - T9.1: creado el modulo backend `publication` con capas `domain`, `application`, `infrastructure` y `api`, entidad de dominio `Publication`, enum `PublicationStatus` y puerto `PublicationRepository`.
 - T9.2: creado el puerto `PublishingProvider` con contratos `PublishingRequest`, `PublishingResult` y excepcion `PublishingProviderException` para integraciones de publicacion.
 - T9.3: implementado `TelegramPublisher` con Bot API de Telegram, configuracion por variables de entorno, logs seguros y parseo acotado de respuestas.
@@ -58,11 +68,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
+
 - Sprint 9 de Publicacion Telegram completado y versionado del backend actualizado a `0.0.28-SNAPSHOT`.
 
 ## [0.0.27-SNAPSHOT] - 2026-06-09
 
 ### Added
+
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
 
 - T8.1: creado el modulo backend `content` con capas `domain`, `application`, `infrastructure` y `api`, entidad de dominio `GeneratedContent`, enum `ContentStatus` y puerto `GeneratedContentRepository`.
 - T8.2: implementado `GenerateContentUseCase` con puerto `ContentAIProvider`, resolucion de evento/analisis, autor transitorio mediante `CurrentContentAuthorProvider` y logs operativos.
@@ -71,11 +87,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
+
 - Sprint 8 de Contenido completado y versionado del backend actualizado a `0.0.27-SNAPSHOT`.
 
 ## [0.0.26-SNAPSHOT] - 2026-06-08
 
 ### Added
+
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
 
 - T7.1: creado el modulo backend `analysis` con capas `domain`, `application`, `infrastructure` y `api`, entidad de dominio `EventAIAnalysis` y puerto `EventAIAnalysisRepository`.
 - T7.2: implementado `GenerateAnalysisUseCase` con contratos de aplicacion para IA de analisis, carga de evento/noticias asociadas, persistencia mediante puerto y logs operativos `INFO`, `WARN` y `ERROR`.
@@ -84,11 +106,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
+
 - Sprint 7 de Analisis IA completado y versionado del backend actualizado a `0.0.26-SNAPSHOT`.
 
 ## [0.0.25-SNAPSHOT] - 2026-06-08
 
 ### Changed
+
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
 
 - Ajustada la salida de consola de Logback para colorear los niveles de log con el conversor ANSI de Spring Boot, manteniendo los archivos persistidos sin codigos de color.
 - Activada la salida ANSI por defecto mediante `spring.output.ansi.enabled`, configurable con `SPRING_OUTPUT_ANSI_ENABLED`.
@@ -98,11 +124,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - Añadidos logs operativos a los casos de uso existentes de `source`, `news` y `event`, cubriendo inicio, fin, conteos, descartes, duplicados y fallos recuperables.
 - Añadido reintento controlado en `GeminiAIProvider` para respuestas recuperables sin texto, sin JSON o con JSON invalido.
 - Añadido diagnostico acotado de respuestas Gemini sin `candidates[0].content.parts[0].text`, incluyendo `finishReason`, `blockReason` y `safetyRatings` sin registrar prompts completos ni secretos.
 
 ### Changed
+
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
 
 - Los fallos de clasificacion IA ahora registran la excepcion completa en backend para facilitar diagnostico desde archivo de log.
 - Versionado del backend actualizado a `0.0.24-SNAPSHOT`.
@@ -111,11 +143,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - Añadida configuracion `logback-spring.xml` con salida a consola, archivo general, archivo de errores, rotacion diaria por tamaño, compresion `.gz`, carpetas mensuales y retencion de 90 dias.
 - Añadida variable `LOG_PATH` para configurar la ubicacion de logs, con valor por defecto `logs`.
 - Creada la skill `sindicato-logging-observabilidad` para guiar la incorporacion de logs seguros y utiles en nuevas implementaciones backend.
 
 ### Changed
+
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
 
 - Actualizado `AGENTS.md` para exigir logs operativos en nuevas funcionalidades backend y registrar la nueva skill de logging.
 - Versionado del backend actualizado a `0.0.23-SNAPSHOT`.
@@ -133,6 +171,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
+
 - Añadidos logs `INFO`, `WARN` y `ERROR` al caso de uso de clasificacion para trazar inicio, finalizacion, duplicados y fallos por noticia.
 - Añadido log `WARN` con fragmento acotado de respuesta Gemini cuando el proveedor IA no devuelve un objeto JSON clasificable.
 - Hecho robusto el filtro de `WF-02-Classify-News` para procesar correctamente respuestas de `GET /api/v1/news` tanto si n8n las entrega como array en un item como si las entrega item a item.
@@ -142,6 +182,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
+
 - Ajustado el prompt WF-02 para diferenciar noticias fuera de ambito con `category=OTROS`, `subcategory=FUERA_DE_AMBITO`, `relevance=0`, `impact=LOW` y `urgency=LOW`.
 - Diferenciadas las noticias con informacion insuficiente usando `subcategory=INFORMACION_INSUFICIENTE`, evitando mezclarlas con descartes fuera de ambito.
 - Versionado del backend actualizado a `0.0.20-SNAPSHOT`.
@@ -149,6 +191,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.19-SNAPSHOT] - 2026-06-07
 
 ### Changed
+
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
 
 - Reforzado el prompt oficial WF-02 con criterios de relevancia, impacto y urgencia basados en afectacion laboral al profesorado andaluz, manteniendo el contrato JSON de clasificacion del backend.
 - Ajustado `WF-02-Classify-News` para procesar como maximo 10 noticias `CAPTURED` por ejecucion y poder ejecutarse cada 5 minutos desde n8n.
@@ -165,12 +209,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - Implementado `GeminiAIProvider` como proveedor real externo para `AIProvider`, activable con `app.ai.provider=gemini` y modelo por defecto `models/gemma-4-31b-it`.
 - Añadida configuracion tecnica `app.ai` con seleccion de proveedor, API key, modelo, temperatura y limite de tokens mediante `application.yml` o variables de entorno.
 - Añadida `AIProviderException` y respuesta HTTP `502 Bad Gateway` para fallos claros del proveedor IA externo sin fallback silencioso.
 - Añadidos tests de parseo de respuesta Gemini, errores de configuracion/respuesta y seleccion de proveedor IA por propiedades.
 
 ### Changed
+
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
 
 - `DeterministicAIProvider` queda activo por defecto solo cuando `app.ai.provider=deterministic` o no se configura proveedor.
 - Versionado del backend actualizado a `0.0.17-SNAPSHOT`.
@@ -179,9 +229,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - Añadida la migracion Flyway `V3__seed_rss_sources.sql` con las 54 fuentes RSS iniciales revisadas para pruebas de `WF-01-Capture-News`.
 
 ### Changed
+
+- Versionado del backend actualizado a .0.40-SNAPSHOT.
 
 - Consolidadas las migraciones Flyway iniciales en `V1__create_mvp_schema.sql`, `V2__seed_admin_user.sql` y `V3__seed_rss_sources.sql` para reconstruir el esquema MVP desde cero en desarrollo.
 - Añadida la constraint `uk_sources_url` en la creacion inicial de `sources` para impedir URLs de fuentes duplicadas.
@@ -192,6 +248,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.15-SNAPSHOT] - 2026-06-06
 
 ### Added
+
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
 
 - T6.1: creada la estructura inicial del modulo `event` con capas `domain`, `application`, `infrastructure` y `api`.
 - T6.2: creada la entidad de dominio `Event` con estados, importancia, categorias oficiales e invariantes basicas del agregado.
@@ -215,6 +275,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - T5.1: creada la estructura inicial del modulo `classification` con capas `domain`, `application`, `infrastructure` y `api`.
 - T5.2: creada la entidad de dominio `NewsClassification` con taxonomia oficial, niveles de impacto/urgencia y pruebas unitarias.
 - T5.3: creado el puerto de dominio `NewsClassificationRepository` para persistencia y consultas por `newsId`.
@@ -229,6 +293,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - T4.1: creado `IngestNewsBatchUseCase` con procesamiento parcial por item para alinear WF-01 con el flujo `n8n -> API -> Spring Boot -> PostgreSQL`.
 - T4.2: creado el endpoint de ingestión masiva `POST /api/v1/news/bulk` con respuesta de resumen por lote.
 - T4.3: implementada la normalizacion RSS en backend mediante `NewsCaptureNormalizer` antes de persistir cada item del lote.
@@ -240,6 +308,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.12-SNAPSHOT] - 2026-06-06
 
 ### Added
+
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
 
 - T3.1: creada la estructura inicial del modulo `news` con capas `domain`, `application`, `infrastructure` y `api`.
 - T3.2: creada la entidad de dominio `NewsArticle` con `NewsStatus` y pruebas unitarias.
@@ -256,11 +328,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - Implementada la API REST del modulo `source` con endpoints `GET /api/v1/sources`, `POST /api/v1/sources` y `PUT /api/v1/sources/{id}`, junto con pruebas de integracion REST.
 
 ## [0.0.10-SNAPSHOT] - 2026-06-06
 
 ### Added
+
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
 
 - Creado `CreateSourceUseCase` con `CreateSourceCommand` para registrar fuentes desde la capa de aplicacion, evitando URLs duplicadas.
 
@@ -268,11 +348,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - Creados los DTOs `CreateSourceRequest` y `SourceResponse` para la API del modulo `source`, con validaciones de entrada y pruebas unitarias.
 
 ## [0.0.8-SNAPSHOT] - 2026-06-06
 
 ### Added
+
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
 
 - Implementado `JpaSourceRepository` como adaptador JPA del puerto de dominio `SourceRepository`, con pruebas de integracion de persistencia.
 
@@ -280,11 +368,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - Creada la entidad JPA `SourceEntity` mapeada a la tabla `sources`, con pruebas de mapeo basico.
 
 ## [0.0.6-SNAPSHOT] - 2026-06-06
 
 ### Added
+
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
 
 - Creada la interfaz de dominio `SourceRepository` como puerto de persistencia del modulo `source`.
 
@@ -292,11 +388,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - Creada la entidad de dominio `Source` con campos de auditoria `createdAt` y `updatedAt`, comportamiento de activacion/desactivacion y pruebas unitarias.
 
 ## [0.0.4-SNAPSHOT] - 2026-06-05
 
 ### Added
+
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
 
 - Creada la estructura inicial del modulo `source` con capas `domain`, `application`, `infrastructure` y `api`.
 
@@ -304,10 +408,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
+
 - Creada la migracion Flyway `V3__seed_data.sql` con el usuario inicial `ADMIN` en la tabla `users`.
 
 ## [0.0.2-SNAPSHOT] - 2026-06-05
 
 ### Added
+
+- Sprint 11 cierre MVP: implementados POST /api/v1/events/merge, editor manual PUT /api/v1/content/{id}, scheduling POST /api/v1/publications/{contentId}/schedule, estado SCHEDULED, scheduler automatico de publicaciones vencidas y auditoria visible ADMIN (/api/v1/audit/users, /api/v1/audit/editorial).
+- Frontend Sprint 11: anadidas acciones de fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de publicaciones SCHEDULED/scheduledAt y pantalla ADMIN /audit.
+- Testing Sprint 11: anadidos tests backend para merge, editor manual, scheduling y scheduler, y tests Angular para servicios de eventos/contenido/publicaciones/auditoria y pantalla de auditoria.
 
 - Creada la migracion Flyway `V2__create_mvp_schema.sql` con el esquema completo MVP: fuentes, noticias, clasificaciones, eventos, analisis IA, contenido generado, publicaciones y usuarios.

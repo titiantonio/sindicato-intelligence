@@ -4,6 +4,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { passwordChangeGuard } from './core/guards/password-change.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { ChangePasswordPageComponent } from './features/auth/change-password/change-password-page.component';
+import { AuditPageComponent } from './features/audit/audit-page.component';
 import { ContentPageComponent } from './features/content/content-page.component';
 import { DashboardPageComponent } from './features/dashboard/dashboard-page.component';
 import { EventDetailPageComponent } from './features/events/event-detail-page.component';
@@ -75,6 +76,14 @@ export const routes: Routes = [
       {
         path: 'users',
         component: UsersPageComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['ADMIN']
+        }
+      },
+      {
+        path: 'audit',
+        component: AuditPageComponent,
         canActivate: [roleGuard],
         data: {
           roles: ['ADMIN']

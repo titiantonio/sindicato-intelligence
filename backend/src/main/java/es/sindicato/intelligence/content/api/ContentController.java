@@ -2,6 +2,8 @@ package es.sindicato.intelligence.content.api;
 
 import es.sindicato.intelligence.content.application.ApproveContentUseCase;
 import es.sindicato.intelligence.content.application.ContentAIProviderException;
+import es.sindicato.intelligence.content.application.EditGeneratedContentCommand;
+import es.sindicato.intelligence.content.application.EditGeneratedContentUseCase;
 import es.sindicato.intelligence.content.application.GenerateContentCommand;
 import es.sindicato.intelligence.content.application.GenerateContentUseCase;
 import es.sindicato.intelligence.content.application.GetGeneratedContentUseCase;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -31,19 +34,22 @@ public class ContentController {
     private final RejectContentUseCase rejectContentUseCase;
     private final ListGeneratedContentUseCase listGeneratedContentUseCase;
     private final GetGeneratedContentUseCase getGeneratedContentUseCase;
+    private final EditGeneratedContentUseCase editGeneratedContentUseCase;
 
     public ContentController(
             GenerateContentUseCase generateContentUseCase,
             ApproveContentUseCase approveContentUseCase,
             RejectContentUseCase rejectContentUseCase,
             ListGeneratedContentUseCase listGeneratedContentUseCase,
-            GetGeneratedContentUseCase getGeneratedContentUseCase
+            GetGeneratedContentUseCase getGeneratedContentUseCase,
+            EditGeneratedContentUseCase editGeneratedContentUseCase
     ) {
         this.generateContentUseCase = generateContentUseCase;
         this.approveContentUseCase = approveContentUseCase;
         this.rejectContentUseCase = rejectContentUseCase;
         this.listGeneratedContentUseCase = listGeneratedContentUseCase;
         this.getGeneratedContentUseCase = getGeneratedContentUseCase;
+        this.editGeneratedContentUseCase = editGeneratedContentUseCase;
     }
 
     @GetMapping
@@ -77,6 +83,19 @@ public class ContentController {
     @PostMapping("/{id}/reject")
     public GeneratedContentResponse rejectContent(@PathVariable Long id) {
         return toResponse(rejectContentUseCase.execute(id));
+    }
+
+    @PutMapping("/{id}")
+    public GeneratedContentResponse editContent(
+            @PathVariable Long id,
+            @Valid @RequestBody EditGeneratedContentRequest request
+    ) {
+        return toResponse(editGeneratedContentUseCase.execute(new EditGeneratedContentCommand(
+                id,
+                request.title(),
+                request.content(),
+                request.tone()
+        )));
     }
 
     @ExceptionHandler(ContentAIProviderException.class)

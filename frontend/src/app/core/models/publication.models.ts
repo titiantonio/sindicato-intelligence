@@ -6,4 +6,5 @@ export interface PublicationListItem {
   status: string;
   publishedAt: string | null;
   responsePayload: string | null;
+  scheduledAt: string | null;
 }

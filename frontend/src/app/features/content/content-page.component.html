@@ -8,6 +8,10 @@
       <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
     }
 
+    @if (successMessage()) {
+      <p class="page-alert page-alert--success">{{ successMessage() }}</p>
+    }
+
     @if (isLoading()) {
       <p class="page-alert">Cargando contenidos...</p>
     }
@@ -23,6 +27,30 @@
           <p>{{ selected.content }}</p>
         </div>
       </div>
+
+      <form class="editor-form" (submit)="$event.preventDefault(); saveEdit(selected)">
+        <label>
+          Titulo
+          <input type="text" [ngModel]="editTitle()" (ngModelChange)="editTitle.set($event)" name="title" [disabled]="selected.status === 'PUBLISHED'" />
+        </label>
+        <label>
+          Tono
+          <input type="text" [ngModel]="editTone()" (ngModelChange)="editTone.set($event)" name="tone" [disabled]="selected.status === 'PUBLISHED'" />
+        </label>
+        <label>
+          Contenido
+          <textarea [ngModel]="editContent()" (ngModelChange)="editContent.set($event)" name="content" rows="8" [disabled]="selected.status === 'PUBLISHED'"></textarea>
+        </label>
+        <button type="submit" [disabled]="selected.status === 'PUBLISHED'">Guardar cambios</button>
+      </form>
+
+      <form class="schedule-form" (submit)="$event.preventDefault(); schedulePublication(selected)">
+        <label>
+          Programar publicacion
+          <input type="datetime-local" [ngModel]="scheduleAt()" (ngModelChange)="scheduleAt.set($event)" name="scheduleAt" [disabled]="selected.status !== 'APPROVED'" />
+        </label>
+        <button type="submit" [disabled]="selected.status !== 'APPROVED'">Programar</button>
+      </form>
     }
   </article>
 
@@ -48,6 +76,7 @@
               <td>{{ formatDate(item.generatedAt) }}</td>
               <td>{{ formatDate(item.approvedAt) }}</td>
               <td class="content-actions">
+                <button type="button" (click)="selectItem(item)">Editar</button>
                 <button type="button" [disabled]="item.status !== 'PENDING_REVIEW'" (click)="approve(item)">Aprobar</button>
                 <button type="button" [disabled]="item.status !== 'PENDING_REVIEW'" (click)="reject(item)">Rechazar</button>
               </td>

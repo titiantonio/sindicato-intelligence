@@ -11,6 +11,7 @@ public record PublicationResponse(
         String externalId,
         PublicationStatus status,
         OffsetDateTime publishedAt,
-        String responsePayload
+        String responsePayload,
+        OffsetDateTime scheduledAt
 ) {
 }

@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,7 +38,7 @@ class SourceControllerTest {
     void createsSource() throws Exception {
         String url = uniqueUrl();
 
-        mockMvc.perform(post("/api/v1/sources")
+        mockMvc.perform(post("/api/v1/sources").with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -62,7 +64,7 @@ class SourceControllerTest {
     void listsSources() throws Exception {
         Source source = sourceRepository.save(source(uniqueUrl()));
 
-        mockMvc.perform(get("/api/v1/sources"))
+        mockMvc.perform(get("/api/v1/sources").with(adminJwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].id", hasItem(source.getId().intValue())))
                 .andExpect(jsonPath("$[*].name", hasItem("Fuente API")));
@@ -73,7 +75,7 @@ class SourceControllerTest {
         Source source = sourceRepository.save(source(uniqueUrl()));
         String updatedUrl = uniqueUrl();
 
-        mockMvc.perform(put("/api/v1/sources/{id}", source.getId())
+        mockMvc.perform(put("/api/v1/sources/{id}", source.getId()).with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -95,7 +97,7 @@ class SourceControllerTest {
 
     @Test
     void rejectsInvalidCreateRequest() throws Exception {
-        mockMvc.perform(post("/api/v1/sources")
+        mockMvc.perform(post("/api/v1/sources").with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -111,7 +113,7 @@ class SourceControllerTest {
 
     @Test
     void returnsNotFoundWhenUpdatingMissingSource() throws Exception {
-        mockMvc.perform(put("/api/v1/sources/{id}", 999999L)
+        mockMvc.perform(put("/api/v1/sources/{id}", 999999L).with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -144,4 +146,6 @@ class SourceControllerTest {
     private String uniqueUrl() {
         return "https://test.example/sources/" + UUID.randomUUID();
     }
-}
+    private RequestPostProcessor adminJwt() {
+        return jwt().authorities(() -> "ROLE_ADMIN");
+    }}

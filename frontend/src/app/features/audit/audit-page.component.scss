@@ -1,0 +1,85 @@
+.page-header,
+.panel {
+  background: #ffffff;
+  border: 1px solid #dbe4f0;
+  border-radius: 1.25rem;
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.07);
+}
+
+.page-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+}
+
+.page-header__eyebrow {
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.page-header h1 {
+  margin: 0.35rem 0 0.4rem;
+}
+
+.page-header p {
+  color: #475569;
+  margin: 0;
+}
+
+.page-header button,
+.audit-tabs button {
+  border: 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0.6rem 0.85rem;
+}
+
+.page-header button {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.audit-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem 0;
+}
+
+.audit-tabs button {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.audit-tabs__button--active {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.9rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: #475569;
+  font-size: 0.85rem;
+}

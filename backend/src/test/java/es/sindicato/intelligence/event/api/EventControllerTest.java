@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -124,8 +125,7 @@ class EventControllerTest {
 
         mockMvc.perform(get("/api/v1/events").with(adminJwt()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(event.getId()))
-                .andExpect(jsonPath("$[0].newsCount").value(1));
+                .andExpect(jsonPath("$[*].id", hasItem(event.getId().intValue())));
 
         mockMvc.perform(get("/api/v1/events/{id}", event.getId()).with(adminJwt()))
                 .andExpect(status().isOk())

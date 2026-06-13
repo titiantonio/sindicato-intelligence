@@ -75,3 +75,56 @@ th {
   padding: 0.45rem 0.65rem;
   text-decoration: none;
 }
+
+.merge-panel {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+}
+
+.merge-panel h2 {
+  margin: 0.35rem 0 1rem;
+}
+
+.merge-panel__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.merge-panel label,
+.merge-panel__sources {
+  display: grid;
+  gap: 0.45rem;
+  color: #334155;
+  font-weight: 700;
+}
+
+.merge-panel select {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.merge-panel__source-list {
+  display: grid;
+  gap: 0.45rem;
+  max-height: 11rem;
+  overflow: auto;
+}
+
+.merge-panel__source-list label {
+  align-items: center;
+  display: flex;
+  font-weight: 600;
+  gap: 0.5rem;
+}
+
+.merge-panel__button {
+  background: #1d4ed8;
+  border: 0;
+  border-radius: 0.5rem;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+  justify-self: start;
+  padding: 0.65rem 0.9rem;
+}

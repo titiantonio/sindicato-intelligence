@@ -17,9 +17,51 @@
   <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
 }
 
+@if (successMessage()) {
+  <p class="page-alert page-alert--success">{{ successMessage() }}</p>
+}
+
 @if (isLoading()) {
   <p class="page-alert">Cargando eventos...</p>
 }
+
+<section class="panel merge-panel">
+  <div>
+    <span class="page-header__eyebrow">Fusion</span>
+    <h2>Fusionar eventos</h2>
+  </div>
+
+  <div class="merge-panel__grid">
+    <label>
+      Evento destino
+      <select [ngModel]="targetEventId()" (ngModelChange)="setTargetEventId($event)">
+        @for (event of activeEvents(); track event.id) {
+          <option [value]="event.id">#{{ event.id }} - {{ event.title }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="merge-panel__sources">
+      <span>Eventos origen</span>
+      <div class="merge-panel__source-list">
+        @for (event of activeEvents(); track event.id) {
+          @if (event.id !== targetEventId()) {
+            <label>
+              <input
+                type="checkbox"
+                [checked]="isSourceSelected(event.id)"
+                (change)="toggleSourceEvent(event.id, $any($event.target).checked)"
+              />
+              #{{ event.id }} - {{ event.title }}
+            </label>
+          }
+        }
+      </div>
+    </div>
+
+    <button type="button" class="merge-panel__button" (click)="mergeEvents()">Fusionar</button>
+  </div>
+</section>
 
 <section class="panel">
   <div class="table-wrap">

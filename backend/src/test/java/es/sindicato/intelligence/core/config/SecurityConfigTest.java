@@ -2,7 +2,10 @@ package es.sindicato.intelligence.core.config;
 
 import es.sindicato.intelligence.content.api.ContentController;
 import es.sindicato.intelligence.content.application.ApproveContentUseCase;
+import es.sindicato.intelligence.content.application.EditGeneratedContentUseCase;
 import es.sindicato.intelligence.content.application.GenerateContentUseCase;
+import es.sindicato.intelligence.content.application.GetGeneratedContentUseCase;
+import es.sindicato.intelligence.content.application.ListGeneratedContentUseCase;
 import es.sindicato.intelligence.content.application.RejectContentUseCase;
 import es.sindicato.intelligence.health.HealthController;
 import es.sindicato.intelligence.source.api.SourceController;
@@ -50,6 +53,15 @@ class SecurityConfigTest {
 
     @MockBean
     private RejectContentUseCase rejectContentUseCase;
+
+    @MockBean
+    private ListGeneratedContentUseCase listGeneratedContentUseCase;
+
+    @MockBean
+    private GetGeneratedContentUseCase getGeneratedContentUseCase;
+
+    @MockBean
+    private EditGeneratedContentUseCase editGeneratedContentUseCase;
 
     @Test
     void allowsHealthWithoutAuthentication() throws Exception {

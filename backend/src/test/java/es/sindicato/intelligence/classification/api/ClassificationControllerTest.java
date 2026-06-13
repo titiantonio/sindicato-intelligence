@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -46,7 +48,7 @@ class ClassificationControllerTest {
         Source source = sourceRepository.save(source());
         NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId(), "SIPRI publica adjudicaciones"));
 
-        mockMvc.perform(post("/api/v1/classifications/classify")
+        mockMvc.perform(post("/api/v1/classifications/classify").with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -67,7 +69,7 @@ class ClassificationControllerTest {
 
     @Test
     void rejectsMissingNews() throws Exception {
-        mockMvc.perform(post("/api/v1/classifications/classify")
+        mockMvc.perform(post("/api/v1/classifications/classify").with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -109,4 +111,6 @@ class ClassificationControllerTest {
         String value = UUID.randomUUID().toString().replace("-", "");
         return value + value;
     }
-}
+    private RequestPostProcessor adminJwt() {
+        return jwt().authorities(() -> "ROLE_ADMIN");
+    }}

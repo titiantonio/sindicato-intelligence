@@ -12,6 +12,7 @@ public class Publication {
     private PublicationStatus status;
     private OffsetDateTime publishedAt;
     private String responsePayload;
+    private final OffsetDateTime scheduledAt;
 
     public Publication(
             Long id,
@@ -22,6 +23,19 @@ public class Publication {
             OffsetDateTime publishedAt,
             String responsePayload
     ) {
+        this(id, contentId, channel, externalId, status, publishedAt, responsePayload, null);
+    }
+
+    public Publication(
+            Long id,
+            Long contentId,
+            String channel,
+            String externalId,
+            PublicationStatus status,
+            OffsetDateTime publishedAt,
+            String responsePayload,
+            OffsetDateTime scheduledAt
+    ) {
         this.id = id;
         this.contentId = Objects.requireNonNull(contentId, "contentId is required");
         this.channel = requireText(channel, "channel");
@@ -29,14 +43,22 @@ public class Publication {
         this.status = Objects.requireNonNull(status, "status is required");
         this.publishedAt = publishedAt;
         this.responsePayload = responsePayload;
+        this.scheduledAt = scheduledAt;
 
         if (status == PublicationStatus.PUBLISHED && publishedAt == null) {
             throw new IllegalArgumentException("publishedAt is required for published publications");
         }
+        if (status == PublicationStatus.SCHEDULED && scheduledAt == null) {
+            throw new IllegalArgumentException("scheduledAt is required for scheduled publications");
+        }
     }
 
     public static Publication pending(Long contentId, String channel) {
-        return new Publication(null, contentId, channel, null, PublicationStatus.PENDING, null, null);
+        return new Publication(null, contentId, channel, null, PublicationStatus.PENDING, null, null, null);
+    }
+
+    public static Publication scheduled(Long contentId, String channel, OffsetDateTime scheduledAt) {
+        return new Publication(null, contentId, channel, null, PublicationStatus.SCHEDULED, null, null, scheduledAt);
     }
 
     public void markPublished(String externalId, OffsetDateTime publishedAt, String responsePayload) {
@@ -79,6 +101,10 @@ public class Publication {
 
     public String getResponsePayload() {
         return responsePayload;
+    }
+
+    public OffsetDateTime getScheduledAt() {
+        return scheduledAt;
     }
 
     private static String requireText(String value, String fieldName) {

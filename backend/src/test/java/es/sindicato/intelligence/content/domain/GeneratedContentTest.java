@@ -85,6 +85,29 @@ class GeneratedContentTest {
         assertThrows(IllegalStateException.class, content::markPublished);
     }
 
+    @Test
+    void editsContentAndReturnsItToPendingReview() {
+        OffsetDateTime generatedAt = OffsetDateTime.parse("2026-06-08T10:00:00Z");
+        GeneratedContent content = content(ContentStatus.APPROVED, generatedAt, generatedAt.plusHours(1));
+
+        content.edit("Nuevo titulo", "Nuevo mensaje", "URGENTE");
+
+        assertEquals("Nuevo titulo", content.getTitle());
+        assertEquals("Nuevo mensaje", content.getContent());
+        assertEquals("URGENTE", content.getTone());
+        assertEquals(ContentStatus.PENDING_REVIEW, content.getStatus());
+        assertNull(content.getApprovedAt());
+    }
+
+    @Test
+    void rejectsEditingPublishedContent() {
+        OffsetDateTime generatedAt = OffsetDateTime.parse("2026-06-08T10:00:00Z");
+        GeneratedContent content = content(ContentStatus.APPROVED, generatedAt, generatedAt.plusHours(1));
+        content.markPublished();
+
+        assertThrows(IllegalStateException.class, () -> content.edit("Nuevo titulo", "Nuevo mensaje", "URGENTE"));
+    }
+
     private GeneratedContent content(ContentStatus status, OffsetDateTime generatedAt, OffsetDateTime approvedAt) {
         return new GeneratedContent(
                 1L,

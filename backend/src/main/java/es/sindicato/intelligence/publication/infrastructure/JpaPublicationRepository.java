@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.OffsetDateTime;
 
 @Repository
 public class JpaPublicationRepository implements PublicationRepository {
@@ -62,6 +63,21 @@ public class JpaPublicationRepository implements PublicationRepository {
                 .toList();
     }
 
+    @Override
+    public List<Publication> findDueScheduled(OffsetDateTime now, int limit) {
+        return entityManager.createQuery(
+                        "SELECT publication FROM PublicationEntity publication "
+                                + "WHERE publication.status = es.sindicato.intelligence.publication.domain.PublicationStatus.SCHEDULED "
+                                + "AND publication.scheduledAt <= :now ORDER BY publication.scheduledAt ASC, publication.id ASC",
+                        PublicationEntity.class
+                )
+                .setParameter("now", now)
+                .setMaxResults(limit)
+                .getResultStream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     private PublicationEntity toEntity(Publication publication) {
         return new PublicationEntity(
                 publication.getId(),
@@ -70,7 +86,8 @@ public class JpaPublicationRepository implements PublicationRepository {
                 publication.getExternalId(),
                 publication.getStatus(),
                 publication.getPublishedAt(),
-                toJsonNode(publication.getResponsePayload())
+                toJsonNode(publication.getResponsePayload()),
+                publication.getScheduledAt()
         );
     }
 
@@ -82,7 +99,8 @@ public class JpaPublicationRepository implements PublicationRepository {
                 entity.getExternalId(),
                 entity.getStatus(),
                 entity.getPublishedAt(),
-                entity.getResponsePayload() == null ? null : entity.getResponsePayload().toString()
+                entity.getResponsePayload() == null ? null : entity.getResponsePayload().toString(),
+                entity.getScheduledAt()
         );
     }
 

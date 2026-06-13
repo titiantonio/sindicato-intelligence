@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
@@ -23,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,7 +45,7 @@ class NewsControllerTest {
         Source source = sourceRepository.save(source(uniqueUrl("sources")));
         String newsUrl = uniqueUrl("news");
 
-        mockMvc.perform(post("/api/v1/news")
+        mockMvc.perform(post("/api/v1/news").with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -74,7 +76,7 @@ class NewsControllerTest {
         Source source = sourceRepository.save(source(uniqueUrl("sources")));
         NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news"), hash('a')));
 
-        mockMvc.perform(get("/api/v1/news"))
+        mockMvc.perform(get("/api/v1/news").with(adminJwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].id", hasItem(newsArticle.getId().intValue())))
                 .andExpect(jsonPath("$[*].title", hasItem("Convocatoria docente")));
@@ -85,7 +87,7 @@ class NewsControllerTest {
         Source source = sourceRepository.save(source(uniqueUrl("sources")));
         NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news"), hash('b')));
 
-        mockMvc.perform(get("/api/v1/news/{id}", newsArticle.getId()))
+        mockMvc.perform(get("/api/v1/news/{id}", newsArticle.getId()).with(adminJwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(newsArticle.getId()))
                 .andExpect(jsonPath("$.sourceId").value(source.getId()))
@@ -95,7 +97,7 @@ class NewsControllerTest {
 
     @Test
     void rejectsInvalidCreateRequest() throws Exception {
-        mockMvc.perform(post("/api/v1/news")
+        mockMvc.perform(post("/api/v1/news").with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -111,7 +113,7 @@ class NewsControllerTest {
 
     @Test
     void returnsNotFoundWhenGettingMissingNews() throws Exception {
-        mockMvc.perform(get("/api/v1/news/{id}", 999999L))
+        mockMvc.perform(get("/api/v1/news/{id}", 999999L).with(adminJwt()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error", notNullValue()));
     }
@@ -121,7 +123,7 @@ class NewsControllerTest {
         Source source = sourceRepository.save(source(uniqueUrl("sources")));
         String duplicatedUrl = uniqueUrl("news-duplicated-url");
 
-        mockMvc.perform(post("/api/v1/news/bulk")
+        mockMvc.perform(post("/api/v1/news/bulk").with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 [
@@ -161,7 +163,7 @@ class NewsControllerTest {
         newsRepository.save(newsArticle(source.getId(), existingUrl, hash('c')));
         String newUrl = uniqueUrl("news-new");
 
-        mockMvc.perform(post("/api/v1/news/bulk")
+        mockMvc.perform(post("/api/v1/news/bulk").with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 [
@@ -194,7 +196,7 @@ class NewsControllerTest {
 
     @Test
     void rejectsEmptyBatchRequest() throws Exception {
-        mockMvc.perform(post("/api/v1/news/bulk")
+        mockMvc.perform(post("/api/v1/news/bulk").with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[]"))
                 .andExpect(status().isBadRequest())
@@ -242,4 +244,6 @@ class NewsControllerTest {
     private String hash(char character) {
         return String.valueOf(character).repeat(64);
     }
-}
+    private RequestPostProcessor adminJwt() {
+        return jwt().authorities(() -> "ROLE_ADMIN");
+    }}

@@ -961,7 +961,7 @@ Eventos.
 
 Nota posterior 2026-06-10: creada la pantalla de eventos con tabla y filtros visuales mock para validar UX del backoffice. Pendiente conexion real cuando existan `GET /api/v1/events` y `GET /api/v1/events/{id}`.
 
-Estado actualizado 2026-06-13: tarea completada funcionalmente para MVP. Se anadieron `GET /api/v1/events` y detalle real con pantalla `/events/:id`. La operacion `POST /api/v1/events/merge` sigue pendiente de decision/implementacion.
+Estado actualizado 2026-06-13: tarea completada funcionalmente para MVP. Se anadieron `GET /api/v1/events`, detalle real con pantalla `/events/:id` y `POST /api/v1/events/merge` con archivado de eventos origen, movimiento de noticias al evento destino y auditoria `EVENT_MERGED`.
 
 ---
 
@@ -973,23 +973,23 @@ Nota posterior 2026-06-13: implementado GET /api/v1/events/{id} con evento, noti
 
 ---
 
-## T11.7 [~]
+## T11.7 [x]
 
 Contenido.
 
 Nota posterior 2026-06-10: creada vista editorial mock de contenido con bandeja de revision y vista previa, manteniendo la navegacion y el flujo UX mientras se completan endpoints reales de listado/detalle.
 
-Estado actualizado 2026-06-13: tarea parcial avanzada. El backend expone listado/detalle y la pantalla Angular consume datos reales para bandeja editorial, aprobacion y rechazo. Sigue pendiente edicion manual si se mantiene como requisito MVP.
+Estado actualizado 2026-06-13: tarea completada funcionalmente para MVP. El backend expone listado/detalle, aprobacion, rechazo y edicion manual `PUT /api/v1/content/{id}`. Angular consume datos reales para bandeja editorial, editor manual, aprobacion, rechazo y programacion de contenido aprobado.
 
 ---
 
-## T11.8 [~]
+## T11.8 [x]
 
 Publicaciones.
 
 Nota posterior 2026-06-10: creada vista mock de historico de publicaciones para avanzar la experiencia visual del backoffice. Pendiente listado real desde backend.
 
-Estado actualizado 2026-06-13: tarea parcial avanzada. El backend expone listado/detalle/historial real y Angular consume publicaciones reales. Sigue pendiente decidir o implementar scheduling.
+Estado actualizado 2026-06-13: tarea completada funcionalmente para MVP. El backend expone listado/detalle/historial real, `POST /api/v1/publications/{contentId}/schedule`, estado `SCHEDULED`, `scheduled_at` y scheduler automatico configurable para publicaciones vencidas. Angular muestra `SCHEDULED` y `scheduledAt`.
 
 Nota posterior 2026-06-10: validado el arranque del frontend con `npm run build` y `npm test -- --watch=false --browsers=ChromeHeadless` en `frontend`.
 
@@ -1111,14 +1111,14 @@ Funcionalidades en progreso:
 - Sprint 12 de optimizacion no iniciado.
 
 Implementaciones parciales principales:
-- Eventos: backend detecta, lista y detalla eventos; `POST /api/v1/events/merge` documentado sigue pendiente de decision/implementacion.
-- Contenido: backend genera, aprueba, rechaza, lista y detalla contenido; la edicion manual sigue pendiente si se mantiene como requisito editorial.
-- Publicaciones: backend publica en Telegram y expone listado/detalle/historial; scheduling documentado sigue pendiente de decision.
+- Eventos: backend detecta, lista, detalla y fusiona eventos con `POST /api/v1/events/merge`; los eventos origen se archivan y sus noticias se mueven al destino.
+- Contenido: backend genera, aprueba, rechaza, lista, detalla y permite edicion manual con retorno a `PENDING_REVIEW`.
+- Publicaciones: backend publica en Telegram, expone listado/detalle/historial y soporta scheduling con estado `SCHEDULED`, `scheduled_at` y scheduler automatico configurable.
 - Dashboard: existe API MVP de metricas y eventos prioritarios; frontend consume `DashboardService` real.
 - Auditoria: existe persistencia de acciones de usuario, pero no hay API ni pantalla para consultar el log.
 
 Pendientes criticos:
-- Cerrar funcionalidades pendientes tras sustituir mocks: edicion manual de contenido, merge de eventos, scheduling de publicaciones y consulta de auditoria.
+- Cerrar validacion manual del flujo MVP completo tras implementar edicion manual, merge de eventos, scheduling y consulta de auditoria.
 - Completar integracion frontend de fuentes.
 - Cerrar tests frontend de auth/users/guards y pruebas de integracion UI.
 
@@ -1135,13 +1135,13 @@ Parcial o faltante:
 | --- | --- | --- | --- |
 | Listar eventos `GET /api/v1/events` | Implementado el 2026-06-13 con controller/use case/repositorio y consumo Angular real. | Completed | - |
 | Detalle evento `GET /api/v1/events/{id}` | Implementado el 2026-06-13 con noticias, clasificacion, analisis y contenido asociado; pantalla Angular `/events/:id`. | Completed | - |
-| Merge de eventos `POST /api/v1/events/merge` | Documentado en API REST; no implementado. | Medium | 9 |
+| Merge de eventos `POST /api/v1/events/merge` | Implementado con target/source, archivado de fuentes, movimiento de noticias y auditoria. | Completed | - |
 | Listado/detalle de contenido | Implementado el 2026-06-13 y consumido por bandeja editorial Angular. | Completed | - |
 | Edicion manual de contenido generado | UX/editorial lo presupone; no hay endpoint ni caso de uso. | High | 6 |
 | Listado/detalle/historial de publicaciones | Implementado el 2026-06-13 y consumido por pantalla Angular real. | Completed | - |
-| Scheduling de publicaciones `POST /api/v1/publications/{id}/schedule` | Documentado; no implementado. | Medium | 10 |
+| Scheduling de publicaciones `POST /api/v1/publications/{contentId}/schedule` | Implementado con estado `SCHEDULED`, `scheduled_at`, validacion de fecha futura y scheduler automatico. | Completed | - |
 | Dashboard/metricas backend | Implementado el 2026-06-13 con endpoint MVP `GET /api/v1/dashboard`. | Completed | - |
-| API de auditoria de usuarios | Tabla y escritura existen; no hay endpoint de consulta. | Medium | 12 |
+| API de auditoria de usuarios | Implementada consulta ADMIN `GET /api/v1/audit/users`. | Completed | - |
 | Errores API uniformes | Hay manejo basico por controllers/tests; falta contrato transversal documentado/validado. | Medium | 13 |
 
 ## 16.3 Frontend
@@ -1158,7 +1158,7 @@ Parcial o faltante:
 | Listado de eventos real | Implementado el 2026-06-13 contra `GET /api/v1/events`. | Completed | - |
 | Detalle de evento | Implementado el 2026-06-13 con ruta Angular `/events/:id`. | Completed | - |
 | Bandeja de contenido real | Implementada el 2026-06-13 contra API real de contenido. | Completed | - |
-| Editor de contenido real | UX documentada; no implementado contra API. | High | 11 |
+| Editor de contenido real | Implementado contra API `PUT /api/v1/content/{id}` y pantalla Angular de bandeja editorial. | Completed | - |
 | Historico de publicaciones real | Implementado el 2026-06-13 contra API real de publicaciones. | Completed | - |
 | Gestion de fuentes | Implementada el 2026-06-13 contra API real de fuentes. | Completed | - |
 | Tests frontend auth/users/guards | Completado el 2026-06-13 con cobertura focal de servicios, guards y pantallas criticas. | Completed | - |
@@ -1177,7 +1177,7 @@ Parcial o faltante:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
 | Consolidacion Flyway vs migraciones incrementales | Documentacion menciona consolidacion previa, pero existen V4/V5 incrementales activas. Debe decidirse si se consolidan en reset de desarrollo o se mantienen. | Medium | 16 |
-| Auditoria funcional completa | `user_audit_log` existe solo para acciones de usuario; no hay auditoria general de contenido/publicacion/eventos. | Medium | 17 |
+| Auditoria funcional completa | Implementada `audit_log` para acciones editoriales de eventos, contenido y publicaciones. | Completed | - |
 | Scheduling de publicaciones | Tabla `publications` no modela programacion futura de forma explicita. | Medium | 18 |
 | Metricas operativas IA/workflows | No hay tablas especificas de metricas de coste, latencia, intentos o trazabilidad avanzada. | Low | 22 |
 
@@ -1193,7 +1193,7 @@ Implementado:
 Parcial o faltante:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
-| Consulta visual/API de auditoria | Se registra auditoria, pero no se expone a administradores. | Medium | 19 |
+| Consulta visual/API de auditoria | Implementada pantalla ADMIN `/audit` y APIs de usuarios/editorial. | Completed | - |
 | Cobertura total de acciones auditadas | Alta, cambio de estado, roles y resets estan cubiertos; confirmar en tests todas las ramas de role change/unlock/activate. | Medium | 20 |
 | Politica de password inicial admin/n8n | Seeds documentan password inicial `Admin@123`, que no cumple politica runtime >=10. | Medium | 21 |
 | Validaciones frontend completas | Usuarios/auth tienen validaciones basicas; falta suite automatizada frontend. | High | 14 |
@@ -1240,7 +1240,7 @@ Parcial o faltante:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
 | Historial real de publicaciones | Implementado el 2026-06-13 con API y pantalla Angular reales. | Completed | - |
-| Scheduling | Documentado; no implementado. Decidir implementar o declarar post-MVP. | Medium | 10 |
+| Scheduling | Implementado para MVP con API, estado `SCHEDULED`, fecha programada y scheduler automatico. | Completed | - |
 | Gestion de errores/reintentos de publicacion en UI | Backend registra fallos; UI no consume estado real. | Medium | 30 |
 | Otros canales sociales | Fuera del MVP; mantener Telegram como unico canal salvo decision explicita. | Low | 31 |
 
@@ -1287,10 +1287,10 @@ Inconsistencias y deuda:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
 | Documento 31 como fuente unica | Esta seccion corrige el estado operativo y debe prevalecer sobre notas antiguas. | Critical | 0 |
-| Tareas visuales marcadas como completadas | T11.4/T11.5/T11.6 ya integradas con API real; T11.7/T11.8 quedan parciales por editor manual/scheduling. | Medium | 7 |
+| Tareas visuales marcadas como completadas | T11.4/T11.5/T11.6/T11.7/T11.8 integradas con API real y operaciones MVP. | Completed | - |
 | Proxima tarea desactualizada | Debe priorizar contratos backend para eliminar mocks, no solo T11.10. | High | 0 |
 | Codificacion/mojibake en documentos antiguos | Existen textos con caracteres corruptos visibles; no bloquea funcionalidad, pero dificulta lectura. | Low | 37 |
-| Contratos documentados no implementados | Documento 12 incluye eventos merge y scheduling de publicaciones; deben implementarse o reclasificarse como post-MVP. | Medium | 9 |
+| Contratos documentados resueltos | `events/merge` y scheduling de publicaciones implementados para MVP. | Completed | - |
 
 ## 16.12 Roadmap recomendado
 
@@ -1302,16 +1302,16 @@ Inconsistencias y deuda:
 6. High: implementar edicion manual de contenido y conectar aprobar/rechazar desde UI real.
 7. Completed 2026-06-13: dashboard Angular integrado con datos reales.
 8. Completed 2026-06-13: eventos Angular y detalle T11.6 integrados con APIs reales.
-9. Medium: implementar o descartar formalmente `POST /api/v1/events/merge`.
-10. Medium: implementar o marcar post-MVP el scheduling de publicaciones.
+9. Completed 2026-06-13: implementado `POST /api/v1/events/merge`.
+10. Completed 2026-06-13: implementado scheduling de publicaciones.
 11. High: completar editor manual de contenido si se mantiene como requisito MVP; la bandeja ya consume API real.
 12. Completed 2026-06-13: publicaciones Angular integradas con historial real.
 13. Completed 2026-06-13: gestion de fuentes Angular contra API existente.
 14. Completed 2026-06-13: T11.10.5 cerrado con tests frontend de auth/users/guards/services.
 15. Completed 2026-06-13: eliminado `MockDashboardService`.
 16. Medium: decidir estrategia Flyway: mantener V1..V5 o reconsolidar solo si se resetea BBDD de desarrollo.
-17. Medium: ampliar auditoria a eventos/contenido/publicaciones si se requiere trazabilidad editorial completa.
-18. Medium: modelar scheduling de publicaciones si se mantiene en MVP.
+17. Completed 2026-06-13: ampliada auditoria a eventos/contenido/publicaciones.
+18. Completed 2026-06-13: modelado scheduling de publicaciones en dominio/API/UI.
 19. Medium: exponer consulta ADMIN de `user_audit_log`.
 20. Medium: reforzar tests de auditoria de role change/unlock/activate/reset.
 21. Medium: actualizar seeds admin/n8n para cumplir politica de password o documentar excepcion de bootstrap.
@@ -1334,9 +1334,9 @@ Inconsistencias y deuda:
 
 ## 16.13 Estado operativo recomendado
 
-- Sprint actual real: Sprint 11 en progreso.
+- Sprint actual real: Sprint 11 en cierre tecnico.
 - Bloqueador principal anterior resuelto: ya existen contratos de lectura para backoffice real de eventos, contenido, publicaciones y dashboard.
-- No iniciar Sprint 12 hasta decidir `events/merge`, scheduling y editor manual de contenido.
+- Sprint 12 puede prepararse tras validacion manual del cierre funcional de Sprint 11.
 - La siguiente tarea debe ser de alcance MVP: decidir merge de eventos, scheduling de publicaciones, editor manual de contenido y consulta ADMIN de auditoria.
 
 ---
@@ -1350,7 +1350,7 @@ Completado en esta iteracion:
 - Build frontend validado con `npm.cmd run build`.
 
 Pendiente tras esta iteracion:
-- Decisiones de alcance: `POST /api/v1/events/merge`, scheduling de publicaciones y editor manual de contenido.
+- Decisiones de alcance resueltas: `POST /api/v1/events/merge`, scheduling de publicaciones y editor manual de contenido implementados para MVP.
 - API/pantalla ADMIN para consultar auditoria de usuario si se requiere operacion visible.
 
 ---
@@ -1364,10 +1364,32 @@ Completado en esta iteracion:
 - Validado JSON de `wf_01` a `wf_06` con `ConvertFrom-Json`.
 
 Pendiente tras esta iteracion:
-- Decidir alcance MVP de `POST /api/v1/events/merge`, scheduling de publicaciones y editor manual de contenido.
+- Validar manualmente `POST /api/v1/events/merge`, scheduling de publicaciones y editor manual de contenido en entorno local integrado.
 - Anadir validacion automatizada o checklist ejecutable de workflows n8n.
 - Exponer consulta ADMIN de auditoria si se requiere operacion visible.
 
+
+---
+
+## 16.16 Cierre funcional Sprint 11 MVP - 2026-06-13
+
+Completado en esta iteracion:
+- Eventos: implementado `POST /api/v1/events/merge` con `targetEventId` y `sourceEventIds`, validacion de destino activo, fuentes distintas, movimiento de noticias al destino, archivado de eventos origen y auditoria `EVENT_MERGED`.
+- Contenido: implementado editor manual `PUT /api/v1/content/{id}` para `title`, `content` y `tone`; contenido publicado no es editable, toda edicion vuelve a `PENDING_REVIEW` y limpia `approvedAt`; auditoria `CONTENT_EDITED`.
+- Publicaciones: anadido `PublicationStatus.SCHEDULED`, migracion `publications.scheduled_at`, endpoint `POST /api/v1/publications/{contentId}/schedule`, validacion de fecha futura/contenido aprobado y scheduler automatico configurable para publicar vencidas.
+- Auditoria: creada tabla general `audit_log`, registro de acciones editoriales y APIs ADMIN `GET /api/v1/audit/users` y `GET /api/v1/audit/editorial` con filtros simples y limite acotado.
+- Frontend: anadida fusion de eventos, editor manual de contenido, programacion de publicaciones, visualizacion de `SCHEDULED`/`scheduledAt` y pantalla ADMIN `/audit` con secciones Usuarios y Editorial.
+- Tests: backend `mvn test` OK con 191 tests; frontend `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK con 53 tests; `npm.cmd run build` OK.
+- Version backend: `0.0.40-SNAPSHOT`.
+
+Estado operativo:
+- Sprint 11 queda funcionalmente cerrado para el alcance MVP acordado.
+- Sprint 12 puede prepararse tras validacion manual del flujo completo y revision de workflows n8n.
+
+Pendiente recomendado:
+- Validacion manual local con PostgreSQL, backend, frontend, n8n y MailHog levantados.
+- Checklist ejecutable de workflows n8n.
+- Preparar Sprint 12: versionado de prompts, metricas IA, monitorizacion workflows y dashboard de metricas.
 ---
 
 # 17. Regla Operativa
@@ -1432,13 +1454,13 @@ Sprint 12
 
 # 19. Proxima Tarea
 
-Sprint 11 en progreso
+Sprint 11 en cierre tecnico
 
 ```text
-1. Decidir alcance MVP de POST /api/v1/events/merge, scheduling de publicaciones y editor manual de contenido.
-2. Exponer consulta ADMIN de auditoria si se requiere para operacion del backoffice.
-3. Anadir validacion automatizada/checklist ejecutable de workflows n8n.
-4. Preparar cierre de Sprint 11 si las decisiones de alcance quedan resueltas.
+1. Revisar manualmente flujo MVP completo News -> Event -> Analysis -> Content -> Publication.
+2. Anadir validacion automatizada/checklist ejecutable de workflows n8n.
+3. Preparar cierre formal de Sprint 11 con evidencia de build/tests/Flyway.
+4. Preparar Sprint 12: versionado de prompts, metricas IA, monitorizacion workflows y dashboard de metricas.
 ```
 
 Rol:

@@ -1,0 +1,84 @@
+<section class="page-header">
+  <div>
+    <span class="page-header__eyebrow">Auditoria</span>
+    <h1>Registro operativo</h1>
+    <p>Trazabilidad administrativa y editorial del sistema.</p>
+  </div>
+
+  <button type="button" (click)="loadAudit()">Actualizar</button>
+</section>
+
+@if (errorMessage()) {
+  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+}
+
+@if (isLoading()) {
+  <p class="page-alert">Cargando auditoria...</p>
+}
+
+<section class="panel">
+  <div class="audit-tabs">
+    <button type="button" [class.audit-tabs__button--active]="activeTab() === 'users'" (click)="setTab('users')">Usuarios</button>
+    <button type="button" [class.audit-tabs__button--active]="activeTab() === 'editorial'" (click)="setTab('editorial')">Editorial</button>
+  </div>
+
+  @if (activeTab() === 'users') {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Accion</th>
+            <th>Usuario</th>
+            <th>Actor</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of userAudit(); track entry.id) {
+            <tr>
+              <td>{{ formatDate(entry.createdAt) }}</td>
+              <td>{{ entry.action }}</td>
+              <td>{{ entry.userId ?? '-' }}</td>
+              <td>{{ entry.actorEmail ?? '-' }}</td>
+              <td>{{ formatValue(entry.details) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">No hay auditoria de usuarios registrada.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Accion</th>
+            <th>Entidad</th>
+            <th>Usuario</th>
+            <th>Cambios</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of editorialAudit(); track entry.id) {
+            <tr>
+              <td>{{ formatDate(entry.createdAt) }}</td>
+              <td>{{ entry.action }}</td>
+              <td>{{ entry.entityType }} #{{ entry.entityId ?? '-' }}</td>
+              <td>{{ entry.userId ?? '-' }}</td>
+              <td>{{ formatValue(entry.newValues) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">No hay auditoria editorial registrada.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

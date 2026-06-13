@@ -38,7 +38,7 @@ public class Event {
         this.category = Objects.requireNonNull(category, "category is required");
         this.importance = Objects.requireNonNull(importance, "importance is required");
         this.status = Objects.requireNonNull(status, "status is required");
-        this.newsIds = new LinkedHashSet<>(requireNewsIds(newsIds));
+        this.newsIds = new LinkedHashSet<>(requireNewsIds(newsIds, this.status));
         this.firstDetectedAt = Objects.requireNonNull(firstDetectedAt, "firstDetectedAt is required");
         this.lastUpdatedAt = Objects.requireNonNull(lastUpdatedAt, "lastUpdatedAt is required");
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt is required");
@@ -145,10 +145,42 @@ public class Event {
         return updatedAt;
     }
 
-    private static Set<Long> requireNewsIds(Set<Long> newsIds) {
+    public Event withNewsIds(Set<Long> newsIds, OffsetDateTime updatedAt) {
+        return new Event(
+                id,
+                title,
+                description,
+                category,
+                importance,
+                status,
+                newsIds,
+                firstDetectedAt,
+                updatedAt,
+                createdAt,
+                updatedAt
+        );
+    }
+
+    public Event archivedWithoutNews(OffsetDateTime updatedAt) {
+        return new Event(
+                id,
+                title,
+                description,
+                category,
+                importance,
+                EventStatus.ARCHIVED,
+                Set.of(),
+                firstDetectedAt,
+                updatedAt,
+                createdAt,
+                updatedAt
+        );
+    }
+
+    private static Set<Long> requireNewsIds(Set<Long> newsIds, EventStatus status) {
         Objects.requireNonNull(newsIds, "newsIds is required");
 
-        if (newsIds.isEmpty()) {
+        if (newsIds.isEmpty() && status != EventStatus.ARCHIVED) {
             throw new IllegalArgumentException("event must have at least one news article");
         }
 

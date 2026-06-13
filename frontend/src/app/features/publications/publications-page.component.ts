@@ -51,4 +51,12 @@ export class PublicationsPageComponent implements OnInit {
   protected publicationResult(publication: PublicationListItem): string {
     return publication.responsePayload ?? publication.externalId ?? 'Sin respuesta registrada.';
   }
+
+  protected publicationDateLabel(publication: PublicationListItem): string {
+    if (publication.status === 'SCHEDULED') {
+      return `Programada: ${this.formatDate(publication.scheduledAt)}`;
+    }
+
+    return `Publicada: ${this.formatDate(publication.publishedAt)}`;
+  }
 }

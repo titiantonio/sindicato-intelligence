@@ -20,4 +20,8 @@ export class PublicationService {
   publishContent(contentId: number) {
     return this.httpClient.post<PublicationListItem>(`/api/v1/publications/${contentId}/publish`, {});
   }
+
+  schedulePublication(contentId: number, scheduledAt: string) {
+    return this.httpClient.post<PublicationListItem>(`/api/v1/publications/${contentId}/schedule`, { scheduledAt });
+  }
 }

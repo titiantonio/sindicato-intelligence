@@ -2,6 +2,7 @@ package es.sindicato.intelligence.publication.domain;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.OffsetDateTime;
 
 public interface PublicationRepository {
 
@@ -12,4 +13,6 @@ public interface PublicationRepository {
     List<Publication> findAll();
 
     List<Publication> findByContentId(Long contentId);
+
+    List<Publication> findDueScheduled(OffsetDateTime now, int limit);
 }

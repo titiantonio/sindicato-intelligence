@@ -9,9 +9,9 @@ public class GeneratedContent {
     private final Long eventId;
     private final Long createdBy;
     private final String channel;
-    private final String tone;
-    private final String title;
-    private final String content;
+    private String tone;
+    private String title;
+    private String content;
     private ContentStatus status;
     private final OffsetDateTime generatedAt;
     private OffsetDateTime approvedAt;
@@ -47,6 +47,17 @@ public class GeneratedContent {
     public void markPendingReview() {
         this.status = ContentStatus.PENDING_REVIEW;
         this.approvedAt = null;
+    }
+
+    public void edit(String title, String content, String tone) {
+        if (status == ContentStatus.PUBLISHED) {
+            throw new IllegalStateException("published content cannot be edited");
+        }
+
+        this.title = requireText(title, "title");
+        this.content = requireText(content, "content");
+        this.tone = requireText(tone, "tone");
+        markPendingReview();
     }
 
     public void approve(OffsetDateTime approvedAt) {

@@ -39,6 +39,9 @@ public class PublicationEntity {
     @Column(name = "published_at")
     private OffsetDateTime publishedAt;
 
+    @Column(name = "scheduled_at")
+    private OffsetDateTime scheduledAt;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "response_payload", columnDefinition = "jsonb")
     private JsonNode responsePayload;
@@ -53,7 +56,8 @@ public class PublicationEntity {
             String externalId,
             PublicationStatus status,
             OffsetDateTime publishedAt,
-            JsonNode responsePayload
+            JsonNode responsePayload,
+            OffsetDateTime scheduledAt
     ) {
         this.id = id;
         this.contentId = contentId;
@@ -62,6 +66,7 @@ public class PublicationEntity {
         this.status = status;
         this.publishedAt = publishedAt;
         this.responsePayload = responsePayload;
+        this.scheduledAt = scheduledAt;
     }
 
     public Long getId() {
@@ -90,5 +95,9 @@ public class PublicationEntity {
 
     public JsonNode getResponsePayload() {
         return responsePayload;
+    }
+
+    public OffsetDateTime getScheduledAt() {
+        return scheduledAt;
     }
 }

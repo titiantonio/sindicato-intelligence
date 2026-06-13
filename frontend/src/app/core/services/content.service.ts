@@ -24,4 +24,8 @@ export class ContentService {
   rejectContent(contentId: number) {
     return this.httpClient.post<ContentListItem>(`/api/v1/content/${contentId}/reject`, {});
   }
+
+  updateContent(contentId: number, payload: { title: string; content: string; tone: string }) {
+    return this.httpClient.put<ContentListItem>(`/api/v1/content/${contentId}`, payload);
+  }
 }

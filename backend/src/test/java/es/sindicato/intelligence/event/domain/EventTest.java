@@ -57,6 +57,19 @@ class EventTest {
     }
 
     @Test
+    void archivedEventCanBePersistedWithoutNewsAfterMerge() {
+        OffsetDateTime now = OffsetDateTime.parse("2026-06-06T10:00:00Z");
+        OffsetDateTime archivedAt = OffsetDateTime.parse("2026-06-06T11:00:00Z");
+        Event event = event(now, Set.of(10L));
+
+        Event archivedEvent = event.archivedWithoutNews(archivedAt);
+
+        assertEquals(EventStatus.ARCHIVED, archivedEvent.getStatus());
+        assertEquals(Set.of(), archivedEvent.getNewsIds());
+        assertEquals(archivedAt, archivedEvent.getUpdatedAt());
+    }
+
+    @Test
     void rejectsLastUpdatedBeforeFirstDetected() {
         OffsetDateTime firstDetectedAt = OffsetDateTime.parse("2026-06-06T10:00:00Z");
         OffsetDateTime lastUpdatedAt = OffsetDateTime.parse("2026-06-06T09:00:00Z");

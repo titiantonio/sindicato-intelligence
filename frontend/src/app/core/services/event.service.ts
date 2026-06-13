@@ -16,4 +16,11 @@ export class EventService {
   getEvent(eventId: number) {
     return this.httpClient.get<EventDetail>(`/api/v1/events/${eventId}`);
   }
+
+  mergeEvents(targetEventId: number, sourceEventIds: number[]) {
+    return this.httpClient.post<EventDetail>('/api/v1/events/merge', {
+      targetEventId,
+      sourceEventIds
+    });
+  }
 }

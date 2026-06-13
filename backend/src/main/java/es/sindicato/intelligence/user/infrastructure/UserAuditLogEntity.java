@@ -42,4 +42,28 @@ public class UserAuditLogEntity {
         this.details = details;
         this.createdAt = createdAt;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public String getActorEmail() {
+        return actorEmail;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
 }
