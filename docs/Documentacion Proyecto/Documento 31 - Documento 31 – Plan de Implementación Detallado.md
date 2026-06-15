@@ -1665,6 +1665,28 @@ Estado:
 
 ---
 
+## 16.28 Modal editorial en pagina de contenido - 2026-06-15
+
+Tarea de mejora correctiva sobre Sprint 11 / backoffice Angular.
+
+Completado en esta iteracion:
+- Frontend contenido: sustituido el panel editorial fijo de `/content` por un modal.
+- Frontend contenido: click en una fila de la tabla abre el modal en modo lectura.
+- Frontend contenido: el boton `Editar` abre el mismo modal en modo edicion y no dispara la seleccion de fila.
+- Frontend contenido: `Editar` queda activo para `PENDING_REVIEW` y `APPROVED`, y deshabilitado para `REJECTED` y `PUBLISHED`.
+- Frontend contenido: la programacion de publicacion para contenido `APPROVED` permanece dentro del modal.
+- Frontend contenido: se mantienen filtros, ordenacion, paginacion y selector de filas por pagina.
+
+Verificacion:
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/content/content-page.component.spec.ts` OK, 6 tests.
+- Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 86 tests.
+- Frontend build: `npm.cmd run build` OK, con warnings no bloqueantes de presupuesto inicial, `users-page.component.scss` y `sources-page.component.scss`.
+
+Estado:
+- Mejora implementada sin modificar backend, contratos REST ni migraciones.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

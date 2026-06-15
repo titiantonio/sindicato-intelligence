@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend contenido: anadido modal editorial en `/content` para visualizar contenido desde la fila y editar desde accion explicita, manteniendo programacion de publicaciones dentro del modal.
 - Frontend backoffice: anadida paginacion, selector de filas, filtros por columna y ordenacion por todos los campos visibles en las tablas de fuentes, eventos, auditoria, contenido, detalle de evento y dashboard.
 - Backend usuarios: anadidas notificaciones por email para activacion, desbloqueo, actualizacion de usuario y eliminacion fisica.
 - Frontend usuarios: anadido boton "Alta de usuario", modal comun de alta/edicion, busqueda global, filtros por columna, ordenacion, paginacion y selector de filas por pagina en `/users`.
@@ -49,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.50-SNAPSHOT`.
+- Frontend contenido: el boton `Editar` queda deshabilitado para contenido `REJECTED` y `PUBLISHED`, manteniendose activo para `PENDING_REVIEW` y `APPROVED`.
 - Versionado del backend actualizado a `0.0.49-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.48-SNAPSHOT`.
 - Frontend usuarios: los mensajes de edicion, activacion, desbloqueo y eliminacion informan que se envia notificacion por email.

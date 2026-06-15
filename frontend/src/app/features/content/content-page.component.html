@@ -1,8 +1,10 @@
-<section class="split-layout">
-  <article class="panel panel--editorial">
+<section class="content-page">
+  <article class="panel">
+    <header class="page-header">
     <span class="page-header__eyebrow">Contenido</span>
     <h1>Bandeja editorial</h1>
     <p>Revision humana del contenido generado por IA antes de publicacion.</p>
+    </header>
 
     @if (errorMessage()) {
       <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
@@ -15,46 +17,6 @@
     @if (isLoading()) {
       <p class="page-alert">Cargando contenidos...</p>
     }
-
-    @if (selectedItem(); as selected) {
-      <div class="editor-preview">
-        <div>
-          <span class="editor-preview__label">Evento</span>
-          <strong>#{{ selected.eventId }} - {{ selected.title }}</strong>
-        </div>
-        <div>
-          <span class="editor-preview__label">Borrador {{ selected.channel }}</span>
-          <p>{{ selected.content }}</p>
-        </div>
-      </div>
-
-      <form class="editor-form" (submit)="$event.preventDefault(); saveEdit(selected)">
-        <label>
-          Titulo
-          <input type="text" [ngModel]="editTitle()" (ngModelChange)="editTitle.set($event)" name="title" [disabled]="selected.status === 'PUBLISHED'" />
-        </label>
-        <label>
-          Tono
-          <input type="text" [ngModel]="editTone()" (ngModelChange)="editTone.set($event)" name="tone" [disabled]="selected.status === 'PUBLISHED'" />
-        </label>
-        <label>
-          Contenido
-          <textarea [ngModel]="editContent()" (ngModelChange)="editContent.set($event)" name="content" rows="8" [disabled]="selected.status === 'PUBLISHED'"></textarea>
-        </label>
-        <button type="submit" [disabled]="selected.status === 'PUBLISHED'">Guardar cambios</button>
-      </form>
-
-      <form class="schedule-form" (submit)="$event.preventDefault(); schedulePublication(selected)">
-        <label>
-          Programar publicacion
-          <input type="datetime-local" [ngModel]="scheduleAt()" (ngModelChange)="scheduleAt.set($event)" name="scheduleAt" [disabled]="selected.status !== 'APPROVED'" />
-        </label>
-        <button type="submit" [disabled]="selected.status !== 'APPROVED'">Programar</button>
-      </form>
-    }
-  </article>
-
-  <article class="panel">
     <div class="table-wrap">
       <table>
         <thead>
@@ -77,16 +39,16 @@
         </thead>
         <tbody>
           @for (item of paginatedItems(); track item.id) {
-            <tr>
+            <tr class="content-row" tabindex="0" (click)="openView(item)" (keydown.enter)="openView(item)">
               <td>{{ item.channel }}</td>
               <td>{{ item.title }}</td>
               <td><app-status-badge [value]="item.status" /></td>
               <td>{{ formatDate(item.generatedAt) }}</td>
               <td>{{ formatDate(item.approvedAt) }}</td>
               <td class="content-actions">
-                <button type="button" (click)="selectItem(item)">Editar</button>
-                <button type="button" [disabled]="item.status !== 'PENDING_REVIEW'" (click)="approve(item)">Aprobar</button>
-                <button type="button" [disabled]="item.status !== 'PENDING_REVIEW'" (click)="reject(item)">Rechazar</button>
+                <button type="button" [disabled]="!canEdit(item)" (click)="openEdit(item, $event)">Editar</button>
+                <button type="button" [disabled]="!canReview(item)" (click)="$event.stopPropagation(); approve(item)">Aprobar</button>
+                <button type="button" [disabled]="!canReview(item)" (click)="$event.stopPropagation(); reject(item)">Rechazar</button>
               </td>
             </tr>
           } @empty {
@@ -114,4 +76,78 @@
       </div>
     </footer>
   </article>
+
+  @if (modalItem(); as selected) {
+    <div class="modal-backdrop" role="presentation" (click)="closeModal()">
+      <section class="editor-modal" role="dialog" aria-modal="true" aria-labelledby="content-modal-title" (click)="$event.stopPropagation()">
+        <header class="editor-modal__header">
+          <div>
+            <span class="page-header__eyebrow">Contenido {{ modalMode() === 'edit' ? 'editable' : 'en lectura' }}</span>
+            <h2 id="content-modal-title">{{ selected.title }}</h2>
+          </div>
+          <button class="modal-close" type="button" aria-label="Cerrar panel editorial" (click)="closeModal()">Cerrar</button>
+        </header>
+
+        <div class="editor-summary">
+          <div>
+            <span class="editor-preview__label">Evento</span>
+            <strong>#{{ selected.eventId }}</strong>
+          </div>
+          <div>
+            <span class="editor-preview__label">Canal</span>
+            <strong>{{ selected.channel }}</strong>
+          </div>
+          <div>
+            <span class="editor-preview__label">Tono</span>
+            <strong>{{ selected.tone }}</strong>
+          </div>
+          <div>
+            <span class="editor-preview__label">Estado</span>
+            <app-status-badge [value]="selected.status" />
+          </div>
+          <div>
+            <span class="editor-preview__label">Creado</span>
+            <strong>{{ formatDate(selected.generatedAt) }}</strong>
+          </div>
+          <div>
+            <span class="editor-preview__label">Aprobado</span>
+            <strong>{{ formatDate(selected.approvedAt) }}</strong>
+          </div>
+        </div>
+
+        @if (modalMode() === 'edit') {
+          <form class="editor-form" (submit)="$event.preventDefault(); saveEdit(selected)">
+            <label>
+              Titulo
+              <input type="text" [ngModel]="editTitle()" (ngModelChange)="editTitle.set($event)" name="title" />
+            </label>
+            <label>
+              Tono
+              <input type="text" [ngModel]="editTone()" (ngModelChange)="editTone.set($event)" name="tone" />
+            </label>
+            <label>
+              Contenido
+              <textarea [ngModel]="editContent()" (ngModelChange)="editContent.set($event)" name="content" rows="9"></textarea>
+            </label>
+            <button type="submit" [disabled]="!canEdit(selected)">Guardar cambios</button>
+          </form>
+        } @else {
+          <div class="editor-preview">
+            <div>
+              <span class="editor-preview__label">Borrador {{ selected.channel }}</span>
+              <p>{{ selected.content }}</p>
+            </div>
+          </div>
+        }
+
+        <form class="schedule-form" (submit)="$event.preventDefault(); schedulePublication(selected)">
+          <label>
+            Programar publicacion
+            <input type="datetime-local" [ngModel]="scheduleAt()" (ngModelChange)="scheduleAt.set($event)" name="scheduleAt" [disabled]="selected.status !== 'APPROVED'" />
+          </label>
+          <button type="submit" [disabled]="selected.status !== 'APPROVED'">Programar</button>
+        </form>
+      </section>
+    </div>
+  }
 </section>

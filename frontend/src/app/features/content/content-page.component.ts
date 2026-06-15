@@ -8,6 +8,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 
 type ContentSortColumn = 'channel' | 'title' | 'status' | 'generatedAt' | 'approvedAt';
 type SortDirection = 'asc' | 'desc';
+type ModalMode = 'view' | 'edit';
 
 @Component({
   selector: 'app-content-page',
@@ -24,6 +25,7 @@ export class ContentPageComponent implements OnInit {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly successMessage = signal<string | null>(null);
   protected readonly selectedItemId = signal<number | null>(null);
+  protected readonly modalMode = signal<ModalMode | null>(null);
   protected readonly editTitle = signal('');
   protected readonly editContent = signal('');
   protected readonly editTone = signal('');
@@ -47,8 +49,9 @@ export class ContentPageComponent implements OnInit {
   });
   protected readonly selectedItem = computed(() => {
     const selectedId = this.selectedItemId();
-    return this.items().find((item) => item.id === selectedId) ?? this.items()[0] ?? null;
+    return this.items().find((item) => item.id === selectedId) ?? null;
   });
+  protected readonly modalItem = computed(() => this.modalMode() ? this.selectedItem() : null);
 
   ngOnInit(): void {
     this.loadContent();
@@ -64,7 +67,7 @@ export class ContentPageComponent implements OnInit {
         this.currentPage.set(Math.min(this.currentPage(), this.totalPages()));
         const selected = this.selectedItem();
         if (selected) {
-          this.selectItem(selected);
+          this.prepareEditor(selected);
         }
         this.isLoading.set(false);
       },
@@ -106,7 +109,36 @@ export class ContentPageComponent implements OnInit {
     }).format(new Date(value));
   }
 
-  protected selectItem(item: ContentListItem): void {
+  protected openView(item: ContentListItem): void {
+    this.prepareEditor(item);
+    this.modalMode.set('view');
+  }
+
+  protected openEdit(item: ContentListItem, event?: Event): void {
+    event?.stopPropagation();
+    if (!this.canEdit(item)) {
+      return;
+    }
+
+    this.prepareEditor(item);
+    this.modalMode.set('edit');
+  }
+
+  protected closeModal(): void {
+    this.modalMode.set(null);
+    this.selectedItemId.set(null);
+    this.scheduleAt.set('');
+  }
+
+  protected canEdit(item: ContentListItem): boolean {
+    return item.status === 'PENDING_REVIEW' || item.status === 'APPROVED';
+  }
+
+  protected canReview(item: ContentListItem): boolean {
+    return item.status === 'PENDING_REVIEW';
+  }
+
+  private prepareEditor(item: ContentListItem): void {
     this.selectedItemId.set(item.id);
     this.editTitle.set(item.title);
     this.editContent.set(item.content);
@@ -115,7 +147,7 @@ export class ContentPageComponent implements OnInit {
   }
 
   protected saveEdit(item: ContentListItem): void {
-    if (item.status === 'PUBLISHED') {
+    if (!this.canEdit(item)) {
       return;
     }
 
@@ -129,6 +161,7 @@ export class ContentPageComponent implements OnInit {
       next: (updatedItem) => {
         this.successMessage.set('Contenido actualizado y devuelto a revision.');
         this.selectedItemId.set(updatedItem.id);
+        this.modalMode.set('view');
         this.loadContent();
       },
       error: (error: { error?: { error?: string } }) => this.errorMessage.set(error.error?.error ?? 'No se pudo actualizar el contenido.')
