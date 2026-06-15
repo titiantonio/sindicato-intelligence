@@ -39,14 +39,14 @@ public class PublishScheduledPublicationsUseCase {
     }
 
     private void publishDuePublication(Publication publication) {
-        GeneratedContent content = contentRepository.findById(publication.getContentId())
-                .orElseThrow(() -> new IllegalStateException("scheduled publication content not found: " + publication.getContentId()));
-        PublishingProvider publishingProvider = resolveProvider(publication.getChannel());
-
         log.info("scheduled publication started: publicationId={}, contentId={}, channel={}",
                 publication.getId(), publication.getContentId(), publication.getChannel());
 
         try {
+            GeneratedContent content = contentRepository.findById(publication.getContentId())
+                    .orElseThrow(() -> new IllegalStateException("scheduled publication content not found: " + publication.getContentId()));
+            PublishingProvider publishingProvider = resolveProvider(publication.getChannel());
+
             PublishingResult result = publishingProvider.publish(new PublishingRequest(
                     content.getId(),
                     content.getChannel(),
@@ -62,10 +62,9 @@ public class PublishScheduledPublicationsUseCase {
             log.info("scheduled publication completed: publicationId={}, contentId={}, channel={}",
                     publication.getId(), publication.getContentId(), publication.getChannel());
         } catch (PublishingProviderException exception) {
-            publication.markFailed(errorPayload(exception.getMessage()));
-            publicationRepository.save(publication);
-            log.error("scheduled publication failed: publicationId={}, contentId={}, channel={}, reason={}",
-                    publication.getId(), publication.getContentId(), publication.getChannel(), exception.getMessage());
+            markFailed(publication, exception.getMessage(), exception);
+        } catch (IllegalStateException exception) {
+            markFailed(publication, exception.getMessage(), exception);
         }
     }
 
@@ -74,6 +73,13 @@ public class PublishScheduledPublicationsUseCase {
                 .filter(provider -> provider.supports(channel))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("publication provider not found for channel: " + channel));
+    }
+
+    private void markFailed(Publication publication, String reason, RuntimeException exception) {
+        publication.markFailed(errorPayload(reason));
+        publicationRepository.save(publication);
+        log.error("scheduled publication failed: publicationId={}, contentId={}, channel={}, reason={}",
+                publication.getId(), publication.getContentId(), publication.getChannel(), reason, exception);
     }
 
     private String errorPayload(String message) {

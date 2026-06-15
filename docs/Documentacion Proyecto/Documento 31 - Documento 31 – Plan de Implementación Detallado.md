@@ -1579,6 +1579,23 @@ Estado:
 
 ---
 
+## 16.24 Correccion scheduler de publicaciones - 2026-06-15
+
+Tarea de mantenimiento correctivo sobre Sprint 11 / Fase 10, scheduling de publicaciones.
+
+Completado en esta iteracion:
+- Backend: corregido `PublishScheduledPublicationsUseCase` para que una publicacion `SCHEDULED` vencida sin proveedor `TELEGRAM` registrado no propague `publication provider not found for channel: TELEGRAM` al scheduler de Spring.
+- Backend: la publicacion afectada queda marcada como `FAILED` con payload de error controlado, evitando que el fallo se repita en cada ciclo.
+- Backend: anadida regresion unitaria para el caso de proveedor ausente.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=PublishScheduledPublicationsUseCaseTest" test` OK, 3 tests.
+
+Estado:
+- Correccion implementada sin cambiar contratos REST, migraciones ni alcance de Sprint 12.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:
