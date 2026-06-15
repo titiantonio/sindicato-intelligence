@@ -9,4 +9,12 @@ public interface UserAccountNotificationSender {
     void sendUserBlockedEmail(String toEmail, String fullName);
 
     void sendUserDeactivatedEmail(String toEmail, String fullName);
+
+    void sendUserActivatedEmail(String toEmail, String fullName);
+
+    void sendUserUnlockedEmail(String toEmail, String fullName);
+
+    void sendUserUpdatedEmail(String toEmail, String fullName);
+
+    void sendUserDeletedEmail(String toEmail, String fullName);
 }

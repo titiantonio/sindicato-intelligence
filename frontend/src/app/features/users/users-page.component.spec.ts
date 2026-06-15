@@ -96,7 +96,9 @@ describe('UsersPageComponent', () => {
       name: 'Editor Senior',
       role: 'ADMIN'
     });
-    expect((component as any).successMessage()).toBe('Usuario actualizado correctamente.');
+    expect((component as any).successMessage()).toBe(
+      'Usuario actualizado correctamente. Se ha enviado una notificacion por email.'
+    );
   });
 
   it('filters, sorts and paginates users locally', () => {
@@ -145,7 +147,9 @@ describe('UsersPageComponent', () => {
 
     (component as any).changeStatus(user.id, 'activate');
     expect(userAdminService.activateUser).toHaveBeenCalledWith(user.id);
-    expect((component as any).successMessage()).toBe('Usuario activado correctamente.');
+    expect((component as any).successMessage()).toBe(
+      'Usuario activado correctamente. Se ha enviado una notificacion por email.'
+    );
 
     (component as any).changeStatus(user.id, 'disable');
     expect(userAdminService.disableUser).toHaveBeenCalledWith(user.id);
@@ -161,7 +165,9 @@ describe('UsersPageComponent', () => {
 
     (component as any).changeStatus(user.id, 'unlock');
     expect(userAdminService.unlockUser).toHaveBeenCalledWith(user.id);
-    expect((component as any).successMessage()).toBe('Usuario desbloqueado correctamente.');
+    expect((component as any).successMessage()).toBe(
+      'Usuario desbloqueado correctamente. Se ha enviado una notificacion por email.'
+    );
   });
 
   it('resets temporary password and reloads users', () => {
@@ -187,7 +193,7 @@ describe('UsersPageComponent', () => {
     expect(userAdminService.deleteUser).toHaveBeenCalledWith(user.id);
     expect((component as any).deletingUser()).toBeNull();
     expect((component as any).successMessage()).toBe(
-      'Usuario eliminado definitivamente de la base de datos.'
+      'Usuario eliminado definitivamente de la base de datos. Se ha enviado una notificacion por email.'
     );
   });
 

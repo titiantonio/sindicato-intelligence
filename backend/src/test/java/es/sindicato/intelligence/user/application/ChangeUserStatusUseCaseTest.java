@@ -50,4 +50,40 @@ class ChangeUserStatusUseCaseTest {
         verify(userAccountNotificationSender).sendUserDeactivatedEmail("editor@sindicato.es", "Editor");
         verify(userAccountNotificationSender, never()).sendUserBlockedEmail(any(), any());
     }
+
+    @Test
+    void sendsActivatedNotificationWhenUserIsActivated() {
+        UserRepository userRepository = mock(UserRepository.class);
+        UserAuditLogRepository userAuditLogRepository = mock(UserAuditLogRepository.class);
+        UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
+        ChangeUserStatusUseCase useCase = new ChangeUserStatusUseCase(userRepository, userAuditLogRepository, userAccountNotificationSender);
+        UserAccount user = new UserAccount(1L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, false, false,
+                UserStatus.INACTIVE, null, null, null);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(1L, UserStatus.ACTIVE, "admin@sindicato.es");
+
+        verify(userAccountNotificationSender).sendUserActivatedEmail("editor@sindicato.es", "Editor");
+        verify(userAccountNotificationSender, never()).sendUserUnlockedEmail(any(), any());
+    }
+
+    @Test
+    void sendsUnlockedNotificationWhenLockedUserIsActivated() {
+        UserRepository userRepository = mock(UserRepository.class);
+        UserAuditLogRepository userAuditLogRepository = mock(UserAuditLogRepository.class);
+        UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
+        ChangeUserStatusUseCase useCase = new ChangeUserStatusUseCase(userRepository, userAuditLogRepository, userAccountNotificationSender);
+        UserAccount user = new UserAccount(1L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, false, false,
+                UserStatus.LOCKED, null, null, null);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(1L, UserStatus.ACTIVE, "admin@sindicato.es");
+
+        verify(userAccountNotificationSender).sendUserUnlockedEmail("editor@sindicato.es", "Editor");
+        verify(userAccountNotificationSender, never()).sendUserActivatedEmail(any(), any());
+    }
 }

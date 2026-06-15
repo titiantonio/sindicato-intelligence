@@ -172,7 +172,7 @@ export class UsersPageComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        this.successMessage.set('Usuario actualizado correctamente.');
+        this.successMessage.set('Usuario actualizado correctamente. Se ha enviado una notificacion por email.');
         this.closeUserModalKeepingMessage();
         this.loadUsers();
       },
@@ -248,7 +248,7 @@ export class UsersPageComponent implements OnInit {
       next: () => {
         this.isDeleting.set(false);
         this.deletingUser.set(null);
-        this.successMessage.set('Usuario eliminado definitivamente de la base de datos.');
+        this.successMessage.set('Usuario eliminado definitivamente de la base de datos. Se ha enviado una notificacion por email.');
         this.loadUsers();
       },
       error: (error: { error?: { error?: string } }) => {
@@ -456,10 +456,10 @@ export class UsersPageComponent implements OnInit {
 
   private successMessageForAction(action: 'activate' | 'disable' | 'lock' | 'unlock'): string {
     const messages = {
-      activate: 'Usuario activado correctamente.',
+      activate: 'Usuario activado correctamente. Se ha enviado una notificacion por email.',
       disable: 'Usuario desactivado. Se ha enviado una notificacion por email.',
       lock: 'Usuario bloqueado. Se ha enviado una notificacion por email.',
-      unlock: 'Usuario desbloqueado correctamente.'
+      unlock: 'Usuario desbloqueado correctamente. Se ha enviado una notificacion por email.'
     };
     return messages[action];
   }

@@ -1622,6 +1622,27 @@ Estado:
 
 ---
 
+## 16.26 Notificaciones completas de cambios de usuario - 2026-06-15
+
+Tarea de mejora correctiva sobre Sprint 11 / gestion ADMIN de usuarios.
+
+Completado en esta iteracion:
+- Backend: ampliado `UserAccountNotificationSender` para notificar activacion, desbloqueo, actualizacion de datos y eliminacion de usuario.
+- Backend: `ChangeUserStatusUseCase` envia email tambien al activar y desbloquear.
+- Backend: `UpdateUserUseCase` envia email cuando cambia nombre o rol.
+- Backend: `DeleteUserUseCase` envia email antes del borrado fisico permitido.
+- Frontend: ajustados mensajes de exito para informar de la notificacion por email en edicion, activacion, desbloqueo y eliminacion.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=UserControllerTest,*User*UseCaseTest" test` OK, 20 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/users/users-page.component.spec.ts` OK, 10 tests.
+- Frontend build: `npm.cmd run build` OK, con warning no bloqueante de presupuesto CSS en `users-page.component.scss`.
+
+Estado:
+- Mejora implementada sin cambiar esquema ni migraciones.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

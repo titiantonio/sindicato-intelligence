@@ -20,7 +20,8 @@ class DeleteUserUseCaseTest {
     @Test
     void deletesUserWhenNoFunctionalDependenciesExist() {
         UserRepository userRepository = mock(UserRepository.class);
-        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository);
+        UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender);
         UserAccount user = new UserAccount(2L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, true, false);
 
         when(userRepository.findById(2L)).thenReturn(Optional.of(user));
@@ -28,6 +29,7 @@ class DeleteUserUseCaseTest {
 
         useCase.execute(2L, "admin@sindicato.es");
 
+        verify(userAccountNotificationSender).sendUserDeletedEmail("editor@sindicato.es", "Editor");
         var ordered = inOrder(userRepository);
         ordered.verify(userRepository).deleteTechnicalDependencies(2L);
         ordered.verify(userRepository).deleteById(2L);
@@ -36,7 +38,8 @@ class DeleteUserUseCaseTest {
     @Test
     void rejectsUnknownUsers() {
         UserRepository userRepository = mock(UserRepository.class);
-        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository);
+        UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender);
 
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -46,7 +49,8 @@ class DeleteUserUseCaseTest {
     @Test
     void rejectsSelfDeletion() {
         UserRepository userRepository = mock(UserRepository.class);
-        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository);
+        UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender);
         UserAccount user = new UserAccount(1L, "admin@sindicato.es", "hash", "Admin", UserRole.ADMIN, true, false);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -59,7 +63,8 @@ class DeleteUserUseCaseTest {
     @Test
     void rejectsDeletingLastAdmin() {
         UserRepository userRepository = mock(UserRepository.class);
-        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository);
+        UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender);
         UserAccount user = new UserAccount(1L, "admin@sindicato.es", "hash", "Admin", UserRole.ADMIN, true, false);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -73,7 +78,8 @@ class DeleteUserUseCaseTest {
     @Test
     void rejectsUsersWithFunctionalDependencies() {
         UserRepository userRepository = mock(UserRepository.class);
-        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository);
+        UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender);
         UserAccount user = new UserAccount(2L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, true, false);
 
         when(userRepository.findById(2L)).thenReturn(Optional.of(user));
@@ -83,5 +89,6 @@ class DeleteUserUseCaseTest {
 
         verify(userRepository, never()).deleteTechnicalDependencies(2L);
         verify(userRepository, never()).deleteById(2L);
+        verify(userAccountNotificationSender, never()).sendUserDeletedEmail("editor@sindicato.es", "Editor");
     }
 }

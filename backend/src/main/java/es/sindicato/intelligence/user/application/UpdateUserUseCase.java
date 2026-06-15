@@ -18,10 +18,16 @@ public class UpdateUserUseCase {
 
     private final UserRepository userRepository;
     private final UserAuditLogRepository userAuditLogRepository;
+    private final UserAccountNotificationSender userAccountNotificationSender;
 
-    public UpdateUserUseCase(UserRepository userRepository, UserAuditLogRepository userAuditLogRepository) {
+    public UpdateUserUseCase(
+            UserRepository userRepository,
+            UserAuditLogRepository userAuditLogRepository,
+            UserAccountNotificationSender userAccountNotificationSender
+    ) {
         this.userRepository = userRepository;
         this.userAuditLogRepository = userAuditLogRepository;
+        this.userAccountNotificationSender = userAccountNotificationSender;
     }
 
     @Transactional
@@ -40,6 +46,9 @@ public class UpdateUserUseCase {
         if (existing.getRole() != updated.getRole()) {
             userAuditLogRepository.record(userId, actorEmail, UserAuditAction.USER_ROLE_CHANGED,
                     "from=" + existing.getRole() + ",to=" + updated.getRole());
+        }
+        if (!existing.getName().equals(updated.getName()) || existing.getRole() != updated.getRole()) {
+            userAccountNotificationSender.sendUserUpdatedEmail(updated.getEmail(), updated.getName());
         }
         log.info("user update completed: userId={}, role={}", updated.getId(), updated.getRole());
 

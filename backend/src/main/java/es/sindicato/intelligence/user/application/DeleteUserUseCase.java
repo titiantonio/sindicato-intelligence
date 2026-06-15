@@ -15,9 +15,11 @@ public class DeleteUserUseCase {
     private static final Logger log = LoggerFactory.getLogger(DeleteUserUseCase.class);
 
     private final UserRepository userRepository;
+    private final UserAccountNotificationSender userAccountNotificationSender;
 
-    public DeleteUserUseCase(UserRepository userRepository) {
+    public DeleteUserUseCase(UserRepository userRepository, UserAccountNotificationSender userAccountNotificationSender) {
         this.userRepository = userRepository;
+        this.userAccountNotificationSender = userAccountNotificationSender;
     }
 
     @Transactional
@@ -48,6 +50,7 @@ public class DeleteUserUseCase {
             );
         }
 
+        userAccountNotificationSender.sendUserDeletedEmail(user.getEmail(), user.getName());
         userRepository.deleteTechnicalDependencies(userId);
         userRepository.deleteById(userId);
         log.info("user deletion completed: userId={}", userId);

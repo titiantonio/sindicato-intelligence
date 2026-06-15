@@ -90,4 +90,68 @@ public class SmtpNewUserCredentialsEmailSender implements NewUserCredentialsEmai
         javaMailSender.send(message);
         log.info("user deactivated email sent: to={}", toEmail);
     }
+
+    @Override
+    public void sendUserActivatedEmail(String toEmail, String fullName) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setSubject("Cuenta activada - Sindicato Intelligence");
+        message.setText(
+                "Hola " + fullName + ",\n\n" +
+                        "Tu cuenta ha sido activada por una persona administradora.\n" +
+                        "Ya puedes acceder de nuevo si tus credenciales estan vigentes."
+        );
+
+        javaMailSender.send(message);
+        log.info("user activated email sent: to={}", toEmail);
+    }
+
+    @Override
+    public void sendUserUnlockedEmail(String toEmail, String fullName) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setSubject("Cuenta desbloqueada - Sindicato Intelligence");
+        message.setText(
+                "Hola " + fullName + ",\n\n" +
+                        "Tu cuenta ha sido desbloqueada por una persona administradora.\n" +
+                        "Ya puedes acceder de nuevo si tus credenciales estan vigentes."
+        );
+
+        javaMailSender.send(message);
+        log.info("user unlocked email sent: to={}", toEmail);
+    }
+
+    @Override
+    public void sendUserUpdatedEmail(String toEmail, String fullName) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setSubject("Datos de usuario actualizados - Sindicato Intelligence");
+        message.setText(
+                "Hola " + fullName + ",\n\n" +
+                        "Una persona administradora ha actualizado los datos de tu cuenta.\n" +
+                        "Si no reconoces este cambio, contacta con una persona administradora."
+        );
+
+        javaMailSender.send(message);
+        log.info("user updated email sent: to={}", toEmail);
+    }
+
+    @Override
+    public void sendUserDeletedEmail(String toEmail, String fullName) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setSubject("Cuenta eliminada - Sindicato Intelligence");
+        message.setText(
+                "Hola " + fullName + ",\n\n" +
+                        "Tu cuenta ha sido eliminada definitivamente por una persona administradora.\n" +
+                        "A partir de este momento no podras acceder a la plataforma."
+        );
+
+        javaMailSender.send(message);
+        log.info("user deleted email sent: to={}", toEmail);
+    }
 }

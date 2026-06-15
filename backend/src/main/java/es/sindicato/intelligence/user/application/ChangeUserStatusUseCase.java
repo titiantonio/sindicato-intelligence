@@ -34,19 +34,28 @@ public class ChangeUserStatusUseCase {
         UserAccount existing = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
+        UserStatus previousStatus = existing.getStatus();
         UserAccount updated = userRepository.save(existing.withStatus(status));
         userAuditLogRepository.record(userId, actorEmail, actionFor(status), "status=" + status);
-        sendNotificationIfRequired(updated, status);
+        sendNotificationIfRequired(updated, previousStatus, status);
         log.info("user status changed: userId={}, status={}", userId, status);
         return updated;
     }
 
-    private void sendNotificationIfRequired(UserAccount user, UserStatus status) {
+    private void sendNotificationIfRequired(UserAccount user, UserStatus previousStatus, UserStatus status) {
         if (status == UserStatus.LOCKED) {
             userAccountNotificationSender.sendUserBlockedEmail(user.getEmail(), user.getName());
         }
         if (status == UserStatus.INACTIVE) {
             userAccountNotificationSender.sendUserDeactivatedEmail(user.getEmail(), user.getName());
+        }
+        if (status == UserStatus.ACTIVE && previousStatus == UserStatus.LOCKED) {
+            userAccountNotificationSender.sendUserUnlockedEmail(user.getEmail(), user.getName());
+        } else if (status == UserStatus.ACTIVE) {
+            userAccountNotificationSender.sendUserActivatedEmail(user.getEmail(), user.getName());
+        }
+        if (status == UserStatus.PENDING_ACTIVATION && previousStatus == UserStatus.LOCKED) {
+            userAccountNotificationSender.sendUserUnlockedEmail(user.getEmail(), user.getName());
         }
     }
 
