@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend usuarios: anadidas notificaciones por email para activacion, desbloqueo, actualizacion de usuario y eliminacion fisica.
 - Frontend usuarios: anadido boton "Alta de usuario", modal comun de alta/edicion, busqueda global, filtros por columna, ordenacion, paginacion y selector de filas por pagina en `/users`.
 - Backend usuarios: anadido `DELETE /api/v1/users/{id}` para `ADMIN`, con bloqueo de borrado por autoeliminacion, ultimo `ADMIN` o referencias funcionales en contenido/auditoria.
 - Frontend fuentes: anadido boton "Anadir fuente", modal de alta, modal de edicion y tests focales de la pantalla `/sources`.
@@ -47,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.48-SNAPSHOT`.
+- Frontend usuarios: los mensajes de edicion, activacion, desbloqueo y eliminacion informan que se envia notificacion por email.
 - Versionado del backend actualizado a `0.0.47-SNAPSHOT`.
 - Frontend usuarios: aclarada la diferencia operativa entre `Desactivar` como baja administrativa y `Bloquear` como bloqueo reversible por incidencia.
 - Versionado del backend actualizado a `0.0.46-SNAPSHOT`.
