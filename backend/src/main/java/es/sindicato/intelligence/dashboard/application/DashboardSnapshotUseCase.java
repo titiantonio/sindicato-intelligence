@@ -93,6 +93,7 @@ public class DashboardSnapshotUseCase {
                 .filter(this::requiresImmediateAttention)
                 .sorted(Comparator
                         .comparingInt(this::importanceRank)
+                        .thenComparing(Comparator.comparingInt(this::newsCount).reversed())
                         .thenComparing(Event::getLastUpdatedAt, Comparator.reverseOrder()))
                 .limit(PRIORITY_EVENTS_LIMIT)
                 .toList();
@@ -188,6 +189,10 @@ public class DashboardSnapshotUseCase {
 
     private int importanceRank(Event event) {
         return event.getImportance() == Importance.CRITICAL ? 0 : 1;
+    }
+
+    private int newsCount(Event event) {
+        return event.getNewsIds().size();
     }
 
     private DateRange todayRange() {

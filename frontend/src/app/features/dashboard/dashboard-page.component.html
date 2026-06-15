@@ -42,10 +42,24 @@
         <tr class="column-filters">
           <th><input type="search" aria-label="Filtrar eventos prioritarios por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" /></th>
           <th><input type="search" aria-label="Filtrar eventos prioritarios por categoria" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)" /></th>
-          <th><input type="search" aria-label="Filtrar eventos prioritarios por impacto" [ngModel]="importanceFilter()" (ngModelChange)="setImportanceFilter($event)" /></th>
+          <th>
+            <select aria-label="Filtrar eventos prioritarios por impacto" [ngModel]="importanceFilter()" (ngModelChange)="setImportanceFilter($event)">
+              <option value="">Todos</option>
+              @for (importance of importanceOptions; track importance) {
+                <option [value]="importance">{{ importance }}</option>
+              }
+            </select>
+          </th>
           <th><input type="search" aria-label="Filtrar eventos prioritarios por noticias" [ngModel]="relatedNewsFilter()" (ngModelChange)="setRelatedNewsFilter($event)" /></th>
           <th><input type="search" aria-label="Filtrar eventos prioritarios por actualizacion" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" /></th>
-          <th><input type="search" aria-label="Filtrar eventos prioritarios por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)" /></th>
+          <th>
+            <select aria-label="Filtrar eventos prioritarios por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
+              <option value="">Todos</option>
+              @for (status of statusOptions(); track status) {
+                <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </th>
         </tr>
       </thead>
       <tbody>

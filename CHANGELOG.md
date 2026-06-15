@@ -50,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.51-SNAPSHOT`.
+- Dashboard: los eventos prioritarios se ordenan por impacto, numero de noticias asociadas y ultima actualizacion, y los filtros de impacto y estado usan selectores cerrados.
 - Versionado del backend actualizado a `0.0.50-SNAPSHOT`.
 - Frontend contenido: el boton `Editar` queda deshabilitado para contenido `REJECTED` y `PUBLISHED`, manteniendose activo para `PENDING_REVIEW` y `APPROVED`.
 - Versionado del backend actualizado a `0.0.49-SNAPSHOT`.

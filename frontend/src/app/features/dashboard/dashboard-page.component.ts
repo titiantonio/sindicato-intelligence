@@ -29,11 +29,13 @@ export class DashboardPageComponent implements OnInit {
   protected readonly relatedNewsFilter = signal('');
   protected readonly updatedAtFilter = signal('');
   protected readonly statusFilter = signal('');
-  protected readonly sortColumn = signal<PriorityEventSortColumn>('updatedAt');
+  protected readonly sortColumn = signal<PriorityEventSortColumn>('importance');
   protected readonly sortDirection = signal<SortDirection>('desc');
   protected readonly pageSize = signal(10);
   protected readonly currentPage = signal(1);
   protected readonly pageSizeOptions = [5, 10, 25, 50];
+  protected readonly importanceOptions = ['CRITICAL', 'HIGH'];
+  protected readonly statusOptions = computed(() => this.uniqueOptions((event) => event.status));
   protected readonly displayedPriorityEvents = computed(() => this.sortEvents(this.filterEvents(this.priorityEvents())));
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.displayedPriorityEvents().length / this.pageSize())));
   protected readonly paginatedPriorityEvents = computed(() => {
@@ -108,10 +110,10 @@ export class DashboardPageComponent implements OnInit {
     return events
       .filter((event) => this.matchesText(event.title, this.titleFilter()))
       .filter((event) => this.matchesText(event.category, this.categoryFilter()))
-      .filter((event) => this.matchesText(event.importance, this.importanceFilter()))
+      .filter((event) => this.matchesSelect(event.importance, this.importanceFilter()))
       .filter((event) => this.matchesText(event.relatedNews.toString(), this.relatedNewsFilter()))
       .filter((event) => this.matchesText(this.formatDate(event.updatedAt), this.updatedAtFilter()))
-      .filter((event) => this.matchesText(event.status, this.statusFilter()));
+      .filter((event) => this.matchesSelect(event.status, this.statusFilter()));
   }
 
   private sortEvents(events: PriorityEvent[]): PriorityEvent[] {
@@ -127,11 +129,33 @@ export class DashboardPageComponent implements OnInit {
     if (column === 'updatedAt') {
       return new Date(left.updatedAt).getTime() - new Date(right.updatedAt).getTime();
     }
+    if (column === 'importance') {
+      const importanceComparison = this.importanceScore(left.importance) - this.importanceScore(right.importance);
+      return importanceComparison !== 0 ? importanceComparison : left.relatedNews - right.relatedNews;
+    }
     return left[column].localeCompare(right[column], 'es', { sensitivity: 'base' });
   }
 
   private matchesText(value: string, filter: string): boolean {
     const normalizedFilter = filter.trim().toLocaleLowerCase('es');
     return !normalizedFilter || value.trim().toLocaleLowerCase('es').includes(normalizedFilter);
+  }
+
+  private matchesSelect(value: string, filter: string): boolean {
+    return !filter || value === filter;
+  }
+
+  private uniqueOptions(selector: (event: PriorityEvent) => string): string[] {
+    return [...new Set(this.priorityEvents().map(selector))].sort((left, right) => left.localeCompare(right, 'es'));
+  }
+
+  private importanceScore(importance: string): number {
+    const scores: Record<string, number> = {
+      LOW: 1,
+      MEDIUM: 2,
+      HIGH: 3,
+      CRITICAL: 4
+    };
+    return scores[importance] ?? 0;
   }
 }

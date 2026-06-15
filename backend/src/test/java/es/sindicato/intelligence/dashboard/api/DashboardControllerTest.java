@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.dashboard.api;
 
+import com.jayway.jsonpath.JsonPath;
 import es.sindicato.intelligence.content.domain.ContentStatus;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
@@ -32,6 +34,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -213,6 +217,40 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$.priorityEvents[*].status", everyItem(not(containsString("CLOSED")))));
     }
 
+    @Test
+    void ordersPriorityEventsByImpactNewsCountAndLastUpdate() throws Exception {
+        Source source = sourceRepository.save(source());
+        OffsetDateTime now = OffsetDateTime.now();
+        NewsArticle firstNews = newsRepository.save(newsArticle(source.getId(), "Noticia 1", now.minusMinutes(30)));
+        NewsArticle secondNews = newsRepository.save(newsArticle(source.getId(), "Noticia 2", now.minusMinutes(25)));
+        NewsArticle thirdNews = newsRepository.save(newsArticle(source.getId(), "Noticia 3", now.minusMinutes(20)));
+        NewsArticle fourthNews = newsRepository.save(newsArticle(source.getId(), "Noticia 4", now.minusMinutes(15)));
+        NewsArticle fifthNews = newsRepository.save(newsArticle(source.getId(), "Noticia 5", now.minusMinutes(14)));
+        NewsArticle sixthNews = newsRepository.save(newsArticle(source.getId(), "Noticia 6", now.minusMinutes(13)));
+        NewsArticle seventhNews = newsRepository.save(newsArticle(source.getId(), "Noticia 7", now.minusMinutes(12)));
+        NewsArticle eighthNews = newsRepository.save(newsArticle(source.getId(), "Noticia 8", now.minusMinutes(11)));
+        String suffix = UUID.randomUUID().toString();
+        String highTitle = "High con mas noticias " + suffix;
+        String criticalOneTitle = "Critical con una noticia " + suffix;
+        String criticalMoreTitle = "Critical con mas noticias " + suffix;
+
+        eventRepository.save(event(Set.of(firstNews.getId(), fifthNews.getId(), sixthNews.getId(), seventhNews.getId(), eighthNews.getId()), highTitle, EventCategory.SINDICAL, Importance.HIGH, EventStatus.OPEN, now.plusHours(3)));
+        eventRepository.save(event(Set.of(secondNews.getId()), criticalOneTitle, EventCategory.SIPRI, Importance.CRITICAL, EventStatus.OPEN, now.plusHours(2)));
+        eventRepository.save(event(Set.of(thirdNews.getId(), fourthNews.getId()), criticalMoreTitle, EventCategory.SINDICAL, Importance.CRITICAL, EventStatus.OPEN, now.plusHours(1)));
+
+        MvcResult result = mockMvc.perform(get("/api/v1/dashboard").with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.priorityEvents[0].title").value(criticalMoreTitle))
+                .andExpect(jsonPath("$.priorityEvents[0].relatedNews").value(2))
+                .andExpect(jsonPath("$.priorityEvents[1].title").value(criticalOneTitle))
+                .andReturn();
+
+        String response = result.getResponse().getContentAsString();
+        java.util.List<String> titles = JsonPath.read(response, "$.priorityEvents[*].title");
+        assertEquals(criticalMoreTitle, titles.getFirst());
+        assertTrue(titles.indexOf(criticalOneTitle) < titles.indexOf(highTitle));
+    }
+
     private RequestPostProcessor adminJwt() {
         return jwt().authorities(() -> "ROLE_ADMIN");
     }
@@ -234,7 +272,18 @@ class DashboardControllerTest {
             EventStatus status,
             OffsetDateTime detectedAt
     ) {
-        return new Event(null, title, "Descripcion", category, importance, status, Set.of(newsId), detectedAt, detectedAt, detectedAt, detectedAt);
+        return event(Set.of(newsId), title, category, importance, status, detectedAt);
+    }
+
+    private Event event(
+            Set<Long> newsIds,
+            String title,
+            EventCategory category,
+            Importance importance,
+            EventStatus status,
+            OffsetDateTime detectedAt
+    ) {
+        return new Event(null, title, "Descripcion", category, importance, status, newsIds, detectedAt, detectedAt, detectedAt, detectedAt);
     }
 
     private GeneratedContent content(Long eventId, ContentStatus status, OffsetDateTime generatedAt) {

@@ -1687,6 +1687,27 @@ Estado:
 
 ---
 
+## 16.29 Ordenacion editorial de eventos prioritarios del dashboard - 2026-06-15
+
+Tarea de mejora correctiva sobre Sprint 11 / backoffice Angular y API real de dashboard.
+
+Completado en esta iteracion:
+- Backend: `GET /api/v1/dashboard` mantiene contrato y ordena eventos prioritarios por impacto, numero de noticias asociadas y ultima actualizacion.
+- Frontend dashboard: la tabla de eventos prioritarios inicia con orden editorial por impacto y noticias, usando ranking semantico de importancia.
+- Frontend dashboard: los filtros de cabecera para impacto y estado pasan de texto libre a selectores con opciones cerradas.
+- Proyecto: backend versionado a `0.0.51-SNAPSHOT` y `CHANGELOG.md` actualizado.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=DashboardControllerTest" test` OK.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/dashboard/dashboard-page.component.spec.ts` OK, 5 tests.
+- Frontend build: `npm.cmd run build` OK, con warnings no bloqueantes de presupuesto en bundle inicial, `users-page.component.scss` y `sources-page.component.scss`.
+- Verificacion visual local: `http://localhost:4200/dashboard` renderiza la tabla y muestra selectores de cabecera para impacto y estado.
+
+Estado:
+- Mejora implementada sin cambiar contratos REST ni migraciones.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:
