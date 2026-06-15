@@ -59,16 +59,24 @@
       <table>
         <thead>
           <tr>
-            <th>Canal</th>
-            <th>Titulo</th>
-            <th>Estado</th>
-            <th>Creado</th>
-            <th>Aprobado</th>
+            <th><button class="sort-button" type="button" (click)="changeSort('channel')">Canal {{ sortLabel('channel') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="changeSort('generatedAt')">Creado {{ sortLabel('generatedAt') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="changeSort('approvedAt')">Aprobado {{ sortLabel('approvedAt') }}</button></th>
             <th>Acciones</th>
+          </tr>
+          <tr class="column-filters">
+            <th><input type="search" aria-label="Filtrar por canal" [ngModel]="channelFilter()" (ngModelChange)="setChannelFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar por fecha de creacion" [ngModel]="generatedAtFilter()" (ngModelChange)="setGeneratedAtFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar por fecha de aprobacion" [ngModel]="approvedAtFilter()" (ngModelChange)="setApprovedAtFilter($event)" /></th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
-          @for (item of items(); track item.id) {
+          @for (item of paginatedItems(); track item.id) {
             <tr>
               <td>{{ item.channel }}</td>
               <td>{{ item.title }}</td>
@@ -89,5 +97,21 @@
         </tbody>
       </table>
     </div>
+    <footer class="table-pagination">
+      <span>{{ displayedItems().length }} contenidos filtrados</span>
+      <label>
+        Filas por pagina
+        <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+          @for (option of pageSizeOptions; track option) {
+            <option [value]="option">{{ option }}</option>
+          }
+        </select>
+      </label>
+      <div class="table-pagination__pager">
+        <button type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">Anterior</button>
+        <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
+        <button type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">Siguiente</button>
+      </div>
+    </footer>
   </article>
 </section>

@@ -48,16 +48,24 @@
       <table>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Titulo</th>
-            <th>Estado</th>
-            <th>Categoria</th>
-            <th>Urgencia</th>
-            <th>Capturada</th>
+            <th><button class="sort-button" type="button" (click)="changeNewsSort('id')">ID {{ newsSortLabel('id') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="changeNewsSort('title')">Titulo {{ newsSortLabel('title') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="changeNewsSort('processingStatus')">Estado {{ newsSortLabel('processingStatus') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="changeNewsSort('category')">Categoria {{ newsSortLabel('category') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="changeNewsSort('urgencyLevel')">Urgencia {{ newsSortLabel('urgencyLevel') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="changeNewsSort('capturedAt')">Capturada {{ newsSortLabel('capturedAt') }}</button></th>
+          </tr>
+          <tr class="column-filters">
+            <th><input type="search" aria-label="Filtrar noticias por ID" [ngModel]="newsIdFilter()" (ngModelChange)="setNewsIdFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar noticias por titulo" [ngModel]="newsTitleFilter()" (ngModelChange)="setNewsTitleFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar noticias por estado" [ngModel]="newsStatusFilter()" (ngModelChange)="setNewsStatusFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar noticias por categoria" [ngModel]="newsCategoryFilter()" (ngModelChange)="setNewsCategoryFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar noticias por urgencia" [ngModel]="newsUrgencyFilter()" (ngModelChange)="setNewsUrgencyFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar noticias por fecha de captura" [ngModel]="newsCapturedAtFilter()" (ngModelChange)="setNewsCapturedAtFilter($event)" /></th>
           </tr>
         </thead>
         <tbody>
-          @for (news of item.news; track news.id) {
+          @for (news of paginatedNews(); track news.id) {
             <tr>
               <td>#{{ news.id }}</td>
               <td><a [href]="news.url" target="_blank" rel="noreferrer">{{ news.title }}</a></td>
@@ -74,6 +82,22 @@
         </tbody>
       </table>
     </div>
+    <footer class="table-pagination">
+      <span>{{ displayedNews().length }} noticias filtradas</span>
+      <label>
+        Filas por pagina
+        <select [ngModel]="newsPageSize()" (ngModelChange)="setNewsPageSize($event)">
+          @for (option of pageSizeOptions; track option) {
+            <option [value]="option">{{ option }}</option>
+          }
+        </select>
+      </label>
+      <div class="table-pagination__pager">
+        <button type="button" (click)="previousNewsPage()" [disabled]="newsCurrentPage() === 1">Anterior</button>
+        <span>Pagina {{ newsCurrentPage() }} de {{ newsTotalPages() }}</span>
+        <button type="button" (click)="nextNewsPage()" [disabled]="newsCurrentPage() === newsTotalPages()">Siguiente</button>
+      </div>
+    </footer>
   </section>
 
   <section class="detail-grid">

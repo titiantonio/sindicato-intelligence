@@ -32,16 +32,24 @@
     <table>
       <thead>
         <tr>
-          <th>Titulo</th>
-          <th>Categoria</th>
-          <th>Impacto</th>
-          <th>Noticias</th>
-          <th>Actualizacion</th>
-          <th>Estado</th>
+          <th><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
+          <th><button class="sort-button" type="button" (click)="changeSort('category')">Categoria {{ sortLabel('category') }}</button></th>
+          <th><button class="sort-button" type="button" (click)="changeSort('importance')">Impacto {{ sortLabel('importance') }}</button></th>
+          <th><button class="sort-button" type="button" (click)="changeSort('relatedNews')">Noticias {{ sortLabel('relatedNews') }}</button></th>
+          <th><button class="sort-button" type="button" (click)="changeSort('updatedAt')">Actualizacion {{ sortLabel('updatedAt') }}</button></th>
+          <th><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+        </tr>
+        <tr class="column-filters">
+          <th><input type="search" aria-label="Filtrar eventos prioritarios por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" /></th>
+          <th><input type="search" aria-label="Filtrar eventos prioritarios por categoria" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)" /></th>
+          <th><input type="search" aria-label="Filtrar eventos prioritarios por impacto" [ngModel]="importanceFilter()" (ngModelChange)="setImportanceFilter($event)" /></th>
+          <th><input type="search" aria-label="Filtrar eventos prioritarios por noticias" [ngModel]="relatedNewsFilter()" (ngModelChange)="setRelatedNewsFilter($event)" /></th>
+          <th><input type="search" aria-label="Filtrar eventos prioritarios por actualizacion" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" /></th>
+          <th><input type="search" aria-label="Filtrar eventos prioritarios por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)" /></th>
         </tr>
       </thead>
       <tbody>
-        @for (event of priorityEvents(); track event.id) {
+        @for (event of paginatedPriorityEvents(); track event.id) {
           <tr class="event-row" [routerLink]="['/events', event.id]" tabindex="0">
             <td>{{ event.title }}</td>
             <td>{{ event.category }}</td>
@@ -58,4 +66,20 @@
       </tbody>
     </table>
   </div>
+  <footer class="table-pagination">
+    <span>{{ displayedPriorityEvents().length }} eventos filtrados</span>
+    <label>
+      Filas por pagina
+      <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+        @for (option of pageSizeOptions; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+    </label>
+    <div class="table-pagination__pager">
+      <button type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">Anterior</button>
+      <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
+      <button type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">Siguiente</button>
+    </div>
+  </footer>
 </section>

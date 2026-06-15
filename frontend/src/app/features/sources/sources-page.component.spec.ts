@@ -124,6 +124,16 @@ describe('SourcesPageComponent', () => {
     expect((component as any).displayedSources().map((source: SourceResponse) => source.id)).toEqual([1, 2]);
   });
 
+  it('paginates filtered sources locally', () => {
+    (component as any).setPageSize('1');
+
+    expect((component as any).paginatedSources()).toEqual([sources[1]]);
+
+    (component as any).goToNextPage();
+
+    expect((component as any).paginatedSources()).toEqual([sources[0]]);
+  });
+
   it('does not submit invalid forms', () => {
     (component as any).startCreate();
     (component as any).sourceForm.setValue({

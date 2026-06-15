@@ -38,8 +38,17 @@ export class SourcesPageComponent implements OnInit {
   protected readonly updatedAtFilter = signal('');
   protected readonly sortColumn = signal<SourceSortColumn>('updatedAt');
   protected readonly sortDirection = signal<SortDirection>('desc');
+  protected readonly pageSize = signal(10);
+  protected readonly currentPage = signal(1);
+  protected readonly pageSizeOptions = [5, 10, 25, 50];
   protected readonly typeOptions = computed(() => this.uniqueOptions((source) => source.type));
   protected readonly displayedSources = computed(() => this.sortSources(this.filterSources(this.sources())));
+  protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.displayedSources().length / this.pageSize())));
+  protected readonly paginatedSources = computed(() => {
+    const page = Math.min(this.currentPage(), this.totalPages());
+    const start = (page - 1) * this.pageSize();
+    return this.displayedSources().slice(start, start + this.pageSize());
+  });
 
   protected readonly sourceForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
@@ -60,6 +69,7 @@ export class SourcesPageComponent implements OnInit {
     this.sourceService.listSources().subscribe({
       next: (sources) => {
         this.sources.set(sources);
+        this.currentPage.set(Math.min(this.currentPage(), this.totalPages()));
         this.isLoading.set(false);
       },
       error: (error: { error?: { error?: string } }) => {
@@ -135,38 +145,47 @@ export class SourcesPageComponent implements OnInit {
 
   protected setGlobalFilter(value: string): void {
     this.globalFilter.set(value);
+    this.resetPagination();
   }
 
   protected setIdFilter(value: string): void {
     this.idFilter.set(value);
+    this.resetPagination();
   }
 
   protected setNameFilter(value: string): void {
     this.nameFilter.set(value);
+    this.resetPagination();
   }
 
   protected setUrlFilter(value: string): void {
     this.urlFilter.set(value);
+    this.resetPagination();
   }
 
   protected setTypeFilter(value: string): void {
     this.typeFilter.set(value);
+    this.resetPagination();
   }
 
   protected setPriorityFilter(value: string): void {
     this.priorityFilter.set(value);
+    this.resetPagination();
   }
 
   protected setActiveFilter(value: string): void {
     this.activeFilter.set(value);
+    this.resetPagination();
   }
 
   protected setCreatedAtFilter(value: string): void {
     this.createdAtFilter.set(value);
+    this.resetPagination();
   }
 
   protected setUpdatedAtFilter(value: string): void {
     this.updatedAtFilter.set(value);
+    this.resetPagination();
   }
 
   protected changeSort(column: SourceSortColumn): void {
@@ -192,6 +211,19 @@ export class SourcesPageComponent implements OnInit {
       dateStyle: 'short',
       timeStyle: 'short'
     }).format(new Date(value));
+  }
+
+  protected setPageSize(value: string): void {
+    this.pageSize.set(Number(value));
+    this.resetPagination();
+  }
+
+  protected goToPreviousPage(): void {
+    this.currentPage.update((page) => Math.max(1, page - 1));
+  }
+
+  protected goToNextPage(): void {
+    this.currentPage.update((page) => Math.min(this.totalPages(), page + 1));
   }
 
   private closeModalKeepingMessage(): void {
@@ -276,5 +308,9 @@ export class SourcesPageComponent implements OnInit {
 
   private normalize(value: string): string {
     return value.trim().toLocaleLowerCase('es');
+  }
+
+  private resetPagination(): void {
+    this.currentPage.set(1);
   }
 }

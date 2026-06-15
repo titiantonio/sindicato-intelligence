@@ -35,10 +35,19 @@ export class EventsPageComponent implements OnInit {
   protected readonly updatedAtFilter = signal('');
   protected readonly sortColumn = signal<EventSortColumn>('updatedAt');
   protected readonly sortDirection = signal<SortDirection>('desc');
+  protected readonly pageSize = signal(10);
+  protected readonly currentPage = signal(1);
+  protected readonly pageSizeOptions = [5, 10, 25, 50];
   protected readonly categoryOptions = computed(() => this.uniqueOptions((event) => event.category));
   protected readonly importanceOptions = computed(() => this.uniqueOptions((event) => event.importance));
   protected readonly statusOptions = computed(() => this.uniqueOptions((event) => event.status));
   protected readonly displayedEvents = computed(() => this.sortEvents(this.filterEvents(this.events())));
+  protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.displayedEvents().length / this.pageSize())));
+  protected readonly paginatedEvents = computed(() => {
+    const page = Math.min(this.currentPage(), this.totalPages());
+    const start = (page - 1) * this.pageSize();
+    return this.displayedEvents().slice(start, start + this.pageSize());
+  });
 
   ngOnInit(): void {
     this.loadEvents();
@@ -54,6 +63,7 @@ export class EventsPageComponent implements OnInit {
         if (this.targetEventId() === null && this.activeEvents().length > 0) {
           this.targetEventId.set(this.activeEvents()[0].id);
         }
+        this.currentPage.set(Math.min(this.currentPage(), this.totalPages()));
         this.isLoading.set(false);
       },
       error: (error: { error?: { error?: string } }) => {
@@ -72,34 +82,42 @@ export class EventsPageComponent implements OnInit {
 
   protected setGlobalFilter(value: string): void {
     this.globalFilter.set(value);
+    this.resetPagination();
   }
 
   protected setIdFilter(value: string): void {
     this.idFilter.set(value);
+    this.resetPagination();
   }
 
   protected setTitleFilter(value: string): void {
     this.titleFilter.set(value);
+    this.resetPagination();
   }
 
   protected setCategoryFilter(value: string): void {
     this.categoryFilter.set(value);
+    this.resetPagination();
   }
 
   protected setImportanceFilter(value: string): void {
     this.importanceFilter.set(value);
+    this.resetPagination();
   }
 
   protected setNewsCountFilter(value: string): void {
     this.newsCountFilter.set(value);
+    this.resetPagination();
   }
 
   protected setStatusFilter(value: string): void {
     this.statusFilter.set(value);
+    this.resetPagination();
   }
 
   protected setUpdatedAtFilter(value: string): void {
     this.updatedAtFilter.set(value);
+    this.resetPagination();
   }
 
   protected changeSort(column: EventSortColumn): void {
@@ -163,6 +181,19 @@ export class EventsPageComponent implements OnInit {
         this.errorMessage.set(error.error?.error ?? 'No se pudo fusionar los eventos.');
       }
     });
+  }
+
+  protected setPageSize(value: string): void {
+    this.pageSize.set(Number(value));
+    this.resetPagination();
+  }
+
+  protected goToPreviousPage(): void {
+    this.currentPage.update((page) => Math.max(1, page - 1));
+  }
+
+  protected goToNextPage(): void {
+    this.currentPage.update((page) => Math.min(this.totalPages(), page + 1));
   }
 
   private filterEvents(events: EventListItem[]): EventListItem[] {
@@ -229,5 +260,9 @@ export class EventsPageComponent implements OnInit {
 
   private normalize(value: string): string {
     return value.trim().toLocaleLowerCase('es');
+  }
+
+  private resetPagination(): void {
+    this.currentPage.set(1);
   }
 }

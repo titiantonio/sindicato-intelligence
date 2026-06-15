@@ -97,6 +97,13 @@
   justify-content: flex-end;
 }
 
+.sources-page__pager {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .sources-page button {
   border: 0;
   cursor: pointer;
@@ -232,6 +239,27 @@
   color: var(--color-field-text);
 }
 
+.sources-page__pagination {
+  align-items: center;
+  border-top: 1px solid var(--color-neutral-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem 1.5rem 1.25rem;
+}
+
+.sources-page__pagination label {
+  align-items: center;
+  display: flex;
+  font-weight: 700;
+  gap: 0.5rem;
+}
+
+.sources-page__pagination select {
+  width: 5rem;
+}
+
 .sources-page__modal-backdrop {
   align-items: center;
   background: rgb(15 23 42 / 0.52);
@@ -273,5 +301,10 @@
 
   .sources-page__search {
     max-width: none;
+  }
+
+  .sources-page__pagination {
+    align-items: start;
+    display: grid;
   }
 }

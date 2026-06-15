@@ -90,7 +90,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (source of displayedSources(); track source.id) {
+          @for (source of paginatedSources(); track source.id) {
             <tr>
               <td>#{{ source.id }}</td>
               <td><strong>{{ source.name }}</strong></td>
@@ -118,6 +118,29 @@
         </tbody>
       </table>
     </div>
+
+    <footer class="sources-page__pagination">
+      <span>{{ displayedSources().length }} fuentes filtradas</span>
+
+      <label>
+        Filas por pagina
+        <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+          @for (option of pageSizeOptions; track option) {
+            <option [value]="option">{{ option }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="sources-page__pager">
+        <button class="sources-page__button sources-page__button--secondary" type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">
+          Anterior
+        </button>
+        <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
+        <button class="sources-page__button sources-page__button--secondary" type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">
+          Siguiente
+        </button>
+      </div>
+    </footer>
   </section>
 
   @if (isModalOpen()) {

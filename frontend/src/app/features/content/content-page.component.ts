@@ -6,6 +6,9 @@ import { ContentService } from '../../core/services/content.service';
 import { PublicationService } from '../../core/services/publication.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
+type ContentSortColumn = 'channel' | 'title' | 'status' | 'generatedAt' | 'approvedAt';
+type SortDirection = 'asc' | 'desc';
+
 @Component({
   selector: 'app-content-page',
   imports: [FormsModule, StatusBadgeComponent],
@@ -25,6 +28,23 @@ export class ContentPageComponent implements OnInit {
   protected readonly editContent = signal('');
   protected readonly editTone = signal('');
   protected readonly scheduleAt = signal('');
+  protected readonly channelFilter = signal('');
+  protected readonly titleFilter = signal('');
+  protected readonly statusFilter = signal('');
+  protected readonly generatedAtFilter = signal('');
+  protected readonly approvedAtFilter = signal('');
+  protected readonly sortColumn = signal<ContentSortColumn>('generatedAt');
+  protected readonly sortDirection = signal<SortDirection>('desc');
+  protected readonly pageSize = signal(10);
+  protected readonly currentPage = signal(1);
+  protected readonly pageSizeOptions = [5, 10, 25, 50];
+  protected readonly displayedItems = computed(() => this.sortItems(this.filterItems(this.items())));
+  protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.displayedItems().length / this.pageSize())));
+  protected readonly paginatedItems = computed(() => {
+    const page = Math.min(this.currentPage(), this.totalPages());
+    const start = (page - 1) * this.pageSize();
+    return this.displayedItems().slice(start, start + this.pageSize());
+  });
   protected readonly selectedItem = computed(() => {
     const selectedId = this.selectedItemId();
     return this.items().find((item) => item.id === selectedId) ?? this.items()[0] ?? null;
@@ -41,6 +61,7 @@ export class ContentPageComponent implements OnInit {
     this.contentService.listContent().subscribe({
       next: (items) => {
         this.items.set(items);
+        this.currentPage.set(Math.min(this.currentPage(), this.totalPages()));
         const selected = this.selectedItem();
         if (selected) {
           this.selectItem(selected);
@@ -137,5 +158,68 @@ export class ContentPageComponent implements OnInit {
       },
       error: (error: { error?: { error?: string } }) => this.errorMessage.set(error.error?.error ?? 'No se pudo programar la publicacion.')
     });
+  }
+
+  protected setChannelFilter(value: string): void { this.channelFilter.set(value); this.currentPage.set(1); }
+  protected setTitleFilter(value: string): void { this.titleFilter.set(value); this.currentPage.set(1); }
+  protected setStatusFilter(value: string): void { this.statusFilter.set(value); this.currentPage.set(1); }
+  protected setGeneratedAtFilter(value: string): void { this.generatedAtFilter.set(value); this.currentPage.set(1); }
+  protected setApprovedAtFilter(value: string): void { this.approvedAtFilter.set(value); this.currentPage.set(1); }
+
+  protected changeSort(column: ContentSortColumn): void {
+    if (this.sortColumn() === column) {
+      this.sortDirection.update((direction) => direction === 'asc' ? 'desc' : 'asc');
+      return;
+    }
+    this.sortColumn.set(column);
+    this.sortDirection.set(column === 'generatedAt' || column === 'approvedAt' ? 'desc' : 'asc');
+  }
+
+  protected sortLabel(column: ContentSortColumn): string {
+    return this.sortColumn() === column ? this.sortDirection().toUpperCase() : '';
+  }
+
+  protected setPageSize(value: string): void {
+    this.pageSize.set(Number(value));
+    this.currentPage.set(1);
+  }
+
+  protected goToPreviousPage(): void {
+    this.currentPage.update((page) => Math.max(1, page - 1));
+  }
+
+  protected goToNextPage(): void {
+    this.currentPage.update((page) => Math.min(this.totalPages(), page + 1));
+  }
+
+  private filterItems(items: ContentListItem[]): ContentListItem[] {
+    return items
+      .filter((item) => this.matchesText(item.channel, this.channelFilter()))
+      .filter((item) => this.matchesText(item.title, this.titleFilter()))
+      .filter((item) => this.matchesText(item.status, this.statusFilter()))
+      .filter((item) => this.matchesText(this.formatDate(item.generatedAt), this.generatedAtFilter()))
+      .filter((item) => this.matchesText(this.formatDate(item.approvedAt), this.approvedAtFilter()));
+  }
+
+  private sortItems(items: ContentListItem[]): ContentListItem[] {
+    const direction = this.sortDirection() === 'asc' ? 1 : -1;
+    const column = this.sortColumn();
+    return [...items].sort((left, right) => direction * this.compareItems(left, right, column));
+  }
+
+  private compareItems(left: ContentListItem, right: ContentListItem, column: ContentSortColumn): number {
+    if (column === 'generatedAt' || column === 'approvedAt') {
+      return this.dateValue(left[column]) - this.dateValue(right[column]);
+    }
+    return left[column].localeCompare(right[column], 'es', { sensitivity: 'base' });
+  }
+
+  private matchesText(value: string, filter: string): boolean {
+    const normalizedFilter = filter.trim().toLocaleLowerCase('es');
+    return !normalizedFilter || value.trim().toLocaleLowerCase('es').includes(normalizedFilter);
+  }
+
+  private dateValue(value: string | null): number {
+    return value === null ? 0 : new Date(value).getTime();
   }
 }

@@ -27,15 +27,22 @@
       <table>
         <thead>
           <tr>
-            <th>Fecha</th>
-            <th>Accion</th>
-            <th>Usuario</th>
-            <th>Actor</th>
-            <th>Detalle</th>
+            <th><button class="sort-button" type="button" (click)="setUserSort('createdAt')">Fecha {{ userSortLabel('createdAt') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="setUserSort('action')">Accion {{ userSortLabel('action') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="setUserSort('userId')">Usuario {{ userSortLabel('userId') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="setUserSort('actorEmail')">Actor {{ userSortLabel('actorEmail') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="setUserSort('details')">Detalle {{ userSortLabel('details') }}</button></th>
+          </tr>
+          <tr class="column-filters">
+            <th><input type="search" aria-label="Filtrar auditoria usuarios por fecha" [ngModel]="userDateFilter()" (ngModelChange)="setUserDateFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar auditoria usuarios por accion" [ngModel]="userActionFilter()" (ngModelChange)="setUserActionFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar auditoria usuarios por usuario" [ngModel]="userIdFilter()" (ngModelChange)="setUserIdFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar auditoria usuarios por actor" [ngModel]="userActorFilter()" (ngModelChange)="setUserActorFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar auditoria usuarios por detalle" [ngModel]="userDetailsFilter()" (ngModelChange)="setUserDetailsFilter($event)" /></th>
           </tr>
         </thead>
         <tbody>
-          @for (entry of userAudit(); track entry.id) {
+          @for (entry of paginatedUserAudit(); track entry.id) {
             <tr>
               <td>{{ formatDate(entry.createdAt) }}</td>
               <td>{{ entry.action }}</td>
@@ -51,20 +58,43 @@
         </tbody>
       </table>
     </div>
+    <footer class="table-pagination">
+      <span>{{ displayedUserAudit().length }} registros filtrados</span>
+      <label>
+        Filas por pagina
+        <select [ngModel]="userPageSize()" (ngModelChange)="setUserPageSize($event)">
+          @for (option of pageSizeOptions; track option) {
+            <option [value]="option">{{ option }}</option>
+          }
+        </select>
+      </label>
+      <div class="table-pagination__pager">
+        <button type="button" (click)="previousUserPage()" [disabled]="userCurrentPage() === 1">Anterior</button>
+        <span>Pagina {{ userCurrentPage() }} de {{ userTotalPages() }}</span>
+        <button type="button" (click)="nextUserPage()" [disabled]="userCurrentPage() === userTotalPages()">Siguiente</button>
+      </div>
+    </footer>
   } @else {
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Fecha</th>
-            <th>Accion</th>
-            <th>Entidad</th>
-            <th>Usuario</th>
-            <th>Cambios</th>
+            <th><button class="sort-button" type="button" (click)="setEditorialSort('createdAt')">Fecha {{ editorialSortLabel('createdAt') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="setEditorialSort('action')">Accion {{ editorialSortLabel('action') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="setEditorialSort('entityType')">Entidad {{ editorialSortLabel('entityType') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="setEditorialSort('userId')">Usuario {{ editorialSortLabel('userId') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="setEditorialSort('newValues')">Cambios {{ editorialSortLabel('newValues') }}</button></th>
+          </tr>
+          <tr class="column-filters">
+            <th><input type="search" aria-label="Filtrar auditoria editorial por fecha" [ngModel]="editorialDateFilter()" (ngModelChange)="setEditorialDateFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar auditoria editorial por accion" [ngModel]="editorialActionFilter()" (ngModelChange)="setEditorialActionFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar auditoria editorial por entidad" [ngModel]="editorialEntityTypeFilter()" (ngModelChange)="setEditorialEntityTypeFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar auditoria editorial por usuario" [ngModel]="editorialUserIdFilter()" (ngModelChange)="setEditorialUserIdFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar auditoria editorial por cambios" [ngModel]="editorialChangesFilter()" (ngModelChange)="setEditorialChangesFilter($event)" /></th>
           </tr>
         </thead>
         <tbody>
-          @for (entry of editorialAudit(); track entry.id) {
+          @for (entry of paginatedEditorialAudit(); track entry.id) {
             <tr>
               <td>{{ formatDate(entry.createdAt) }}</td>
               <td>{{ entry.action }}</td>
@@ -80,5 +110,21 @@
         </tbody>
       </table>
     </div>
+    <footer class="table-pagination">
+      <span>{{ displayedEditorialAudit().length }} registros filtrados</span>
+      <label>
+        Filas por pagina
+        <select [ngModel]="editorialPageSize()" (ngModelChange)="setEditorialPageSize($event)">
+          @for (option of pageSizeOptions; track option) {
+            <option [value]="option">{{ option }}</option>
+          }
+        </select>
+      </label>
+      <div class="table-pagination__pager">
+        <button type="button" (click)="previousEditorialPage()" [disabled]="editorialCurrentPage() === 1">Anterior</button>
+        <span>Pagina {{ editorialCurrentPage() }} de {{ editorialTotalPages() }}</span>
+        <button type="button" (click)="nextEditorialPage()" [disabled]="editorialCurrentPage() === editorialTotalPages()">Siguiente</button>
+      </div>
+    </footer>
   }
 </section>

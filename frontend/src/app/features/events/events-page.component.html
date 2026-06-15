@@ -121,7 +121,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (event of displayedEvents(); track event.id) {
+        @for (event of paginatedEvents(); track event.id) {
           <tr>
             <td>#{{ event.id }}</td>
             <td>{{ event.title }}</td>
@@ -140,4 +140,23 @@
       </tbody>
     </table>
   </div>
+
+  <footer class="table-pagination">
+    <span>{{ displayedEvents().length }} eventos filtrados</span>
+
+    <label>
+      Filas por pagina
+      <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+        @for (option of pageSizeOptions; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="table-pagination__pager">
+      <button type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">Anterior</button>
+      <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
+      <button type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">Siguiente</button>
+    </div>
+  </footer>
 </section>

@@ -1643,6 +1643,28 @@ Estado:
 
 ---
 
+## 16.27 Paginacion, filtros y ordenacion de tablas backoffice - 2026-06-15
+
+Tarea de mejora correctiva sobre Sprint 11 / backoffice Angular.
+
+Completado en esta iteracion:
+- Frontend fuentes: la tabla `/sources` mantiene busqueda/filtros/ordenacion y anade paginacion local con selector de filas por pagina.
+- Frontend eventos: la tabla `/events` mantiene busqueda/filtros/ordenacion y anade paginacion local con selector de filas por pagina.
+- Frontend auditoria: las tablas de auditoria de usuarios y auditoria editorial permiten filtrar, ordenar y paginar de forma independiente.
+- Frontend contenido: la tabla `/content` permite filtrar y ordenar por canal, titulo, estado, fecha de generacion y fecha de aprobacion, con paginacion local.
+- Frontend detalle de evento: la tabla de noticias asociadas permite filtrar, ordenar y paginar por todos sus campos visibles.
+- Frontend dashboard: la tabla de eventos prioritarios permite filtrar, ordenar y paginar por todos sus campos visibles.
+
+Verificacion:
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/sources/sources-page.component.spec.ts --include=src/app/features/events/events-page.component.spec.ts --include=src/app/features/audit/audit-page.component.spec.ts --include=src/app/features/dashboard/dashboard-page.component.spec.ts` OK, 17 tests.
+- Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 80 tests.
+- Frontend build: `npm.cmd run build` OK, con warnings no bloqueantes de presupuesto CSS en `sources-page.component.scss` y `users-page.component.scss`.
+
+Estado:
+- Mejora implementada sobre paginacion frontend local sin modificar contratos REST ni migraciones.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

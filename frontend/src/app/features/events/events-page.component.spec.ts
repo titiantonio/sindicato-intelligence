@@ -55,6 +55,16 @@ describe('EventsPageComponent', () => {
     expect((component as any).displayedEvents().map((event: EventListItem) => event.id)).toEqual([3, 1, 2]);
   });
 
+  it('paginates filtered events locally', () => {
+    (component as any).setPageSize('1');
+
+    expect((component as any).paginatedEvents().map((event: EventListItem) => event.id)).toEqual([3]);
+
+    (component as any).goToNextPage();
+
+    expect((component as any).paginatedEvents().map((event: EventListItem) => event.id)).toEqual([1]);
+  });
+
   function eventItem(
     id: number,
     title: string,
