@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.46-SNAPSHOT`.
 - Frontend fuentes: eliminado el formulario fijo "Nueva fuente" de la pantalla y ajustado el layout para que el ancho sobrante quede contenido en el scroll interno de la tabla.
 - Versionado del backend actualizado a `0.0.45-SNAPSHOT`.
 - Dashboard: cada tarjeta metrica calcula y muestra su propia fecha y hora de ultima actualizacion segun los datos de noticias, eventos, contenidos o publicaciones.
@@ -82,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend publicaciones: el scheduler de publicaciones programadas ya no propaga `publication provider not found for channel: TELEGRAM` al arrancar si hay publicaciones vencidas y el proveedor Telegram no esta habilitado; marca la publicacion como `FAILED` con error controlado.
 - Frontend/auth: renovada automaticamente la sesion con `POST /api/v1/auth/refresh` cuando el access token caduca, reintentando la peticion original para evitar el error "No se pudo cargar el dashboard" tras inactividad.
 
 ### Security
