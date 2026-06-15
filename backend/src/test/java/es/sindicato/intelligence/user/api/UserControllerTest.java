@@ -3,11 +3,13 @@ package es.sindicato.intelligence.user.api;
 import es.sindicato.intelligence.core.config.SecurityConfig;
 import es.sindicato.intelligence.user.application.ChangeUserStatusUseCase;
 import es.sindicato.intelligence.user.application.CreateUserUseCase;
+import es.sindicato.intelligence.user.application.DeleteUserUseCase;
 import es.sindicato.intelligence.user.application.DisableUserUseCase;
 import es.sindicato.intelligence.user.application.GetUserUseCase;
 import es.sindicato.intelligence.user.application.ListUsersUseCase;
 import es.sindicato.intelligence.user.application.ResetTemporaryPasswordUseCase;
 import es.sindicato.intelligence.user.application.UpdateUserUseCase;
+import es.sindicato.intelligence.user.application.UserDeletionConflictException;
 import es.sindicato.intelligence.user.domain.UserAccount;
 import es.sindicato.intelligence.user.domain.UserRole;
 import es.sindicato.intelligence.user.domain.UserStatus;
@@ -25,8 +27,11 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -57,6 +62,9 @@ class UserControllerTest {
 
     @MockBean
     private ResetTemporaryPasswordUseCase resetTemporaryPasswordUseCase;
+
+    @MockBean
+    private DeleteUserUseCase deleteUserUseCase;
 
     @MockBean
     private ListUsersUseCase listUsersUseCase;
@@ -147,5 +155,45 @@ class UserControllerTest {
                         .with(jwt().jwt(jwt -> jwt.subject("admin@sindicato.es")).authorities(() -> "ROLE_ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("LOCKED"));
+    }
+
+    @Test
+    void adminCanDeleteUser() throws Exception {
+        mockMvc.perform(delete("/api/v1/users/{id}", 2L)
+                        .with(jwt().jwt(jwt -> jwt.subject("admin@sindicato.es")).authorities(() -> "ROLE_ADMIN")))
+                .andExpect(status().isNoContent());
+
+        verify(deleteUserUseCase).execute(2L, "admin@sindicato.es");
+    }
+
+    @Test
+    void editorCannotDeleteUser() throws Exception {
+        mockMvc.perform(delete("/api/v1/users/{id}", 2L)
+                        .with(jwt().jwt(jwt -> jwt.subject("editor@sindicato.es")).authorities(() -> "ROLE_EDITOR")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteUserReturnsConflictWhenUserHasDependencies() throws Exception {
+        doThrow(new UserDeletionConflictException("No se puede eliminar el usuario porque conserva referencias funcionales: generated_content.created_by=1"))
+                .when(deleteUserUseCase)
+                .execute(2L, "admin@sindicato.es");
+
+        mockMvc.perform(delete("/api/v1/users/{id}", 2L)
+                        .with(jwt().jwt(jwt -> jwt.subject("admin@sindicato.es")).authorities(() -> "ROLE_ADMIN")))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("No se puede eliminar el usuario porque conserva referencias funcionales: generated_content.created_by=1"));
+    }
+
+    @Test
+    void deleteUserReturnsConflictWhenActorDeletesItself() throws Exception {
+        doThrow(new UserDeletionConflictException("No se puede eliminar el usuario autenticado."))
+                .when(deleteUserUseCase)
+                .execute(1L, "admin@sindicato.es");
+
+        mockMvc.perform(delete("/api/v1/users/{id}", 1L)
+                        .with(jwt().jwt(jwt -> jwt.subject("admin@sindicato.es")).authorities(() -> "ROLE_ADMIN")))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("No se puede eliminar el usuario autenticado."));
     }
 }

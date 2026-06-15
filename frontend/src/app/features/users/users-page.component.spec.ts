@@ -32,7 +32,8 @@ describe('UsersPageComponent', () => {
       'disableUser',
       'lockUser',
       'unlockUser',
-      'resetTemporaryPassword'
+      'resetTemporaryPassword',
+      'deleteUser'
     ]);
     userAdminService.listUsers.and.returnValue(of([user]));
 
@@ -54,6 +55,7 @@ describe('UsersPageComponent', () => {
 
   it('creates users without password', () => {
     userAdminService.createUser.and.returnValue(of(user));
+    (component as any).startCreate();
     (component as any).userForm.setValue({
       email: 'new-editor@sindicato.es',
       name: 'New Editor',
@@ -68,6 +70,7 @@ describe('UsersPageComponent', () => {
       role: 'EDITOR'
     });
     expect((userAdminService.createUser.calls.mostRecent().args[0] as any).password).toBeUndefined();
+    expect((component as any).isUserModalOpen()).toBeFalse();
     expect((component as any).successMessage()).toBe(
       'Usuario creado. Se ha enviado una password temporal por email.'
     );
@@ -79,6 +82,8 @@ describe('UsersPageComponent', () => {
     (component as any).startEdit(user);
 
     expect((component as any).editingUserId()).toBe(user.id);
+    expect((component as any).isUserModalOpen()).toBeTrue();
+    expect((component as any).formMode()).toBe('edit');
     expect((component as any).userForm.controls.email.disabled).toBeTrue();
 
     (component as any).userForm.patchValue({
@@ -92,6 +97,31 @@ describe('UsersPageComponent', () => {
       role: 'ADMIN'
     });
     expect((component as any).successMessage()).toBe('Usuario actualizado correctamente.');
+  });
+
+  it('filters, sorts and paginates users locally', () => {
+    const admin: UserAdminResponse = {
+      ...user,
+      id: 2,
+      email: 'admin@sindicato.es',
+      name: 'Admin',
+      role: 'ADMIN',
+      status: 'ACTIVE'
+    };
+    (component as any).users.set([user, admin]);
+
+    (component as any).setGlobalFilter('admin');
+    expect((component as any).displayedUsers()).toEqual([admin]);
+
+    (component as any).setGlobalFilter('');
+    (component as any).changeSort('id');
+    expect((component as any).displayedUsers().map((listedUser: UserAdminResponse) => listedUser.id)).toEqual([2, 7]);
+
+    (component as any).setPageSize('1');
+    expect((component as any).paginatedUsers()).toEqual([admin]);
+
+    (component as any).goToNextPage();
+    expect((component as any).paginatedUsers()).toEqual([user]);
   });
 
   it('does not submit invalid forms', () => {
@@ -143,6 +173,36 @@ describe('UsersPageComponent', () => {
     expect((component as any).successMessage()).toBe(
       'Password temporal regenerada y enviada por email.'
     );
+  });
+
+  it('confirms user deletion before calling the service', () => {
+    userAdminService.deleteUser.and.returnValue(of(undefined));
+
+    (component as any).startDelete(user);
+
+    expect((component as any).deletingUser()).toEqual(user);
+
+    (component as any).confirmDelete();
+
+    expect(userAdminService.deleteUser).toHaveBeenCalledWith(user.id);
+    expect((component as any).deletingUser()).toBeNull();
+    expect((component as any).successMessage()).toBe(
+      'Usuario eliminado definitivamente de la base de datos.'
+    );
+  });
+
+  it('shows dependency conflicts when deleting users', () => {
+    userAdminService.deleteUser.and.returnValue(
+      throwError(() => ({ error: { error: 'No se puede eliminar el usuario porque conserva referencias funcionales: generated_content.created_by=1' } }))
+    );
+
+    (component as any).startDelete(user);
+    (component as any).confirmDelete();
+
+    expect((component as any).errorMessage()).toBe(
+      'No se puede eliminar el usuario porque conserva referencias funcionales: generated_content.created_by=1'
+    );
+    expect((component as any).isDeleting()).toBeFalse();
   });
 
   it('shows service errors', () => {

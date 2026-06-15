@@ -1596,6 +1596,32 @@ Estado:
 
 ---
 
+## 16.25 Mejora de gestion de usuarios - 2026-06-15
+
+Tarea de mejora correctiva sobre Sprint 11 Frontend Angular y gestion ADMIN de usuarios.
+
+Completado en esta iteracion:
+- Frontend: eliminado el formulario fijo de alta/edicion de la pantalla `/users`.
+- Frontend: anadido boton "Alta de usuario" con modal comun de creacion y edicion.
+- Frontend: la tabla de usuarios permite busqueda global, filtros por columna, ordenacion por todos los campos visibles, paginacion y selector de filas por pagina.
+- Frontend: anadida accion "Eliminar" con modal de advertencia antes de solicitar el borrado fisico.
+- Frontend: aclarada la diferencia operativa entre desactivar usuario (`INACTIVE`, baja administrativa) y bloquear usuario (`LOCKED`, bloqueo reversible por incidencia).
+- Backend: anadido `DELETE /api/v1/users/{id}` exclusivo para `ADMIN`.
+- Backend: creado `DeleteUserUseCase` con rechazo de autoeliminacion, ultimo `ADMIN` y usuarios con referencias funcionales en `generated_content.created_by` o `audit_log.user_id`.
+- Backend: el borrado permitido limpia dependencias tecnicas (`password_reset_tokens`, `user_password_history`, `user_audit_log`) antes de eliminar la fila `users`.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=UserControllerTest,*User*UseCaseTest" test` OK, 16 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/users/users-page.component.spec.ts --include=src/app/core/services/user-admin.service.spec.ts` OK, 15 tests.
+- Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 78 tests.
+- Frontend build: `npm.cmd run build` OK, con warning no bloqueante de presupuesto CSS en `users-page.component.scss`.
+- Browser local: `/users` verificada con sesion ADMIN real, listado real de usuarios, filtros, ordenacion, paginacion, selector de filas y acciones visibles. No se confirmo ninguna accion destructiva.
+
+Estado:
+- Mejora implementada sin abrir Sprint 12 ni modificar migraciones existentes.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

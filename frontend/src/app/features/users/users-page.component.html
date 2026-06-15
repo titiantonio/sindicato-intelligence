@@ -1,106 +1,235 @@
-﻿<section class="users-page">
+<section class="users-page">
   <header class="users-page__header">
-    <h1>Gestion de usuarios</h1>
-    <p>Solo administradores pueden crear, editar y gestionar el estado de las cuentas.</p>
+    <div>
+      <span class="page-header__eyebrow">Usuarios</span>
+      <h1>Gestion de usuarios</h1>
+      <p>Administracion de cuentas internas, estados de acceso y credenciales temporales.</p>
+    </div>
+
+    <button class="users-page__button users-page__button--primary" type="button" (click)="startCreate()">
+      Alta de usuario
+    </button>
   </header>
 
-  <article class="users-page__layout">
-    <section class="users-page__card users-page__card--form">
-      <h2>{{ editingUserId() === null ? 'Alta de usuario' : 'Editar usuario' }}</h2>
+  @if (errorMessage()) {
+    <p class="users-page__alert users-page__alert--error">{{ errorMessage() }}</p>
+  }
 
-      <form [formGroup]="userForm" (ngSubmit)="submit()" class="users-page__form">
-        <label>
-          <span>Email</span>
-          <input type="email" formControlName="email" placeholder="editor@sindicato.es" />
-        </label>
+  @if (successMessage()) {
+    <p class="users-page__alert users-page__alert--success">{{ successMessage() }}</p>
+  }
 
-        <label>
-          <span>Nombre</span>
-          <input type="text" formControlName="name" placeholder="Nombre completo" />
-        </label>
-
-        <label>
-          <span>Rol</span>
-          <select formControlName="role">
-            @for (role of availableRoles; track role) {
-              <option [value]="role">{{ role }}</option>
-            }
-          </select>
-        </label>
-
-        @if (errorMessage(); as error) {
-          <p class="users-page__alert users-page__alert--error">{{ error }}</p>
-        }
-
-        @if (successMessage(); as message) {
-          <p class="users-page__alert users-page__alert--success">{{ message }}</p>
-        }
-
-        <div class="users-page__actions">
-          <button type="submit" class="users-page__button users-page__button--primary" [disabled]="isSubmitting()">
-            {{ isSubmitting() ? 'Guardando...' : (editingUserId() === null ? 'Crear usuario' : 'Guardar cambios') }}
-          </button>
-          <button type="button" class="users-page__button users-page__button--secondary" (click)="startCreate()">
-            Limpiar
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <section class="users-page__card">
+  <section class="users-page__card users-page__card--table">
+    <div class="users-page__table-header">
       <h2>Usuarios registrados</h2>
 
-      @if (isLoading()) {
-        <p>Cargando usuarios...</p>
-      } @else {
-        <div class="users-page__table-wrapper">
-          <table class="users-page__table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Ultimo login</th>
-                <th>Ultimo cambio password</th>
-                <th>Expira temporal</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (user of users(); track user.id) {
-                <tr>
-                  <td>{{ user.name }}</td>
-                  <td>{{ user.email }}</td>
-                  <td>{{ user.role }}</td>
-                  <td>
-                    <span class="users-page__status" [class]="'users-page__status users-page__status--' + user.status.toLowerCase().replace('_', '-')">
-                      {{ statusLabel(user.status) }}
-                    </span>
-                  </td>
-                  <td>{{ formatDate(user.lastLoginAt) }}</td>
-                  <td>{{ formatDate(user.lastPasswordChangeAt) }}</td>
-                  <td>{{ formatDate(user.temporaryPasswordExpiresAt) }}</td>
-                  <td class="users-page__row-actions">
-                    <button type="button" class="users-page__button users-page__button--secondary" (click)="startEdit(user)">Editar</button>
-                    @if (user.status === 'INACTIVE') {
-                      <button type="button" class="users-page__button users-page__button--success" (click)="changeStatus(user.id, 'activate')">Activar</button>
-                    } @else {
-                      <button type="button" class="users-page__button users-page__button--danger" (click)="changeStatus(user.id, 'disable')">Desactivar</button>
-                    }
-                    @if (user.status === 'LOCKED') {
-                      <button type="button" class="users-page__button users-page__button--success" (click)="changeStatus(user.id, 'unlock')">Desbloquear</button>
-                    } @else {
-                      <button type="button" class="users-page__button users-page__button--danger" (click)="changeStatus(user.id, 'lock')">Bloquear</button>
-                    }
-                    <button type="button" class="users-page__button users-page__button--warning" (click)="resetTemporaryPassword(user.id)">Reset temporal</button>
-                  </td>
-                </tr>
+      <label class="users-page__search">
+        Busqueda global
+        <input
+          type="search"
+          placeholder="Buscar por cualquier campo"
+          [ngModel]="globalFilter()"
+          (ngModelChange)="setGlobalFilter($event)"
+        />
+      </label>
+    </div>
+
+    @if (isLoading()) {
+      <p class="users-page__loading">Cargando usuarios...</p>
+    }
+
+    <div class="users-page__table-wrapper">
+      <table class="users-page__table">
+        <thead>
+          <tr>
+            <th><button class="users-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
+            <th><button class="users-page__sort" type="button" (click)="changeSort('name')">Nombre {{ sortLabel('name') }}</button></th>
+            <th><button class="users-page__sort" type="button" (click)="changeSort('email')">Email {{ sortLabel('email') }}</button></th>
+            <th><button class="users-page__sort" type="button" (click)="changeSort('role')">Rol {{ sortLabel('role') }}</button></th>
+            <th><button class="users-page__sort" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+            <th><button class="users-page__sort" type="button" (click)="changeSort('lastLoginAt')">Ultimo login {{ sortLabel('lastLoginAt') }}</button></th>
+            <th><button class="users-page__sort" type="button" (click)="changeSort('lastPasswordChangeAt')">Cambio password {{ sortLabel('lastPasswordChangeAt') }}</button></th>
+            <th><button class="users-page__sort" type="button" (click)="changeSort('temporaryPasswordExpiresAt')">Expira temporal {{ sortLabel('temporaryPasswordExpiresAt') }}</button></th>
+            <th>Acciones</th>
+          </tr>
+          <tr class="users-page__filters">
+            <th>
+              <input type="search" aria-label="Filtrar por ID" [ngModel]="idFilter()" (ngModelChange)="setIdFilter($event)" />
+            </th>
+            <th>
+              <input type="search" aria-label="Filtrar por nombre" [ngModel]="nameFilter()" (ngModelChange)="setNameFilter($event)" />
+            </th>
+            <th>
+              <input type="search" aria-label="Filtrar por email" [ngModel]="emailFilter()" (ngModelChange)="setEmailFilter($event)" />
+            </th>
+            <th>
+              <select aria-label="Filtrar por rol" [ngModel]="roleFilter()" (ngModelChange)="setRoleFilter($event)">
+                <option value="">Todos</option>
+                @for (role of availableRoles; track role) {
+                  <option [value]="role">{{ role }}</option>
+                }
+              </select>
+            </th>
+            <th>
+              <select aria-label="Filtrar por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
+                <option value="">Todos</option>
+                @for (status of statusOptions; track status) {
+                  <option [value]="status">{{ statusLabel(status) }}</option>
+                }
+              </select>
+            </th>
+            <th>
+              <input type="search" aria-label="Filtrar por ultimo login" [ngModel]="lastLoginAtFilter()" (ngModelChange)="setLastLoginAtFilter($event)" />
+            </th>
+            <th>
+              <input type="search" aria-label="Filtrar por ultimo cambio de password" [ngModel]="lastPasswordChangeAtFilter()" (ngModelChange)="setLastPasswordChangeAtFilter($event)" />
+            </th>
+            <th>
+              <input type="search" aria-label="Filtrar por expiracion temporal" [ngModel]="temporaryPasswordExpiresAtFilter()" (ngModelChange)="setTemporaryPasswordExpiresAtFilter($event)" />
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of paginatedUsers(); track user.id) {
+            <tr>
+              <td>#{{ user.id }}</td>
+              <td><strong>{{ user.name }}</strong></td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.role }}</td>
+              <td>
+                <span class="users-page__status" [class]="'users-page__status users-page__status--' + user.status.toLowerCase().replace('_', '-')">
+                  {{ statusLabel(user.status) }}
+                </span>
+                <small>{{ statusDescription(user.status) }}</small>
+              </td>
+              <td>{{ formatDate(user.lastLoginAt) }}</td>
+              <td>{{ formatDate(user.lastPasswordChangeAt) }}</td>
+              <td>{{ formatDate(user.temporaryPasswordExpiresAt) }}</td>
+              <td class="users-page__row-actions">
+                <button type="button" class="users-page__button users-page__button--secondary" (click)="startEdit(user)">Editar</button>
+                @if (user.status === 'INACTIVE') {
+                  <button type="button" class="users-page__button users-page__button--success" (click)="changeStatus(user.id, 'activate')">Activar</button>
+                } @else {
+                  <button type="button" class="users-page__button users-page__button--danger" (click)="changeStatus(user.id, 'disable')">Desactivar</button>
+                }
+                @if (user.status === 'LOCKED') {
+                  <button type="button" class="users-page__button users-page__button--success" (click)="changeStatus(user.id, 'unlock')">Desbloquear</button>
+                } @else {
+                  <button type="button" class="users-page__button users-page__button--danger" (click)="changeStatus(user.id, 'lock')">Bloquear</button>
+                }
+                <button type="button" class="users-page__button users-page__button--warning" (click)="resetTemporaryPassword(user.id)">Reset temporal</button>
+                <button type="button" class="users-page__button users-page__button--danger" (click)="startDelete(user)">Eliminar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="9">No hay usuarios que coincidan con los filtros.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="users-page__pagination">
+      <span>{{ displayedUsers().length }} usuarios filtrados</span>
+
+      <label>
+        Filas por pagina
+        <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+          @for (option of pageSizeOptions; track option) {
+            <option [value]="option">{{ option }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="users-page__pager">
+        <button class="users-page__button users-page__button--secondary" type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">
+          Anterior
+        </button>
+        <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
+        <button class="users-page__button users-page__button--secondary" type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">
+          Siguiente
+        </button>
+      </div>
+    </footer>
+  </section>
+
+  @if (isUserModalOpen()) {
+    <div class="users-page__modal-backdrop" (click)="closeUserModal()">
+      <section
+        class="users-page__modal"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="formMode() === 'create' ? 'Alta de usuario' : 'Editar usuario'"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="users-page__modal-header">
+          <h2>{{ formMode() === 'create' ? 'Alta de usuario' : 'Editar usuario' }}</h2>
+          <button class="users-page__icon-button" type="button" aria-label="Cerrar modal" (click)="closeUserModal()">x</button>
+        </header>
+
+        <form [formGroup]="userForm" (ngSubmit)="submit()" class="users-page__form">
+          <label>
+            Email
+            <input type="email" formControlName="email" placeholder="editor@sindicato.es" />
+          </label>
+
+          <label>
+            Nombre
+            <input type="text" formControlName="name" placeholder="Nombre completo" />
+          </label>
+
+          <label>
+            Rol
+            <select formControlName="role">
+              @for (role of availableRoles; track role) {
+                <option [value]="role">{{ role }}</option>
               }
-            </tbody>
-          </table>
+            </select>
+          </label>
+
+          <div class="users-page__actions">
+            <button type="submit" class="users-page__button users-page__button--primary" [disabled]="isSubmitting()">
+              {{ isSubmitting() ? 'Guardando...' : (formMode() === 'create' ? 'Crear usuario' : 'Guardar cambios') }}
+            </button>
+            <button type="button" class="users-page__button users-page__button--secondary" (click)="closeUserModal()">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  }
+
+  @if (deletingUser(); as user) {
+    <div class="users-page__modal-backdrop" (click)="closeDeleteModal()">
+      <section
+        class="users-page__modal users-page__modal--danger"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Eliminar usuario"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="users-page__modal-header">
+          <h2>Eliminar usuario</h2>
+          <button class="users-page__icon-button" type="button" aria-label="Cerrar modal" (click)="closeDeleteModal()">x</button>
+        </header>
+
+        <p>
+          Esta accion elimina definitivamente a <strong>{{ user.email }}</strong> de la base de datos.
+          Si existen contenidos o auditoria funcional asociada, el backend rechazara la operacion.
+        </p>
+
+        <div class="users-page__actions">
+          <button type="button" class="users-page__button users-page__button--danger" [disabled]="isDeleting()" (click)="confirmDelete()">
+            {{ isDeleting() ? 'Eliminando...' : 'Eliminar definitivamente' }}
+          </button>
+          <button type="button" class="users-page__button users-page__button--secondary" (click)="closeDeleteModal()">
+            Cancelar
+          </button>
         </div>
-      }
-    </section>
-  </article>
+      </section>
+    </div>
+  }
 </section>

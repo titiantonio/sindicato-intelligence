@@ -1,6 +1,7 @@
 package es.sindicato.intelligence.user.infrastructure;
 
 import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserDeletionDependencies;
 import es.sindicato.intelligence.user.domain.UserRepository;
 import es.sindicato.intelligence.user.domain.UserRole;
 import es.sindicato.intelligence.user.domain.UserStatus;
@@ -62,6 +63,35 @@ public class JpaUserRepository implements UserRepository {
     }
 
     @Override
+    public long countByRole(UserRole role) {
+        Long count = entityManager.createQuery(
+                        "SELECT COUNT(user.id) FROM UserEntity user WHERE user.role = :role",
+                        Long.class
+                )
+                .setParameter("role", role.name())
+                .getSingleResult();
+
+        return count == null ? 0 : count;
+    }
+
+    @Override
+    public UserDeletionDependencies findDeletionDependencies(Long userId) {
+        long generatedContentCount = countRows(
+                "SELECT COUNT(content.id) FROM GeneratedContentEntity content WHERE content.createdBy = :userId",
+                userId
+        );
+        long auditLogCount = countRows(
+                "SELECT COUNT(log.id) FROM AuditLogEntity log WHERE log.userId = :userId",
+                userId
+        );
+
+        return new UserDeletionDependencies(
+                generatedContentCount,
+                auditLogCount
+        );
+    }
+
+    @Override
     public UserAccount save(UserAccount user) {
         UserEntity entity;
 
@@ -112,6 +142,35 @@ public class JpaUserRepository implements UserRepository {
         }
 
         return toDomain(entity);
+    }
+
+    @Override
+    public void deleteTechnicalDependencies(Long userId) {
+        entityManager.createQuery("DELETE FROM PasswordResetTokenEntity token WHERE token.userId = :userId")
+                .setParameter("userId", userId)
+                .executeUpdate();
+        entityManager.createQuery("DELETE FROM UserPasswordHistoryEntity history WHERE history.userId = :userId")
+                .setParameter("userId", userId)
+                .executeUpdate();
+        entityManager.createQuery("DELETE FROM UserAuditLogEntity log WHERE log.userId = :userId")
+                .setParameter("userId", userId)
+                .executeUpdate();
+    }
+
+    @Override
+    public void deleteById(Long userId) {
+        UserEntity entity = entityManager.find(UserEntity.class, userId);
+        if (entity != null) {
+            entityManager.remove(entity);
+        }
+    }
+
+    private long countRows(String query, Long userId) {
+        Long count = entityManager.createQuery(query, Long.class)
+                .setParameter("userId", userId)
+                .getSingleResult();
+
+        return count == null ? 0 : count;
     }
 
     private UserAccount toDomain(UserEntity entity) {

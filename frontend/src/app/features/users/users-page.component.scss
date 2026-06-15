@@ -1,33 +1,82 @@
 .users-page {
   display: grid;
   gap: 1rem;
+  min-width: 0;
+}
+
+.users-page__header {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
 }
 
 .users-page__header h1 {
-  margin: 0;
   color: var(--color-text);
+  margin: 0.35rem 0 0.4rem;
 }
 
 .users-page__header p {
-  margin: 0.5rem 0 0;
   color: var(--color-text-muted);
+  margin: 0;
 }
 
-.users-page__layout {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: 22rem 1fr;
+.users-page__header,
+.users-page__card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-soft);
+  padding: 1.5rem;
 }
 
 .users-page__card {
-  background: var(--color-surface);
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow-compact);
-  padding: 1rem;
+  min-width: 0;
 }
 
-.users-page__card h2 {
-  margin: 0 0 1rem;
+.users-page__card--table {
+  overflow: hidden;
+  padding: 0;
+}
+
+.users-page__table-header {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem 0;
+}
+
+.users-page__table-header h2,
+.users-page__modal-header h2 {
+  margin: 0;
+}
+
+.users-page__search,
+.users-page__form label {
+  display: grid;
+  font-weight: 700;
+  gap: 0.45rem;
+}
+
+.users-page__search {
+  max-width: 28rem;
+  min-width: min(20rem, 100%);
+  width: 100%;
+}
+
+.users-page input,
+.users-page select {
+  border: 1px solid var(--color-input-border);
+  border-radius: 0.5rem;
+  color: var(--color-field-text);
+  min-width: 0;
+  padding: 0.6rem 0.7rem;
+  width: 100%;
+}
+
+.users-page__loading {
+  margin: 1rem 1.5rem 0;
 }
 
 .users-page__form {
@@ -35,33 +84,31 @@
   gap: 0.8rem;
 }
 
-.users-page__form label {
-  display: grid;
-  gap: 0.35rem;
-  font-weight: 600;
-  color: var(--color-field-text);
-}
-
-.users-page__form input,
-.users-page__form select {
-  border: 1px solid var(--color-input-border);
-  border-radius: 0.5rem;
-  padding: 0.7rem 0.8rem;
-}
-
 .users-page__actions,
-.users-page__row-actions {
+.users-page__row-actions,
+.users-page__pager {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
 }
 
-.users-page__button {
+.users-page__actions {
+  justify-content: flex-end;
+}
+
+.users-page button {
   border: 0;
-  border-radius: 0.5rem;
-  padding: 0.55rem 0.75rem;
-  font-weight: 700;
   cursor: pointer;
+  font-weight: 700;
+}
+
+.users-page__button,
+.users-page__icon-button {
+  border-radius: 0.5rem;
+}
+
+.users-page__button {
+  padding: 0.55rem 0.75rem;
   white-space: nowrap;
 }
 
@@ -75,7 +122,8 @@
   color: var(--color-page);
 }
 
-.users-page__button--secondary {
+.users-page__button--secondary,
+.users-page__icon-button {
   background: var(--color-neutral-soft);
   color: var(--color-text);
 }
@@ -95,11 +143,22 @@
   color: var(--color-danger-button-text);
 }
 
+.users-page__icon-button {
+  align-items: center;
+  display: inline-flex;
+  font-size: 1rem;
+  height: 2rem;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 2rem;
+}
+
 .users-page__alert {
-  margin: 0;
   border-radius: 0.5rem;
-  padding: 0.65rem 0.75rem;
   font-weight: 600;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
 }
 
 .users-page__alert--error {
@@ -113,29 +172,74 @@
 }
 
 .users-page__table-wrapper {
+  max-width: 100%;
   overflow-x: auto;
+  padding: 1rem 1.5rem 1.5rem;
 }
 
 .users-page__table {
-  width: 100%;
   border-collapse: collapse;
-  min-width: 68rem;
+  min-width: 86rem;
+  width: 100%;
 }
 
 .users-page__table th,
 .users-page__table td {
-  text-align: left;
-  padding: 0.65rem 0.6rem;
   border-bottom: 1px solid var(--color-neutral-soft);
+  padding: 0.65rem 0.6rem;
+  text-align: left;
   vertical-align: top;
 }
 
+.users-page__table th {
+  font-size: 0.85rem;
+}
+
+.users-page__table :is(th, td):nth-child(1) {
+  width: 4.5rem;
+}
+
+.users-page__table :is(th, td):nth-child(6),
+.users-page__table :is(th, td):nth-child(7),
+.users-page__table :is(th, td):nth-child(8) {
+  width: 9rem;
+}
+
+.users-page__table td {
+  overflow-wrap: anywhere;
+}
+
+.users-page__table small {
+  color: var(--color-text-muted);
+  display: block;
+  margin-top: 0.35rem;
+  max-width: 16rem;
+}
+
+.users-page__sort {
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  padding: 0;
+  text-align: left;
+}
+
+.users-page__sort:hover,
+.users-page__sort:focus-visible {
+  color: var(--color-primary);
+}
+
+.users-page__filters th {
+  padding-top: 0;
+}
+
 .users-page__status {
-  display: inline-flex;
   border-radius: 999px;
-  padding: 0.2rem 0.5rem;
+  display: inline-flex;
   font-size: 0.8rem;
   font-weight: 700;
+  padding: 0.2rem 0.5rem;
 }
 
 .users-page__status--active {
@@ -159,11 +263,83 @@
 }
 
 .users-page__row-actions {
-  min-width: 18rem;
+  min-width: 24rem;
 }
 
-@media (max-width: 1060px) {
-  .users-page__layout {
-    grid-template-columns: 1fr;
+.users-page__pagination {
+  align-items: center;
+  border-top: 1px solid var(--color-neutral-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 1rem 1.5rem 1.25rem;
+}
+
+.users-page__pagination label {
+  align-items: center;
+  display: flex;
+  font-weight: 700;
+  gap: 0.5rem;
+}
+
+.users-page__pagination select {
+  width: 5rem;
+}
+
+.users-page__pager {
+  align-items: center;
+}
+
+.users-page__modal-backdrop {
+  align-items: center;
+  background: rgb(15 23 42 / 0.52);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 20;
+}
+
+.users-page__modal {
+  background: var(--color-surface);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-soft);
+  max-height: calc(100vh - 2rem);
+  max-width: 34rem;
+  overflow: auto;
+  padding: 1.25rem;
+  width: 100%;
+}
+
+.users-page__modal--danger {
+  border: 1px solid var(--color-danger-button);
+}
+
+.users-page__modal-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 760px) {
+  .users-page__header,
+  .users-page__table-header {
+    display: grid;
+  }
+
+  .users-page__header .users-page__button {
+    justify-self: start;
+  }
+
+  .users-page__search {
+    max-width: none;
+  }
+
+  .users-page__pagination {
+    align-items: start;
+    display: grid;
   }
 }

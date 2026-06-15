@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend usuarios: anadido boton "Alta de usuario", modal comun de alta/edicion, busqueda global, filtros por columna, ordenacion, paginacion y selector de filas por pagina en `/users`.
+- Backend usuarios: anadido `DELETE /api/v1/users/{id}` para `ADMIN`, con bloqueo de borrado por autoeliminacion, ultimo `ADMIN` o referencias funcionales en contenido/auditoria.
 - Frontend fuentes: anadido boton "Anadir fuente", modal de alta, modal de edicion y tests focales de la pantalla `/sources`.
 - Frontend fuentes: anadida busqueda global, filtros por columna y ordenacion por todos los campos visibles de la tabla de fuentes.
 - Frontend shell: anadido modo colapsado del menu lateral en escritorio con navegacion por iconos y boton de expandir/ocultar.
@@ -45,6 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.47-SNAPSHOT`.
+- Frontend usuarios: aclarada la diferencia operativa entre `Desactivar` como baja administrativa y `Bloquear` como bloqueo reversible por incidencia.
 - Versionado del backend actualizado a `0.0.46-SNAPSHOT`.
 - Frontend fuentes: eliminado el formulario fijo "Nueva fuente" de la pantalla y ajustado el layout para que el ancho sobrante quede contenido en el scroll interno de la tabla.
 - Versionado del backend actualizado a `0.0.45-SNAPSHOT`.

@@ -3,12 +3,14 @@ package es.sindicato.intelligence.user.api;
 import es.sindicato.intelligence.user.application.ChangeUserStatusUseCase;
 import es.sindicato.intelligence.user.application.CreateUserCommand;
 import es.sindicato.intelligence.user.application.CreateUserUseCase;
+import es.sindicato.intelligence.user.application.DeleteUserUseCase;
 import es.sindicato.intelligence.user.application.DisableUserUseCase;
 import es.sindicato.intelligence.user.application.GetUserUseCase;
 import es.sindicato.intelligence.user.application.ListUsersUseCase;
 import es.sindicato.intelligence.user.application.ResetTemporaryPasswordUseCase;
 import es.sindicato.intelligence.user.application.UpdateUserCommand;
 import es.sindicato.intelligence.user.application.UpdateUserUseCase;
+import es.sindicato.intelligence.user.application.UserDeletionConflictException;
 import es.sindicato.intelligence.user.application.UserNotFoundException;
 import es.sindicato.intelligence.user.domain.UserAccount;
 import es.sindicato.intelligence.user.domain.UserStatus;
@@ -16,6 +18,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +41,7 @@ public class UserController {
     private final DisableUserUseCase disableUserUseCase;
     private final ChangeUserStatusUseCase changeUserStatusUseCase;
     private final ResetTemporaryPasswordUseCase resetTemporaryPasswordUseCase;
+    private final DeleteUserUseCase deleteUserUseCase;
     private final ListUsersUseCase listUsersUseCase;
     private final GetUserUseCase getUserUseCase;
 
@@ -47,6 +51,7 @@ public class UserController {
             DisableUserUseCase disableUserUseCase,
             ChangeUserStatusUseCase changeUserStatusUseCase,
             ResetTemporaryPasswordUseCase resetTemporaryPasswordUseCase,
+            DeleteUserUseCase deleteUserUseCase,
             ListUsersUseCase listUsersUseCase,
             GetUserUseCase getUserUseCase
     ) {
@@ -55,6 +60,7 @@ public class UserController {
         this.disableUserUseCase = disableUserUseCase;
         this.changeUserStatusUseCase = changeUserStatusUseCase;
         this.resetTemporaryPasswordUseCase = resetTemporaryPasswordUseCase;
+        this.deleteUserUseCase = deleteUserUseCase;
         this.listUsersUseCase = listUsersUseCase;
         this.getUserUseCase = getUserUseCase;
     }
@@ -124,6 +130,12 @@ public class UserController {
         return toResponse(resetTemporaryPasswordUseCase.execute(id, actor(authentication)));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication authentication) {
+        deleteUserUseCase.execute(id, actor(authentication));
+        return ResponseEntity.noContent().build();
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNotFound(UserNotFoundException exception) {
@@ -133,6 +145,12 @@ public class UserController {
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleBadRequest(IllegalArgumentException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
+    @ExceptionHandler(UserDeletionConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleDeletionConflict(UserDeletionConflictException exception) {
         return Map.of("error", exception.getMessage());
     }
 

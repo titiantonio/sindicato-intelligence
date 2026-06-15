@@ -44,4 +44,8 @@ export class UserAdminService {
   resetTemporaryPassword(userId: number) {
     return this.httpClient.post<UserAdminResponse>(`/api/v1/users/${userId}/reset-temporary-password`, {});
   }
+
+  deleteUser(userId: number) {
+    return this.httpClient.delete<void>(`/api/v1/users/${userId}`);
+  }
 }

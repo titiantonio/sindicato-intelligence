@@ -1,0 +1,87 @@
+package es.sindicato.intelligence.user.application;
+
+import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserDeletionDependencies;
+import es.sindicato.intelligence.user.domain.UserRepository;
+import es.sindicato.intelligence.user.domain.UserRole;
+import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+class DeleteUserUseCaseTest {
+
+    @Test
+    void deletesUserWhenNoFunctionalDependenciesExist() {
+        UserRepository userRepository = mock(UserRepository.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository);
+        UserAccount user = new UserAccount(2L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, true, false);
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
+        when(userRepository.findDeletionDependencies(2L)).thenReturn(new UserDeletionDependencies(0, 0));
+
+        useCase.execute(2L, "admin@sindicato.es");
+
+        var ordered = inOrder(userRepository);
+        ordered.verify(userRepository).deleteTechnicalDependencies(2L);
+        ordered.verify(userRepository).deleteById(2L);
+    }
+
+    @Test
+    void rejectsUnknownUsers() {
+        UserRepository userRepository = mock(UserRepository.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository);
+
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> useCase.execute(99L, "admin@sindicato.es"));
+    }
+
+    @Test
+    void rejectsSelfDeletion() {
+        UserRepository userRepository = mock(UserRepository.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository);
+        UserAccount user = new UserAccount(1L, "admin@sindicato.es", "hash", "Admin", UserRole.ADMIN, true, false);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        assertThrows(UserDeletionConflictException.class, () -> useCase.execute(1L, "admin@sindicato.es"));
+
+        verify(userRepository, never()).deleteById(1L);
+    }
+
+    @Test
+    void rejectsDeletingLastAdmin() {
+        UserRepository userRepository = mock(UserRepository.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository);
+        UserAccount user = new UserAccount(1L, "admin@sindicato.es", "hash", "Admin", UserRole.ADMIN, true, false);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.countByRole(UserRole.ADMIN)).thenReturn(1L);
+
+        assertThrows(UserDeletionConflictException.class, () -> useCase.execute(1L, "other-admin@sindicato.es"));
+
+        verify(userRepository, never()).deleteById(1L);
+    }
+
+    @Test
+    void rejectsUsersWithFunctionalDependencies() {
+        UserRepository userRepository = mock(UserRepository.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository);
+        UserAccount user = new UserAccount(2L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, true, false);
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
+        when(userRepository.findDeletionDependencies(2L)).thenReturn(new UserDeletionDependencies(1, 2));
+
+        assertThrows(UserDeletionConflictException.class, () -> useCase.execute(2L, "admin@sindicato.es"));
+
+        verify(userRepository, never()).deleteTechnicalDependencies(2L);
+        verify(userRepository, never()).deleteById(2L);
+    }
+}

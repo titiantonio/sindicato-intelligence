@@ -86,4 +86,12 @@ describe('UserAdminService', () => {
       request.flush(user);
     });
   });
+
+  it('deletes users', () => {
+    service.deleteUser(user.id).subscribe((response) => expect(response).toBeNull());
+
+    const request = httpTestingController.expectOne('/api/v1/users/7');
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+  });
 });

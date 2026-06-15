@@ -13,5 +13,13 @@ public interface UserRepository {
 
     boolean existsByEmail(String email);
 
+    long countByRole(UserRole role);
+
+    UserDeletionDependencies findDeletionDependencies(Long userId);
+
     UserAccount save(UserAccount user);
+
+    void deleteTechnicalDependencies(Long userId);
+
+    void deleteById(Long userId);
 }
