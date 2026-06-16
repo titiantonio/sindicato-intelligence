@@ -1920,6 +1920,8 @@ Verificacion:
 - `ProcessDueAutomationWorkflowsUseCaseTest` OK.
 - Backend completo `mvn test` OK, 223 tests.
 
+Nota posterior 2026-06-16: corregido fallo operativo del scheduler dinamico en `JpaAutomationWorkflowSettingRepository.findDue` que producia `This ResultSet is closed`; verificado con tests focales de automatizacion, `mvn clean test` y backend local reiniciado con health OK.
+
 ---
 
 ## [x] T12.14
@@ -1985,6 +1987,31 @@ Verificacion:
 - Revision documental.
 - Backend completo `mvn test` OK, 223 tests.
 - Frontend completo `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 104 tests.
+- Frontend build `npm.cmd run build` OK, con warnings no bloqueantes de presupuesto.
+- `n8n/validate-workflows.ps1` OK.
+
+---
+
+## [x] T12.18
+
+Centralizar configuracion ADMIN de Telegram junto a automatizaciones.
+
+Resultado:
+- Creada migracion `V8__telegram_publication_settings.sql`.
+- Anadida tabla `telegram_publication_settings`.
+- Anadidos casos de uso `GetTelegramPublicationSettingsUseCase` y `UpdateTelegramPublicationSettingsUseCase`.
+- Anadida API ADMIN `GET /api/v1/settings/telegram` y `PUT /api/v1/settings/telegram`.
+- `TelegramPublisher` lee configuracion desde PostgreSQL en tiempo de publicacion.
+- La API no expone el token completo; devuelve solo estado de configuracion y token enmascarado.
+- La pantalla `/automation-settings` concentra automatizaciones y configuracion Telegram.
+- Telegram queda publicable cuando `enabled=true`, `botToken`, `chatId` y `baseUrl` estan configurados.
+
+Verificacion:
+- `TelegramPublisherTest` OK.
+- `TelegramPublicationSettingsControllerTest` OK.
+- `PublicationControllerTest` OK.
+- Backend completo `mvn test` OK, 227 tests.
+- Frontend completo `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 107 tests.
 - Frontend build `npm.cmd run build` OK, con warnings no bloqueantes de presupuesto.
 - `n8n/validate-workflows.ps1` OK.
 

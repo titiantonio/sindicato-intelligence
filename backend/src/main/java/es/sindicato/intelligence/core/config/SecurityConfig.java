@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/health", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password", "/api/v1/auth/request-temporary-password").permitAll()
                         .requestMatchers("/api/v1/auth/change-password").hasAnyRole("ADMIN", "EDITOR")
                         .requestMatchers("/api/v1/audit/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/settings/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/sources/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/news/bulk").hasRole("ADMIN")

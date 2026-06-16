@@ -1,13 +1,23 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { TelegramPublicationSettings } from '../../core/models/application-settings.models';
 import { AutomationRunResult, AutomationWorkflowCode, AutomationWorkflowSetting } from '../../core/models/automation.models';
+import { ApplicationSettingsService } from '../../core/services/application-settings.service';
 import { AutomationService } from '../../core/services/automation.service';
 
 interface AutomationSettingForm {
   enabled: boolean;
   intervalMinutes: number;
   batchSize: number;
+}
+
+interface TelegramSettingsForm {
+  enabled: boolean;
+  baseUrl: string;
+  botToken: string;
+  chatId: string;
+  disableWebPagePreview: boolean;
 }
 
 @Component({
@@ -18,10 +28,21 @@ interface AutomationSettingForm {
 })
 export class AutomationSettingsPageComponent implements OnInit {
   private readonly automationService = inject(AutomationService);
+  private readonly applicationSettingsService = inject(ApplicationSettingsService);
 
   protected readonly settings = signal<AutomationWorkflowSetting[]>([]);
   protected readonly forms = signal<Record<string, AutomationSettingForm>>({});
+  protected readonly telegramSettings = signal<TelegramPublicationSettings | null>(null);
+  protected readonly telegramForm = signal<TelegramSettingsForm>({
+    enabled: false,
+    baseUrl: 'https://api.telegram.org',
+    botToken: '',
+    chatId: '',
+    disableWebPagePreview: true
+  });
   protected readonly isLoading = signal(false);
+  protected readonly isTelegramLoading = signal(false);
+  protected readonly isTelegramSaving = signal(false);
   protected readonly busyWorkflow = signal<AutomationWorkflowCode | null>(null);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly successMessage = signal<string | null>(null);
@@ -29,6 +50,7 @@ export class AutomationSettingsPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadSettings();
+    this.loadTelegramSettings();
   }
 
   protected loadSettings(): void {
@@ -48,6 +70,29 @@ export class AutomationSettingsPageComponent implements OnInit {
     });
   }
 
+  protected loadTelegramSettings(): void {
+    this.isTelegramLoading.set(true);
+    this.errorMessage.set(null);
+
+    this.applicationSettingsService.getTelegramSettings().subscribe({
+      next: (settings) => {
+        this.telegramSettings.set(settings);
+        this.telegramForm.set({
+          enabled: settings.enabled,
+          baseUrl: settings.baseUrl,
+          botToken: '',
+          chatId: settings.chatId ?? '',
+          disableWebPagePreview: settings.disableWebPagePreview
+        });
+        this.isTelegramLoading.set(false);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar la configuracion de Telegram.');
+        this.isTelegramLoading.set(false);
+      }
+    });
+  }
+
   protected updateEnabled(workflowCode: AutomationWorkflowCode, value: boolean): void {
     this.updateForm(workflowCode, { enabled: value });
   }
@@ -58,6 +103,42 @@ export class AutomationSettingsPageComponent implements OnInit {
 
   protected updateBatchSize(workflowCode: AutomationWorkflowCode, value: string | number): void {
     this.updateForm(workflowCode, { batchSize: Math.max(1, Number(value)) });
+  }
+
+  protected updateTelegramForm(patch: Partial<TelegramSettingsForm>): void {
+    this.telegramForm.update((form) => ({ ...form, ...patch }));
+  }
+
+  protected saveTelegramSettings(): void {
+    const form = this.telegramForm();
+    this.isTelegramSaving.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    this.applicationSettingsService.updateTelegramSettings({
+      enabled: form.enabled,
+      baseUrl: form.baseUrl,
+      botToken: form.botToken.trim() ? form.botToken.trim() : null,
+      chatId: form.chatId.trim() ? form.chatId.trim() : null,
+      disableWebPagePreview: form.disableWebPagePreview
+    }).subscribe({
+      next: (settings) => {
+        this.telegramSettings.set(settings);
+        this.telegramForm.set({
+          enabled: settings.enabled,
+          baseUrl: settings.baseUrl,
+          botToken: '',
+          chatId: settings.chatId ?? '',
+          disableWebPagePreview: settings.disableWebPagePreview
+        });
+        this.successMessage.set(settings.readyToPublish ? 'Configuracion de Telegram guardada y lista para publicar.' : 'Configuracion de Telegram guardada.');
+        this.isTelegramSaving.set(false);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo guardar la configuracion de Telegram.');
+        this.isTelegramSaving.set(false);
+      }
+    });
   }
 
   protected save(setting: AutomationWorkflowSetting): void {

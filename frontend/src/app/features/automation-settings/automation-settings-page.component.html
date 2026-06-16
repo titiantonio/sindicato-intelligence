@@ -2,8 +2,8 @@
   <article class="panel">
     <header class="page-header">
       <span class="page-header__eyebrow">ADMIN</span>
-      <h1>Automatizaciones</h1>
-      <p>Configuracion operativa de los workflows migrados a Spring Boot.</p>
+      <h1>Configuracion</h1>
+      <p>Parametros operativos de automatizaciones internas y publicacion Telegram.</p>
     </header>
 
     @if (errorMessage()) {
@@ -14,13 +14,105 @@
       <p class="page-alert page-alert--success">{{ successMessage() }}</p>
     }
 
-    @if (isLoading()) {
-      <p class="page-alert">Cargando automatizaciones...</p>
+    @if (isLoading() || isTelegramLoading()) {
+      <p class="page-alert">Cargando configuracion...</p>
     }
 
-    <div class="settings-grid">
-      @for (setting of settings(); track setting.workflowCode) {
-        <article class="workflow-panel">
+    <section class="settings-section">
+      <header class="section-header">
+        <span>Publicacion</span>
+        <h2>Telegram</h2>
+      </header>
+
+      <article class="telegram-panel">
+        <form class="telegram-form" (submit)="$event.preventDefault(); saveTelegramSettings()">
+          <label class="switch">
+            <input
+              type="checkbox"
+              [ngModel]="telegramForm().enabled"
+              (ngModelChange)="updateTelegramForm({ enabled: $event })"
+              name="telegramEnabled"
+            />
+            <span>{{ telegramForm().enabled ? 'Activa' : 'Pausada' }}</span>
+          </label>
+
+          <label>
+            API base URL
+            <input
+              type="url"
+              [ngModel]="telegramForm().baseUrl"
+              (ngModelChange)="updateTelegramForm({ baseUrl: $event })"
+              name="telegramBaseUrl"
+            />
+          </label>
+
+          <label>
+            Bot token
+            <input
+              type="password"
+              autocomplete="new-password"
+              placeholder="Mantener token actual"
+              [ngModel]="telegramForm().botToken"
+              (ngModelChange)="updateTelegramForm({ botToken: $event })"
+              name="telegramBotToken"
+            />
+          </label>
+
+          <label>
+            Chat ID
+            <input
+              type="text"
+              [ngModel]="telegramForm().chatId"
+              (ngModelChange)="updateTelegramForm({ chatId: $event })"
+              name="telegramChatId"
+            />
+          </label>
+
+          <label class="switch">
+            <input
+              type="checkbox"
+              [ngModel]="telegramForm().disableWebPagePreview"
+              (ngModelChange)="updateTelegramForm({ disableWebPagePreview: $event })"
+              name="disableWebPagePreview"
+            />
+            <span>Sin previsualizacion de enlaces</span>
+          </label>
+
+          <button type="submit" [disabled]="isTelegramSaving()">Guardar Telegram</button>
+        </form>
+
+        @if (telegramSettings(); as telegram) {
+          <dl class="workflow-status">
+            <div>
+              <dt>Token</dt>
+              <dd>{{ telegram.botTokenConfigured ? telegram.botTokenPreview : 'Sin configurar' }}</dd>
+            </div>
+            <div>
+              <dt>Estado</dt>
+              <dd>{{ telegram.readyToPublish ? 'Listo para publicar' : 'Configuracion incompleta' }}</dd>
+            </div>
+            <div>
+              <dt>Chat</dt>
+              <dd>{{ telegram.chatId || 'Sin configurar' }}</dd>
+            </div>
+            <div>
+              <dt>Actualizado</dt>
+              <dd>{{ formatDate(telegram.updatedAt) }}</dd>
+            </div>
+          </dl>
+        }
+      </article>
+    </section>
+
+    <section class="settings-section">
+      <header class="section-header">
+        <span>Automatizaciones</span>
+        <h2>Workflows migrados</h2>
+      </header>
+
+      <div class="settings-grid">
+        @for (setting of settings(); track setting.workflowCode) {
+          <article class="workflow-panel">
           <header>
             <div>
               <span>{{ setting.workflowCode }}</span>
@@ -84,8 +176,9 @@
             <button type="button" (click)="save(setting)" [disabled]="busyWorkflow() === setting.workflowCode">Guardar</button>
             <button type="button" class="secondary" (click)="runNow(setting)" [disabled]="busyWorkflow() === setting.workflowCode || setting.running">Ejecutar ahora</button>
           </footer>
-        </article>
-      }
-    </div>
+          </article>
+        }
+      </div>
+    </section>
   </article>
 </section>

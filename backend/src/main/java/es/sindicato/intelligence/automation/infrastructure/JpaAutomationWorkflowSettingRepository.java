@@ -31,7 +31,8 @@ public class JpaAutomationWorkflowSettingRepository implements AutomationWorkflo
                         "SELECT setting FROM AutomationWorkflowSettingEntity setting ORDER BY setting.workflowCode",
                         AutomationWorkflowSettingEntity.class
                 )
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -56,7 +57,8 @@ public class JpaAutomationWorkflowSettingRepository implements AutomationWorkflo
                         AutomationWorkflowSettingEntity.class
                 )
                 .setParameter("now", now)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .map(this::toDomain)
                 .toList();
     }

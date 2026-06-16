@@ -4,14 +4,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import es.sindicato.intelligence.publication.application.PublishingProviderException;
 import es.sindicato.intelligence.publication.application.PublishingRequest;
 import es.sindicato.intelligence.publication.application.PublishingResult;
+import es.sindicato.intelligence.publication.domain.TelegramPublicationSettings;
+import es.sindicato.intelligence.publication.domain.TelegramPublicationSettingsRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
+import java.time.OffsetDateTime;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -23,7 +30,7 @@ class TelegramPublisherTest {
 
     @Test
     void supportsTelegramChannel() {
-        TelegramPublisher publisher = publisher(RestClient.builder(), "token", "chat-id");
+        TelegramPublisher publisher = publisher(RestClient.builder(), settings(true, "token", "chat-id"));
 
         assertTrue(publisher.supports("telegram"));
     }
@@ -32,7 +39,7 @@ class TelegramPublisherTest {
     void publishesMessageAndReturnsTelegramMessageId() {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-        TelegramPublisher publisher = publisher(builder, "test-token", "chat-id");
+        TelegramPublisher publisher = publisher(builder, settings(true, "test-token", "chat-id"));
         server.expect(requestTo("https://api.telegram.org/bottest-token/sendMessage"))
                 .andExpect(method(POST))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("chat-id")))
@@ -57,7 +64,7 @@ class TelegramPublisherTest {
 
     @Test
     void rejectsMissingChatId() {
-        TelegramPublisher publisher = publisher(RestClient.builder(), "token", "");
+        TelegramPublisher publisher = publisher(RestClient.builder(), settings(true, "token", ""));
 
         PublishingProviderException exception = assertThrows(PublishingProviderException.class, () -> publisher.publish(new PublishingRequest(10L, "TELEGRAM", "Titulo", "Mensaje")));
 
@@ -65,10 +72,19 @@ class TelegramPublisherTest {
     }
 
     @Test
+    void rejectsDisabledTelegramSettings() {
+        TelegramPublisher publisher = publisher(RestClient.builder(), settings(false, "token", "chat-id"));
+
+        PublishingProviderException exception = assertThrows(PublishingProviderException.class, () -> publisher.publish(new PublishingRequest(10L, "TELEGRAM", "Titulo", "Mensaje")));
+
+        assertEquals("Telegram publication is disabled", exception.getMessage());
+    }
+
+    @Test
     void wrapsTelegramHttpError() {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-        TelegramPublisher publisher = publisher(builder, "test-token", "chat-id");
+        TelegramPublisher publisher = publisher(builder, settings(true, "test-token", "chat-id"));
         server.expect(requestTo("https://api.telegram.org/bottest-token/sendMessage"))
                 .andRespond(withBadRequest().body("{\"ok\":false,\"description\":\"Bad Request\"}").contentType(MediaType.APPLICATION_JSON));
 
@@ -78,7 +94,23 @@ class TelegramPublisherTest {
         server.verify();
     }
 
-    private TelegramPublisher publisher(RestClient.Builder builder, String botToken, String chatId) {
-        return new TelegramPublisher(builder, new ObjectMapper(), "https://api.telegram.org", botToken, chatId);
+    private TelegramPublisher publisher(RestClient.Builder builder, TelegramPublicationSettings settings) {
+        TelegramPublicationSettingsRepository repository = mock(TelegramPublicationSettingsRepository.class);
+        when(repository.find()).thenReturn(Optional.of(settings));
+        return new TelegramPublisher(builder, new ObjectMapper(), repository);
+    }
+
+    private TelegramPublicationSettings settings(boolean enabled, String botToken, String chatId) {
+        OffsetDateTime now = OffsetDateTime.parse("2026-06-16T10:00:00Z");
+        return new TelegramPublicationSettings(
+                (short) 1,
+                enabled,
+                "https://api.telegram.org",
+                botToken,
+                chatId,
+                true,
+                now,
+                now
+        );
     }
 }

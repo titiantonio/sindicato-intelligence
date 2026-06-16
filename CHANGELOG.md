@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend configuracion: anadida tabla `telegram_publication_settings` y API ADMIN `GET/PUT /api/v1/settings/telegram` para configurar Telegram desde la aplicacion sin depender de variables de entorno en runtime.
+- Backend publicacion: `TelegramPublisher` lee `enabled`, `baseUrl`, `botToken`, `chatId` y `disableWebPagePreview` desde PostgreSQL antes de publicar.
+- Frontend ADMIN: la pantalla `/automation-settings` pasa a concentrar configuracion de automatizaciones y Telegram, mostrando si Telegram esta listo para publicar.
 - Backend automatizaciones: anadida configuracion persistida `automation_workflow_settings`, API ADMIN `/api/v1/automation/settings`, scheduler dinamico cada 30 segundos y ejecucion con `batchSize` configurable para `WF02`, `WF03` y `WF04`.
 - Frontend ADMIN: anadida pantalla `/automation-settings` para activar/desactivar automatizaciones, editar intervalo/lote, ver ultima/proxima ejecucion y lanzar ejecucion manual.
 - Frontend eventos/contenido: anadida generacion de contenido desde detalle de evento y accion `Publicar ahora` para contenido aprobado.
@@ -56,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.54-SNAPSHOT`.
+- Frontend ADMIN: renombrado el encabezado operativo de `/automation-settings` a `Configuracion` para centralizar parametros de aplicacion.
 - Versionado del backend actualizado a `0.0.53-SNAPSHOT`.
 - Backend automatizaciones: sustituidos los schedulers especificos por workflow por un scheduler unico dirigido por configuracion en PostgreSQL.
 - Versionado del backend actualizado a `0.0.52-SNAPSHOT`.
@@ -107,6 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend automatizaciones: corregido el scheduler dinamico para materializar las consultas JPA de configuracion antes de mapearlas, evitando `This ResultSet is closed` en `findDue`.
 - Backend publicaciones: el scheduler de publicaciones programadas ya no propaga `publication provider not found for channel: TELEGRAM` al arrancar si hay publicaciones vencidas y el proveedor Telegram no esta habilitado; marca la publicacion como `FAILED` con error controlado.
 - Frontend/auth: renovada automaticamente la sesion con `POST /api/v1/auth/refresh` cuando el access token caduca, reintentando la peticion original para evitar el error "No se pudo cargar el dashboard" tras inactividad.
 

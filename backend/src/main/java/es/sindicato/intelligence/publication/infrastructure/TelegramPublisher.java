@@ -7,11 +7,12 @@ import es.sindicato.intelligence.publication.application.PublishingProvider;
 import es.sindicato.intelligence.publication.application.PublishingProviderException;
 import es.sindicato.intelligence.publication.application.PublishingRequest;
 import es.sindicato.intelligence.publication.application.PublishingResult;
+import es.sindicato.intelligence.publication.domain.TelegramPublicationSettings;
+import es.sindicato.intelligence.publication.domain.TelegramPublicationSettingsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -20,28 +21,24 @@ import org.springframework.web.client.RestClientResponseException;
 import java.util.Map;
 
 @Component
-@ConditionalOnProperty(name = "app.publication.telegram.enabled", havingValue = "true")
+@Order(100)
 public class TelegramPublisher implements PublishingProvider {
 
     private static final Logger log = LoggerFactory.getLogger(TelegramPublisher.class);
     private static final String CHANNEL = "TELEGRAM";
 
-    private final RestClient restClient;
+    private final RestClient.Builder restClientBuilder;
     private final ObjectMapper objectMapper;
-    private final String botToken;
-    private final String chatId;
+    private final TelegramPublicationSettingsRepository settingsRepository;
 
     public TelegramPublisher(
             RestClient.Builder restClientBuilder,
             ObjectMapper objectMapper,
-            @Value("${app.publication.telegram.base-url:https://api.telegram.org}") String baseUrl,
-            @Value("${app.publication.telegram.bot-token:}") String botToken,
-            @Value("${app.publication.telegram.chat-id:}") String chatId
+            TelegramPublicationSettingsRepository settingsRepository
     ) {
-        this.restClient = restClientBuilder.baseUrl(baseUrl).build();
+        this.restClientBuilder = restClientBuilder;
         this.objectMapper = objectMapper;
-        this.botToken = botToken;
-        this.chatId = chatId;
+        this.settingsRepository = settingsRepository;
     }
 
     @Override
@@ -51,8 +48,16 @@ public class TelegramPublisher implements PublishingProvider {
 
     @Override
     public PublishingResult publish(PublishingRequest request) {
-        requireText(botToken, "Telegram bot token is required");
-        requireText(chatId, "Telegram chat id is required");
+        TelegramPublicationSettings settings = settingsRepository.find()
+                .orElseThrow(() -> new PublishingProviderException("Telegram settings are not configured"));
+
+        if (!settings.isEnabled()) {
+            throw new PublishingProviderException("Telegram publication is disabled");
+        }
+
+        String botToken = requireText(settings.getBotToken(), "Telegram bot token is required");
+        String chatId = requireText(settings.getChatId(), "Telegram chat id is required");
+        RestClient restClient = restClientBuilder.clone().baseUrl(settings.getBaseUrl()).build();
 
         log.info("telegram publication request started: contentId={}, channel={}", request.contentId(), request.channel());
 
@@ -63,7 +68,7 @@ public class TelegramPublisher implements PublishingProvider {
                     .body(Map.of(
                             "chat_id", chatId,
                             "text", buildTelegramMessage(request),
-                            "disable_web_page_preview", true
+                            "disable_web_page_preview", settings.isDisableWebPagePreview()
                     ))
                     .retrieve()
                     .body(JsonNode.class);

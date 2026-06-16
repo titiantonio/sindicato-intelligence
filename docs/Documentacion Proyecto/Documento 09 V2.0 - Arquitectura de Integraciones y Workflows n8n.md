@@ -948,3 +948,46 @@ POST /api/v1/automation/settings/{workflowCode}/run
 ### N8N-009
 
 La programacion operativa de `WF-02` a `WF-04` pertenece a Spring Boot y PostgreSQL. n8n no conserva responsabilidad sobre frecuencia, lotes ni ejecucion de estos workflows migrados.
+
+---
+
+# 19. Actualizacion Operativa 2026-06-16 - Configuracion Telegram
+
+La publicacion Telegram deja de depender de configuracion estatica exclusiva de `application.yml` o variables de entorno.
+
+Spring Boot persiste la configuracion operativa en `telegram_publication_settings`:
+
+```text
+enabled
+baseUrl
+botToken
+chatId
+disableWebPagePreview
+updatedAt
+```
+
+El administrador configura estos parametros desde la pantalla Angular `/automation-settings`, que queda como pagina central de configuracion operativa.
+
+Endpoints ADMIN:
+
+```http
+GET /api/v1/settings/telegram
+PUT /api/v1/settings/telegram
+```
+
+La API no devuelve el token completo. Solo informa si existe token configurado y una vista enmascarada.
+
+Condicion para publicar en Telegram:
+
+```text
+enabled=true
+botToken configurado
+chatId configurado
+baseUrl configurado
+```
+
+`PublishContentUseCase` mantiene la regla de dominio: solo se publica contenido `APPROVED`. `TelegramPublisher` valida la configuracion en tiempo de publicacion.
+
+### N8N-010
+
+`WF-06` sigue residiendo en Spring Boot. La capacidad real de publicar en Telegram queda controlada por configuracion ADMIN persistida y no por n8n.
