@@ -5,6 +5,7 @@ import { passwordChangeGuard } from './core/guards/password-change.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { ChangePasswordPageComponent } from './features/auth/change-password/change-password-page.component';
 import { AuditPageComponent } from './features/audit/audit-page.component';
+import { AutomationSettingsPageComponent } from './features/automation-settings/automation-settings-page.component';
 import { ContentPageComponent } from './features/content/content-page.component';
 import { DashboardPageComponent } from './features/dashboard/dashboard-page.component';
 import { EventDetailPageComponent } from './features/events/event-detail-page.component';
@@ -84,6 +85,14 @@ export const routes: Routes = [
       {
         path: 'audit',
         component: AuditPageComponent,
+        canActivate: [roleGuard],
+        data: {
+          roles: ['ADMIN']
+        }
+      },
+      {
+        path: 'automation-settings',
+        component: AutomationSettingsPageComponent,
         canActivate: [roleGuard],
         data: {
           roles: ['ADMIN']

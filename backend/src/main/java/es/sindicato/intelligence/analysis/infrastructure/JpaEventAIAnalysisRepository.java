@@ -47,6 +47,18 @@ public class JpaEventAIAnalysisRepository implements EventAIAnalysisRepository {
                 .toList();
     }
 
+    @Override
+    public boolean existsByEventId(Long eventId) {
+        Long count = entityManager.createQuery(
+                        "SELECT COUNT(analysis) FROM EventAIAnalysisEntity analysis WHERE analysis.eventId = :eventId",
+                        Long.class
+                )
+                .setParameter("eventId", eventId)
+                .getSingleResult();
+
+        return count > 0;
+    }
+
     private EventAIAnalysisEntity toEntity(EventAIAnalysis analysis) {
         return new EventAIAnalysisEntity(
                 analysis.getId(),

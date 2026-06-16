@@ -28,6 +28,48 @@
   margin-bottom: 1.5rem;
 }
 
+.automation-panel {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.automation-panel h2 {
+  color: var(--color-text);
+  margin: 0.35rem 0 0;
+}
+
+.automation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.automation-actions button,
+.row-action {
+  background: var(--color-primary);
+  border: 0;
+  border-radius: 0.5rem;
+  color: var(--color-primary-contrast);
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0.6rem 0.8rem;
+}
+
+.automation-actions button:disabled,
+.row-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .panel {
   background: var(--color-surface);
   border-radius: 1.25rem;
@@ -99,6 +141,10 @@ td {
 .event-row:focus-visible {
   background: var(--color-page-accent);
   outline: none;
+}
+
+.row-action {
+  white-space: nowrap;
 }
 
 .table-pagination {

@@ -3,6 +3,14 @@ import { inject, Injectable } from '@angular/core';
 
 import { ContentListItem } from '../models/content.models';
 
+export interface GenerateContentPayload {
+  eventId: number;
+  analysisId: number | null;
+  channel: string;
+  tone: string;
+  length: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -27,5 +35,9 @@ export class ContentService {
 
   updateContent(contentId: number, payload: { title: string; content: string; tone: string }) {
     return this.httpClient.put<ContentListItem>(`/api/v1/content/${contentId}`, payload);
+  }
+
+  generateContent(payload: GenerateContentPayload) {
+    return this.httpClient.post<ContentListItem>('/api/v1/content/generate', payload);
   }
 }

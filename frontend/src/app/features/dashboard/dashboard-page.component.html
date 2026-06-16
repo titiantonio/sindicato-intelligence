@@ -10,6 +10,14 @@
   <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
 }
 
+@if (automationMessage()) {
+  <p class="page-alert page-alert--success">{{ automationMessage() }}</p>
+}
+
+@if (automationError()) {
+  <p class="page-alert page-alert--error">{{ automationError() }}</p>
+}
+
 @if (isLoading()) {
   <p class="page-alert">Cargando dashboard...</p>
 }
@@ -18,6 +26,24 @@
   @for (metric of metricCards(); track metric.label) {
     <app-metric-card [card]="metric" />
   }
+</section>
+
+<section class="automation-panel">
+  <div>
+    <span class="page-header__eyebrow">Automatizaciones</span>
+    <h2>Procesos internos</h2>
+  </div>
+  <div class="automation-actions">
+    <button type="button" (click)="runClassifications()" [disabled]="runningAutomation() !== null">
+      {{ isRunningAutomation('classifications') ? 'Procesando...' : 'Clasificar pendientes' }}
+    </button>
+    <button type="button" (click)="runEventDetection()" [disabled]="runningAutomation() !== null">
+      {{ isRunningAutomation('events') ? 'Procesando...' : 'Detectar eventos' }}
+    </button>
+    <button type="button" (click)="runPendingAnalysis()" [disabled]="runningAutomation() !== null">
+      {{ isRunningAutomation('analysis') ? 'Procesando...' : 'Analizar pendientes' }}
+    </button>
+  </div>
 </section>
 
 <section class="panel">
@@ -38,6 +64,7 @@
           <th><button class="sort-button" type="button" (click)="changeSort('relatedNews')">Noticias {{ sortLabel('relatedNews') }}</button></th>
           <th><button class="sort-button" type="button" (click)="changeSort('updatedAt')">Actualizacion {{ sortLabel('updatedAt') }}</button></th>
           <th><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+          <th>Accion</th>
         </tr>
         <tr class="column-filters">
           <th><input type="search" aria-label="Filtrar eventos prioritarios por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" /></th>
@@ -60,6 +87,7 @@
               }
             </select>
           </th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -71,10 +99,15 @@
             <td>{{ event.relatedNews }}</td>
             <td>{{ formatDate(event.updatedAt) }}</td>
             <td><app-status-badge [value]="event.status" /></td>
+            <td>
+              <button class="row-action" type="button" (click)="runEventAnalysis($event, event.id)" [disabled]="runningAutomation() !== null">
+                {{ isRunningEventAnalysis(event.id) ? 'Analizando...' : 'Analizar' }}
+              </button>
+            </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="6">No hay eventos prioritarios que requieran atencion inmediata.</td>
+            <td colspan="7">No hay eventos prioritarios que requieran atencion inmediata.</td>
           </tr>
         }
       </tbody>

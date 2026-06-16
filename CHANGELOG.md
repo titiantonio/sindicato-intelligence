@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend automatizaciones: anadida configuracion persistida `automation_workflow_settings`, API ADMIN `/api/v1/automation/settings`, scheduler dinamico cada 30 segundos y ejecucion con `batchSize` configurable para `WF02`, `WF03` y `WF04`.
+- Frontend ADMIN: anadida pantalla `/automation-settings` para activar/desactivar automatizaciones, editar intervalo/lote, ver ultima/proxima ejecucion y lanzar ejecucion manual.
+- Frontend eventos/contenido: anadida generacion de contenido desde detalle de evento y accion `Publicar ahora` para contenido aprobado.
+- Backend automatizaciones: anadidos `POST /api/v1/automation/classifications/run`, `POST /api/v1/automation/events/run` y `POST /api/v1/automation/analysis/run` para ejecutar desde Spring Boot los procesos antes cubiertos por `WF-02` a `WF-04`.
+- Backend automatizaciones: anadidos casos de uso batch y schedulers configurables para clasificacion pendiente, deteccion de eventos pendiente y analisis pendiente.
+- Frontend dashboard: anadidas acciones operativas para clasificar pendientes, detectar eventos y generar analisis desde la API Spring Boot.
 - Frontend contenido: anadido modal editorial en `/content` para visualizar contenido desde la fila y editar desde accion explicita, manteniendo programacion de publicaciones dentro del modal.
 - Frontend backoffice: anadida paginacion, selector de filas, filtros por columna y ordenacion por todos los campos visibles en las tablas de fuentes, eventos, auditoria, contenido, detalle de evento y dashboard.
 - Backend usuarios: anadidas notificaciones por email para activacion, desbloqueo, actualizacion de usuario y eliminacion fisica.
@@ -50,6 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.53-SNAPSHOT`.
+- Backend automatizaciones: sustituidos los schedulers especificos por workflow por un scheduler unico dirigido por configuracion en PostgreSQL.
+- Versionado del backend actualizado a `0.0.52-SNAPSHOT`.
+- n8n: `WF-01-Capture-News` queda como unico workflow operativo; `WF-02` a `WF-06` se migran a Spring Boot y el validador n8n comprueba solo `WF-01`.
 - Versionado del backend actualizado a `0.0.51-SNAPSHOT`.
 - Dashboard: los eventos prioritarios se ordenan por impacto, numero de noticias asociadas y ultima actualizacion, y los filtros de impacto y estado usan selectores cerrados.
 - Versionado del backend actualizado a `0.0.50-SNAPSHOT`.

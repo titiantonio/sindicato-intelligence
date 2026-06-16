@@ -2,6 +2,7 @@ package es.sindicato.intelligence.core.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -38,6 +39,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/sources/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/news/bulk").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/automation/settings/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/automation/settings/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/automation/settings/*/run").hasAnyRole("ADMIN", "EDITOR")
+                        .requestMatchers("/api/v1/automation/**").hasAnyRole("ADMIN", "EDITOR")
                         .requestMatchers("/api/v1/classifications/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/analysis/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/events/detect").hasRole("ADMIN")

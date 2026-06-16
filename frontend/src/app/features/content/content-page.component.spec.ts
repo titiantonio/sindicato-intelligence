@@ -22,7 +22,7 @@ describe('ContentPageComponent', () => {
 
   beforeEach(async () => {
     contentService = jasmine.createSpyObj<ContentService>('ContentService', ['listContent', 'approveContent', 'rejectContent', 'updateContent']);
-    publicationService = jasmine.createSpyObj<PublicationService>('PublicationService', ['schedulePublication']);
+    publicationService = jasmine.createSpyObj<PublicationService>('PublicationService', ['schedulePublication', 'publishContent']);
     contentService.listContent.and.returnValue(of(contents));
     contentService.updateContent.and.returnValue(of({ ...contents[0], title: 'Actualizado' }));
     publicationService.schedulePublication.and.returnValue(of({
@@ -33,6 +33,16 @@ describe('ContentPageComponent', () => {
       status: 'SCHEDULED',
       scheduledAt: '2026-06-16T10:00:00Z',
       publishedAt: null,
+      responsePayload: null
+    }));
+    publicationService.publishContent.and.returnValue(of({
+      id: 10,
+      contentId: 2,
+      channel: 'Telegram',
+      externalId: 'telegram-10',
+      status: 'PUBLISHED',
+      scheduledAt: null,
+      publishedAt: '2026-06-16T10:00:00Z',
       responsePayload: null
     }));
 
@@ -111,6 +121,16 @@ describe('ContentPageComponent', () => {
     fixture.debugElement.query(By.css('.schedule-form')).triggerEventHandler('submit', { preventDefault: () => undefined });
 
     expect(publicationService.schedulePublication).toHaveBeenCalledWith(2, new Date('2099-01-01T10:00').toISOString());
+  });
+
+  it('publishes approved content immediately', () => {
+    editButtons()[1].click();
+    fixture.detectChanges();
+
+    const publishButton = fixture.nativeElement.querySelector('.schedule-form button[type="button"]') as HTMLButtonElement;
+    publishButton.click();
+
+    expect(publicationService.publishContent).toHaveBeenCalledWith(2);
   });
 
   it('keeps local filtering, sorting and pagination available', () => {

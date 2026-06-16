@@ -864,3 +864,87 @@ La lógica de negocio residirá progresivamente en Spring Boot.
 ### N8N-007
 
 La arquitectura está preparada para escalar a múltiples canales sin rediseño.
+---
+
+# 17. Actualizacion Operativa 2026-06-15
+
+El MVP operativo mantiene n8n solo para `WF-01-Capture-News`.
+
+Los flujos `WF-02` a `WF-06` quedan migrados a Spring Boot:
+
+```text
+WF-02 Clasificacion        -> ProcessPendingClassificationsUseCase
+WF-03 Eventos              -> ProcessPendingEventDetectionUseCase
+WF-04 Analisis             -> ProcessPendingEventAnalysisUseCase
+WF-05 Contenido            -> GenerateContentUseCase
+WF-06 Publicacion Telegram -> PublishContentUseCase / PublishScheduledPublicationsUseCase
+```
+
+La aplicacion Angular no llama a n8n. Angular consume `/api/v1` y Spring Boot ejecuta reglas de negocio, persistencia, IA, auditoria y publicacion.
+
+Endpoints operativos para ejecucion manual:
+
+```http
+POST /api/v1/automation/classifications/run
+POST /api/v1/automation/events/run
+POST /api/v1/automation/analysis/run
+POST /api/v1/content/generate
+POST /api/v1/publications/{id}/publish
+POST /api/v1/publications/{id}/schedule
+```
+
+### N8N-008
+
+Desde 2026-06-15, n8n conserva solo la captura RSS/XML. Las automatizaciones internas de clasificacion, eventos, analisis, contenido y publicacion residen en Spring Boot.
+
+---
+
+# 18. Actualizacion Operativa 2026-06-16
+
+`WF-02`, `WF-03` y `WF-04` se ejecutan mediante un scheduler interno de Spring Boot dirigido por la tabla `automation_workflow_settings`.
+
+Configuracion persistida por workflow:
+
+```text
+workflowCode
+enabled
+intervalSeconds
+batchSize
+running
+lastRunAt
+lastSuccessAt
+lastFailureAt
+nextRunAt
+lastProcessedCount
+lastSuccessCount
+lastFailedCount
+lastSkippedCount
+lastError
+```
+
+Valores iniciales conservadores:
+
+```text
+WF02_CLASSIFICATION    enabled=true   intervalSeconds=600   batchSize=1
+WF03_EVENT_DETECTION   enabled=true   intervalSeconds=600   batchSize=3
+WF04_ANALYSIS          enabled=false  intervalSeconds=900   batchSize=1
+```
+
+La configuracion se administra desde Angular en `/automation-settings`, visible solo para `ADMIN`.
+
+Endpoints de configuracion:
+
+```http
+GET  /api/v1/automation/settings
+GET  /api/v1/automation/settings/{workflowCode}
+PUT  /api/v1/automation/settings/{workflowCode}
+POST /api/v1/automation/settings/{workflowCode}/run
+```
+
+`WF-05` no tiene scheduler automatico: se ejecuta bajo demanda desde el detalle de evento mediante `POST /api/v1/content/generate`.
+
+`WF-06` se ejecuta bajo demanda desde contenido aprobado mediante `POST /api/v1/publications/{contentId}/publish` o por programacion existente mediante `POST /api/v1/publications/{contentId}/schedule`.
+
+### N8N-009
+
+La programacion operativa de `WF-02` a `WF-04` pertenece a Spring Boot y PostgreSQL. n8n no conserva responsabilidad sobre frecuencia, lotes ni ejecucion de estos workflows migrados.

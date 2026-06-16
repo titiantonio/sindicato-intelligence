@@ -4,6 +4,10 @@
   <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
 }
 
+@if (successMessage()) {
+  <p class="page-alert page-alert--success">{{ successMessage() }}</p>
+}
+
 @if (isLoading()) {
   <p class="page-alert">Cargando detalle del evento...</p>
 }
@@ -115,7 +119,42 @@
     </div>
 
     <div class="panel detail-section">
-      <h2>Contenido generado</h2>
+      <header class="section-header">
+        <h2>Contenido generado</h2>
+      </header>
+
+      <form class="content-generator" (submit)="$event.preventDefault(); generateContent(item)">
+        <label>
+          Analisis
+          <select [ngModel]="selectedAnalysisId()" (ngModelChange)="setSelectedAnalysis($event)" name="analysisId" [disabled]="item.analyses.length === 0">
+            @for (analysis of item.analyses; track analysis.id) {
+              <option [value]="analysis.id">#{{ analysis.id }} - {{ formatDate(analysis.generatedAt) }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Canal
+          <input type="text" value="Telegram" disabled />
+        </label>
+        <label>
+          Tono
+          <select [ngModel]="contentTone()" (ngModelChange)="contentTone.set($event)" name="tone">
+            <option value="INFORMATIVO">Informativo</option>
+            <option value="INSTITUCIONAL">Institucional</option>
+            <option value="URGENTE">Urgente</option>
+          </select>
+        </label>
+        <label>
+          Longitud
+          <select [ngModel]="contentLength()" (ngModelChange)="contentLength.set($event)" name="length">
+            <option value="SHORT">Corta</option>
+            <option value="MEDIUM">Media</option>
+            <option value="LONG">Larga</option>
+          </select>
+        </label>
+        <button type="submit" [disabled]="item.analyses.length === 0 || isGeneratingContent()">Generar contenido</button>
+      </form>
+
       @for (content of item.contents; track content.id) {
         <article class="stack-item">
           <span>{{ content.channel }} · {{ content.tone }}</span>

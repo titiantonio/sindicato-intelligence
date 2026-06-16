@@ -3,15 +3,21 @@ import { By } from '@angular/platform-browser';
 import { Router, RouterLink, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
+import { AutomationService } from '../../core/services/automation.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { DashboardPageComponent } from './dashboard-page.component';
 
 describe('DashboardPageComponent', () => {
   let fixture: ComponentFixture<DashboardPageComponent>;
+  let automationService: jasmine.SpyObj<AutomationService>;
   let dashboardService: jasmine.SpyObj<DashboardService>;
   let router: Router;
 
   beforeEach(async () => {
+    automationService = jasmine.createSpyObj<AutomationService>('AutomationService', ['runClassifications', 'runEventDetection', 'runAnalysis']);
+    automationService.runClassifications.and.returnValue(of({ processedCount: 2, successCount: 2, failedCount: 0, skippedCount: 0, errors: [] }));
+    automationService.runEventDetection.and.returnValue(of({ processedCount: 1, successCount: 1, failedCount: 0, skippedCount: 0, errors: [] }));
+    automationService.runAnalysis.and.returnValue(of({ processedCount: 1, successCount: 1, failedCount: 0, skippedCount: 0, errors: [] }));
     dashboardService = jasmine.createSpyObj<DashboardService>('DashboardService', ['getDashboard']);
     dashboardService.getDashboard.and.returnValue(of({
       metricCards: [
@@ -68,7 +74,11 @@ describe('DashboardPageComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [DashboardPageComponent],
-      providers: [provideRouter([]), { provide: DashboardService, useValue: dashboardService }]
+      providers: [
+        provideRouter([]),
+        { provide: AutomationService, useValue: automationService },
+        { provide: DashboardService, useValue: dashboardService }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(DashboardPageComponent);
@@ -125,5 +135,28 @@ describe('DashboardPageComponent', () => {
     expect(statusSelect.textContent).toContain('MONITORING');
     expect(rows.length).toBe(1);
     expect(rows[0].nativeElement.textContent).toContain('Convocatoria urgente reciente');
+  });
+
+  it('runs backend automations from dashboard actions', () => {
+    const buttons = fixture.debugElement.queryAll(By.css('.automation-actions button'));
+
+    buttons[0].triggerEventHandler('click');
+    buttons[1].triggerEventHandler('click');
+    buttons[2].triggerEventHandler('click');
+    fixture.detectChanges();
+
+    expect(automationService.runClassifications).toHaveBeenCalled();
+    expect(automationService.runEventDetection).toHaveBeenCalled();
+    expect(automationService.runAnalysis).toHaveBeenCalledWith();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Procesados 1. Correctos 1. Fallidos 0. Omitidos 0.');
+  });
+
+  it('runs event analysis from a priority event row action', () => {
+    const action = fixture.debugElement.query(By.css('.row-action'));
+
+    action.triggerEventHandler('click', { stopPropagation: () => undefined });
+    fixture.detectChanges();
+
+    expect(automationService.runAnalysis).toHaveBeenCalledWith(7);
   });
 });

@@ -31,4 +31,21 @@ describe('ContentService', () => {
     expect(request.request.body).toEqual(payload);
     request.flush({ id: 7, ...payload });
   });
+
+  it('generates content for an event analysis', () => {
+    const payload = {
+      eventId: 3,
+      analysisId: 4,
+      channel: 'Telegram',
+      tone: 'INFORMATIVO',
+      length: 'MEDIUM'
+    };
+
+    service.generateContent(payload).subscribe();
+
+    const request = httpTestingController.expectOne('/api/v1/content/generate');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(payload);
+    request.flush({ id: 8, ...payload });
+  });
 });

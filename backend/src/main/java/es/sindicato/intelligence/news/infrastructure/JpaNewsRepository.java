@@ -2,6 +2,7 @@ package es.sindicato.intelligence.news.infrastructure;
 
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import es.sindicato.intelligence.news.domain.NewsRepository;
+import es.sindicato.intelligence.news.domain.NewsStatus;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
@@ -65,6 +66,19 @@ public class JpaNewsRepository implements NewsRepository {
                         "SELECT news FROM NewsArticleEntity news ORDER BY news.capturedAt DESC, news.id DESC",
                         NewsArticleEntity.class
                 )
+                .getResultStream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<NewsArticle> findByStatus(NewsStatus status, int limit) {
+        return entityManager.createQuery(
+                        "SELECT news FROM NewsArticleEntity news WHERE news.processingStatus = :status ORDER BY news.capturedAt ASC, news.id ASC",
+                        NewsArticleEntity.class
+                )
+                .setParameter("status", status)
+                .setMaxResults(limit)
                 .getResultStream()
                 .map(this::toDomain)
                 .toList();

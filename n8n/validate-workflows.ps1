@@ -10,36 +10,6 @@ $workflowChecks = @(
         Name = "WF-01 Capture News"
         Endpoints = @("/api/v1/auth/login", "/api/v1/sources", "/api/v1/news/bulk")
         RequiresBearer = $true
-    },
-    @{
-        File = "wf_02_classify_news.json"
-        Name = "WF-02 Classify News"
-        Endpoints = @("/api/v1/auth/login", "/api/v1/news", "/api/v1/classifications/classify")
-        RequiresBearer = $true
-    },
-    @{
-        File = "wf_03_detect_events.json"
-        Name = "WF-03 Detect Events"
-        Endpoints = @("/api/v1/auth/login", "/api/v1/news", "/api/v1/events/detect")
-        RequiresBearer = $true
-    },
-    @{
-        File = "wf_04_generate_analysis.json"
-        Name = "WF-04 Generate Analysis"
-        Endpoints = @("/api/v1/auth/login", "/api/v1/analysis/generate")
-        RequiresBearer = $true
-    },
-    @{
-        File = "wf_05_generate_content.json"
-        Name = "WF-05 Generate Content"
-        Endpoints = @("/api/v1/auth/login", "/api/v1/content/generate")
-        RequiresBearer = $true
-    },
-    @{
-        File = "wf_06_publish_telegram.json"
-        Name = "WF-06 Publish Telegram"
-        Endpoints = @("/api/v1/auth/login", "/api/v1/publications", "/publish")
-        RequiresBearer = $true
     }
 )
 
@@ -98,4 +68,4 @@ if ($failures.Count -gt 0) {
 }
 
 Write-Host ""
-Write-Host "OK n8n workflows WF-01..WF-06 validated successfully"
+Write-Host "OK n8n workflow WF-01 validated successfully"

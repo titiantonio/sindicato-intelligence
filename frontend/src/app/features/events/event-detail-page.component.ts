@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { EventDetail, EventNewsItem } from '../../core/models/event.models';
+import { ContentService } from '../../core/services/content.service';
 import { EventService } from '../../core/services/event.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
@@ -18,10 +19,16 @@ type SortDirection = 'asc' | 'desc';
 export class EventDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly eventService = inject(EventService);
+  private readonly contentService = inject(ContentService);
 
   protected readonly event = signal<EventDetail | null>(null);
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly successMessage = signal<string | null>(null);
+  protected readonly isGeneratingContent = signal(false);
+  protected readonly selectedAnalysisId = signal<number | null>(null);
+  protected readonly contentTone = signal('INFORMATIVO');
+  protected readonly contentLength = signal('MEDIUM');
   protected readonly newsIdFilter = signal('');
   protected readonly newsTitleFilter = signal('');
   protected readonly newsStatusFilter = signal('');
@@ -59,6 +66,7 @@ export class EventDetailPageComponent implements OnInit {
     this.eventService.getEvent(eventId).subscribe({
       next: (event) => {
         this.event.set(event);
+        this.selectedAnalysisId.set(event.analyses[0]?.id ?? null);
         this.newsCurrentPage.set(Math.min(this.newsCurrentPage(), this.newsTotalPages()));
         this.isLoading.set(false);
       },
@@ -111,6 +119,40 @@ export class EventDetailPageComponent implements OnInit {
 
   protected nextNewsPage(): void {
     this.newsCurrentPage.update((page) => Math.min(this.newsTotalPages(), page + 1));
+  }
+
+  protected setSelectedAnalysis(value: string | number): void {
+    const analysisId = Number(value);
+    this.selectedAnalysisId.set(Number.isFinite(analysisId) ? analysisId : null);
+  }
+
+  protected generateContent(item: EventDetail): void {
+    if (this.selectedAnalysisId() === null) {
+      this.errorMessage.set('Selecciona un analisis para generar contenido.');
+      return;
+    }
+
+    this.isGeneratingContent.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    this.contentService.generateContent({
+      eventId: item.id,
+      analysisId: this.selectedAnalysisId(),
+      channel: 'Telegram',
+      tone: this.contentTone(),
+      length: this.contentLength()
+    }).subscribe({
+      next: () => {
+        this.successMessage.set('Contenido generado correctamente.');
+        this.isGeneratingContent.set(false);
+        this.loadEvent(item.id);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo generar el contenido.');
+        this.isGeneratingContent.set(false);
+      }
+    });
   }
 
   private filterNews(newsItems: EventNewsItem[]): EventNewsItem[] {

@@ -69,4 +69,10 @@ describe('ShellComponent', () => {
 
     expect(compiled.querySelector('.shell__sidebar--open')).not.toBeNull();
   });
+
+  it('shows automation settings navigation for admin users', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.textContent).toContain('Automatizaciones');
+  });
 });

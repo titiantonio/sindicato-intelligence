@@ -10,4 +10,6 @@ public interface EventAIAnalysisRepository {
     Optional<EventAIAnalysis> findById(Long id);
 
     List<EventAIAnalysis> findByEventId(Long eventId);
+
+    boolean existsByEventId(Long eventId);
 }

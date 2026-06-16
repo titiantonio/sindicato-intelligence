@@ -1,0 +1,91 @@
+<section class="automation-settings-page">
+  <article class="panel">
+    <header class="page-header">
+      <span class="page-header__eyebrow">ADMIN</span>
+      <h1>Automatizaciones</h1>
+      <p>Configuracion operativa de los workflows migrados a Spring Boot.</p>
+    </header>
+
+    @if (errorMessage()) {
+      <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+    }
+
+    @if (successMessage()) {
+      <p class="page-alert page-alert--success">{{ successMessage() }}</p>
+    }
+
+    @if (isLoading()) {
+      <p class="page-alert">Cargando automatizaciones...</p>
+    }
+
+    <div class="settings-grid">
+      @for (setting of settings(); track setting.workflowCode) {
+        <article class="workflow-panel">
+          <header>
+            <div>
+              <span>{{ setting.workflowCode }}</span>
+              <h2>{{ workflowLabel(setting.workflowCode) }}</h2>
+            </div>
+            <label class="switch">
+              <input
+                type="checkbox"
+                [ngModel]="formFor(setting.workflowCode).enabled"
+                (ngModelChange)="updateEnabled(setting.workflowCode, $event)"
+              />
+              <span>{{ formFor(setting.workflowCode).enabled ? 'Activa' : 'Pausada' }}</span>
+            </label>
+          </header>
+
+          <div class="workflow-form">
+            <label>
+              Intervalo (min)
+              <input
+                type="number"
+                min="1"
+                [ngModel]="formFor(setting.workflowCode).intervalMinutes"
+                (ngModelChange)="updateInterval(setting.workflowCode, $event)"
+              />
+            </label>
+            <label>
+              Lote
+              <input
+                type="number"
+                min="1"
+                [ngModel]="formFor(setting.workflowCode).batchSize"
+                (ngModelChange)="updateBatchSize(setting.workflowCode, $event)"
+              />
+            </label>
+          </div>
+
+          <dl class="workflow-status">
+            <div>
+              <dt>Ultima ejecucion</dt>
+              <dd>{{ formatDate(setting.lastRunAt) }}</dd>
+            </div>
+            <div>
+              <dt>Proximo intento</dt>
+              <dd>{{ formatDate(setting.nextRunAt) }}</dd>
+            </div>
+            <div>
+              <dt>Resultado</dt>
+              <dd>{{ resultText(setting) }} P/C/F/O</dd>
+            </div>
+            <div>
+              <dt>Estado</dt>
+              <dd>{{ setting.running ? 'En ejecucion' : 'Disponible' }}</dd>
+            </div>
+          </dl>
+
+          @if (setting.lastError) {
+            <p class="workflow-error">{{ setting.lastError }}</p>
+          }
+
+          <footer>
+            <button type="button" (click)="save(setting)" [disabled]="busyWorkflow() === setting.workflowCode">Guardar</button>
+            <button type="button" class="secondary" (click)="runNow(setting)" [disabled]="busyWorkflow() === setting.workflowCode || setting.running">Ejecutar ahora</button>
+          </footer>
+        </article>
+      }
+    </div>
+  </article>
+</section>

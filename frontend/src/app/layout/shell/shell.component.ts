@@ -32,6 +32,7 @@ export class ShellComponent {
       { label: 'Eventos', route: '/events', icon: 'E', roles: ['ADMIN', 'EDITOR'] },
       { label: 'Contenido', route: '/content', icon: 'C', roles: ['ADMIN', 'EDITOR'] },
       { label: 'Publicaciones', route: '/publications', icon: 'P', roles: ['ADMIN', 'EDITOR'] },
+      { label: 'Automatizaciones', route: '/automation-settings', icon: 'W', roles: ['ADMIN'] },
       { label: 'Fuentes', route: '/sources', icon: 'F', roles: ['ADMIN'] },
       { label: 'Usuarios', route: '/users', icon: 'U', roles: ['ADMIN'] },
       { label: 'Auditoria', route: '/audit', icon: 'A', roles: ['ADMIN'] }

@@ -193,6 +193,27 @@ export class ContentPageComponent implements OnInit {
     });
   }
 
+  protected publishNow(item: ContentListItem): void {
+    if (item.status !== 'APPROVED') {
+      this.errorMessage.set('Solo se puede publicar contenido aprobado.');
+      return;
+    }
+
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.publicationService.publishContent(item.id).subscribe({
+      next: () => {
+        this.successMessage.set('Contenido publicado correctamente.');
+        this.loadContent();
+      },
+      error: (error: { error?: { error?: string } }) => this.errorMessage.set(error.error?.error ?? 'No se pudo publicar el contenido.')
+    });
+  }
+
+  protected canPublish(item: ContentListItem): boolean {
+    return item.status === 'APPROVED';
+  }
+
   protected setChannelFilter(value: string): void { this.channelFilter.set(value); this.currentPage.set(1); }
   protected setTitleFilter(value: string): void { this.titleFilter.set(value); this.currentPage.set(1); }
   protected setStatusFilter(value: string): void { this.statusFilter.set(value); this.currentPage.set(1); }

@@ -1,0 +1,127 @@
+.panel,
+.workflow-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.panel {
+  padding: 1.5rem;
+}
+
+.page-header {
+  margin-bottom: 1.5rem;
+}
+
+.page-header__eyebrow,
+.workflow-panel header span,
+.workflow-status dt {
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.page-header h1,
+.workflow-panel h2 {
+  margin: 0.35rem 0;
+}
+
+.page-header p {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.settings-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.workflow-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.workflow-panel header,
+.workflow-panel footer,
+.workflow-form {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.switch {
+  align-items: center;
+  display: flex;
+  font-weight: 800;
+  gap: 0.5rem;
+}
+
+.workflow-form label {
+  color: var(--color-text-muted);
+  display: grid;
+  flex: 1 1 8rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  gap: 0.35rem;
+}
+
+.workflow-form input {
+  border: 1px solid var(--color-input-border);
+  border-radius: 0.5rem;
+  color: var(--color-field-text);
+  padding: 0.6rem 0.7rem;
+}
+
+.workflow-status {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.workflow-status dd {
+  color: var(--color-text);
+  font-weight: 800;
+  margin: 0.15rem 0 0;
+}
+
+.workflow-error {
+  background: var(--color-danger-soft);
+  border-radius: 0.75rem;
+  color: var(--color-danger-text);
+  margin: 0;
+  padding: 0.75rem;
+}
+
+button {
+  background: var(--color-primary);
+  border: 0;
+  border-radius: 0.55rem;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0.65rem 0.9rem;
+}
+
+button.secondary {
+  background: var(--color-neutral-soft);
+  color: var(--color-text);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (max-width: 1200px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1708,6 +1708,292 @@ Estado:
 
 ---
 
+# 20. [x] Sprint 12
+
+# Consolidacion de automatizaciones internas en Spring Boot
+
+Objetivo:
+
+Migrar `WF-02` a `WF-06` desde n8n hacia Spring Boot, manteniendo `WF-01` como workflow externo de captura RSS.
+
+---
+
+## [x] T12.1
+
+Auditar contratos actuales de `WF-02` a `WF-06`.
+
+Resultado:
+- Identificados los endpoints llamados por los workflows n8n sustituidos: clasificacion, deteccion de eventos, analisis, contenido y publicacion.
+- Confirmado que Spring Boot ya contenia los casos de uso principales y que Angular no llamaba a webhooks n8n.
+- Confirmado que `WF-01-Capture-News` permanece en n8n.
+
+Verificacion:
+- Revision de `n8n/workflows`, backend y frontend.
+- Registro en `docs/Docs_Asistentes`.
+
+---
+
+## [x] T12.2
+
+Crear API backend de automatizaciones internas.
+
+Resultado:
+- Anadido `POST /api/v1/automation/classifications/run`.
+- Anadido `POST /api/v1/automation/events/run`.
+- Anadido `POST /api/v1/automation/analysis/run`.
+- Los endpoints devuelven `processedCount`, `successCount`, `failedCount`, `skippedCount` y `errors`.
+- Acceso permitido a `ADMIN` y `EDITOR`.
+
+Verificacion:
+- `AutomationControllerTest` OK.
+
+---
+
+## [x] T12.3
+
+Migrar `WF-02-Classify-News` a Spring Boot.
+
+Resultado:
+- Creado `ProcessPendingClassificationsUseCase`.
+- Procesa noticias `CAPTURED` por lotes configurables.
+- Reutiliza `ClassifyNewsUseCase`.
+- Anadido scheduler configurable `app.automation.classification.enabled`.
+
+Verificacion:
+- `ProcessPendingClassificationsUseCaseTest` OK.
+
+---
+
+## [x] T12.4
+
+Migrar `WF-03-Detect-Events` a Spring Boot.
+
+Resultado:
+- Creado `ProcessPendingEventDetectionUseCase`.
+- Procesa noticias `CLASSIFIED` por lotes configurables.
+- Reutiliza `DetectEventUseCase`.
+- Mantiene la regla de una noticia en un unico evento principal.
+- Anadido scheduler configurable `app.automation.event-detection.enabled`.
+
+Verificacion:
+- `ProcessPendingEventDetectionUseCaseTest` OK.
+
+---
+
+## [x] T12.5
+
+Migrar `WF-04-Generate-Analysis` a Spring Boot.
+
+Resultado:
+- Creado `ProcessPendingEventAnalysisUseCase`.
+- Genera analisis para eventos `OPEN` o `MONITORING` sin analisis previo.
+- Reutiliza `GenerateAnalysisUseCase`.
+- Permite ejecucion manual por `eventId`.
+- Anadido scheduler configurable `app.automation.analysis.enabled`.
+
+Verificacion:
+- `ProcessPendingEventAnalysisUseCaseTest` OK.
+
+---
+
+## [x] T12.6
+
+Consolidar `WF-05-Generate-Content` como flujo backend/frontend.
+
+Resultado:
+- Confirmado flujo por API Spring Boot `POST /api/v1/content/generate`.
+- Eliminado el workflow n8n `wf_05_generate_content.json`.
+- Se mantiene revision humana antes de publicacion.
+
+Verificacion:
+- Revision de frontend/backend sin referencias a webhooks n8n.
+
+---
+
+## [x] T12.7
+
+Consolidar `WF-06-Publish-Telegram` como flujo backend/frontend.
+
+Resultado:
+- Confirmada publicacion inmediata por `POST /api/v1/publications/{id}/publish`.
+- Confirmada publicacion programada con scheduler Spring existente.
+- Eliminado el workflow n8n `wf_06_publish_telegram.json`.
+- Se mantienen auditoria y estados de publicacion.
+
+Verificacion:
+- Tests focales backend de automatizacion OK.
+
+---
+
+## [x] T12.8
+
+Actualizar frontend para lanzar automatizaciones migradas.
+
+Resultado:
+- Anadido `AutomationService`.
+- Anadidas acciones en dashboard para clasificar pendientes, detectar eventos y analizar pendientes.
+- Anadida accion de analisis por evento prioritario.
+- El frontend llama exclusivamente a `/api/v1/automation/*`.
+
+Verificacion:
+- Tests focales Angular OK: `AutomationService` y `DashboardPageComponent`.
+
+---
+
+## [x] T12.9
+
+Eliminar workflows n8n sustituidos.
+
+Resultado:
+- Eliminados `wf_02_classify_news.json`, `wf_03_detect_events.json`, `wf_04_generate_analysis.json`, `wf_05_generate_content.json` y `wf_06_publish_telegram.json`.
+- Mantenido `wf_01_capture_news.json`.
+- Actualizado `n8n/validate-workflows.ps1` para validar solo `WF-01`.
+
+Verificacion:
+- `n8n/validate-workflows.ps1` OK.
+
+---
+
+## [x] T12.10
+
+Actualizar documentacion, changelog y versionado.
+
+Resultado:
+- Actualizado Documento 09 V2.0.
+- Actualizado Documento 31.
+- Creado registro en `docs/Docs_Asistentes`.
+- Actualizado `CHANGELOG.md`.
+- Version backend incrementada.
+
+Verificacion:
+- Revision documental.
+- Backend completo `mvn test` OK, 217 tests.
+- Frontend completo `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 94 tests.
+- Frontend build `npm.cmd run build` OK, con warnings no bloqueantes de presupuesto.
+
+---
+
+## [x] T12.11
+
+Disenar y anadir configuracion persistida de automatizaciones internas.
+
+Resultado:
+- Creada migracion `V7__automation_workflow_settings.sql`.
+- Creada tabla `automation_workflow_settings`.
+- Anadida semilla inicial para `WF02_CLASSIFICATION`, `WF03_EVENT_DETECTION` y `WF04_ANALYSIS`.
+- Anadidos entidad JPA, repositorio/adaptador y modelo de dominio de configuracion.
+
+Verificacion:
+- Flyway validado durante `mvn test`.
+- Backend completo `mvn test` OK, 223 tests.
+
+---
+
+## [x] T12.12
+
+Implementar API ADMIN de configuracion.
+
+Resultado:
+- Anadidos DTOs de request/response.
+- Anadidos casos de uso `ListAutomationSettingsUseCase`, `GetAutomationSettingUseCase`, `UpdateAutomationSettingUseCase` y `RunAutomationWorkflowUseCase`.
+- Anadidos endpoints `GET /api/v1/automation/settings`, `GET /api/v1/automation/settings/{workflowCode}`, `PUT /api/v1/automation/settings/{workflowCode}` y `POST /api/v1/automation/settings/{workflowCode}/run`.
+- Configuracion restringida a `ADMIN`; ejecucion manual disponible para `ADMIN` y `EDITOR`.
+
+Verificacion:
+- `AutomationControllerTest` OK.
+- Backend completo `mvn test` OK, 223 tests.
+
+---
+
+## [x] T12.13
+
+Implementar scheduler dinamico backend.
+
+Resultado:
+- Sustituidos los processors especificos por `AutomationWorkflowScheduler`.
+- El scheduler revisa workflows vencidos cada 30 segundos con retardo inicial.
+- La ejecucion respeta `enabled`, `intervalSeconds`, `batchSize` y `running`.
+- Se actualizan contadores, ultimas fechas, errores y `nextRunAt`.
+
+Verificacion:
+- `RunAutomationWorkflowUseCaseTest` OK.
+- `ProcessDueAutomationWorkflowsUseCaseTest` OK.
+- Backend completo `mvn test` OK, 223 tests.
+
+---
+
+## [x] T12.14
+
+Crear pantalla ADMIN de automatizaciones.
+
+Resultado:
+- Anadida ruta `/automation-settings`.
+- Anadido menu `Automatizaciones` visible solo para `ADMIN`.
+- Pantalla con activacion, intervalo en minutos, tamano de lote, estado, ultimo resultado y ejecucion manual.
+
+Verificacion:
+- `AutomationSettingsPageComponent` OK.
+- `AutomationService` OK.
+- Frontend completo `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 104 tests.
+
+---
+
+## [x] T12.15
+
+Completar `WF-05` en frontend.
+
+Resultado:
+- Anadida generacion de contenido desde detalle de evento.
+- Reutilizado `ContentService.generateContent`.
+- La pantalla permite seleccionar analisis, canal Telegram, tono y longitud.
+- El detalle de evento se recarga tras generar.
+
+Verificacion:
+- `EventDetailPageComponent` OK.
+- `ContentService` OK.
+- Frontend completo `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 104 tests.
+
+---
+
+## [x] T12.16
+
+Completar `WF-06` en frontend.
+
+Resultado:
+- Anadida accion `Publicar ahora` para contenido `APPROVED`.
+- Reutilizado `PublicationService.publishContent`.
+- Se mantiene `Programar` como accion separada.
+
+Verificacion:
+- `ContentPageComponent` OK.
+- Frontend completo `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 104 tests.
+
+---
+
+## [x] T12.17
+
+Documentacion, changelog y versionado.
+
+Resultado:
+- Actualizado Documento 31.
+- Actualizado Documento 09 V2.0 con configuracion dinamica.
+- Creado registro en `docs/Docs_Asistentes`.
+- Actualizado `CHANGELOG.md`.
+- Incrementado `backend/pom.xml` a `0.0.53-SNAPSHOT`.
+
+Verificacion:
+- Revision documental.
+- Backend completo `mvn test` OK, 223 tests.
+- Frontend completo `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 104 tests.
+- Frontend build `npm.cmd run build` OK, con warnings no bloqueantes de presupuesto.
+- `n8n/validate-workflows.ps1` OK.
+
+Estado:
+- Sprint 12 de consolidacion de automatizaciones internas completado.
+- Las tareas previstas originalmente de versionado de prompts, metricas IA y monitorizacion avanzada quedan como siguiente bloque de Sprint 12 extendido o Sprint 13 operativo.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:
@@ -1770,12 +2056,12 @@ Sprint 12
 
 # 19. Proxima Tarea
 
-Abrir Sprint 12
+Continuar tras la consolidacion de automatizaciones internas
 
 ```text
-1. Cerrar formalmente Sprint 11 en git/registro operativo si aplica.
-2. Iniciar Sprint 12 con T12.1: versionado de prompts.
-3. Continuar con T12.2 metricas IA, T12.3 monitorizacion workflows y T12.4 dashboard de metricas.
+1. Ejecutar validacion completa backend/frontend si no se ha realizado en la sesion de implementacion.
+2. Retomar versionado de prompts como siguiente bloque operativo.
+3. Continuar con metricas IA, monitorizacion de automatizaciones internas y dashboard de metricas.
 4. Mantener como deuda no bloqueante: CI/CD, secretos productivos, despliegue Proxmox/Nginx, E2E versionado y normalizacion de mojibake documental.
 ```
 

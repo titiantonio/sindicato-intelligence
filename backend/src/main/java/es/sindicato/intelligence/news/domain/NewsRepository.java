@@ -14,4 +14,6 @@ public interface NewsRepository {
     Optional<NewsArticle> findByHash(String hash);
 
     List<NewsArticle> findAll();
+
+    List<NewsArticle> findByStatus(NewsStatus status, int limit);
 }

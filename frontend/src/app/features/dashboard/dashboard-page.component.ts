@@ -4,11 +4,14 @@ import { RouterLink } from '@angular/router';
 
 import { MetricCardComponent } from '../../shared/components/metric-card/metric-card.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { AutomationService } from '../../core/services/automation.service';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { AutomationRunResult } from '../../core/models/automation.models';
 import { MetricCard, PriorityEvent } from '../../core/models/dashboard.models';
 
 type PriorityEventSortColumn = 'title' | 'category' | 'importance' | 'relatedNews' | 'updatedAt' | 'status';
 type SortDirection = 'asc' | 'desc';
+type AutomationAction = 'classifications' | 'events' | 'analysis' | `analysis-${number}`;
 
 @Component({
   selector: 'app-dashboard-page',
@@ -17,12 +20,16 @@ type SortDirection = 'asc' | 'desc';
   styleUrl: './dashboard-page.component.scss'
 })
 export class DashboardPageComponent implements OnInit {
+  private readonly automationService = inject(AutomationService);
   private readonly dashboardService = inject(DashboardService);
 
   protected readonly metricCards = signal<MetricCard[]>([]);
   protected readonly priorityEvents = signal<PriorityEvent[]>([]);
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly automationMessage = signal<string | null>(null);
+  protected readonly automationError = signal<string | null>(null);
+  protected readonly runningAutomation = signal<AutomationAction | null>(null);
   protected readonly titleFilter = signal('');
   protected readonly categoryFilter = signal('');
   protected readonly importanceFilter = signal('');
@@ -64,6 +71,31 @@ export class DashboardPageComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  protected runClassifications(): void {
+    this.runAutomation('classifications', this.automationService.runClassifications());
+  }
+
+  protected runEventDetection(): void {
+    this.runAutomation('events', this.automationService.runEventDetection());
+  }
+
+  protected runPendingAnalysis(): void {
+    this.runAutomation('analysis', this.automationService.runAnalysis());
+  }
+
+  protected runEventAnalysis(event: Event, eventId: number): void {
+    event.stopPropagation();
+    this.runAutomation(`analysis-${eventId}`, this.automationService.runAnalysis(eventId));
+  }
+
+  protected isRunningAutomation(action: AutomationAction): boolean {
+    return this.runningAutomation() === action;
+  }
+
+  protected isRunningEventAnalysis(eventId: number): boolean {
+    return this.runningAutomation() === `analysis-${eventId}`;
   }
 
   protected formatDate(value: string): string {
@@ -157,5 +189,27 @@ export class DashboardPageComponent implements OnInit {
       CRITICAL: 4
     };
     return scores[importance] ?? 0;
+  }
+
+  private runAutomation(action: AutomationAction, request: ReturnType<AutomationService['runClassifications']>): void {
+    this.runningAutomation.set(action);
+    this.automationMessage.set(null);
+    this.automationError.set(null);
+
+    request.subscribe({
+      next: (result) => {
+        this.automationMessage.set(this.formatAutomationResult(result));
+        this.runningAutomation.set(null);
+        this.loadDashboard();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.automationError.set(error.error?.error ?? 'No se pudo ejecutar la automatizacion.');
+        this.runningAutomation.set(null);
+      }
+    });
+  }
+
+  private formatAutomationResult(result: AutomationRunResult): string {
+    return `Procesados ${result.processedCount}. Correctos ${result.successCount}. Fallidos ${result.failedCount}. Omitidos ${result.skippedCount}.`;
   }
 }

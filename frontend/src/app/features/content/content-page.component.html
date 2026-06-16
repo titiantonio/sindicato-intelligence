@@ -49,6 +49,7 @@
                 <button type="button" [disabled]="!canEdit(item)" (click)="openEdit(item, $event)">Editar</button>
                 <button type="button" [disabled]="!canReview(item)" (click)="$event.stopPropagation(); approve(item)">Aprobar</button>
                 <button type="button" [disabled]="!canReview(item)" (click)="$event.stopPropagation(); reject(item)">Rechazar</button>
+                <button type="button" [disabled]="!canPublish(item)" (click)="$event.stopPropagation(); publishNow(item)">Publicar ahora</button>
               </td>
             </tr>
           } @empty {
@@ -146,6 +147,7 @@
             <input type="datetime-local" [ngModel]="scheduleAt()" (ngModelChange)="scheduleAt.set($event)" name="scheduleAt" [disabled]="selected.status !== 'APPROVED'" />
           </label>
           <button type="submit" [disabled]="selected.status !== 'APPROVED'">Programar</button>
+          <button type="button" [disabled]="selected.status !== 'APPROVED'" (click)="publishNow(selected)">Publicar ahora</button>
         </form>
       </section>
     </div>
