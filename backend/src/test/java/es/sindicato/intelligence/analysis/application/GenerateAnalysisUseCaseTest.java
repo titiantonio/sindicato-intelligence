@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.analysis.application;
 
+import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import es.sindicato.intelligence.event.domain.Event;
@@ -35,7 +36,7 @@ class GenerateAnalysisUseCaseTest {
         NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         AnalysisAIProvider aiProvider = mock(AnalysisAIProvider.class);
-        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), aiProvider);
+        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), aiProvider, mock(AiOperationMetricsRecorder.class));
         Event event = event(Set.of(2L));
         NewsArticle newsArticle = newsArticle(2L);
         EventAIAnalysis savedAnalysis = analysis(20L, event.getId());
@@ -72,7 +73,7 @@ class GenerateAnalysisUseCaseTest {
     void rejectsUnknownEvent() {
         EventRepository eventRepository = mock(EventRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
-        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, mock(NewsRepository.class), analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class));
+        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, mock(NewsRepository.class), analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class), mock(AiOperationMetricsRecorder.class));
 
         when(eventRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -86,7 +87,7 @@ class GenerateAnalysisUseCaseTest {
         EventRepository eventRepository = mock(EventRepository.class);
         NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
-        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class));
+        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class), mock(AiOperationMetricsRecorder.class));
         Event event = event(Set.of(2L));
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));

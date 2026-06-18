@@ -2,6 +2,8 @@ package es.sindicato.intelligence.automation.api;
 
 import es.sindicato.intelligence.automation.application.AutomationRunError;
 import es.sindicato.intelligence.automation.application.AutomationRunResult;
+import es.sindicato.intelligence.automation.application.AutomationOverview;
+import es.sindicato.intelligence.automation.application.GetAutomationOverviewUseCase;
 import es.sindicato.intelligence.automation.application.GetAutomationSettingUseCase;
 import es.sindicato.intelligence.automation.application.ListAutomationSettingsUseCase;
 import es.sindicato.intelligence.automation.application.ProcessPendingEventAnalysisUseCase;
@@ -35,19 +37,22 @@ public class AutomationController {
     private final GetAutomationSettingUseCase getAutomationSettingUseCase;
     private final UpdateAutomationSettingUseCase updateAutomationSettingUseCase;
     private final RunAutomationWorkflowUseCase runAutomationWorkflowUseCase;
+    private final GetAutomationOverviewUseCase getAutomationOverviewUseCase;
 
     public AutomationController(
             ProcessPendingEventAnalysisUseCase processPendingEventAnalysisUseCase,
             ListAutomationSettingsUseCase listAutomationSettingsUseCase,
             GetAutomationSettingUseCase getAutomationSettingUseCase,
             UpdateAutomationSettingUseCase updateAutomationSettingUseCase,
-            RunAutomationWorkflowUseCase runAutomationWorkflowUseCase
+            RunAutomationWorkflowUseCase runAutomationWorkflowUseCase,
+            GetAutomationOverviewUseCase getAutomationOverviewUseCase
     ) {
         this.processPendingEventAnalysisUseCase = processPendingEventAnalysisUseCase;
         this.listAutomationSettingsUseCase = listAutomationSettingsUseCase;
         this.getAutomationSettingUseCase = getAutomationSettingUseCase;
         this.updateAutomationSettingUseCase = updateAutomationSettingUseCase;
         this.runAutomationWorkflowUseCase = runAutomationWorkflowUseCase;
+        this.getAutomationOverviewUseCase = getAutomationOverviewUseCase;
     }
 
     @PostMapping("/classifications/run")
@@ -74,6 +79,20 @@ public class AutomationController {
         return listAutomationSettingsUseCase.execute().stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @GetMapping("/overview")
+    public AutomationOverviewResponse overview() {
+        AutomationOverview overview = getAutomationOverviewUseCase.execute();
+        return new AutomationOverviewResponse(
+                overview.n8nWorkflowCode(),
+                overview.n8nWorkflowName(),
+                overview.n8nStatus(),
+                overview.backendEnabledCount(),
+                overview.backendFailedCount(),
+                overview.backendRunningCount(),
+                overview.backendWorkflows().stream().map(this::toResponse).toList()
+        );
     }
 
     @GetMapping("/settings/{workflowCode}")

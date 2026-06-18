@@ -1,0 +1,480 @@
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { AiMetricsSnapshot, AiPromptVersion } from '../../core/models/ai-observability.models';
+import { TelegramPublicationSettings } from '../../core/models/application-settings.models';
+import { AutomationOverview, AutomationRunResult, AutomationWorkflowCode, AutomationWorkflowSetting } from '../../core/models/automation.models';
+import { AiObservabilityService } from '../../core/services/ai-observability.service';
+import { ApplicationSettingsService } from '../../core/services/application-settings.service';
+import { AutomationService } from '../../core/services/automation.service';
+
+type SettingsTab = 'ai' | 'publication' | 'automation';
+type SortDirection = 'asc' | 'desc';
+type PromptSortColumn = 'promptKey' | 'promptName' | 'module' | 'version' | 'checksum' | 'active' | 'createdAt';
+type MetricSortColumn = 'id' | 'operationType' | 'promptKey' | 'provider' | 'model' | 'status' | 'relatedEntityType' | 'relatedEntityId' | 'latencyMs' | 'errorMessage' | 'createdAt';
+
+interface AutomationSettingForm {
+  enabled: boolean;
+  intervalMinutes: number;
+  batchSize: number;
+}
+
+interface TelegramSettingsForm {
+  enabled: boolean;
+  baseUrl: string;
+  botToken: string;
+  chatId: string;
+  disableWebPagePreview: boolean;
+}
+
+@Component({
+  selector: 'app-settings-page',
+  imports: [FormsModule],
+  templateUrl: './settings-page.component.html',
+  styleUrl: './settings-page.component.scss'
+})
+export class SettingsPageComponent implements OnInit {
+  private readonly automationService = inject(AutomationService);
+  private readonly applicationSettingsService = inject(ApplicationSettingsService);
+  private readonly aiObservabilityService = inject(AiObservabilityService);
+
+  protected readonly settings = signal<AutomationWorkflowSetting[]>([]);
+  protected readonly overview = signal<AutomationOverview | null>(null);
+  protected readonly promptVersions = signal<AiPromptVersion[]>([]);
+  protected readonly aiMetrics = signal<AiMetricsSnapshot | null>(null);
+  protected readonly forms = signal<Record<string, AutomationSettingForm>>({});
+  protected readonly telegramSettings = signal<TelegramPublicationSettings | null>(null);
+  protected readonly telegramForm = signal<TelegramSettingsForm>({
+    enabled: false,
+    baseUrl: 'https://api.telegram.org',
+    botToken: '',
+    chatId: '',
+    disableWebPagePreview: true
+  });
+  protected readonly isLoading = signal(false);
+  protected readonly isTelegramLoading = signal(false);
+  protected readonly isAiLoading = signal(false);
+  protected readonly isTelegramSaving = signal(false);
+  protected readonly busyWorkflow = signal<AutomationWorkflowCode | null>(null);
+  protected readonly errorMessage = signal<string | null>(null);
+  protected readonly successMessage = signal<string | null>(null);
+  protected readonly lastRunResult = signal<Record<string, AutomationRunResult>>({});
+  protected readonly activeTab = signal<SettingsTab>('ai');
+  protected readonly pageSizeOptions = [5, 10, 25, 50];
+
+  protected readonly promptKeyFilter = signal('');
+  protected readonly promptNameFilter = signal('');
+  protected readonly promptModuleFilter = signal('');
+  protected readonly promptVersionFilter = signal('');
+  protected readonly promptChecksumFilter = signal('');
+  protected readonly promptActiveFilter = signal('');
+  protected readonly promptCreatedAtFilter = signal('');
+  protected readonly promptSortColumn = signal<PromptSortColumn>('promptKey');
+  protected readonly promptSortDirection = signal<SortDirection>('asc');
+  protected readonly promptPageSize = signal(10);
+  protected readonly promptCurrentPage = signal(1);
+  protected readonly displayedPrompts = computed(() => this.sortPrompts(this.filterPrompts(this.promptVersions())));
+  protected readonly promptTotalPages = computed(() => Math.max(1, Math.ceil(this.displayedPrompts().length / this.promptPageSize())));
+  protected readonly promptDisplayPage = computed(() => Math.min(this.promptCurrentPage(), this.promptTotalPages()));
+  protected readonly paginatedPrompts = computed(() => {
+    const page = this.promptDisplayPage();
+    const start = (page - 1) * this.promptPageSize();
+    return this.displayedPrompts().slice(start, start + this.promptPageSize());
+  });
+
+  protected readonly metricIdFilter = signal('');
+  protected readonly metricOperationFilter = signal('');
+  protected readonly metricPromptFilter = signal('');
+  protected readonly metricProviderFilter = signal('');
+  protected readonly metricModelFilter = signal('');
+  protected readonly metricStatusFilter = signal('');
+  protected readonly metricRelatedEntityTypeFilter = signal('');
+  protected readonly metricRelatedEntityIdFilter = signal('');
+  protected readonly metricLatencyFilter = signal('');
+  protected readonly metricErrorFilter = signal('');
+  protected readonly metricCreatedAtFilter = signal('');
+  protected readonly metricSortColumn = signal<MetricSortColumn>('createdAt');
+  protected readonly metricSortDirection = signal<SortDirection>('desc');
+  protected readonly metricPageSize = signal(10);
+  protected readonly metricCurrentPage = signal(1);
+  protected readonly displayedMetrics = computed(() => this.sortMetrics(this.filterMetrics(this.aiMetrics()?.recentMetrics ?? [])));
+  protected readonly metricTotalPages = computed(() => Math.max(1, Math.ceil(this.displayedMetrics().length / this.metricPageSize())));
+  protected readonly metricDisplayPage = computed(() => Math.min(this.metricCurrentPage(), this.metricTotalPages()));
+  protected readonly paginatedMetrics = computed(() => {
+    const page = this.metricDisplayPage();
+    const start = (page - 1) * this.metricPageSize();
+    return this.displayedMetrics().slice(start, start + this.metricPageSize());
+  });
+
+  ngOnInit(): void {
+    this.loadSettings();
+    this.loadTelegramSettings();
+    this.loadAiObservability();
+  }
+
+  protected loadSettings(): void {
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    this.automationService.listSettings().subscribe({
+      next: (settings) => {
+        this.settings.set(settings);
+        this.forms.set(Object.fromEntries(settings.map((setting) => [setting.workflowCode, this.toForm(setting)])));
+        this.isLoading.set(false);
+        this.loadOverview();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar la configuracion de automatizaciones.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  protected loadOverview(): void {
+    this.automationService.getOverview().subscribe({
+      next: (overview) => {
+        this.overview.set(overview);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar la vision operativa de automatizaciones.');
+      }
+    });
+  }
+
+  protected loadTelegramSettings(): void {
+    this.isTelegramLoading.set(true);
+    this.errorMessage.set(null);
+
+    this.applicationSettingsService.getTelegramSettings().subscribe({
+      next: (settings) => {
+        this.telegramSettings.set(settings);
+        this.telegramForm.set({
+          enabled: settings.enabled,
+          baseUrl: settings.baseUrl,
+          botToken: '',
+          chatId: settings.chatId ?? '',
+          disableWebPagePreview: settings.disableWebPagePreview
+        });
+        this.isTelegramLoading.set(false);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar la configuracion de Telegram.');
+        this.isTelegramLoading.set(false);
+      }
+    });
+  }
+
+  protected loadAiObservability(): void {
+    this.isAiLoading.set(true);
+    this.aiObservabilityService.listPrompts().subscribe({
+      next: (prompts) => {
+        this.promptVersions.set(prompts);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar el versionado de prompts IA.');
+      }
+    });
+    this.aiObservabilityService.listMetrics().subscribe({
+      next: (metrics) => {
+        this.aiMetrics.set(metrics);
+        this.isAiLoading.set(false);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudieron cargar las metricas IA.');
+        this.isAiLoading.set(false);
+      }
+    });
+  }
+
+  protected setTab(tab: SettingsTab): void {
+    this.activeTab.set(tab);
+  }
+
+  protected updateEnabled(workflowCode: AutomationWorkflowCode, value: boolean): void {
+    this.updateForm(workflowCode, { enabled: value });
+  }
+
+  protected updateInterval(workflowCode: AutomationWorkflowCode, value: string | number): void {
+    this.updateForm(workflowCode, { intervalMinutes: Math.max(1, Number(value)) });
+  }
+
+  protected updateBatchSize(workflowCode: AutomationWorkflowCode, value: string | number): void {
+    this.updateForm(workflowCode, { batchSize: Math.max(1, Number(value)) });
+  }
+
+  protected updateTelegramForm(patch: Partial<TelegramSettingsForm>): void {
+    this.telegramForm.update((form) => ({ ...form, ...patch }));
+  }
+
+  protected saveTelegramSettings(): void {
+    const form = this.telegramForm();
+    this.isTelegramSaving.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    this.applicationSettingsService.updateTelegramSettings({
+      enabled: form.enabled,
+      baseUrl: form.baseUrl,
+      botToken: form.botToken.trim() ? form.botToken.trim() : null,
+      chatId: form.chatId.trim() ? form.chatId.trim() : null,
+      disableWebPagePreview: form.disableWebPagePreview
+    }).subscribe({
+      next: (settings) => {
+        this.telegramSettings.set(settings);
+        this.telegramForm.set({
+          enabled: settings.enabled,
+          baseUrl: settings.baseUrl,
+          botToken: '',
+          chatId: settings.chatId ?? '',
+          disableWebPagePreview: settings.disableWebPagePreview
+        });
+        this.successMessage.set(settings.readyToPublish ? 'Configuracion de Telegram guardada y lista para publicar.' : 'Configuracion de Telegram guardada.');
+        this.isTelegramSaving.set(false);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo guardar la configuracion de Telegram.');
+        this.isTelegramSaving.set(false);
+      }
+    });
+  }
+
+  protected save(setting: AutomationWorkflowSetting): void {
+    const form = this.forms()[setting.workflowCode];
+    if (!form) {
+      return;
+    }
+
+    this.busyWorkflow.set(setting.workflowCode);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    this.automationService.updateSetting(setting.workflowCode, {
+      enabled: form.enabled,
+      intervalSeconds: Math.max(60, Math.round(form.intervalMinutes * 60)),
+      batchSize: Math.max(1, Math.round(form.batchSize))
+    }).subscribe({
+      next: () => {
+        this.successMessage.set('Configuracion guardada.');
+        this.busyWorkflow.set(null);
+        this.loadSettings();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo guardar la configuracion.');
+        this.busyWorkflow.set(null);
+      }
+    });
+  }
+
+  protected runNow(setting: AutomationWorkflowSetting): void {
+    this.busyWorkflow.set(setting.workflowCode);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    this.automationService.runWorkflow(setting.workflowCode).subscribe({
+      next: (result) => {
+        this.lastRunResult.update((value) => ({ ...value, [setting.workflowCode]: result }));
+        this.successMessage.set(`Ejecucion finalizada. Procesados ${result.processedCount}. Correctos ${result.successCount}. Fallidos ${result.failedCount}.`);
+        this.busyWorkflow.set(null);
+        this.loadSettings();
+        this.loadAiObservability();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo ejecutar la automatizacion.');
+        this.busyWorkflow.set(null);
+      }
+    });
+  }
+
+  protected formFor(workflowCode: AutomationWorkflowCode): AutomationSettingForm {
+    return this.forms()[workflowCode] ?? { enabled: false, intervalMinutes: 10, batchSize: 1 };
+  }
+
+  protected workflowLabel(workflowCode: AutomationWorkflowCode): string {
+    const labels: Record<AutomationWorkflowCode, string> = {
+      WF02_CLASSIFICATION: 'WF02 - Clasificacion',
+      WF03_EVENT_DETECTION: 'WF03 - Deteccion de eventos',
+      WF04_ANALYSIS: 'WF04 - Analisis'
+    };
+    return labels[workflowCode];
+  }
+
+  protected formatDate(value: string | null): string {
+    if (!value) {
+      return 'Sin registro';
+    }
+    return new Intl.DateTimeFormat('es-ES', {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    }).format(new Date(value));
+  }
+
+  protected resultText(setting: AutomationWorkflowSetting): string {
+    const liveResult = this.lastRunResult()[setting.workflowCode];
+    if (liveResult) {
+      return `${liveResult.processedCount}/${liveResult.successCount}/${liveResult.failedCount}/${liveResult.skippedCount}`;
+    }
+    return `${setting.lastProcessedCount}/${setting.lastSuccessCount}/${setting.lastFailedCount}/${setting.lastSkippedCount}`;
+  }
+
+  protected metricStatusLabel(status: string): string {
+    return status === 'SUCCESS' ? 'Correcta' : 'Fallida';
+  }
+
+  protected promptSortLabel(column: PromptSortColumn): string {
+    return this.promptSortColumn() === column ? (this.promptSortDirection() === 'asc' ? 'ASC' : 'DESC') : '';
+  }
+
+  protected metricSortLabel(column: MetricSortColumn): string {
+    return this.metricSortColumn() === column ? (this.metricSortDirection() === 'asc' ? 'ASC' : 'DESC') : '';
+  }
+
+  protected changePromptSort(column: PromptSortColumn): void {
+    if (this.promptSortColumn() === column) {
+      this.promptSortDirection.update((direction) => direction === 'asc' ? 'desc' : 'asc');
+      return;
+    }
+    this.promptSortColumn.set(column);
+    this.promptSortDirection.set(column === 'createdAt' ? 'desc' : 'asc');
+  }
+
+  protected changeMetricSort(column: MetricSortColumn): void {
+    if (this.metricSortColumn() === column) {
+      this.metricSortDirection.update((direction) => direction === 'asc' ? 'desc' : 'asc');
+      return;
+    }
+    this.metricSortColumn.set(column);
+    this.metricSortDirection.set(column === 'createdAt' ? 'desc' : 'asc');
+  }
+
+  protected setPromptKeyFilter(value: string): void { this.promptKeyFilter.set(value); this.promptCurrentPage.set(1); }
+  protected setPromptNameFilter(value: string): void { this.promptNameFilter.set(value); this.promptCurrentPage.set(1); }
+  protected setPromptModuleFilter(value: string): void { this.promptModuleFilter.set(value); this.promptCurrentPage.set(1); }
+  protected setPromptVersionFilter(value: string): void { this.promptVersionFilter.set(value); this.promptCurrentPage.set(1); }
+  protected setPromptChecksumFilter(value: string): void { this.promptChecksumFilter.set(value); this.promptCurrentPage.set(1); }
+  protected setPromptActiveFilter(value: string): void { this.promptActiveFilter.set(value); this.promptCurrentPage.set(1); }
+  protected setPromptCreatedAtFilter(value: string): void { this.promptCreatedAtFilter.set(value); this.promptCurrentPage.set(1); }
+  protected setPromptPageSize(value: string): void { this.promptPageSize.set(Number(value)); this.promptCurrentPage.set(1); }
+  protected previousPromptPage(): void { this.promptCurrentPage.update((page) => Math.max(1, page - 1)); }
+  protected nextPromptPage(): void { this.promptCurrentPage.update((page) => Math.min(this.promptTotalPages(), page + 1)); }
+
+  protected setMetricIdFilter(value: string): void { this.metricIdFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricOperationFilter(value: string): void { this.metricOperationFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricPromptFilter(value: string): void { this.metricPromptFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricProviderFilter(value: string): void { this.metricProviderFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricModelFilter(value: string): void { this.metricModelFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricStatusFilter(value: string): void { this.metricStatusFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricRelatedEntityTypeFilter(value: string): void { this.metricRelatedEntityTypeFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricRelatedEntityIdFilter(value: string): void { this.metricRelatedEntityIdFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricLatencyFilter(value: string): void { this.metricLatencyFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricErrorFilter(value: string): void { this.metricErrorFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricCreatedAtFilter(value: string): void { this.metricCreatedAtFilter.set(value); this.metricCurrentPage.set(1); }
+  protected setMetricPageSize(value: string): void { this.metricPageSize.set(Number(value)); this.metricCurrentPage.set(1); }
+  protected previousMetricPage(): void { this.metricCurrentPage.update((page) => Math.max(1, page - 1)); }
+  protected nextMetricPage(): void { this.metricCurrentPage.update((page) => Math.min(this.metricTotalPages(), page + 1)); }
+
+  private updateForm(workflowCode: AutomationWorkflowCode, patch: Partial<AutomationSettingForm>): void {
+    this.forms.update((forms) => ({
+      ...forms,
+      [workflowCode]: {
+        ...this.formFor(workflowCode),
+        ...patch
+      }
+    }));
+  }
+
+  private toForm(setting: AutomationWorkflowSetting): AutomationSettingForm {
+    return {
+      enabled: setting.enabled,
+      intervalMinutes: Math.max(1, Math.round(setting.intervalSeconds / 60)),
+      batchSize: setting.batchSize
+    };
+  }
+
+  private filterPrompts(prompts: AiPromptVersion[]): AiPromptVersion[] {
+    return prompts
+      .filter((prompt) => this.matchesText(prompt.promptKey, this.promptKeyFilter()))
+      .filter((prompt) => this.matchesText(prompt.promptName, this.promptNameFilter()))
+      .filter((prompt) => this.matchesText(prompt.module, this.promptModuleFilter()))
+      .filter((prompt) => this.matchesText(prompt.version, this.promptVersionFilter()))
+      .filter((prompt) => this.matchesText(prompt.checksum, this.promptChecksumFilter()))
+      .filter((prompt) => this.matchesOption(this.activeLabel(prompt.active), this.promptActiveFilter()))
+      .filter((prompt) => this.matchesText(this.formatDate(prompt.createdAt), this.promptCreatedAtFilter()));
+  }
+
+  private sortPrompts(prompts: AiPromptVersion[]): AiPromptVersion[] {
+    const direction = this.promptSortDirection() === 'asc' ? 1 : -1;
+    const column = this.promptSortColumn();
+    return [...prompts].sort((left, right) => direction * this.comparePrompts(left, right, column));
+  }
+
+  private comparePrompts(left: AiPromptVersion, right: AiPromptVersion, column: PromptSortColumn): number {
+    if (column === 'active') {
+      return Number(left.active) - Number(right.active);
+    }
+    if (column === 'createdAt') {
+      return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
+    }
+    return left[column].localeCompare(right[column], 'es', { sensitivity: 'base' });
+  }
+
+  private filterMetrics(metrics: NonNullable<AiMetricsSnapshot['recentMetrics']>): NonNullable<AiMetricsSnapshot['recentMetrics']> {
+    return metrics
+      .filter((metric) => this.matchesText(metric.id.toString(), this.metricIdFilter()))
+      .filter((metric) => this.matchesText(metric.operationType, this.metricOperationFilter()))
+      .filter((metric) => this.matchesText(metric.promptKey, this.metricPromptFilter()))
+      .filter((metric) => this.matchesText(metric.provider, this.metricProviderFilter()))
+      .filter((metric) => this.matchesText(metric.model ?? '-', this.metricModelFilter()))
+      .filter((metric) => this.matchesOption(this.metricStatusLabel(metric.status), this.metricStatusFilter()))
+      .filter((metric) => this.matchesText(metric.relatedEntityType ?? '-', this.metricRelatedEntityTypeFilter()))
+      .filter((metric) => this.matchesText(metric.relatedEntityId?.toString() ?? '-', this.metricRelatedEntityIdFilter()))
+      .filter((metric) => this.matchesText(metric.latencyMs.toString(), this.metricLatencyFilter()))
+      .filter((metric) => this.matchesText(metric.errorMessage ?? '-', this.metricErrorFilter()))
+      .filter((metric) => this.matchesText(this.formatDate(metric.createdAt), this.metricCreatedAtFilter()));
+  }
+
+  private sortMetrics(metrics: NonNullable<AiMetricsSnapshot['recentMetrics']>): NonNullable<AiMetricsSnapshot['recentMetrics']> {
+    const direction = this.metricSortDirection() === 'asc' ? 1 : -1;
+    const column = this.metricSortColumn();
+    return [...metrics].sort((left, right) => direction * this.compareMetrics(left, right, column));
+  }
+
+  private compareMetrics(left: NonNullable<AiMetricsSnapshot['recentMetrics']>[number], right: NonNullable<AiMetricsSnapshot['recentMetrics']>[number], column: MetricSortColumn): number {
+    if (column === 'id' || column === 'latencyMs') {
+      return left[column] - right[column];
+    }
+    if (column === 'relatedEntityId') {
+      return (left.relatedEntityId ?? 0) - (right.relatedEntityId ?? 0);
+    }
+    if (column === 'createdAt') {
+      return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
+    }
+    return this.metricValue(left, column).localeCompare(this.metricValue(right, column), 'es', { sensitivity: 'base' });
+  }
+
+  private metricValue(metric: NonNullable<AiMetricsSnapshot['recentMetrics']>[number], column: Exclude<MetricSortColumn, 'id' | 'latencyMs' | 'relatedEntityId' | 'createdAt'>): string {
+    const values = {
+      operationType: metric.operationType,
+      promptKey: metric.promptKey,
+      provider: metric.provider,
+      model: metric.model ?? '-',
+      status: this.metricStatusLabel(metric.status),
+      relatedEntityType: metric.relatedEntityType ?? '-',
+      errorMessage: metric.errorMessage ?? '-'
+    };
+    return values[column];
+  }
+
+  private matchesText(value: string, filter: string): boolean {
+    const normalizedFilter = filter.trim().toLocaleLowerCase('es');
+    return !normalizedFilter || value.trim().toLocaleLowerCase('es').includes(normalizedFilter);
+  }
+
+  private matchesOption(value: string, filter: string): boolean {
+    const normalizedFilter = filter.trim().toLocaleLowerCase('es');
+    return !normalizedFilter || value.trim().toLocaleLowerCase('es') === normalizedFilter;
+  }
+
+  private activeLabel(active: boolean): string {
+    return active ? 'Activo' : 'Inactivo';
+  }
+}

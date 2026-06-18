@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.event.application;
 
+import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.classification.domain.ImpactLevel;
 import es.sindicato.intelligence.classification.domain.NewsClassification;
 import es.sindicato.intelligence.classification.domain.NewsClassificationRepository;
@@ -32,19 +33,22 @@ public class DetectEventUseCase {
     private final EventRepository eventRepository;
     private final EventMatchPromptBuilder promptBuilder;
     private final EventMatchingAIProvider aiProvider;
+    private final AiOperationMetricsRecorder metricsRecorder;
 
     public DetectEventUseCase(
             NewsRepository newsRepository,
             NewsClassificationRepository classificationRepository,
             EventRepository eventRepository,
             EventMatchPromptBuilder promptBuilder,
-            EventMatchingAIProvider aiProvider
+            EventMatchingAIProvider aiProvider,
+            AiOperationMetricsRecorder metricsRecorder
     ) {
         this.newsRepository = newsRepository;
         this.classificationRepository = classificationRepository;
         this.eventRepository = eventRepository;
         this.promptBuilder = promptBuilder;
         this.aiProvider = aiProvider;
+        this.metricsRecorder = metricsRecorder;
     }
 
     @Transactional
@@ -80,6 +84,7 @@ public class DetectEventUseCase {
         log.info("event detection candidates loaded: newsId={}, category={}, candidateCount={}", newsArticle.getId(), category, candidates.size());
         EventMatchPrompt prompt = promptBuilder.build(newsArticle.getTitle(), newsArticle.getSummary(), newsArticle.getContent(), candidates);
         EventMatchingAIResponse aiResponse;
+        OffsetDateTime startedAt = metricsRecorder.start();
         try {
             aiResponse = aiProvider.match(new EventMatchingAIRequest(
                     newsArticle.getTitle(),
@@ -90,9 +95,11 @@ public class DetectEventUseCase {
                     prompt.userPrompt()
             ));
         } catch (RuntimeException exception) {
+            metricsRecorder.recordFailure("EVENT_MATCHING", "WF03_EVENT_MATCHING", providerName(), null, "NEWS", newsArticle.getId(), startedAt, exception);
             log.error("event detection failed during AI matching: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
             throw exception;
         }
+        metricsRecorder.recordSuccess("EVENT_MATCHING", "WF03_EVENT_MATCHING", providerName(), null, "NEWS", newsArticle.getId(), startedAt);
 
         Event event = findAutomaticMatch(activeEvents, aiResponse);
         boolean created = false;
@@ -177,5 +184,9 @@ public class DetectEventUseCase {
 
     private Importance importanceOf(ImpactLevel impactLevel) {
         return Importance.valueOf(impactLevel.name());
+    }
+
+    private String providerName() {
+        return aiProvider.getClass().getSimpleName();
     }
 }

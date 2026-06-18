@@ -41,6 +41,26 @@
   margin-top: 1.5rem;
 }
 
+.settings-tabs {
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.settings-tab {
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  color: var(--color-text-muted);
+  padding: 0.75rem 0.9rem;
+}
+
+.settings-tab--active {
+  border-bottom-color: var(--color-primary);
+}
+
 .section-header h2 {
   margin: 0.3rem 0 0;
 }
@@ -49,6 +69,38 @@
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.summary-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.summary-card {
+  background: var(--color-muted-surface);
+  border: 1px solid var(--color-neutral-soft);
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+}
+
+.summary-card span {
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.summary-card strong {
+  font-size: 1.5rem;
+}
+
+.summary-card p {
+  color: var(--color-text-muted);
+  margin: 0;
 }
 
 .workflow-panel {
@@ -90,15 +142,7 @@
   gap: 0.5rem;
 }
 
-.workflow-form label {
-  color: var(--color-text-muted);
-  display: grid;
-  flex: 1 1 8rem;
-  font-size: 0.85rem;
-  font-weight: 800;
-  gap: 0.35rem;
-}
-
+.workflow-form label,
 .telegram-form label {
   color: var(--color-text-muted);
   display: grid;
@@ -107,14 +151,15 @@
   gap: 0.35rem;
 }
 
-.workflow-form input {
-  border: 1px solid var(--color-input-border);
-  border-radius: 0.5rem;
-  color: var(--color-field-text);
-  padding: 0.6rem 0.7rem;
+.workflow-form label {
+  flex: 1 1 8rem;
 }
 
-.telegram-form input {
+.workflow-form input,
+.telegram-form input,
+.column-filters input,
+.column-filters select,
+.table-pagination select {
   border: 1px solid var(--color-input-border);
   border-radius: 0.5rem;
   color: var(--color-field-text);
@@ -142,6 +187,86 @@
   padding: 0.75rem;
 }
 
+.table-wrapper {
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.data-table--prompts {
+  min-width: 1060px;
+}
+
+.data-table--metrics {
+  min-width: 1480px;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.column-filters th {
+  background: var(--color-muted-surface);
+  padding-top: 0;
+}
+
+.column-filters input,
+.column-filters select {
+  font-size: 0.8rem;
+  min-width: 7rem;
+  width: 100%;
+}
+
+.sort-button {
+  all: unset;
+  cursor: pointer;
+  text-align: left;
+}
+
+td {
+  color: var(--color-text);
+}
+
+.table-pagination {
+  align-items: center;
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  font-weight: 800;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.table-pagination label,
+.table-pagination__pager {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+code {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
 button {
   background: var(--color-primary);
   border: 0;
@@ -164,7 +289,8 @@ button:disabled {
 
 @media (max-width: 1200px) {
   .settings-grid,
-  .telegram-form {
+  .telegram-form,
+  .summary-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
 import {
+  AutomationOverview,
   AutomationRunResult,
   AutomationWorkflowCode,
   AutomationWorkflowSetting,
@@ -41,5 +42,9 @@ export class AutomationService {
 
   runWorkflow(workflowCode: AutomationWorkflowCode) {
     return this.httpClient.post<AutomationRunResult>(`/api/v1/automation/settings/${workflowCode}/run`, {});
+  }
+
+  getOverview() {
+    return this.httpClient.get<AutomationOverview>('/api/v1/automation/overview');
   }
 }

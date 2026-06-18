@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.content.application;
 
+import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import es.sindicato.intelligence.content.domain.ContentStatus;
@@ -30,6 +31,7 @@ public class GenerateContentUseCase {
     private final GenerateContentPromptBuilder promptBuilder;
     private final ContentAIProvider aiProvider;
     private final CurrentContentAuthorProvider authorProvider;
+    private final AiOperationMetricsRecorder metricsRecorder;
 
     public GenerateContentUseCase(
             EventRepository eventRepository,
@@ -37,7 +39,8 @@ public class GenerateContentUseCase {
             GeneratedContentRepository contentRepository,
             GenerateContentPromptBuilder promptBuilder,
             ContentAIProvider aiProvider,
-            CurrentContentAuthorProvider authorProvider
+            CurrentContentAuthorProvider authorProvider,
+            AiOperationMetricsRecorder metricsRecorder
     ) {
         this.eventRepository = eventRepository;
         this.analysisRepository = analysisRepository;
@@ -45,6 +48,7 @@ public class GenerateContentUseCase {
         this.promptBuilder = promptBuilder;
         this.aiProvider = aiProvider;
         this.authorProvider = authorProvider;
+        this.metricsRecorder = metricsRecorder;
     }
 
     @Transactional
@@ -74,12 +78,15 @@ public class GenerateContentUseCase {
         log.info("content generation context loaded: eventId={}, analysisId={}", event.getId(), analysis.getId());
 
         ContentAIResponse aiResponse;
+        OffsetDateTime startedAt = metricsRecorder.start();
         try {
             aiResponse = aiProvider.generate(new ContentAIRequest(event, analysis, channel, tone, length, prompt.systemPrompt(), prompt.userPrompt()));
         } catch (RuntimeException exception) {
+            metricsRecorder.recordFailure("CONTENT_GENERATION", "WF05_CONTENT", providerName(), null, "EVENT", event.getId(), startedAt, exception);
             log.error("content generation failed during AI generation: eventId={}, analysisId={}, reason={}", event.getId(), analysis.getId(), exception.getMessage(), exception);
             throw exception;
         }
+        metricsRecorder.recordSuccess("CONTENT_GENERATION", "WF05_CONTENT", providerName(), null, "EVENT", event.getId(), startedAt);
 
         GeneratedContent content = new GeneratedContent(
                 null,
@@ -134,5 +141,9 @@ public class GenerateContentUseCase {
         }
 
         return value.trim().toUpperCase();
+    }
+
+    private String providerName() {
+        return aiProvider.getClass().getSimpleName();
     }
 }

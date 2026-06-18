@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.classification.application;
 
+import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.classification.domain.NewsClassification;
 import es.sindicato.intelligence.classification.domain.NewsClassificationRepository;
 import es.sindicato.intelligence.news.domain.NewsArticle;
@@ -21,17 +22,20 @@ public class ClassifyNewsUseCase {
     private final NewsClassificationRepository classificationRepository;
     private final ClassifyNewsPromptBuilder promptBuilder;
     private final AIProvider aiProvider;
+    private final AiOperationMetricsRecorder metricsRecorder;
 
     public ClassifyNewsUseCase(
             NewsRepository newsRepository,
             NewsClassificationRepository classificationRepository,
             ClassifyNewsPromptBuilder promptBuilder,
-            AIProvider aiProvider
+            AIProvider aiProvider,
+            AiOperationMetricsRecorder metricsRecorder
     ) {
         this.newsRepository = newsRepository;
         this.classificationRepository = classificationRepository;
         this.promptBuilder = promptBuilder;
         this.aiProvider = aiProvider;
+        this.metricsRecorder = metricsRecorder;
     }
 
     @Transactional
@@ -55,6 +59,7 @@ public class ClassifyNewsUseCase {
                 newsArticle.getContent()
         );
         ClassificationAIResponse aiResponse;
+        OffsetDateTime startedAt = metricsRecorder.start();
         try {
             aiResponse = aiProvider.classify(new ClassificationAIRequest(
                     newsArticle.getTitle(),
@@ -64,9 +69,11 @@ public class ClassifyNewsUseCase {
                     prompt.userPrompt()
             ));
         } catch (RuntimeException exception) {
+            metricsRecorder.recordFailure("CLASSIFICATION", "WF02_CLASSIFICATION", providerName(), null, "NEWS", newsArticle.getId(), startedAt, exception);
             log.error("classification failed: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
             throw exception;
         }
+        metricsRecorder.recordSuccess("CLASSIFICATION", "WF02_CLASSIFICATION", providerName(), null, "NEWS", newsArticle.getId(), startedAt);
 
         NewsClassification classification = new NewsClassification(
                 null,
@@ -110,5 +117,9 @@ public class ClassifyNewsUseCase {
         }
 
         return trimmed.substring(0, 117) + "...";
+    }
+
+    private String providerName() {
+        return aiProvider.getClass().getSimpleName();
     }
 }

@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.analysis.application;
 
+import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import es.sindicato.intelligence.event.domain.Event;
@@ -25,19 +26,22 @@ public class GenerateAnalysisUseCase {
     private final EventAIAnalysisRepository analysisRepository;
     private final GenerateAnalysisPromptBuilder promptBuilder;
     private final AnalysisAIProvider aiProvider;
+    private final AiOperationMetricsRecorder metricsRecorder;
 
     public GenerateAnalysisUseCase(
             EventRepository eventRepository,
             NewsRepository newsRepository,
             EventAIAnalysisRepository analysisRepository,
             GenerateAnalysisPromptBuilder promptBuilder,
-            AnalysisAIProvider aiProvider
+            AnalysisAIProvider aiProvider,
+            AiOperationMetricsRecorder metricsRecorder
     ) {
         this.eventRepository = eventRepository;
         this.newsRepository = newsRepository;
         this.analysisRepository = analysisRepository;
         this.promptBuilder = promptBuilder;
         this.aiProvider = aiProvider;
+        this.metricsRecorder = metricsRecorder;
     }
 
     @Transactional
@@ -64,6 +68,7 @@ public class GenerateAnalysisUseCase {
         log.info("analysis generation context loaded: eventId={}, newsCount={}", event.getId(), newsArticles.size());
 
         AnalysisAIResponse aiResponse;
+        OffsetDateTime startedAt = metricsRecorder.start();
         try {
             aiResponse = aiProvider.generate(new AnalysisAIRequest(
                     event.getId(),
@@ -76,9 +81,11 @@ public class GenerateAnalysisUseCase {
                     prompt.userPrompt()
             ));
         } catch (RuntimeException exception) {
+            metricsRecorder.recordFailure("ANALYSIS", "WF04_ANALYSIS", providerName(), null, "EVENT", event.getId(), startedAt, exception);
             log.error("analysis generation failed during AI generation: eventId={}, reason={}", event.getId(), exception.getMessage(), exception);
             throw exception;
         }
+        metricsRecorder.recordSuccess("ANALYSIS", "WF04_ANALYSIS", providerName(), aiResponse.modelUsed(), "EVENT", event.getId(), startedAt);
 
         EventAIAnalysis analysis = new EventAIAnalysis(
                 null,
@@ -124,5 +131,9 @@ public class GenerateAnalysisUseCase {
                 newsArticle.getContent(),
                 newsArticle.getPublishedAt()
         );
+    }
+
+    private String providerName() {
+        return aiProvider.getClass().getSimpleName();
     }
 }

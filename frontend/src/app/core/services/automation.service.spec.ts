@@ -74,4 +74,22 @@ describe('AutomationService', () => {
     expect(request.request.method).toBe('POST');
     request.flush({ processedCount: 0, successCount: 0, failedCount: 0, skippedCount: 0, errors: [] });
   });
+
+  it('reads automation overview', () => {
+    service.getOverview().subscribe((response) => {
+      expect(response.n8nWorkflowName).toBe('WF-01-Capture-News');
+    });
+
+    const request = httpTestingController.expectOne('/api/v1/automation/overview');
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      n8nWorkflowCode: 'WF01_CAPTURE_NEWS',
+      n8nWorkflowName: 'WF-01-Capture-News',
+      n8nStatus: 'EXTERNAL_N8N',
+      backendEnabledCount: 1,
+      backendFailedCount: 0,
+      backendRunningCount: 0,
+      backendWorkflows: []
+    });
+  });
 });

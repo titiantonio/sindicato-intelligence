@@ -930,7 +930,7 @@ WF03_EVENT_DETECTION   enabled=true   intervalSeconds=600   batchSize=3
 WF04_ANALYSIS          enabled=false  intervalSeconds=900   batchSize=1
 ```
 
-La configuracion se administra desde Angular en `/automation-settings`, visible solo para `ADMIN`.
+La configuracion se administra desde Angular en `/settings`, visible solo para `ADMIN`.
 
 Endpoints de configuracion:
 
@@ -966,7 +966,7 @@ disableWebPagePreview
 updatedAt
 ```
 
-El administrador configura estos parametros desde la pantalla Angular `/automation-settings`, que queda como pagina central de configuracion operativa.
+El administrador configura estos parametros desde la pantalla Angular `/settings`, que queda como pagina central de configuracion operativa.
 
 Endpoints ADMIN:
 
@@ -991,3 +991,59 @@ baseUrl configurado
 ### N8N-010
 
 `WF-06` sigue residiendo en Spring Boot. La capacidad real de publicar en Telegram queda controlada por configuracion ADMIN persistida y no por n8n.
+
+---
+
+# 20. Actualizacion Operativa 2026-06-18 - Observabilidad IA y Settings
+
+El cierre extendido del Sprint 12 consolida la observabilidad de IA y la configuracion ADMIN.
+
+n8n mantiene solo `WF-01-Capture-News`. Los procesos `WF-02` a `WF-06` no vuelven a n8n:
+
+```text
+WF-01 Captura RSS/XML      -> n8n
+WF-02 Clasificacion        -> Spring Boot
+WF-03 Eventos              -> Spring Boot
+WF-04 Analisis             -> Spring Boot
+WF-05 Contenido            -> Spring Boot bajo demanda
+WF-06 Publicacion Telegram -> Spring Boot bajo demanda o scheduler
+```
+
+Spring Boot registra metricas de operaciones IA en `ai_operation_metrics`:
+
+```text
+operationType
+promptKey
+provider
+model
+status
+relatedEntityType
+relatedEntityId
+latencyMs
+errorMessage
+createdAt
+```
+
+El versionado tecnico de prompts se consulta desde `ai_prompt_versions`. No se habilita edicion de prompts desde UI en este cierre.
+
+Endpoints ADMIN:
+
+```http
+GET /api/v1/ai/prompts
+GET /api/v1/ai/metrics
+GET /api/v1/automation/overview
+```
+
+La pantalla Angular `/settings` es el centro unico de configuracion para `ADMIN` e incluye:
+
+```text
+Telegram
+Automatizaciones backend
+WF-01 externo en n8n
+Prompts IA versionados
+Metricas IA recientes
+```
+
+### N8N-011
+
+La monitorizacion de `T12.3` queda reinterpretada: `WF-01` se valida como workflow externo n8n y `WF-02` a `WF-06` se observan mediante Spring Boot, PostgreSQL y la pantalla ADMIN `/settings`.

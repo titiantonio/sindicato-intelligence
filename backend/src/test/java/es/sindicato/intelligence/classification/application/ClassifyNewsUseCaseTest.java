@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.classification.application;
 
+import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.classification.domain.ClassificationCategory;
 import es.sindicato.intelligence.classification.domain.ImpactLevel;
 import es.sindicato.intelligence.classification.domain.NewsClassification;
@@ -33,7 +34,7 @@ class ClassifyNewsUseCaseTest {
         NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
         ClassifyNewsPromptBuilder promptBuilder = new ClassifyNewsPromptBuilder();
         AIProvider aiProvider = mock(AIProvider.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, mock(AiOperationMetricsRecorder.class));
         NewsArticle newsArticle = newsArticle();
         NewsClassification savedClassification = classification(10L, newsArticle.getId());
 
@@ -61,7 +62,7 @@ class ClassifyNewsUseCaseTest {
     void rejectsUnknownNews() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), mock(AIProvider.class));
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), mock(AIProvider.class), mock(AiOperationMetricsRecorder.class));
 
         when(newsRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -74,7 +75,7 @@ class ClassifyNewsUseCaseTest {
     void rejectsAlreadyClassifiedNews() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), mock(AIProvider.class));
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), mock(AIProvider.class), mock(AiOperationMetricsRecorder.class));
         NewsArticle newsArticle = newsArticle();
 
         when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));

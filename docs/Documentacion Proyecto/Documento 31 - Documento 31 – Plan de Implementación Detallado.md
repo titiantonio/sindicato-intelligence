@@ -2021,6 +2021,125 @@ Estado:
 
 ---
 
+## [x] T12.19
+
+Versionado tecnico de prompts IA.
+
+Resultado:
+- Creada migracion `V9__ai_observability.sql`.
+- Creada tabla `ai_prompt_versions`.
+- Sembradas versiones activas para `WF02_CLASSIFICATION`, `WF03_EVENT_MATCHING`, `WF04_ANALYSIS` y `WF05_CONTENT`.
+- Anadido endpoint ADMIN `GET /api/v1/ai/prompts`.
+- No se habilita edicion de prompts desde UI; el contenido oficial sigue en codigo y Documento 23.
+
+Verificacion:
+- `AiObservabilityControllerTest` OK.
+- `JpaAiObservabilityRepositoryTest` OK.
+
+---
+
+## [x] T12.20
+
+Metricas de ejecuciones IA.
+
+Resultado:
+- Creada tabla `ai_operation_metrics`.
+- Registradas metricas de clasificacion, matching de eventos, analisis y generacion de contenido.
+- Cada metrica guarda operacion, prompt, proveedor, modelo si aplica, estado, entidad relacionada, latencia y error resumido.
+- Anadido endpoint ADMIN `GET /api/v1/ai/metrics`.
+
+Verificacion:
+- `ListAiMetricsUseCaseTest` OK.
+- Tests focales de casos de uso IA OK.
+
+---
+
+## [x] T12.21
+
+Monitorizacion operativa de automatizaciones backend y `WF-01`.
+
+Resultado:
+- Anadido endpoint ADMIN `GET /api/v1/automation/overview`.
+- `WF-01-Capture-News` queda declarado como workflow externo n8n.
+- `WF-02`, `WF-03` y `WF-04` se observan desde `automation_workflow_settings`.
+- `WF-05` y `WF-06` se mantienen como flujos backend bajo demanda o programados.
+- `T12.3` queda reinterpretada para monitorizar `WF-01` en n8n y automatizaciones migradas en Spring Boot, no workflows n8n eliminados.
+
+Verificacion:
+- `AutomationControllerTest` OK.
+- `n8n/validate-workflows.ps1` debe seguir validando solo `WF-01`.
+
+---
+
+## [x] T12.22
+
+Convertir `/automation-settings` en centro ADMIN `/settings`.
+
+Resultado:
+- Renombrada la feature Angular a `settings`.
+- Ruta principal `/settings`.
+- Menu lateral visible como `Configuracion` solo para `ADMIN`.
+- Anadida redireccion temporal `/automation-settings` -> `/settings`.
+- La pantalla concentra Telegram, automatizaciones backend, versionado de prompts IA, metricas IA y vision operativa.
+- La pantalla queda organizada por tabs: IA/prompts, proveedores de publicacion y automatizaciones.
+
+Verificacion:
+- `SettingsPageComponent` OK.
+- `ShellComponent` OK.
+- `AutomationService` y `AiObservabilityService` OK.
+
+## [x] T12.23
+
+Cierre documental, changelog, versionado y validacion.
+
+Resultado:
+- Actualizado Documento 09 V2.0.
+- Actualizado Documento 31.
+- Creado registro en `docs/Docs_Asistentes`.
+- Actualizado `CHANGELOG.md`.
+- Incrementado `backend/pom.xml` a `0.0.55-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=AiObservabilityControllerTest,ListAiMetricsUseCaseTest,JpaAiObservabilityRepositoryTest,AutomationControllerTest,ClassifyNewsUseCaseTest,GenerateAnalysisUseCaseTest,GenerateContentUseCaseTest" test` OK, 23 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts --include=src/app/layout/shell/shell.component.spec.ts --include=src/app/core/services/automation.service.spec.ts --include=src/app/core/services/ai-observability.service.spec.ts` OK, 16 tests.
+- Backend completo: `mvn test` OK, 234 tests y Flyway valida 9 migraciones.
+- Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 110 tests.
+- Frontend build: `npm.cmd run build` OK, con warnings no bloqueantes de presupuesto inicial, `sources-page.component.scss` y `users-page.component.scss`.
+- n8n: `.\n8n\validate-workflows.ps1` OK para `WF-01`.
+
+Estado:
+- Sprint 12 queda cerrado como consolidacion, optimizacion y observabilidad IA.
+- Pendientes no bloqueantes posteriores: CI/CD, secretos productivos, despliegue Proxmox/Nginx, E2E versionado y normalizacion de mojibake documental.
+
+---
+
+## [x] T12.24
+
+Refinar `/settings` como centro ADMIN tabulado con tablas operativas de IA.
+
+Resultado:
+- Separada la configuracion ADMIN en tabs funcionales:
+  - IA y prompts.
+  - Proveedores de publicacion.
+  - Automatizaciones.
+- La tabla de prompts versionados permite filtrar por clave, prompt, modulo, version, checksum, estado y fecha.
+- La tabla de metricas IA permite filtrar por ID, fecha, operacion, prompt, proveedor, modelo, estado, entidad, entidad ID, latencia y error.
+- Ambas tablas permiten ordenar por todos sus campos visibles.
+- Ambas tablas tienen paginacion y selector de filas por pagina.
+- Incrementado `backend/pom.xml` a `0.0.56-SNAPSHOT`.
+
+Verificacion:
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts` OK, 7 tests.
+- Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 113 tests.
+- Frontend build: `npm.cmd run build` OK, con warnings preexistentes de presupuesto inicial, `sources-page.component.scss` y `users-page.component.scss`; `settings-page.component.scss` queda bajo presupuesto.
+- Backend completo: `mvn test` OK, 234 tests y Flyway valida 9 migraciones.
+- n8n: `.\n8n\validate-workflows.ps1` OK para `WF-01`.
+
+Estado:
+- Sprint 12 se mantiene cerrado; esta tarea documenta el refinamiento final de usabilidad solicitado para configuracion ADMIN.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

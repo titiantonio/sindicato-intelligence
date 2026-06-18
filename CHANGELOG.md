@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend ADMIN: `/settings` organiza la configuracion por tabs de IA/prompts, proveedores de publicacion y automatizaciones.
+- Frontend ADMIN: las tablas de prompts versionados y metricas IA incorporan filtros por columna, ordenacion por todos sus campos visibles y paginacion con selector de filas.
+- Backend IA: anadidas tablas `ai_prompt_versions` y `ai_operation_metrics` para versionado tecnico de prompts y observabilidad de operaciones IA.
+- Backend IA: anadidos endpoints ADMIN `GET /api/v1/ai/prompts` y `GET /api/v1/ai/metrics`.
+- Backend automatizaciones: anadido endpoint ADMIN `GET /api/v1/automation/overview` con estado de `WF-01` externo en n8n y resumen de automatizaciones backend.
+- Frontend ADMIN: renombrada la pantalla operativa a `/settings` como centro de `Configuracion`, con redireccion temporal desde `/automation-settings`.
+- Frontend ADMIN: `/settings` muestra configuracion Telegram, automatizaciones backend, versionado de prompts IA y metricas recientes de operaciones IA.
 - Backend configuracion: anadida tabla `telegram_publication_settings` y API ADMIN `GET/PUT /api/v1/settings/telegram` para configurar Telegram desde la aplicacion sin depender de variables de entorno en runtime.
 - Backend publicacion: `TelegramPublisher` lee `enabled`, `baseUrl`, `botToken`, `chatId` y `disableWebPagePreview` desde PostgreSQL antes de publicar.
 - Frontend ADMIN: la pantalla `/automation-settings` pasa a concentrar configuracion de automatizaciones y Telegram, mostrando si Telegram esta listo para publicar.
@@ -59,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.56-SNAPSHOT`.
+- Versionado del backend actualizado a `0.0.55-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.54-SNAPSHOT`.
 - Frontend ADMIN: renombrado el encabezado operativo de `/automation-settings` a `Configuracion` para centralizar parametros de aplicacion.
 - Versionado del backend actualizado a `0.0.53-SNAPSHOT`.

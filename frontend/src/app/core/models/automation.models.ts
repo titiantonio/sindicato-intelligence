@@ -35,3 +35,13 @@ export interface UpdateAutomationSettingRequest {
   intervalSeconds: number;
   batchSize: number;
 }
+
+export interface AutomationOverview {
+  n8nWorkflowCode: string;
+  n8nWorkflowName: string;
+  n8nStatus: string;
+  backendEnabledCount: number;
+  backendFailedCount: number;
+  backendRunningCount: number;
+  backendWorkflows: AutomationWorkflowSetting[];
+}

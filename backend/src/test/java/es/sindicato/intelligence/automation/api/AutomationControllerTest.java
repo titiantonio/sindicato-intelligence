@@ -2,6 +2,8 @@ package es.sindicato.intelligence.automation.api;
 
 import es.sindicato.intelligence.automation.application.AutomationRunError;
 import es.sindicato.intelligence.automation.application.AutomationRunResult;
+import es.sindicato.intelligence.automation.application.AutomationOverview;
+import es.sindicato.intelligence.automation.application.GetAutomationOverviewUseCase;
 import es.sindicato.intelligence.automation.application.GetAutomationSettingUseCase;
 import es.sindicato.intelligence.automation.application.ListAutomationSettingsUseCase;
 import es.sindicato.intelligence.automation.application.ProcessPendingEventAnalysisUseCase;
@@ -57,6 +59,9 @@ class AutomationControllerTest {
 
     @MockBean
     private RunAutomationWorkflowUseCase runAutomationWorkflowUseCase;
+
+    @MockBean
+    private GetAutomationOverviewUseCase getAutomationOverviewUseCase;
 
     @Test
     void allowsEditorToRunPendingClassifications() throws Exception {
@@ -114,6 +119,27 @@ class AutomationControllerTest {
                 .andExpect(jsonPath("$[0].workflowCode").value("WF02_CLASSIFICATION"))
                 .andExpect(jsonPath("$[0].enabled").value(true))
                 .andExpect(jsonPath("$[0].batchSize").value(1));
+    }
+
+    @Test
+    void allowsAdminToReadAutomationOverview() throws Exception {
+        when(getAutomationOverviewUseCase.execute()).thenReturn(new AutomationOverview(
+                "WF01_CAPTURE_NEWS",
+                "WF-01-Capture-News",
+                "EXTERNAL_N8N",
+                List.of(setting()),
+                1,
+                0,
+                0
+        ));
+
+        mockMvc.perform(get("/api/v1/automation/overview")
+                        .with(jwt().authorities(() -> "ROLE_ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.n8nWorkflowName").value("WF-01-Capture-News"))
+                .andExpect(jsonPath("$.n8nStatus").value("EXTERNAL_N8N"))
+                .andExpect(jsonPath("$.backendEnabledCount").value(1))
+                .andExpect(jsonPath("$.backendWorkflows[0].workflowCode").value("WF02_CLASSIFICATION"));
     }
 
     @Test

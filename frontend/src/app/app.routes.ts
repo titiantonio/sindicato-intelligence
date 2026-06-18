@@ -5,7 +5,6 @@ import { passwordChangeGuard } from './core/guards/password-change.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { ChangePasswordPageComponent } from './features/auth/change-password/change-password-page.component';
 import { AuditPageComponent } from './features/audit/audit-page.component';
-import { AutomationSettingsPageComponent } from './features/automation-settings/automation-settings-page.component';
 import { ContentPageComponent } from './features/content/content-page.component';
 import { DashboardPageComponent } from './features/dashboard/dashboard-page.component';
 import { EventDetailPageComponent } from './features/events/event-detail-page.component';
@@ -14,6 +13,7 @@ import { ForgotPasswordPageComponent } from './features/auth/forgot-password/for
 import { LoginPageComponent } from './features/auth/login/login-page.component';
 import { PublicationsPageComponent } from './features/publications/publications-page.component';
 import { ResetPasswordPageComponent } from './features/auth/reset-password/reset-password-page.component';
+import { SettingsPageComponent } from './features/settings/settings-page.component';
 import { SourcesPageComponent } from './features/sources/sources-page.component';
 import { UsersPageComponent } from './features/users/users-page.component';
 import { ShellComponent } from './layout/shell/shell.component';
@@ -92,7 +92,12 @@ export const routes: Routes = [
       },
       {
         path: 'automation-settings',
-        component: AutomationSettingsPageComponent,
+        redirectTo: 'settings',
+        pathMatch: 'full'
+      },
+      {
+        path: 'settings',
+        component: SettingsPageComponent,
         canActivate: [roleGuard],
         data: {
           roles: ['ADMIN']
