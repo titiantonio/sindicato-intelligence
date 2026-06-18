@@ -71,6 +71,15 @@
 
         <div class="table-wrapper">
           <table class="data-table data-table--prompts">
+            <colgroup>
+              <col style="width: 14rem" />
+              <col style="width: 18rem" />
+              <col style="width: 8rem" />
+              <col style="width: 8rem" />
+              <col style="width: 16rem" />
+              <col style="width: 8rem" />
+              <col style="width: 10rem" />
+            </colgroup>
             <thead>
               <tr>
                 <th><button type="button" class="sort-button" (click)="changePromptSort('promptKey')">Clave {{ promptSortLabel('promptKey') }}</button></th>
@@ -100,13 +109,13 @@
             <tbody>
               @for (prompt of paginatedPrompts(); track prompt.promptKey + prompt.version) {
                 <tr>
-                  <td><code>{{ prompt.promptKey }}</code></td>
-                  <td>{{ prompt.promptName }}</td>
-                  <td>{{ prompt.module }}</td>
-                  <td>{{ prompt.version }}</td>
-                  <td><code>{{ prompt.checksum }}</code></td>
-                  <td>{{ prompt.active ? 'Activo' : 'Inactivo' }}</td>
-                  <td>{{ formatDate(prompt.createdAt) }}</td>
+                  <td class="table-cell-nowrap"><code>{{ prompt.promptKey }}</code></td>
+                  <td class="table-cell-nowrap">{{ prompt.promptName }}</td>
+                  <td class="table-cell-nowrap">{{ prompt.module }}</td>
+                  <td class="table-cell-nowrap">{{ prompt.version }}</td>
+                  <td class="table-cell-nowrap"><code>{{ prompt.checksum }}</code></td>
+                  <td class="table-cell-nowrap">{{ prompt.active ? 'Activo' : 'Inactivo' }}</td>
+                  <td class="table-cell-nowrap">{{ formatDate(prompt.createdAt) }}</td>
                 </tr>
               } @empty {
                 <tr>
@@ -143,6 +152,19 @@
 
         <div class="table-wrapper">
           <table class="data-table data-table--metrics">
+            <colgroup>
+              <col style="width: 6rem" />
+              <col style="width: 10rem" />
+              <col style="width: 12rem" />
+              <col style="width: 14rem" />
+              <col style="width: 12rem" />
+              <col style="width: 9rem" />
+              <col style="width: 9rem" />
+              <col style="width: 12rem" />
+              <col style="width: 6rem" />
+              <col style="width: 6rem" />
+              <col style="width: 20rem" />
+            </colgroup>
             <thead>
               <tr>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('id')">ID {{ metricSortLabel('id') }}</button></th>
@@ -180,17 +202,17 @@
             <tbody>
               @for (metric of paginatedMetrics(); track metric.id) {
                 <tr>
-                  <td>{{ metric.id }}</td>
-                  <td>{{ formatDate(metric.createdAt) }}</td>
-                  <td>{{ metric.operationType }}</td>
-                  <td><code>{{ metric.promptKey }}</code></td>
-                  <td>{{ metric.provider }}</td>
-                  <td>{{ metric.model || '-' }}</td>
-                  <td>{{ metricStatusLabel(metric.status) }}</td>
-                  <td>{{ metric.relatedEntityType || '-' }}</td>
-                  <td>{{ metric.relatedEntityId ?? '-' }}</td>
-                  <td>{{ metric.latencyMs }} ms</td>
-                  <td>{{ metric.errorMessage || '-' }}</td>
+                  <td class="table-cell-nowrap">{{ metric.id }}</td>
+                  <td class="table-cell-nowrap">{{ formatDate(metric.createdAt) }}</td>
+                  <td class="table-cell-nowrap">{{ metric.operationType }}</td>
+                  <td class="table-cell-nowrap"><code>{{ metric.promptKey }}</code></td>
+                  <td class="table-cell-nowrap">{{ metric.provider }}</td>
+                  <td class="table-cell-nowrap">{{ metric.model || '-' }}</td>
+                  <td class="table-cell-nowrap">{{ metricStatusLabel(metric.status) }}</td>
+                  <td class="table-cell-nowrap">{{ metric.relatedEntityType || '-' }}</td>
+                  <td class="table-cell-nowrap">{{ metric.relatedEntityId ?? '-' }}</td>
+                  <td class="table-cell-nowrap">{{ metric.latencyMs }} ms</td>
+                  <td class="table-cell-break">{{ metric.errorMessage || '-' }}</td>
                 </tr>
               } @empty {
                 <tr>

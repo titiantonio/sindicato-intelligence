@@ -199,11 +199,11 @@ table {
 }
 
 .data-table--prompts {
-  min-width: 1060px;
+  min-width: 76rem;
 }
 
 .data-table--metrics {
-  min-width: 1480px;
+  min-width: 104rem;
 }
 
 th,
@@ -242,6 +242,7 @@ th {
 td {
   color: var(--color-text);
 }
+
 
 .table-pagination {
   align-items: center;

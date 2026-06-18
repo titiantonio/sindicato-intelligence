@@ -2140,6 +2140,28 @@ Estado:
 
 ---
 
+## [x] T12.25
+
+Refinar anchos de columnas en tablas de visualizacion del backoffice.
+
+Resultado:
+- Revisadas las tablas de dashboard, eventos, detalle de evento/noticias, contenido, auditoria, fuentes, usuarios y settings.
+- Ajustados anchos mediante `colgroup` para que campos cortos como ID, noticias, prioridad, estado, fechas y acciones no ocupen ancho excesivo.
+- Marcados nombres, emails, estados, fechas y campos tecnicos compactos como celdas sin salto de linea.
+- Conservado salto controlado en textos largos como titulos, URL, detalles de auditoria y errores IA.
+- Incrementado `backend/pom.xml` a `0.0.57-SNAPSHOT`.
+
+Verificacion:
+- Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 113 tests.
+- Frontend build: `npm.cmd run build` OK, con warnings preexistentes de presupuesto inicial, `sources-page.component.scss` y `users-page.component.scss`.
+- Backend focal: `mvn "-Dtest=JpaAiObservabilityRepositoryTest" test` OK, 2 tests.
+- Backend completo: `mvn test` OK, 234 tests y Flyway valida 9 migraciones.
+
+Estado:
+- Sprint 12 permanece cerrado; esta tarea es ajuste visual final sobre la experiencia de administracion y revision.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

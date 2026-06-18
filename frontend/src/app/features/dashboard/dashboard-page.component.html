@@ -56,6 +56,15 @@
 
   <div class="table-wrap">
     <table>
+      <colgroup>
+        <col style="width: 28rem" />
+        <col style="width: 13rem" />
+        <col style="width: 8rem" />
+        <col style="width: 6.5rem" />
+        <col style="width: 10rem" />
+        <col style="width: 8rem" />
+        <col style="width: 6.5rem" />
+      </colgroup>
       <thead>
         <tr>
           <th><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
@@ -94,12 +103,12 @@
         @for (event of paginatedPriorityEvents(); track event.id) {
           <tr class="event-row" [routerLink]="['/events', event.id]" tabindex="0">
             <td>{{ event.title }}</td>
-            <td>{{ event.category }}</td>
-            <td><app-status-badge [value]="event.importance" /></td>
-            <td>{{ event.relatedNews }}</td>
-            <td>{{ formatDate(event.updatedAt) }}</td>
-            <td><app-status-badge [value]="event.status" /></td>
-            <td>
+            <td class="table-cell-nowrap">{{ event.category }}</td>
+            <td class="table-cell-nowrap"><app-status-badge [value]="event.importance" /></td>
+            <td class="table-cell-nowrap">{{ event.relatedNews }}</td>
+            <td class="table-cell-nowrap">{{ formatDate(event.updatedAt) }}</td>
+            <td class="table-cell-nowrap"><app-status-badge [value]="event.status" /></td>
+            <td class="table-cell-nowrap">
               <button class="row-action" type="button" (click)="runEventAnalysis($event, event.id)" [disabled]="runningAutomation() !== null">
                 {{ isRunningEventAnalysis(event.id) ? 'Analizando...' : 'Analizar' }}
               </button>

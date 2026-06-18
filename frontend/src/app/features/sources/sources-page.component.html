@@ -40,6 +40,17 @@
 
     <div class="sources-page__table-wrapper">
       <table class="sources-page__table">
+        <colgroup>
+          <col style="width: 4.5rem" />
+          <col style="width: 18rem" />
+          <col style="width: 24rem" />
+          <col style="width: 7rem" />
+          <col style="width: 7rem" />
+          <col style="width: 7rem" />
+          <col style="width: 10rem" />
+          <col style="width: 10rem" />
+          <col style="width: 7rem" />
+        </colgroup>
         <thead>
           <tr>
             <th><button class="sources-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
@@ -92,19 +103,19 @@
         <tbody>
           @for (source of paginatedSources(); track source.id) {
             <tr>
-              <td>#{{ source.id }}</td>
-              <td><strong>{{ source.name }}</strong></td>
-              <td><a [href]="source.url" target="_blank" rel="noreferrer">{{ source.url }}</a></td>
-              <td>{{ source.type }}</td>
-              <td>{{ source.priority }}</td>
-              <td>
+              <td class="table-cell-nowrap">#{{ source.id }}</td>
+              <td class="table-cell-nowrap"><strong>{{ source.name }}</strong></td>
+              <td class="table-cell-break"><a [href]="source.url" target="_blank" rel="noreferrer">{{ source.url }}</a></td>
+              <td class="table-cell-nowrap">{{ source.type }}</td>
+              <td class="table-cell-nowrap">{{ source.priority }}</td>
+              <td class="table-cell-nowrap">
                 <span class="sources-page__status" [ngClass]="source.active ? 'sources-page__status--active' : 'sources-page__status--inactive'">
                   {{ source.active ? 'Activa' : 'Inactiva' }}
                 </span>
               </td>
-              <td>{{ formatDate(source.createdAt) }}</td>
-              <td>{{ formatDate(source.updatedAt) }}</td>
-              <td>
+              <td class="table-cell-nowrap">{{ formatDate(source.createdAt) }}</td>
+              <td class="table-cell-nowrap">{{ formatDate(source.updatedAt) }}</td>
+              <td class="table-cell-nowrap">
                 <button class="sources-page__button sources-page__button--secondary" type="button" (click)="startEdit(source)">
                   Editar
                 </button>

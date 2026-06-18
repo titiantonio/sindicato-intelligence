@@ -50,6 +50,14 @@
     <h2>Noticias asociadas</h2>
     <div class="table-wrap">
       <table>
+        <colgroup>
+          <col style="width: 4.5rem" />
+          <col style="width: 30rem" />
+          <col style="width: 10rem" />
+          <col style="width: 13rem" />
+          <col style="width: 8rem" />
+          <col style="width: 10rem" />
+        </colgroup>
         <thead>
           <tr>
             <th><button class="sort-button" type="button" (click)="changeNewsSort('id')">ID {{ newsSortLabel('id') }}</button></th>
@@ -71,12 +79,12 @@
         <tbody>
           @for (news of paginatedNews(); track news.id) {
             <tr>
-              <td>#{{ news.id }}</td>
+              <td class="table-cell-nowrap">#{{ news.id }}</td>
               <td><a [href]="news.url" target="_blank" rel="noreferrer">{{ news.title }}</a></td>
-              <td><app-status-badge [value]="news.processingStatus" /></td>
-              <td>{{ news.classification?.category || '-' }}</td>
-              <td>{{ news.classification?.urgencyLevel || '-' }}</td>
-              <td>{{ formatDate(news.capturedAt) }}</td>
+              <td class="table-cell-nowrap"><app-status-badge [value]="news.processingStatus" /></td>
+              <td class="table-cell-nowrap">{{ news.classification?.category || '-' }}</td>
+              <td class="table-cell-nowrap">{{ news.classification?.urgencyLevel || '-' }}</td>
+              <td class="table-cell-nowrap">{{ formatDate(news.capturedAt) }}</td>
             </tr>
           } @empty {
             <tr>

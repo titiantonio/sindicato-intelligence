@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend backoffice: ajustados anchos de columnas y comportamiento de salto de linea en todas las tablas de visualizacion para compactar campos cortos y evitar cortes en nombres, emails y textos principales.
+- Versionado del backend actualizado a `0.0.57-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.56-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.55-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.54-SNAPSHOT`.
@@ -121,6 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend tests: `JpaAiObservabilityRepositoryTest` deja de depender de que la base de integracion no tenga metricas IA recientes previas.
 - Backend automatizaciones: corregido el scheduler dinamico para materializar las consultas JPA de configuracion antes de mapearlas, evitando `This ResultSet is closed` en `findDue`.
 - Backend publicaciones: el scheduler de publicaciones programadas ya no propaga `publication provider not found for channel: TELEGRAM` al arrancar si hay publicaciones vencidas y el proveedor Telegram no esta habilitado; marca la publicacion como `FAILED` con error controlado.
 - Frontend/auth: renovada automaticamente la sesion con `POST /api/v1/auth/refresh` cuando el access token caduca, reintentando la peticion original para evitar el error "No se pudo cargar el dashboard" tras inactividad.

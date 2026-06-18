@@ -39,13 +39,14 @@ class JpaAiObservabilityRepositoryTest {
                 22L,
                 150,
                 null,
-                OffsetDateTime.parse("2026-06-18T10:00:00Z")
+                OffsetDateTime.now().plusYears(100)
         ));
 
         List<AiOperationMetric> recent = metricRepository.findRecent(10);
 
         assertNotNull(saved.getId());
         assertFalse(recent.isEmpty());
+        assertEquals(saved.getId(), recent.getFirst().getId());
         assertEquals("CLASSIFICATION", recent.getFirst().getOperationType());
     }
 

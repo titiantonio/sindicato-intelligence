@@ -166,7 +166,7 @@
 
 .sources-page__table {
   border-collapse: collapse;
-  min-width: 72rem;
+  min-width: 82rem;
   width: 100%;
 }
 
@@ -180,19 +180,6 @@
 
 .sources-page__table th {
   font-size: 0.85rem;
-}
-
-.sources-page__table :is(th, td):nth-child(1) {
-  width: 4.5rem;
-}
-
-.sources-page__table :is(th, td):nth-child(3) {
-  width: 18rem;
-}
-
-.sources-page__table :is(th, td):nth-child(7),
-.sources-page__table :is(th, td):nth-child(8) {
-  width: 9rem;
 }
 
 .sources-page__table td {

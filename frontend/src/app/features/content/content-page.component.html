@@ -19,6 +19,14 @@
     }
     <div class="table-wrap">
       <table>
+        <colgroup>
+          <col style="width: 8rem" />
+          <col style="width: 28rem" />
+          <col style="width: 11rem" />
+          <col style="width: 10rem" />
+          <col style="width: 10rem" />
+          <col style="width: 17rem" />
+        </colgroup>
         <thead>
           <tr>
             <th><button class="sort-button" type="button" (click)="changeSort('channel')">Canal {{ sortLabel('channel') }}</button></th>
@@ -40,11 +48,11 @@
         <tbody>
           @for (item of paginatedItems(); track item.id) {
             <tr class="content-row" tabindex="0" (click)="openView(item)" (keydown.enter)="openView(item)">
-              <td>{{ item.channel }}</td>
+              <td class="table-cell-nowrap">{{ item.channel }}</td>
               <td>{{ item.title }}</td>
-              <td><app-status-badge [value]="item.status" /></td>
-              <td>{{ formatDate(item.generatedAt) }}</td>
-              <td>{{ formatDate(item.approvedAt) }}</td>
+              <td class="table-cell-nowrap"><app-status-badge [value]="item.status" /></td>
+              <td class="table-cell-nowrap">{{ formatDate(item.generatedAt) }}</td>
+              <td class="table-cell-nowrap">{{ formatDate(item.approvedAt) }}</td>
               <td class="content-actions">
                 <button type="button" [disabled]="!canEdit(item)" (click)="openEdit(item, $event)">Editar</button>
                 <button type="button" [disabled]="!canReview(item)" (click)="$event.stopPropagation(); approve(item)">Aprobar</button>

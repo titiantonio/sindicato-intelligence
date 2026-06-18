@@ -69,6 +69,16 @@
 <section class="panel">
   <div class="table-wrap">
     <table>
+      <colgroup>
+        <col style="width: 4.5rem" />
+        <col style="width: 26rem" />
+        <col style="width: 13rem" />
+        <col style="width: 8rem" />
+        <col style="width: 6rem" />
+        <col style="width: 8rem" />
+        <col style="width: 10rem" />
+        <col style="width: 6rem" />
+      </colgroup>
       <thead>
         <tr>
           <th><button type="button" class="sort-button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
@@ -123,14 +133,14 @@
       <tbody>
         @for (event of paginatedEvents(); track event.id) {
           <tr>
-            <td>#{{ event.id }}</td>
+            <td class="table-cell-nowrap">#{{ event.id }}</td>
             <td>{{ event.title }}</td>
-            <td>{{ event.category }}</td>
-            <td><app-status-badge [value]="event.importance" /></td>
-            <td>{{ event.newsCount }}</td>
-            <td><app-status-badge [value]="event.status" /></td>
-            <td>{{ formatDate(event.updatedAt) }}</td>
-            <td><a class="table-action" [routerLink]="['/events', event.id]">Ver</a></td>
+            <td class="table-cell-nowrap">{{ event.category }}</td>
+            <td class="table-cell-nowrap"><app-status-badge [value]="event.importance" /></td>
+            <td class="table-cell-nowrap">{{ event.newsCount }}</td>
+            <td class="table-cell-nowrap"><app-status-badge [value]="event.status" /></td>
+            <td class="table-cell-nowrap">{{ formatDate(event.updatedAt) }}</td>
+            <td class="table-cell-nowrap"><a class="table-action" [routerLink]="['/events', event.id]">Ver</a></td>
           </tr>
         } @empty {
           <tr>

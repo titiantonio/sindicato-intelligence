@@ -40,6 +40,17 @@
 
     <div class="users-page__table-wrapper">
       <table class="users-page__table">
+        <colgroup>
+          <col style="width: 4.5rem" />
+          <col style="width: 18rem" />
+          <col style="width: 22rem" />
+          <col style="width: 8rem" />
+          <col style="width: 8rem" />
+          <col style="width: 10rem" />
+          <col style="width: 10rem" />
+          <col style="width: 10rem" />
+          <col style="width: 24rem" />
+        </colgroup>
         <thead>
           <tr>
             <th><button class="users-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
@@ -93,19 +104,19 @@
         <tbody>
           @for (user of paginatedUsers(); track user.id) {
             <tr>
-              <td>#{{ user.id }}</td>
-              <td><strong>{{ user.name }}</strong></td>
-              <td>{{ user.email }}</td>
-              <td>{{ user.role }}</td>
-              <td>
+              <td class="table-cell-nowrap">#{{ user.id }}</td>
+              <td class="table-cell-nowrap"><strong>{{ user.name }}</strong></td>
+              <td class="table-cell-nowrap">{{ user.email }}</td>
+              <td class="table-cell-nowrap">{{ user.role }}</td>
+              <td class="table-cell-nowrap">
                 <span class="users-page__status" [class]="'users-page__status users-page__status--' + user.status.toLowerCase().replace('_', '-')">
                   {{ statusLabel(user.status) }}
                 </span>
                 <small>{{ statusDescription(user.status) }}</small>
               </td>
-              <td>{{ formatDate(user.lastLoginAt) }}</td>
-              <td>{{ formatDate(user.lastPasswordChangeAt) }}</td>
-              <td>{{ formatDate(user.temporaryPasswordExpiresAt) }}</td>
+              <td class="table-cell-nowrap">{{ formatDate(user.lastLoginAt) }}</td>
+              <td class="table-cell-nowrap">{{ formatDate(user.lastPasswordChangeAt) }}</td>
+              <td class="table-cell-nowrap">{{ formatDate(user.temporaryPasswordExpiresAt) }}</td>
               <td class="users-page__row-actions">
                 <button type="button" class="users-page__button users-page__button--secondary" (click)="startEdit(user)">Editar</button>
                 @if (user.status === 'INACTIVE') {

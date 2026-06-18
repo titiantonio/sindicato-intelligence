@@ -179,7 +179,7 @@
 
 .users-page__table {
   border-collapse: collapse;
-  min-width: 86rem;
+  min-width: 98rem;
   width: 100%;
 }
 
@@ -193,16 +193,6 @@
 
 .users-page__table th {
   font-size: 0.85rem;
-}
-
-.users-page__table :is(th, td):nth-child(1) {
-  width: 4.5rem;
-}
-
-.users-page__table :is(th, td):nth-child(6),
-.users-page__table :is(th, td):nth-child(7),
-.users-page__table :is(th, td):nth-child(8) {
-  width: 9rem;
 }
 
 .users-page__table td {
