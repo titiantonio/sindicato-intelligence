@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend auditoria: anadido formateo legible para detalles de auditoria editorial y de usuarios, con referencias a eventos, contenidos, publicaciones, estados y errores.
+- Backend auditoria: `GET /api/v1/audit/users` y `GET /api/v1/audit/editorial` aceptan `date=YYYY-MM-DD` para consultar auditoria diaria en zona operativa `Europe/Madrid`.
+- Backend publicaciones: anadida auditoria de publicaciones directas y ejecuciones programadas tanto en exito como en fallo.
+- Frontend auditoria: la pantalla `/audit` muestra detalles descriptivos en modal `Ver detalle`, transforma registros historicos en JSON o `clave=valor`, formatea fechas internas, muestra usuarios por nombre/email, resalta filas fallidas y permite elegir el dia a mostrar.
 - Backend IA: `GET /api/v1/ai/metrics` permite consultar metricas diarias por `date=YYYY-MM-DD`, con resumen del dia, comparativa contra ayer, tasas de exito/fallo y latencia P95.
 - Frontend ADMIN: `/settings` muestra metricas IA diarias con selector de fecha, cards estilo dashboard, modales de error/detalle y enlace a evento relacionado cuando aplica.
 - Frontend ADMIN: `/settings` organiza la configuracion por tabs de IA/prompts, proveedores de publicacion y automatizaciones.
@@ -68,6 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.60-SNAPSHOT`.
+- Versionado del backend actualizado a `0.0.59-SNAPSHOT`.
 - Backend IA: las metricas de clasificacion, matching de eventos, analisis y generacion de contenido registran el modelo IA usado tambien en fallos.
 - Frontend ADMIN: la tabla de metricas IA elimina columnas tecnicas `ID` y `Entidad ID`, compacta anchos sin scroll horizontal y marca filas fallidas con fondo rojo suave.
 - Versionado del backend actualizado a `0.0.58-SNAPSHOT`.

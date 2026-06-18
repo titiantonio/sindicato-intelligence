@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 public record AuditLogResponse(
         Long id,
         Long userId,
+        String userDisplayName,
         String action,
         String entityType,
         Long entityId,

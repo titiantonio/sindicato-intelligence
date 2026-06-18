@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.content.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
@@ -25,24 +26,26 @@ public class EditGeneratedContentUseCase {
         GeneratedContent content = contentRepository.findById(command.id())
                 .orElseThrow(() -> new IllegalArgumentException("content not found: " + command.id()));
 
-        String oldValues = "{\"title\":\"" + escapeJson(content.getTitle()) + "\",\"tone\":\""
-                + escapeJson(content.getTone()) + "\",\"status\":\"" + content.getStatus() + "\"}";
+        String oldValues = AuditDetailFormatter.contentEditedBefore(
+                content.getId(),
+                content.getEventId(),
+                content.getTitle(),
+                content.getTone(),
+                content.getStatus().name()
+        );
 
         content.edit(command.title(), command.content(), command.tone());
         GeneratedContent savedContent = contentRepository.save(content);
 
-        String newValues = "{\"title\":\"" + escapeJson(savedContent.getTitle()) + "\",\"tone\":\""
-                + escapeJson(savedContent.getTone()) + "\",\"status\":\"" + savedContent.getStatus() + "\"}";
+        String newValues = AuditDetailFormatter.contentEditedAfter(
+                savedContent.getId(),
+                savedContent.getEventId(),
+                savedContent.getTitle(),
+                savedContent.getTone(),
+                savedContent.getStatus().name()
+        );
         recordAuditLogUseCase.record("CONTENT_EDITED", "CONTENT", savedContent.getId(), oldValues, newValues);
 
         return savedContent;
-    }
-
-    private String escapeJson(String value) {
-        return value
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\r", "\\r")
-                .replace("\n", "\\n");
     }
 }

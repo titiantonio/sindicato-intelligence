@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.publication.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.content.domain.ContentStatus;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
@@ -55,7 +56,14 @@ public class SchedulePublicationUseCase {
                 "PUBLICATION",
                 publication.getId(),
                 null,
-                "{\"contentId\":" + content.getId() + ",\"scheduledAt\":\"" + publication.getScheduledAt() + "\"}"
+                AuditDetailFormatter.publicationScheduled(
+                        publication.getId(),
+                        content.getId(),
+                        content.getEventId(),
+                        publication.getChannel(),
+                        publication.getScheduledAt(),
+                        publication.getStatus().name()
+                )
         );
 
         return publication;

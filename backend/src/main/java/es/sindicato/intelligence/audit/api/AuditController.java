@@ -5,12 +5,16 @@ import es.sindicato.intelligence.audit.application.ListUserAuditUseCase;
 import es.sindicato.intelligence.audit.domain.AuditLogEntry;
 import es.sindicato.intelligence.audit.domain.AuditLogQuery;
 import es.sindicato.intelligence.audit.domain.UserAuditLogQuery;
+import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserRepository;
 import es.sindicato.intelligence.user.infrastructure.UserAuditLogEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -19,22 +23,26 @@ public class AuditController {
 
     private final ListUserAuditUseCase listUserAuditUseCase;
     private final ListEditorialAuditUseCase listEditorialAuditUseCase;
+    private final UserRepository userRepository;
 
     public AuditController(
             ListUserAuditUseCase listUserAuditUseCase,
-            ListEditorialAuditUseCase listEditorialAuditUseCase
+            ListEditorialAuditUseCase listEditorialAuditUseCase,
+            UserRepository userRepository
     ) {
         this.listUserAuditUseCase = listUserAuditUseCase;
         this.listEditorialAuditUseCase = listEditorialAuditUseCase;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/users")
     public List<UserAuditLogResponse> listUserAudit(
             @RequestParam(required = false) String action,
             @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "100") int limit
     ) {
-        return listUserAuditUseCase.execute(new UserAuditLogQuery(action, userId, limit)).stream()
+        return listUserAuditUseCase.execute(new UserAuditLogQuery(action, userId, date, limit)).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -44,9 +52,10 @@ public class AuditController {
             @RequestParam(required = false) String action,
             @RequestParam(required = false) String entityType,
             @RequestParam(required = false) Long entityId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "100") int limit
     ) {
-        return listEditorialAuditUseCase.execute(new AuditLogQuery(action, entityType, entityId, limit)).stream()
+        return listEditorialAuditUseCase.execute(new AuditLogQuery(action, entityType, entityId, date, limit)).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -55,6 +64,7 @@ public class AuditController {
         return new UserAuditLogResponse(
                 entity.getId(),
                 entity.getUserId(),
+                userDisplayName(entity.getUserId()),
                 entity.getActorEmail(),
                 entity.getAction(),
                 entity.getDetails(),
@@ -66,6 +76,7 @@ public class AuditController {
         return new AuditLogResponse(
                 entry.id(),
                 entry.userId(),
+                userDisplayName(entry.userId()),
                 entry.action(),
                 entry.entityType(),
                 entry.entityId(),
@@ -73,5 +84,19 @@ public class AuditController {
                 entry.newValues(),
                 entry.createdAt()
         );
+    }
+
+    private String userDisplayName(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+
+        return userRepository.findById(userId)
+                .map(this::formatUser)
+                .orElse("Usuario #" + userId);
+    }
+
+    private String formatUser(UserAccount user) {
+        return user.getName() + " <" + user.getEmail() + ">";
     }
 }

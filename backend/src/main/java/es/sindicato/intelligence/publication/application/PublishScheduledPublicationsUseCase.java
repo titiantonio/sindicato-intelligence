@@ -1,5 +1,7 @@
 package es.sindicato.intelligence.publication.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
 import es.sindicato.intelligence.publication.domain.Publication;
@@ -20,15 +22,18 @@ public class PublishScheduledPublicationsUseCase {
     private final GeneratedContentRepository contentRepository;
     private final PublicationRepository publicationRepository;
     private final List<PublishingProvider> publishingProviders;
+    private final RecordAuditLogUseCase recordAuditLogUseCase;
 
     public PublishScheduledPublicationsUseCase(
             GeneratedContentRepository contentRepository,
             PublicationRepository publicationRepository,
-            List<PublishingProvider> publishingProviders
+            List<PublishingProvider> publishingProviders,
+            RecordAuditLogUseCase recordAuditLogUseCase
     ) {
         this.contentRepository = contentRepository;
         this.publicationRepository = publicationRepository;
         this.publishingProviders = publishingProviders;
+        this.recordAuditLogUseCase = recordAuditLogUseCase;
     }
 
     @Transactional
@@ -42,8 +47,9 @@ public class PublishScheduledPublicationsUseCase {
         log.info("scheduled publication started: publicationId={}, contentId={}, channel={}",
                 publication.getId(), publication.getContentId(), publication.getChannel());
 
+        GeneratedContent content = null;
         try {
-            GeneratedContent content = contentRepository.findById(publication.getContentId())
+            content = contentRepository.findById(publication.getContentId())
                     .orElseThrow(() -> new IllegalStateException("scheduled publication content not found: " + publication.getContentId()));
             PublishingProvider publishingProvider = resolveProvider(publication.getChannel());
 
@@ -58,13 +64,14 @@ public class PublishScheduledPublicationsUseCase {
             publicationRepository.save(publication);
             content.markPublished();
             contentRepository.save(content);
+            recordPublishedAudit(publication, content);
 
             log.info("scheduled publication completed: publicationId={}, contentId={}, channel={}",
                     publication.getId(), publication.getContentId(), publication.getChannel());
         } catch (PublishingProviderException exception) {
-            markFailed(publication, exception.getMessage(), exception);
+            markFailed(publication, publication.getContentId(), eventId(content), exception.getMessage(), exception);
         } catch (IllegalStateException exception) {
-            markFailed(publication, exception.getMessage(), exception);
+            markFailed(publication, publication.getContentId(), eventId(content), exception.getMessage(), exception);
         }
     }
 
@@ -75,9 +82,10 @@ public class PublishScheduledPublicationsUseCase {
                 .orElseThrow(() -> new IllegalStateException("publication provider not found for channel: " + channel));
     }
 
-    private void markFailed(Publication publication, String reason, RuntimeException exception) {
+    private void markFailed(Publication publication, Long contentId, Long eventId, String reason, RuntimeException exception) {
         publication.markFailed(errorPayload(reason));
         publicationRepository.save(publication);
+        recordFailedAudit(publication, contentId, eventId, reason);
         log.error("scheduled publication failed: publicationId={}, contentId={}, channel={}, reason={}",
                 publication.getId(), publication.getContentId(), publication.getChannel(), reason, exception);
     }
@@ -103,5 +111,45 @@ public class PublishScheduledPublicationsUseCase {
                 .replace("\"", "\\\"")
                 .replace("\r", "\\r")
                 .replace("\n", "\\n");
+    }
+
+    private void recordPublishedAudit(Publication publication, GeneratedContent content) {
+        recordAuditLogUseCase.record(
+                "PUBLICATION_PUBLISHED",
+                "PUBLICATION",
+                publication.getId(),
+                null,
+                AuditDetailFormatter.publicationPublished(
+                        publication.getId(),
+                        content.getId(),
+                        content.getEventId(),
+                        publication.getChannel(),
+                        publication.getStatus().name(),
+                        publication.getExternalId(),
+                        true
+                )
+        );
+    }
+
+    private void recordFailedAudit(Publication publication, Long contentId, Long eventId, String reason) {
+        recordAuditLogUseCase.record(
+                "PUBLICATION_FAILED",
+                "PUBLICATION",
+                publication.getId(),
+                null,
+                AuditDetailFormatter.publicationFailed(
+                        publication.getId(),
+                        contentId,
+                        eventId,
+                        publication.getChannel(),
+                        publication.getStatus().name(),
+                        reason,
+                        true
+                )
+        );
+    }
+
+    private Long eventId(GeneratedContent content) {
+        return content == null ? null : content.getEventId();
     }
 }

@@ -6,12 +6,16 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class ListUserAuditUseCase {
+
+    private static final ZoneId BUSINESS_ZONE = ZoneId.of("Europe/Madrid");
 
     private final EntityManager entityManager;
 
@@ -31,6 +35,13 @@ public class ListUserAuditUseCase {
         if (query.userId() != null) {
             jpql.append(" AND log.userId = :userId");
             parameters.put("userId", query.userId());
+        }
+        if (query.date() != null) {
+            OffsetDateTime from = query.date().atStartOfDay(BUSINESS_ZONE).toOffsetDateTime();
+            OffsetDateTime to = query.date().plusDays(1).atStartOfDay(BUSINESS_ZONE).toOffsetDateTime();
+            jpql.append(" AND log.createdAt >= :from AND log.createdAt < :to");
+            parameters.put("from", from);
+            parameters.put("to", to);
         }
 
         jpql.append(" ORDER BY log.createdAt DESC, log.id DESC");

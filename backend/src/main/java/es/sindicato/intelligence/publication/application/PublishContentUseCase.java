@@ -1,5 +1,7 @@
 package es.sindicato.intelligence.publication.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.content.domain.ContentStatus;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
@@ -22,18 +24,21 @@ public class PublishContentUseCase {
     private final GeneratedContentRepository contentRepository;
     private final PublicationRepository publicationRepository;
     private final List<PublishingProvider> publishingProviders;
+    private final RecordAuditLogUseCase recordAuditLogUseCase;
 
     public PublishContentUseCase(
             GeneratedContentRepository contentRepository,
             PublicationRepository publicationRepository,
-            List<PublishingProvider> publishingProviders
+            List<PublishingProvider> publishingProviders,
+            RecordAuditLogUseCase recordAuditLogUseCase
     ) {
         this.contentRepository = contentRepository;
         this.publicationRepository = publicationRepository;
         this.publishingProviders = publishingProviders;
+        this.recordAuditLogUseCase = recordAuditLogUseCase;
     }
 
-    @Transactional(noRollbackFor = PublishingProviderException.class)
+    @Transactional(noRollbackFor = {PublishingProviderException.class, IllegalStateException.class})
     public Publication execute(Long contentId) {
         Objects.requireNonNull(contentId, "contentId is required");
 
@@ -46,11 +51,11 @@ public class PublishContentUseCase {
             throw new IllegalStateException("only approved content can be published");
         }
 
-        PublishingProvider publishingProvider = resolveProvider(content.getChannel());
         Publication publication = publicationRepository.save(Publication.pending(content.getId(), content.getChannel()));
         log.info("publication registered as pending: publicationId={}, contentId={}, channel={}", publication.getId(), content.getId(), content.getChannel());
 
         try {
+            PublishingProvider publishingProvider = resolveProvider(content.getChannel());
             PublishingResult result = publishingProvider.publish(new PublishingRequest(
                     content.getId(),
                     content.getChannel(),
@@ -62,12 +67,20 @@ public class PublishContentUseCase {
             Publication savedPublication = publicationRepository.save(publication);
             content.markPublished();
             contentRepository.save(content);
+            recordPublishedAudit(savedPublication, content);
 
             log.info("publication completed: publicationId={}, contentId={}, channel={}, externalId={}", savedPublication.getId(), content.getId(), savedPublication.getChannel(), savedPublication.getExternalId());
             return savedPublication;
         } catch (PublishingProviderException exception) {
             publication.markFailed(errorPayload(exception.getMessage()));
             Publication failedPublication = publicationRepository.save(publication);
+            recordFailedAudit(failedPublication, content, exception.getMessage());
+            log.error("publication failed: publicationId={}, contentId={}, channel={}, reason={}", failedPublication.getId(), content.getId(), failedPublication.getChannel(), exception.getMessage(), exception);
+            throw exception;
+        } catch (IllegalStateException exception) {
+            publication.markFailed(errorPayload(exception.getMessage()));
+            Publication failedPublication = publicationRepository.save(publication);
+            recordFailedAudit(failedPublication, content, exception.getMessage());
             log.error("publication failed: publicationId={}, contentId={}, channel={}, reason={}", failedPublication.getId(), content.getId(), failedPublication.getChannel(), exception.getMessage(), exception);
             throw exception;
         }
@@ -104,5 +117,41 @@ public class PublishContentUseCase {
                 .replace("\"", "\\\"")
                 .replace("\r", "\\r")
                 .replace("\n", "\\n");
+    }
+
+    private void recordPublishedAudit(Publication publication, GeneratedContent content) {
+        recordAuditLogUseCase.record(
+                "PUBLICATION_PUBLISHED",
+                "PUBLICATION",
+                publication.getId(),
+                null,
+                AuditDetailFormatter.publicationPublished(
+                        publication.getId(),
+                        content.getId(),
+                        content.getEventId(),
+                        publication.getChannel(),
+                        publication.getStatus().name(),
+                        publication.getExternalId(),
+                        false
+                )
+        );
+    }
+
+    private void recordFailedAudit(Publication publication, GeneratedContent content, String reason) {
+        recordAuditLogUseCase.record(
+                "PUBLICATION_FAILED",
+                "PUBLICATION",
+                publication.getId(),
+                null,
+                AuditDetailFormatter.publicationFailed(
+                        publication.getId(),
+                        content.getId(),
+                        content.getEventId(),
+                        publication.getChannel(),
+                        publication.getStatus().name(),
+                        reason,
+                        false
+                )
+        );
     }
 }

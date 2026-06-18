@@ -8,6 +8,16 @@ type AuditTab = 'users' | 'editorial';
 type SortDirection = 'asc' | 'desc';
 type UserAuditSortColumn = 'createdAt' | 'action' | 'userId' | 'actorEmail' | 'details';
 type EditorialAuditSortColumn = 'createdAt' | 'action' | 'entityType' | 'entityId' | 'userId' | 'newValues';
+type AuditDetailSelection = {
+  title: string;
+  category: string;
+  action: string;
+  user: string;
+  createdAt: string;
+  entity: string;
+  detail: string;
+  error: boolean;
+};
 
 @Component({
   selector: 'app-audit-page',
@@ -19,6 +29,7 @@ export class AuditPageComponent implements OnInit {
   private readonly auditService = inject(AuditService);
 
   protected readonly activeTab = signal<AuditTab>('users');
+  protected readonly auditDate = signal(this.todayInputValue());
   protected readonly userAudit = signal<UserAuditLogItem[]>([]);
   protected readonly editorialAudit = signal<EditorialAuditLogItem[]>([]);
   protected readonly isLoading = signal(false);
@@ -33,6 +44,7 @@ export class AuditPageComponent implements OnInit {
   protected readonly userIdFilter = signal('');
   protected readonly userActorFilter = signal('');
   protected readonly userDetailsFilter = signal('');
+  protected readonly selectedAuditDetail = signal<AuditDetailSelection | null>(null);
   protected readonly editorialPageSize = signal(10);
   protected readonly editorialCurrentPage = signal(1);
   protected readonly editorialSortColumn = signal<EditorialAuditSortColumn>('createdAt');
@@ -70,11 +82,11 @@ export class AuditPageComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.auditService.listUserAudit().subscribe({
+    this.auditService.listUserAudit(100, this.auditDate()).subscribe({
       next: (userAudit) => {
         this.userAudit.set(userAudit);
         this.userCurrentPage.set(Math.min(this.userCurrentPage(), this.userTotalPages()));
-        this.auditService.listEditorialAudit().subscribe({
+        this.auditService.listEditorialAudit(100, this.auditDate()).subscribe({
           next: (editorialAudit) => {
             this.editorialAudit.set(editorialAudit);
             this.editorialCurrentPage.set(Math.min(this.editorialCurrentPage(), this.editorialTotalPages()));
@@ -102,6 +114,65 @@ export class AuditPageComponent implements OnInit {
 
   protected formatValue(value: string | null): string {
     return value?.trim() ? value : '-';
+  }
+
+  protected formatUserAuditDetail(entry: UserAuditLogItem): string {
+    return this.formatDetailDates(this.formatAuditDetail(entry.action, entry.details));
+  }
+
+  protected formatEditorialAuditDetail(entry: EditorialAuditLogItem): string {
+    return this.formatDetailDates(this.formatAuditDetail(entry.action, entry.newValues));
+  }
+
+  protected userLabel(entry: UserAuditLogItem | EditorialAuditLogItem): string {
+    return entry.userDisplayName ?? this.formatNullableNumber(entry.userId);
+  }
+
+  protected openUserAuditDetail(event: Event, entry: UserAuditLogItem): void {
+    event.stopPropagation();
+    this.selectedAuditDetail.set({
+      title: 'Detalle de auditoria de usuario',
+      category: 'Auditoria de usuario',
+      action: entry.action,
+      user: this.userLabel(entry),
+      createdAt: this.formatDate(entry.createdAt),
+      entity: 'Usuario ' + this.userLabel(entry),
+      detail: this.formatUserAuditDetail(entry),
+      error: this.isUserAuditError(entry)
+    });
+  }
+
+  protected openEditorialAuditDetail(event: Event, entry: EditorialAuditLogItem): void {
+    event.stopPropagation();
+    this.selectedAuditDetail.set({
+      title: this.isEditorialAuditError(entry) ? 'Detalle del error' : 'Detalle de auditoria editorial',
+      category: 'Auditoria editorial',
+      action: entry.action,
+      user: this.userLabel(entry),
+      createdAt: this.formatDate(entry.createdAt),
+      entity: `${entry.entityType} #${entry.entityId ?? '-'}`,
+      detail: this.formatEditorialAuditDetail(entry),
+      error: this.isEditorialAuditError(entry)
+    });
+  }
+
+  protected closeAuditDetail(): void {
+    this.selectedAuditDetail.set(null);
+  }
+
+  protected setAuditDate(value: string): void {
+    this.auditDate.set(value || this.todayInputValue());
+    this.userCurrentPage.set(1);
+    this.editorialCurrentPage.set(1);
+    this.loadAudit();
+  }
+
+  protected isUserAuditError(entry: UserAuditLogItem): boolean {
+    return this.isErrorAction(entry.action) || this.hasErrorText(this.formatUserAuditDetail(entry));
+  }
+
+  protected isEditorialAuditError(entry: EditorialAuditLogItem): boolean {
+    return this.isErrorAction(entry.action) || this.hasErrorText(this.formatEditorialAuditDetail(entry));
   }
 
   protected setUserSort(column: UserAuditSortColumn): void {
@@ -153,9 +224,9 @@ export class AuditPageComponent implements OnInit {
     return entries
       .filter((entry) => this.matchesText(this.formatDate(entry.createdAt), this.userDateFilter()))
       .filter((entry) => this.matchesText(entry.action, this.userActionFilter()))
-      .filter((entry) => this.matchesText(this.formatNullableNumber(entry.userId), this.userIdFilter()))
+      .filter((entry) => this.matchesText(this.userLabel(entry), this.userIdFilter()))
       .filter((entry) => this.matchesText(entry.actorEmail ?? '-', this.userActorFilter()))
-      .filter((entry) => this.matchesText(this.formatValue(entry.details), this.userDetailsFilter()));
+      .filter((entry) => this.matchesText(this.formatUserAuditDetail(entry), this.userDetailsFilter()));
   }
 
   private filterEditorialAudit(entries: EditorialAuditLogItem[]): EditorialAuditLogItem[] {
@@ -164,8 +235,8 @@ export class AuditPageComponent implements OnInit {
       .filter((entry) => this.matchesText(entry.action, this.editorialActionFilter()))
       .filter((entry) => this.matchesText(entry.entityType, this.editorialEntityTypeFilter()))
       .filter((entry) => this.matchesText(this.formatNullableNumber(entry.entityId), this.editorialEntityIdFilter()))
-      .filter((entry) => this.matchesText(this.formatNullableNumber(entry.userId), this.editorialUserIdFilter()))
-      .filter((entry) => this.matchesText(this.formatValue(entry.newValues), this.editorialChangesFilter()));
+      .filter((entry) => this.matchesText(this.userLabel(entry), this.editorialUserIdFilter()))
+      .filter((entry) => this.matchesText(this.formatEditorialAuditDetail(entry), this.editorialChangesFilter()));
   }
 
   private sortUserAudit(entries: UserAuditLogItem[]): UserAuditLogItem[] {
@@ -185,7 +256,7 @@ export class AuditPageComponent implements OnInit {
       return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
     }
     if (column === 'userId') {
-      return (left.userId ?? 0) - (right.userId ?? 0);
+      return this.userLabel(left).localeCompare(this.userLabel(right), 'es', { sensitivity: 'base' });
     }
     return this.userAuditValue(left, column).localeCompare(this.userAuditValue(right, column), 'es', { sensitivity: 'base' });
   }
@@ -195,6 +266,9 @@ export class AuditPageComponent implements OnInit {
       return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
     }
     if (column === 'entityId' || column === 'userId') {
+      if (column === 'userId') {
+        return this.userLabel(left).localeCompare(this.userLabel(right), 'es', { sensitivity: 'base' });
+      }
       return (left[column] ?? 0) - (right[column] ?? 0);
     }
     return this.editorialAuditValue(left, column).localeCompare(this.editorialAuditValue(right, column), 'es', { sensitivity: 'base' });
@@ -204,7 +278,7 @@ export class AuditPageComponent implements OnInit {
     const values = {
       action: entry.action,
       actorEmail: entry.actorEmail ?? '-',
-      details: this.formatValue(entry.details)
+      details: this.formatUserAuditDetail(entry)
     };
     return values[column];
   }
@@ -213,7 +287,7 @@ export class AuditPageComponent implements OnInit {
     const values = {
       action: entry.action,
       entityType: entry.entityType,
-      newValues: this.formatValue(entry.newValues)
+      newValues: this.formatEditorialAuditDetail(entry)
     };
     return values[column];
   }
@@ -225,5 +299,117 @@ export class AuditPageComponent implements OnInit {
   private matchesText(value: string, filter: string): boolean {
     const normalizedFilter = filter.trim().toLocaleLowerCase('es');
     return !normalizedFilter || value.trim().toLocaleLowerCase('es').includes(normalizedFilter);
+  }
+
+  private formatAuditDetail(action: string, value: string | null): string {
+    const text = this.formatValue(value);
+    if (text === '-') {
+      return '-';
+    }
+
+    if (this.looksLikeJson(text)) {
+      return this.formatJsonAuditDetail(action, text);
+    }
+
+    if (this.looksLikeKeyValues(text)) {
+      return this.formatKeyValueAuditDetail(action, text);
+    }
+
+    return text;
+  }
+
+  private formatJsonAuditDetail(action: string, value: string): string {
+    try {
+      const parsed = JSON.parse(value) as Record<string, unknown>;
+      if (action === 'PUBLICATION_SCHEDULED') {
+        return `Publicacion programada para contenido #${this.valueOrDash(parsed['contentId'])}. Fecha programada: ${this.valueOrDash(parsed['scheduledAt'])}.`;
+      }
+      if (action === 'EVENT_MERGED') {
+        return `Evento #${this.valueOrDash(parsed['targetEventId'])} fusionado. Noticias asociadas tras la fusion: ${this.valueOrDash(parsed['newsCount'])}.`;
+      }
+      if (action === 'CONTENT_EDITED') {
+        return `Contenido editado. Titulo: "${this.valueOrDash(parsed['title'])}". Tono: ${this.valueOrDash(parsed['tone'])}. Estado: ${this.valueOrDash(parsed['status'])}.`;
+      }
+      if (action === 'PUBLICATION_PUBLISHED') {
+        return `Publicacion #${this.valueOrDash(parsed['publicationId'])} completada correctamente para contenido #${this.valueOrDash(parsed['contentId'])}. Estado: ${this.valueOrDash(parsed['status'])}.`;
+      }
+      if (action === 'PUBLICATION_FAILED') {
+        const scheduledAt = parsed['scheduledAt'] ? ` Fecha programada: ${this.valueOrDash(parsed['scheduledAt'])}.` : '';
+        return `Publicacion #${this.valueOrDash(parsed['publicationId'])} fallida para contenido #${this.valueOrDash(parsed['contentId'])}.${scheduledAt} Motivo: ${this.valueOrDash(parsed['error'] ?? parsed['description'])}.`;
+      }
+    } catch {
+      return value;
+    }
+
+    return value;
+  }
+
+  private formatKeyValueAuditDetail(action: string, value: string): string {
+    const keyValues = this.parseKeyValues(value);
+    if (action === 'USER_CREATED' && keyValues['role']) {
+      return `Usuario creado con rol ${keyValues['role']} y pendiente de activacion.`;
+    }
+    if (['USER_ACTIVATED', 'USER_DEACTIVATED', 'USER_LOCKED', 'USER_UNLOCKED'].includes(action) && keyValues['status']) {
+      return `Estado de usuario actualizado a ${keyValues['status']}.`;
+    }
+    if (action === 'USER_ROLE_CHANGED' && keyValues['from'] && keyValues['to']) {
+      return `Rol de usuario actualizado de ${keyValues['from']} a ${keyValues['to']}.`;
+    }
+    if (action === 'TEMPORARY_PASSWORD_RESET' && keyValues['temporaryPasswordExpiresAt']) {
+      return `Password temporal regenerada. Caduca el ${keyValues['temporaryPasswordExpiresAt']}.`;
+    }
+    if (action === 'PASSWORD_CHANGED' && keyValues['passwordChangedAt']) {
+      return `Password actualizada correctamente el ${keyValues['passwordChangedAt']}.`;
+    }
+    if (action === 'LOGIN' && keyValues['loginAt']) {
+      return `Login completado correctamente el ${keyValues['loginAt']}.`;
+    }
+
+    return value;
+  }
+
+  private looksLikeJson(value: string): boolean {
+    const trimmed = value.trim();
+    return trimmed.startsWith('{') && trimmed.endsWith('}');
+  }
+
+  private looksLikeKeyValues(value: string): boolean {
+    return /^[A-Za-z][A-Za-z0-9]*=/.test(value.trim());
+  }
+
+  private parseKeyValues(value: string): Record<string, string> {
+    return value.split(',').reduce<Record<string, string>>((result, part) => {
+      const [key, ...rawValue] = part.split('=');
+      if (key?.trim() && rawValue.length > 0) {
+        result[key.trim()] = rawValue.join('=').trim();
+      }
+      return result;
+    }, {});
+  }
+
+  private valueOrDash(value: unknown): string {
+    if (value === null || value === undefined || value === '') {
+      return '-';
+    }
+    return String(value);
+  }
+
+  private formatDetailDates(value: string): string {
+    return value.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})?/g, (match) => this.formatDate(match));
+  }
+
+  private isErrorAction(action: string): boolean {
+    return action.toLocaleUpperCase('es').includes('FAILED') || action.toLocaleUpperCase('es').includes('ERROR');
+  }
+
+  private hasErrorText(value: string): boolean {
+    const normalized = value.toLocaleLowerCase('es');
+    return normalized.includes('fallida') || normalized.includes('fallido') || normalized.includes('fallo') || normalized.includes('error');
+  }
+
+  private todayInputValue(): string {
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    return new Date(now.getTime() - offset).toISOString().slice(0, 10);
   }
 }

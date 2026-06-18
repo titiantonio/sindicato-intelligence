@@ -5,11 +5,14 @@ import es.sindicato.intelligence.content.domain.ContentStatus;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -32,7 +35,12 @@ class EditGeneratedContentUseCaseTest {
 
         assertEquals(ContentStatus.PENDING_REVIEW, result.getStatus());
         assertEquals("Nuevo", result.getTitle());
-        verify(audit).record(eq("CONTENT_EDITED"), eq("CONTENT"), eq(10L), any(), any());
+        ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
+        verify(audit).record(eq("CONTENT_EDITED"), eq("CONTENT"), eq(10L), any(), detailCaptor.capture());
+        assertTrue(detailCaptor.getValue().contains("Contenido #10"));
+        assertTrue(detailCaptor.getValue().contains("evento #20"));
+        assertTrue(detailCaptor.getValue().contains("Estado resultante: PENDING_REVIEW"));
+        assertFalse(detailCaptor.getValue().startsWith("{"));
     }
 
     private GeneratedContent content(ContentStatus status) {

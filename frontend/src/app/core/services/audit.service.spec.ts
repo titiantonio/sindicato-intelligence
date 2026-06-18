@@ -22,17 +22,17 @@ describe('AuditService', () => {
   });
 
   it('loads user audit', () => {
-    service.listUserAudit(25).subscribe();
+    service.listUserAudit(25, '2026-06-18').subscribe();
 
-    const request = httpTestingController.expectOne('/api/v1/audit/users?limit=25');
+    const request = httpTestingController.expectOne('/api/v1/audit/users?limit=25&date=2026-06-18');
     expect(request.request.method).toBe('GET');
     request.flush([]);
   });
 
   it('loads editorial audit', () => {
-    service.listEditorialAudit(50).subscribe();
+    service.listEditorialAudit(50, '2026-06-18').subscribe();
 
-    const request = httpTestingController.expectOne('/api/v1/audit/editorial?limit=50');
+    const request = httpTestingController.expectOne('/api/v1/audit/editorial?limit=50&date=2026-06-18');
     expect(request.request.method).toBe('GET');
     request.flush([]);
   });

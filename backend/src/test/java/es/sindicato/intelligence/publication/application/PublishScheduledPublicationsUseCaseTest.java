@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.publication.application;
 
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.content.domain.ContentStatus;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
@@ -15,6 +16,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,7 +28,8 @@ class PublishScheduledPublicationsUseCaseTest {
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         PublicationRepository publicationRepository = mock(PublicationRepository.class);
         PublishingProvider provider = mock(PublishingProvider.class);
-        PublishScheduledPublicationsUseCase useCase = new PublishScheduledPublicationsUseCase(contentRepository, publicationRepository, List.of(provider));
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        PublishScheduledPublicationsUseCase useCase = new PublishScheduledPublicationsUseCase(contentRepository, publicationRepository, List.of(provider), audit);
         OffsetDateTime now = OffsetDateTime.parse("2026-06-10T12:00:00Z");
         Publication publication = Publication.scheduled(10L, "TELEGRAM", now.minusMinutes(1));
         GeneratedContent content = content();
@@ -43,6 +46,7 @@ class PublishScheduledPublicationsUseCaseTest {
         verify(publicationRepository).save(captor.capture());
         assertEquals(PublicationStatus.PUBLISHED, captor.getValue().getStatus());
         assertEquals(ContentStatus.PUBLISHED, content.getStatus());
+        verify(audit).record(eq("PUBLICATION_PUBLISHED"), eq("PUBLICATION"), eq(null), eq(null), any());
     }
 
     @Test
@@ -50,7 +54,8 @@ class PublishScheduledPublicationsUseCaseTest {
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         PublicationRepository publicationRepository = mock(PublicationRepository.class);
         PublishingProvider provider = mock(PublishingProvider.class);
-        PublishScheduledPublicationsUseCase useCase = new PublishScheduledPublicationsUseCase(contentRepository, publicationRepository, List.of(provider));
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        PublishScheduledPublicationsUseCase useCase = new PublishScheduledPublicationsUseCase(contentRepository, publicationRepository, List.of(provider), audit);
         OffsetDateTime now = OffsetDateTime.parse("2026-06-10T12:00:00Z");
         Publication publication = Publication.scheduled(10L, "TELEGRAM", now.minusMinutes(1));
 
@@ -64,13 +69,15 @@ class PublishScheduledPublicationsUseCaseTest {
         ArgumentCaptor<Publication> captor = ArgumentCaptor.forClass(Publication.class);
         verify(publicationRepository).save(captor.capture());
         assertEquals(PublicationStatus.FAILED, captor.getValue().getStatus());
+        verify(audit).record(eq("PUBLICATION_FAILED"), eq("PUBLICATION"), eq(null), eq(null), any());
     }
 
     @Test
     void marksPublicationAsFailedWhenProviderIsMissing() {
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         PublicationRepository publicationRepository = mock(PublicationRepository.class);
-        PublishScheduledPublicationsUseCase useCase = new PublishScheduledPublicationsUseCase(contentRepository, publicationRepository, List.of());
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        PublishScheduledPublicationsUseCase useCase = new PublishScheduledPublicationsUseCase(contentRepository, publicationRepository, List.of(), audit);
         OffsetDateTime now = OffsetDateTime.parse("2026-06-10T12:00:00Z");
         Publication publication = Publication.scheduled(10L, "TELEGRAM", now.minusMinutes(1));
 
@@ -83,6 +90,7 @@ class PublishScheduledPublicationsUseCaseTest {
         ArgumentCaptor<Publication> captor = ArgumentCaptor.forClass(Publication.class);
         verify(publicationRepository).save(captor.capture());
         assertEquals(PublicationStatus.FAILED, captor.getValue().getStatus());
+        verify(audit).record(eq("PUBLICATION_FAILED"), eq("PUBLICATION"), eq(null), eq(null), any());
     }
 
     private GeneratedContent content() {

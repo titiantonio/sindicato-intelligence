@@ -9,15 +9,25 @@ import { EditorialAuditLogItem, UserAuditLogItem } from '../models/audit.models'
 export class AuditService {
   private readonly httpClient = inject(HttpClient);
 
-  listUserAudit(limit = 100) {
+  listUserAudit(limit = 100, date?: string) {
+    let params = new HttpParams().set('limit', limit);
+    if (date) {
+      params = params.set('date', date);
+    }
+
     return this.httpClient.get<UserAuditLogItem[]>('/api/v1/audit/users', {
-      params: new HttpParams().set('limit', limit)
+      params
     });
   }
 
-  listEditorialAudit(limit = 100) {
+  listEditorialAudit(limit = 100, date?: string) {
+    let params = new HttpParams().set('limit', limit);
+    if (date) {
+      params = params.set('date', date);
+    }
+
     return this.httpClient.get<EditorialAuditLogItem[]>('/api/v1/audit/editorial', {
-      params: new HttpParams().set('limit', limit)
+      params
     });
   }
 }

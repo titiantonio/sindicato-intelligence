@@ -2,10 +2,12 @@ package es.sindicato.intelligence.auth.application;
 
 import es.sindicato.intelligence.auth.infrastructure.UserSecurityDetails;
 import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserAuditAction;
 import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
 import es.sindicato.intelligence.user.domain.UserRepository;
 import es.sindicato.intelligence.user.domain.UserRole;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,7 +15,10 @@ import org.springframework.security.core.Authentication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class LoginUseCaseTest {
@@ -51,6 +56,9 @@ class LoginUseCaseTest {
         assertEquals("Admin Sindicato", result.userName());
         assertEquals("ADMIN", result.userRole());
         assertEquals(false, result.mustChangePassword());
+        ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
+        verify(userAuditLogRepository).record(eq(1L), eq("admin@sindicato.es"), eq(UserAuditAction.LOGIN), detailCaptor.capture());
+        assertTrue(detailCaptor.getValue().contains("Login completado correctamente"));
     }
 
     @Test

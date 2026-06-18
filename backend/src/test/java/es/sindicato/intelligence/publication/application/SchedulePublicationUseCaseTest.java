@@ -8,12 +8,15 @@ import es.sindicato.intelligence.publication.domain.Publication;
 import es.sindicato.intelligence.publication.domain.PublicationRepository;
 import es.sindicato.intelligence.publication.domain.PublicationStatus;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -41,7 +44,12 @@ class SchedulePublicationUseCaseTest {
 
         assertEquals(PublicationStatus.SCHEDULED, result.getStatus());
         assertEquals(scheduledAt, result.getScheduledAt());
-        verify(audit).record(eq("PUBLICATION_SCHEDULED"), eq("PUBLICATION"), eq(70L), eq(null), any());
+        ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
+        verify(audit).record(eq("PUBLICATION_SCHEDULED"), eq("PUBLICATION"), eq(70L), eq(null), detailCaptor.capture());
+        assertTrue(detailCaptor.getValue().contains("Publicacion #70 programada"));
+        assertTrue(detailCaptor.getValue().contains("contenido #10"));
+        assertTrue(detailCaptor.getValue().contains("evento #20"));
+        assertFalse(detailCaptor.getValue().startsWith("{"));
     }
 
     @Test

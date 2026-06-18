@@ -12,10 +12,10 @@ describe('AuditPageComponent', () => {
   beforeEach(async () => {
     auditService = jasmine.createSpyObj<AuditService>('AuditService', ['listUserAudit', 'listEditorialAudit']);
     auditService.listUserAudit.and.returnValue(of([
-      { id: 1, userId: 7, actorEmail: 'admin@sindicato.es', action: 'USER_CREATED', details: 'role=EDITOR', createdAt: '2026-06-13T10:00:00Z' }
+      { id: 1, userId: 7, userDisplayName: 'Editor Prueba <editor@sindicato.es>', actorEmail: 'admin@sindicato.es', action: 'USER_CREATED', details: 'role=EDITOR', createdAt: '2026-06-13T10:00:00Z' }
     ]));
     auditService.listEditorialAudit.and.returnValue(of([
-      { id: 2, userId: 1, action: 'EVENT_MERGED', entityType: 'EVENT', entityId: 9, oldValues: null, newValues: '{}', createdAt: '2026-06-13T10:05:00Z' }
+      { id: 2, userId: 1, userDisplayName: 'Admin <admin@sindicato.es>', action: 'PUBLICATION_FAILED', entityType: 'PUBLICATION', entityId: 9, oldValues: null, newValues: '{"publicationId":9,"contentId":333,"status":"FAILED","error":"provider unavailable","scheduledAt":"2026-06-18T22:36Z"}', createdAt: '2026-06-13T10:05:00Z' }
     ]));
 
     await TestBed.configureTestingModule({
@@ -35,10 +35,43 @@ describe('AuditPageComponent', () => {
     expect((component as any).editorialAudit().length).toBe(1);
   });
 
+  it('reloads audit when date changes', () => {
+    (component as any).setAuditDate('2026-06-18');
+
+    expect(auditService.listUserAudit).toHaveBeenCalledWith(100, '2026-06-18');
+    expect(auditService.listEditorialAudit).toHaveBeenCalledWith(100, '2026-06-18');
+  });
+
   it('switches tabs', () => {
     (component as any).setTab('editorial');
 
     expect((component as any).activeTab()).toBe('editorial');
+  });
+
+  it('formats legacy audit details', () => {
+    expect((component as any).formatUserAuditDetail((component as any).userAudit()[0])).toContain('Usuario creado con rol EDITOR');
+
+    (component as any).setTab('editorial');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Admin <admin@sindicato.es>');
+    expect(fixture.nativeElement.textContent).toContain('Detalle');
+  });
+
+  it('opens detail modal and marks error rows', () => {
+    (component as any).setTab('editorial');
+    fixture.detectChanges();
+
+    const errorRow = fixture.nativeElement.querySelector('tbody tr');
+    expect(errorRow.classList).toContain('audit-row--error');
+
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('.inline-action');
+    button.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Detalle del error');
+    expect(fixture.nativeElement.textContent).toContain('provider unavailable');
+    expect(fixture.nativeElement.textContent).toContain('19/6/26');
   });
 
   it('shows load errors', () => {

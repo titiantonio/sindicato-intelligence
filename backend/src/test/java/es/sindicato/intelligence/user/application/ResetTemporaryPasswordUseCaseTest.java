@@ -1,16 +1,20 @@
 package es.sindicato.intelligence.user.application;
 
 import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserAuditAction;
 import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
 import es.sindicato.intelligence.user.domain.UserPasswordHistoryRepository;
 import es.sindicato.intelligence.user.domain.UserRepository;
 import es.sindicato.intelligence.user.domain.UserRole;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,5 +48,8 @@ class ResetTemporaryPasswordUseCaseTest {
         useCase.execute(1L, "admin@sindicato.es");
 
         verify(userAccountNotificationSender).sendTemporaryPasswordEmail("editor@sindicato.es", "Editor", "Temporal#12345");
+        ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
+        verify(userAuditLogRepository).record(eq(1L), eq("admin@sindicato.es"), eq(UserAuditAction.TEMPORARY_PASSWORD_RESET), detailCaptor.capture());
+        assertTrue(detailCaptor.getValue().contains("Password temporal regenerada"));
     }
 }

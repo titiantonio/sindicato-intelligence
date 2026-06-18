@@ -2,10 +2,16 @@
   <div>
     <span class="page-header__eyebrow">Auditoria</span>
     <h1>Registro operativo</h1>
-    <p>Trazabilidad administrativa y editorial del sistema.</p>
+    <p>Trazabilidad diaria administrativa y editorial del sistema.</p>
   </div>
 
-  <button type="button" (click)="loadAudit()">Actualizar</button>
+  <div class="page-header__actions">
+    <label>
+      Dia
+      <input type="date" [ngModel]="auditDate()" (ngModelChange)="setAuditDate($event)" />
+    </label>
+    <button type="button" (click)="loadAudit()">Actualizar</button>
+  </div>
 </section>
 
 @if (errorMessage()) {
@@ -27,10 +33,10 @@
       <table>
         <colgroup>
           <col style="width: 10rem" />
-          <col style="width: 13rem" />
+          <col style="width: 12rem" />
+          <col style="width: 18rem" />
+          <col style="width: 18rem" />
           <col style="width: 9rem" />
-          <col style="width: 16rem" />
-          <col style="width: 30rem" />
         </colgroup>
         <thead>
           <tr>
@@ -50,12 +56,14 @@
         </thead>
         <tbody>
           @for (entry of paginatedUserAudit(); track entry.id) {
-            <tr>
+            <tr [class.audit-row--error]="isUserAuditError(entry)">
               <td class="table-cell-nowrap">{{ formatDate(entry.createdAt) }}</td>
               <td class="table-cell-nowrap">{{ entry.action }}</td>
-              <td class="table-cell-nowrap">{{ entry.userId ?? '-' }}</td>
+              <td class="table-cell-nowrap">{{ userLabel(entry) }}</td>
               <td class="table-cell-nowrap">{{ entry.actorEmail ?? '-' }}</td>
-              <td class="table-cell-break">{{ formatValue(entry.details) }}</td>
+              <td class="table-cell-nowrap">
+                <button type="button" class="inline-action" (click)="openUserAuditDetail($event, entry)">Ver detalle</button>
+              </td>
             </tr>
           } @empty {
             <tr>
@@ -66,7 +74,7 @@
       </table>
     </div>
     <footer class="table-pagination">
-      <span>{{ displayedUserAudit().length }} registros filtrados</span>
+      <span>{{ displayedUserAudit().length }} registros filtrados del dia {{ auditDate() }}</span>
       <label>
         Filas por pagina
         <select [ngModel]="userPageSize()" (ngModelChange)="setUserPageSize($event)">
@@ -87,9 +95,9 @@
         <colgroup>
           <col style="width: 10rem" />
           <col style="width: 13rem" />
+          <col style="width: 11rem" />
+          <col style="width: 18rem" />
           <col style="width: 9rem" />
-          <col style="width: 16rem" />
-          <col style="width: 30rem" />
         </colgroup>
         <thead>
           <tr>
@@ -97,24 +105,26 @@
             <th><button class="sort-button" type="button" (click)="setEditorialSort('action')">Accion {{ editorialSortLabel('action') }}</button></th>
             <th><button class="sort-button" type="button" (click)="setEditorialSort('entityType')">Entidad {{ editorialSortLabel('entityType') }}</button></th>
             <th><button class="sort-button" type="button" (click)="setEditorialSort('userId')">Usuario {{ editorialSortLabel('userId') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="setEditorialSort('newValues')">Cambios {{ editorialSortLabel('newValues') }}</button></th>
+            <th><button class="sort-button" type="button" (click)="setEditorialSort('newValues')">Detalle {{ editorialSortLabel('newValues') }}</button></th>
           </tr>
           <tr class="column-filters">
             <th><input type="search" aria-label="Filtrar auditoria editorial por fecha" [ngModel]="editorialDateFilter()" (ngModelChange)="setEditorialDateFilter($event)" /></th>
             <th><input type="search" aria-label="Filtrar auditoria editorial por accion" [ngModel]="editorialActionFilter()" (ngModelChange)="setEditorialActionFilter($event)" /></th>
             <th><input type="search" aria-label="Filtrar auditoria editorial por entidad" [ngModel]="editorialEntityTypeFilter()" (ngModelChange)="setEditorialEntityTypeFilter($event)" /></th>
             <th><input type="search" aria-label="Filtrar auditoria editorial por usuario" [ngModel]="editorialUserIdFilter()" (ngModelChange)="setEditorialUserIdFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar auditoria editorial por cambios" [ngModel]="editorialChangesFilter()" (ngModelChange)="setEditorialChangesFilter($event)" /></th>
+            <th><input type="search" aria-label="Filtrar auditoria editorial por detalle" [ngModel]="editorialChangesFilter()" (ngModelChange)="setEditorialChangesFilter($event)" /></th>
           </tr>
         </thead>
         <tbody>
           @for (entry of paginatedEditorialAudit(); track entry.id) {
-            <tr>
+            <tr [class.audit-row--error]="isEditorialAuditError(entry)">
               <td class="table-cell-nowrap">{{ formatDate(entry.createdAt) }}</td>
               <td class="table-cell-nowrap">{{ entry.action }}</td>
               <td class="table-cell-nowrap">{{ entry.entityType }} #{{ entry.entityId ?? '-' }}</td>
-              <td class="table-cell-nowrap">{{ entry.userId ?? '-' }}</td>
-              <td class="table-cell-break">{{ formatValue(entry.newValues) }}</td>
+              <td class="table-cell-nowrap">{{ userLabel(entry) }}</td>
+              <td class="table-cell-nowrap">
+                <button type="button" class="inline-action" (click)="openEditorialAuditDetail($event, entry)">Ver detalle</button>
+              </td>
             </tr>
           } @empty {
             <tr>
@@ -125,7 +135,7 @@
       </table>
     </div>
     <footer class="table-pagination">
-      <span>{{ displayedEditorialAudit().length }} registros filtrados</span>
+      <span>{{ displayedEditorialAudit().length }} registros filtrados del dia {{ auditDate() }}</span>
       <label>
         Filas por pagina
         <select [ngModel]="editorialPageSize()" (ngModelChange)="setEditorialPageSize($event)">
@@ -142,3 +152,36 @@
     </footer>
   }
 </section>
+
+@if (selectedAuditDetail(); as detail) {
+  <div class="modal-backdrop" (click)="closeAuditDetail()">
+    <section class="audit-modal" role="dialog" aria-modal="true" aria-labelledby="audit-detail-title" (click)="$event.stopPropagation()">
+      <header>
+        <div>
+          <span>{{ detail.category }}</span>
+          <h2 id="audit-detail-title">{{ detail.title }}</h2>
+        </div>
+        <button type="button" class="secondary" (click)="closeAuditDetail()">Cerrar</button>
+      </header>
+      <dl class="audit-status">
+        <div>
+          <dt>Accion</dt>
+          <dd>{{ detail.action }}</dd>
+        </div>
+        <div>
+          <dt>Usuario</dt>
+          <dd>{{ detail.user }}</dd>
+        </div>
+        <div>
+          <dt>Entidad</dt>
+          <dd>{{ detail.entity }}</dd>
+        </div>
+        <div>
+          <dt>Fecha</dt>
+          <dd>{{ detail.createdAt }}</dd>
+        </div>
+      </dl>
+      <pre class="detail-text" [class.detail-text--error]="detail.error">{{ detail.detail }}</pre>
+    </section>
+  </div>
+}

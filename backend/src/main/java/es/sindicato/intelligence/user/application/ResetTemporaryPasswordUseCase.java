@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.user.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.user.domain.UserAccount;
 import es.sindicato.intelligence.user.domain.UserAuditAction;
 import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
@@ -79,7 +80,7 @@ public class ResetTemporaryPasswordUseCase {
         userPasswordHistoryRepository.save(updated.getId(), passwordHash);
         userAccountNotificationSender.sendTemporaryPasswordEmail(updated.getEmail(), updated.getName(), temporaryPassword);
         userAuditLogRepository.record(updated.getId(), actorEmail, UserAuditAction.TEMPORARY_PASSWORD_RESET,
-                "temporaryPasswordExpiresAt=" + expiresAt);
+                AuditDetailFormatter.temporaryPasswordReset(expiresAt));
 
         log.info("temporary password reset completed: userId={}, expiresAt={}", updated.getId(), expiresAt);
         return updated;

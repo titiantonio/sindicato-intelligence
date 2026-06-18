@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.user.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.user.domain.UserAccount;
 import es.sindicato.intelligence.user.domain.UserAuditAction;
 import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
@@ -36,7 +37,7 @@ public class ChangeUserStatusUseCase {
 
         UserStatus previousStatus = existing.getStatus();
         UserAccount updated = userRepository.save(existing.withStatus(status));
-        userAuditLogRepository.record(userId, actorEmail, actionFor(status), "status=" + status);
+        userAuditLogRepository.record(userId, actorEmail, actionFor(status), AuditDetailFormatter.userStatusChanged(previousStatus, status));
         sendNotificationIfRequired(updated, previousStatus, status);
         log.info("user status changed: userId={}, status={}", userId, status);
         return updated;

@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.auth.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.user.application.UserAccountNotificationSender;
 import es.sindicato.intelligence.user.application.UserNotFoundException;
 import es.sindicato.intelligence.user.domain.UserAccount;
@@ -68,7 +69,7 @@ public class ChangePasswordUseCase {
 
         String encoded = passwordEncoder.encode(newPassword);
         UserAccount updated = userRepository.save(user.withCredentials(encoded, false, null, now));
-        userAuditLogRepository.record(updated.getId(), updated.getEmail(), UserAuditAction.PASSWORD_CHANGED, "passwordChangedAt=" + now);
+        userAuditLogRepository.record(updated.getId(), updated.getEmail(), UserAuditAction.PASSWORD_CHANGED, AuditDetailFormatter.passwordChanged(now));
         userAccountNotificationSender.sendPasswordChangedEmail(updated.getEmail(), updated.getName());
 
         log.info("password changed by authenticated user: userId={}", user.getId());

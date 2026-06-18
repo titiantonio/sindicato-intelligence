@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.event.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventRepository;
@@ -60,8 +61,8 @@ public class MergeEventsUseCase {
                 "EVENT_MERGED",
                 "EVENT",
                 savedTarget.getId(),
-                "{\"sourceEventIds\":\"" + sourceIds + "\"}",
-                "{\"targetEventId\":" + savedTarget.getId() + ",\"newsCount\":" + savedTarget.getNewsIds().size() + "}"
+                "Eventos origen archivados: " + sourceIds + ".",
+                AuditDetailFormatter.eventMerged(savedTarget.getId(), sourceIds, savedTarget.getNewsIds().size())
         );
 
         return savedTarget;

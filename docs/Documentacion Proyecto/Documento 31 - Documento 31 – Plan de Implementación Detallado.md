@@ -2189,6 +2189,30 @@ Estado:
 
 ---
 
+## [x] T12.27
+
+Corregir auditoria legible y completa en `/audit`.
+
+Resultado:
+- Anadido formateo comun de detalles de auditoria para registrar nuevas acciones con texto legible en castellano, sin JSON crudo ni pares `clave=valor`.
+- Normalizadas auditorias editoriales de fusion de eventos, edicion de contenido, programacion de publicaciones y ejecucion de publicaciones.
+- Anadida auditoria faltante de publicaciones directas y publicaciones programadas ejecutadas, tanto en exito (`PUBLICATION_PUBLISHED`) como en fallo (`PUBLICATION_FAILED`), con referencias a publicacion, contenido, evento, canal, estado y error.
+- Normalizadas auditorias de usuarios para alta, cambios de estado, cambios de rol, reset temporal, cambio de password y login.
+- La pantalla `/audit` muestra la columna editorial como `Detalle`, transforma registros historicos en JSON o `clave=valor` a texto descriptivo, formatea fechas internas con el mismo criterio visual de la tabla, muestra usuarios por nombre/email y abre el detalle en modal.
+- Las filas de auditoria fallidas se resaltan visualmente como las metricas IA fallidas de `/settings`.
+- La auditoria de usuarios y editorial permite elegir el dia a mostrar con selector diario, usando `date=YYYY-MM-DD` en API y zona operativa `Europe/Madrid`.
+- Incrementado `backend/pom.xml` a `0.0.60-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=PublishContentUseCaseTest,PublishScheduledPublicationsUseCaseTest,SchedulePublicationUseCaseTest,MergeEventsUseCaseTest,EditGeneratedContentUseCaseTest,ChangeUserStatusUseCaseTest,UpdateUserUseCaseTest,ResetTemporaryPasswordUseCaseTest,LoginUseCaseTest,PublicationControllerTest" test` OK, 23 tests.
+- Backend focal adicional: `mvn "-Dtest=PublicationControllerTest" test` OK, 3 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/audit/audit-page.component.spec.ts --include=src/app/core/services/audit.service.spec.ts` OK, 8 tests.
+
+Estado:
+- Mantenimiento correctivo sobre Sprint 11/Fases 10-11. La auditoria visible ADMIN cubre acciones editoriales y de usuario con detalles operativos legibles.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

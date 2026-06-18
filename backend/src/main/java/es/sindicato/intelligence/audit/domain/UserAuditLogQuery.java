@@ -1,8 +1,11 @@
 package es.sindicato.intelligence.audit.domain;
 
+import java.time.LocalDate;
+
 public record UserAuditLogQuery(
         String action,
         Long userId,
+        LocalDate date,
         int limit
 ) {
     public UserAuditLogQuery {

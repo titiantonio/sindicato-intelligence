@@ -15,7 +15,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -44,7 +46,12 @@ class MergeEventsUseCaseTest {
         verify(eventRepository, times(2)).save(savedEvents.capture());
         assertEquals(EventStatus.ARCHIVED, savedEvents.getAllValues().get(1).getStatus());
         assertEquals(Set.of(), savedEvents.getAllValues().get(1).getNewsIds());
-        verify(audit).record(eq("EVENT_MERGED"), eq("EVENT"), eq(1L), any(), any());
+        ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
+        verify(audit).record(eq("EVENT_MERGED"), eq("EVENT"), eq(1L), any(), detailCaptor.capture());
+        assertTrue(detailCaptor.getValue().contains("Evento #1 fusionado"));
+        assertTrue(detailCaptor.getValue().contains("#2"));
+        assertTrue(detailCaptor.getValue().contains("Noticias asociadas"));
+        assertFalse(detailCaptor.getValue().startsWith("{"));
     }
 
     @Test

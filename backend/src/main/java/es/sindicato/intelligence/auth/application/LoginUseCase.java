@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.auth.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.auth.infrastructure.UserSecurityDetails;
 import es.sindicato.intelligence.user.domain.UserAccount;
 import es.sindicato.intelligence.user.domain.UserAuditAction;
@@ -68,7 +69,7 @@ public class LoginUseCase {
 
         UserAccount storedUser = userRepository.findById(principal.id()).orElseThrow();
         UserAccount userWithLogin = userRepository.save(storedUser.withLastLoginAt(now));
-        userAuditLogRepository.record(userWithLogin.getId(), userWithLogin.getEmail(), UserAuditAction.LOGIN, "loginAt=" + now);
+        userAuditLogRepository.record(userWithLogin.getId(), userWithLogin.getEmail(), UserAuditAction.LOGIN, AuditDetailFormatter.login(now));
 
         AuthenticatedUser user = new AuthenticatedUser(
                 userWithLogin.getId(),

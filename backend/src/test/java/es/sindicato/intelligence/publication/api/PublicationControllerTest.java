@@ -82,6 +82,11 @@ class PublicationControllerTest {
 
         GeneratedContent publishedContent = contentRepository.findById(content.getId()).orElseThrow();
         org.junit.jupiter.api.Assertions.assertEquals(ContentStatus.PUBLISHED, publishedContent.getStatus());
+
+        mockMvc.perform(get("/api/v1/audit/editorial").with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].action").value("PUBLICATION_PUBLISHED"))
+                .andExpect(jsonPath("$[0].newValues").value(org.hamcrest.Matchers.containsString("Publicacion directa")));
     }
 
     @Test

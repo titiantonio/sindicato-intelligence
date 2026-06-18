@@ -7,12 +7,15 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Repository
 public class JpaAuditLogRepository implements AuditLogRepository {
+
+    private static final ZoneId BUSINESS_ZONE = ZoneId.of("Europe/Madrid");
 
     private final EntityManager entityManager;
 
@@ -50,6 +53,13 @@ public class JpaAuditLogRepository implements AuditLogRepository {
         if (query.entityId() != null) {
             jpql.append(" AND log.entityId = :entityId");
             parameters.put("entityId", query.entityId());
+        }
+        if (query.date() != null) {
+            OffsetDateTime from = query.date().atStartOfDay(BUSINESS_ZONE).toOffsetDateTime();
+            OffsetDateTime to = query.date().plusDays(1).atStartOfDay(BUSINESS_ZONE).toOffsetDateTime();
+            jpql.append(" AND log.createdAt >= :from AND log.createdAt < :to");
+            parameters.put("from", from);
+            parameters.put("to", to);
         }
 
         jpql.append(" ORDER BY log.createdAt DESC, log.id DESC");

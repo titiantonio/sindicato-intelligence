@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.publication.application;
 
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.content.domain.ContentStatus;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -29,7 +31,8 @@ class PublishContentUseCaseTest {
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         PublicationRepository publicationRepository = mock(PublicationRepository.class);
         PublishingProvider publishingProvider = mock(PublishingProvider.class);
-        PublishContentUseCase useCase = new PublishContentUseCase(contentRepository, publicationRepository, List.of(publishingProvider));
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        PublishContentUseCase useCase = new PublishContentUseCase(contentRepository, publicationRepository, List.of(publishingProvider), audit);
         GeneratedContent content = approvedContent();
 
         when(contentRepository.findById(content.getId())).thenReturn(Optional.of(content));
@@ -44,6 +47,7 @@ class PublishContentUseCaseTest {
         assertEquals(ContentStatus.PUBLISHED, content.getStatus());
         verify(contentRepository).save(content);
         verify(publicationRepository, times(2)).save(any(Publication.class));
+        verify(audit).record(eq("PUBLICATION_PUBLISHED"), eq("PUBLICATION"), eq(50L), eq(null), any());
     }
 
     @Test
@@ -51,7 +55,8 @@ class PublishContentUseCaseTest {
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         PublicationRepository publicationRepository = mock(PublicationRepository.class);
         PublishingProvider publishingProvider = mock(PublishingProvider.class);
-        PublishContentUseCase useCase = new PublishContentUseCase(contentRepository, publicationRepository, List.of(publishingProvider));
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        PublishContentUseCase useCase = new PublishContentUseCase(contentRepository, publicationRepository, List.of(publishingProvider), audit);
         GeneratedContent content = pendingReviewContent();
 
         when(contentRepository.findById(content.getId())).thenReturn(Optional.of(content));
@@ -67,7 +72,8 @@ class PublishContentUseCaseTest {
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         PublicationRepository publicationRepository = mock(PublicationRepository.class);
         PublishingProvider publishingProvider = mock(PublishingProvider.class);
-        PublishContentUseCase useCase = new PublishContentUseCase(contentRepository, publicationRepository, List.of(publishingProvider));
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        PublishContentUseCase useCase = new PublishContentUseCase(contentRepository, publicationRepository, List.of(publishingProvider), audit);
         GeneratedContent content = approvedContent();
 
         when(contentRepository.findById(content.getId())).thenReturn(Optional.of(content));
@@ -81,6 +87,7 @@ class PublishContentUseCaseTest {
         verify(publicationRepository, times(2)).save(publicationCaptor.capture());
         assertEquals(PublicationStatus.FAILED, publicationCaptor.getAllValues().getLast().getStatus());
         verify(contentRepository, never()).save(content);
+        verify(audit).record(eq("PUBLICATION_FAILED"), eq("PUBLICATION"), eq(50L), eq(null), any());
     }
 
     private Publication withId(Publication publication) {

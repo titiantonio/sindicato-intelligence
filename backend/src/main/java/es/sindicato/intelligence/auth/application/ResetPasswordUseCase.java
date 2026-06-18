@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.auth.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.user.application.UserAccountNotificationSender;
 import es.sindicato.intelligence.user.application.UserNotFoundException;
 import es.sindicato.intelligence.user.domain.UserAccount;
@@ -69,7 +70,7 @@ public class ResetPasswordUseCase {
         passwordHistoryPolicyService.storeInHistory(user);
         UserAccount updated = userRepository.save(user.withCredentials(passwordEncoder.encode(newPassword), false, null, now));
         passwordResetTokenRepository.markAsUsed(tokenRecord.id(), now);
-        userAuditLogRepository.record(updated.getId(), updated.getEmail(), UserAuditAction.PASSWORD_CHANGED, "passwordChangedAt=" + now);
+        userAuditLogRepository.record(updated.getId(), updated.getEmail(), UserAuditAction.PASSWORD_CHANGED, AuditDetailFormatter.passwordChanged(now));
         userAccountNotificationSender.sendPasswordChangedEmail(updated.getEmail(), updated.getName());
         log.info("password reset completed: userId={}", updated.getId());
     }

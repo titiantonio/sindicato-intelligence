@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.user.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.user.domain.UserAccount;
 import es.sindicato.intelligence.user.domain.UserAuditAction;
 import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
@@ -45,7 +46,7 @@ public class UpdateUserUseCase {
         UserAccount updated = userRepository.save(existing.withProfile(command.name(), command.role()));
         if (existing.getRole() != updated.getRole()) {
             userAuditLogRepository.record(userId, actorEmail, UserAuditAction.USER_ROLE_CHANGED,
-                    "from=" + existing.getRole() + ",to=" + updated.getRole());
+                    AuditDetailFormatter.userRoleChanged(existing.getRole(), updated.getRole()));
         }
         if (!existing.getName().equals(updated.getName()) || existing.getRole() != updated.getRole()) {
             userAccountNotificationSender.sendUserUpdatedEmail(updated.getEmail(), updated.getName());

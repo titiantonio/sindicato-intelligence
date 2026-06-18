@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.user.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.user.domain.UserAccount;
 import es.sindicato.intelligence.user.domain.UserAuditAction;
 import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
@@ -82,7 +83,7 @@ public class CreateUserUseCase {
 
         userPasswordHistoryRepository.save(created.getId(), passwordHash);
         userAccountNotificationSender.sendTemporaryPasswordEmail(created.getEmail(), created.getName(), temporaryPassword);
-        userAuditLogRepository.record(created.getId(), actorEmail, UserAuditAction.USER_CREATED, "role=" + created.getRole());
+        userAuditLogRepository.record(created.getId(), actorEmail, UserAuditAction.USER_CREATED, AuditDetailFormatter.userCreated(created.getRole()));
 
         log.info(
                 "user creation completed with temporary credentials: userId={}, role={}, temporaryPasswordExpiresAt={}",

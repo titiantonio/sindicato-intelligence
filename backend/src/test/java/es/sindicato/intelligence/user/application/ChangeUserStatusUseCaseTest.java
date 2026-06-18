@@ -1,15 +1,19 @@
 package es.sindicato.intelligence.user.application;
 
 import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserAuditAction;
 import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
 import es.sindicato.intelligence.user.domain.UserRepository;
 import es.sindicato.intelligence.user.domain.UserRole;
 import es.sindicato.intelligence.user.domain.UserStatus;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -32,6 +36,9 @@ class ChangeUserStatusUseCaseTest {
 
         verify(userAccountNotificationSender).sendUserBlockedEmail("editor@sindicato.es", "Editor");
         verify(userAccountNotificationSender, never()).sendUserDeactivatedEmail(any(), any());
+        ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
+        verify(userAuditLogRepository).record(eq(1L), eq("admin@sindicato.es"), eq(UserAuditAction.USER_LOCKED), detailCaptor.capture());
+        assertTrue(detailCaptor.getValue().contains("Estado de usuario actualizado"));
     }
 
     @Test

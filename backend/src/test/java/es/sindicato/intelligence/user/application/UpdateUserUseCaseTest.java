@@ -1,14 +1,18 @@
 package es.sindicato.intelligence.user.application;
 
 import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserAuditAction;
 import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
 import es.sindicato.intelligence.user.domain.UserRepository;
 import es.sindicato.intelligence.user.domain.UserRole;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -30,6 +34,9 @@ class UpdateUserUseCaseTest {
         useCase.execute(1L, new UpdateUserCommand("Editor Senior", UserRole.ADMIN), "admin@sindicato.es");
 
         verify(userAccountNotificationSender).sendUserUpdatedEmail("editor@sindicato.es", "Editor Senior");
+        ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
+        verify(userAuditLogRepository).record(eq(1L), eq("admin@sindicato.es"), eq(UserAuditAction.USER_ROLE_CHANGED), detailCaptor.capture());
+        assertTrue(detailCaptor.getValue().contains("Rol de usuario actualizado"));
     }
 
     @Test
