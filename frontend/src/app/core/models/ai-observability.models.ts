@@ -27,5 +27,16 @@ export interface AiMetricsSnapshot {
   successCount: number;
   failedCount: number;
   averageLatencyMs: number;
+  p95LatencyMs: number;
+  successRate: number;
+  failureRate: number;
+  previousTotalOperations: number;
+  previousSuccessCount: number;
+  previousFailedCount: number;
+  previousAverageLatencyMs: number;
+  totalDifference: number;
+  successRateDifference: number;
+  failureRateDifference: number;
+  averageLatencyDifference: number;
   recentMetrics: AiMetric[];
 }

@@ -7,6 +7,17 @@ public record AiMetricsResponse(
         long successCount,
         long failedCount,
         long averageLatencyMs,
+        long p95LatencyMs,
+        long successRate,
+        long failureRate,
+        long previousTotalOperations,
+        long previousSuccessCount,
+        long previousFailedCount,
+        long previousAverageLatencyMs,
+        long totalDifference,
+        long successRateDifference,
+        long failureRateDifference,
+        long averageLatencyDifference,
         List<AiMetricResponse> recentMetrics
 ) {
 }

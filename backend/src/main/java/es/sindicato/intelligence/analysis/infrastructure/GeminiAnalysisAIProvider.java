@@ -76,6 +76,11 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
         throw lastException;
     }
 
+    @Override
+    public String modelName() {
+        return normalizeModel(model);
+    }
+
     private JsonNode callGemini(AnalysisAIRequest request, String resolvedApiKey, String resolvedModel) {
         Map<String, Object> body = Map.of(
                 "systemInstruction", Map.of(

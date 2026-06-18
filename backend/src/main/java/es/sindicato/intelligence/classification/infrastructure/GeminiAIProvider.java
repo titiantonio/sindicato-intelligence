@@ -73,6 +73,11 @@ public class GeminiAIProvider implements AIProvider {
         throw lastException;
     }
 
+    @Override
+    public String modelName() {
+        return normalizeModel(properties.getGemini().getModel());
+    }
+
     private JsonNode callGemini(
             ClassificationAIRequest request,
             AiProviderProperties.Gemini gemini,

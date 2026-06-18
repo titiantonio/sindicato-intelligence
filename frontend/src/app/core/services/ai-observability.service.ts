@@ -16,4 +16,8 @@ export class AiObservabilityService {
   listMetrics(limit = 25) {
     return this.httpClient.get<AiMetricsSnapshot>(`/api/v1/ai/metrics?limit=${limit}`);
   }
+
+  listDailyMetrics(date: string) {
+    return this.httpClient.get<AiMetricsSnapshot>(`/api/v1/ai/metrics?date=${date}`);
+  }
 }

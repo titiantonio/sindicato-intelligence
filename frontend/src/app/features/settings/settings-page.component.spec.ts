@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { AutomationWorkflowSetting } from '../../core/models/automation.models';
@@ -14,11 +15,12 @@ describe('SettingsPageComponent', () => {
   let automationService: jasmine.SpyObj<AutomationService>;
 
   beforeEach(async () => {
-    aiObservabilityService = jasmine.createSpyObj<AiObservabilityService>('AiObservabilityService', ['listPrompts', 'listMetrics']);
+    aiObservabilityService = jasmine.createSpyObj<AiObservabilityService>('AiObservabilityService', ['listPrompts', 'listMetrics', 'listDailyMetrics']);
     applicationSettingsService = jasmine.createSpyObj<ApplicationSettingsService>('ApplicationSettingsService', ['getTelegramSettings', 'updateTelegramSettings']);
     automationService = jasmine.createSpyObj<AutomationService>('AutomationService', ['listSettings', 'updateSetting', 'runWorkflow', 'getOverview']);
     aiObservabilityService.listPrompts.and.returnValue(of(promptVersions()));
     aiObservabilityService.listMetrics.and.returnValue(of(metrics()));
+    aiObservabilityService.listDailyMetrics.and.returnValue(of(metrics()));
     applicationSettingsService.getTelegramSettings.and.returnValue(of(telegramSettings()));
     applicationSettingsService.updateTelegramSettings.and.returnValue(of({ ...telegramSettings(), enabled: true, readyToPublish: true }));
     automationService.listSettings.and.returnValue(of([setting()]));
@@ -39,7 +41,8 @@ describe('SettingsPageComponent', () => {
       providers: [
         { provide: AiObservabilityService, useValue: aiObservabilityService },
         { provide: ApplicationSettingsService, useValue: applicationSettingsService },
-        { provide: AutomationService, useValue: automationService }
+        { provide: AutomationService, useValue: automationService },
+        provideRouter([])
       ]
     }).compileComponents();
 
@@ -52,10 +55,12 @@ describe('SettingsPageComponent', () => {
 
     expect(compiled.textContent).toContain('IA y prompts');
     expect(compiled.textContent).toContain('Prompts versionados');
-    expect(compiled.textContent).toContain('Metricas recientes');
+    expect(compiled.textContent).toContain('Metricas diarias');
     expect(compiled.textContent).toContain('Clasificacion de noticias');
     expect(compiled.textContent).toContain('GeminiAIProvider');
+    expect(compiled.textContent).toContain('gemini-1.5-flash');
     expect(compiled.textContent).not.toContain('Guardar Telegram');
+    expect(aiObservabilityService.listDailyMetrics).toHaveBeenCalled();
   });
 
   it('renders publication and automation configuration in separate tabs', () => {
@@ -151,6 +156,38 @@ describe('SettingsPageComponent', () => {
     expect(component.metricDisplayPage()).toBe(2);
   });
 
+  it('renders daily metric cards with dashboard component data', () => {
+    const component = fixture.componentInstance as any;
+
+    expect(component.aiMetricCards().length).toBe(4);
+    expect(component.aiMetricCards()[0].title).toBe('Operaciones IA');
+    expect(component.aiMetricCards()[0].items[0].value).toBe(2);
+    expect(component.aiMetricCards()[1].items[1].value).toBe(50);
+  });
+
+  it('changes daily metrics date', () => {
+    const component = fixture.componentInstance as any;
+
+    component.setMetricDate('2026-06-17');
+
+    expect(aiObservabilityService.listDailyMetrics).toHaveBeenCalledWith('2026-06-17');
+  });
+
+  it('opens error and detail modals from metric rows', () => {
+    const component = fixture.componentInstance as any;
+    const failedMetric = metrics().recentMetrics[1];
+
+    component.openMetricDetail(failedMetric);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Detalle de analisis IA');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Abrir evento relacionado');
+
+    component.closeMetricDetail();
+    component.openMetricError(new Event('click'), failedMetric);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Respuesta IA invalida');
+  });
+
   function setting(): AutomationWorkflowSetting {
     return {
       workflowCode: 'WF02_CLASSIFICATION',
@@ -218,7 +255,7 @@ describe('SettingsPageComponent', () => {
           operationType: 'CLASSIFICATION',
           promptKey: 'WF02_CLASSIFICATION',
           provider: 'GeminiAIProvider',
-          model: null,
+          model: 'gemini-1.5-flash',
           status: 'SUCCESS' as const,
           relatedEntityType: 'NEWS',
           relatedEntityId: 1,
@@ -240,6 +277,18 @@ describe('SettingsPageComponent', () => {
           createdAt: '2026-06-18T11:00:00Z'
         }
       ]
+      ,
+      p95LatencyMs: 220,
+      successRate: 50,
+      failureRate: 50,
+      previousTotalOperations: 1,
+      previousSuccessCount: 1,
+      previousFailedCount: 0,
+      previousAverageLatencyMs: 100,
+      totalDifference: 1,
+      successRateDifference: -50,
+      failureRateDifference: 50,
+      averageLatencyDifference: 70
     };
   }
 });

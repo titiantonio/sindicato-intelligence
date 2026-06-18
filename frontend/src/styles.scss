@@ -160,3 +160,133 @@ p {
 .table-cell-break {
   overflow-wrap: anywhere;
 }
+
+.settings-page .metric-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(17rem, 1fr));
+}
+
+.settings-page .daily-filter {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-page .daily-filter label {
+  color: var(--color-text-muted);
+  display: grid;
+  font-size: 0.85rem;
+  font-weight: 800;
+  gap: 0.35rem;
+  max-width: 14rem;
+}
+
+.settings-page .daily-filter input {
+  border: 1px solid var(--color-input-border);
+  border-radius: 0.5rem;
+  color: var(--color-field-text);
+  padding: 0.6rem 0.7rem;
+}
+
+.settings-page .data-table--metrics {
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.settings-page .data-table--metrics th,
+.settings-page .data-table--metrics td {
+  overflow: hidden;
+  padding-inline: 0.5rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-page .metric-row {
+  cursor: pointer;
+}
+
+.settings-page .metric-row:hover,
+.settings-page .metric-row:focus-visible {
+  background: var(--color-page-accent);
+  outline: none;
+}
+
+.settings-page .metric-row--failed {
+  background: color-mix(in srgb, var(--color-danger-soft) 48%, var(--color-surface));
+}
+
+.settings-page .metric-row--failed:hover,
+.settings-page .metric-row--failed:focus-visible {
+  background: color-mix(in srgb, var(--color-danger-soft) 66%, var(--color-surface));
+}
+
+.settings-page .inline-action {
+  background: var(--color-neutral-soft);
+  color: var(--color-text);
+  padding: 0.35rem 0.5rem;
+  white-space: nowrap;
+}
+
+.settings-page .modal-backdrop {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.38);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 20;
+}
+
+.settings-page .metric-modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 1rem;
+  max-width: 42rem;
+  padding: 1.25rem;
+  width: min(100%, 42rem);
+}
+
+.settings-page .metric-modal header {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.settings-page .metric-modal header span {
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-page .metric-modal h2 {
+  margin: 0.25rem 0 0;
+}
+
+.settings-page .error-detail {
+  background: var(--color-danger-soft);
+  border-radius: 8px;
+  color: var(--color-danger-text);
+  margin: 0;
+  max-height: 18rem;
+  overflow: auto;
+  padding: 1rem;
+  white-space: pre-wrap;
+}
+
+.settings-page .detail-link {
+  color: var(--color-primary);
+  font-weight: 800;
+}
+
+@media (max-width: 1200px) {
+  .settings-page .metric-grid {
+    grid-template-columns: 1fr;
+  }
+}

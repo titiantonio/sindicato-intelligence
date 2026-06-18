@@ -95,11 +95,11 @@ public class DetectEventUseCase {
                     prompt.userPrompt()
             ));
         } catch (RuntimeException exception) {
-            metricsRecorder.recordFailure("EVENT_MATCHING", "WF03_EVENT_MATCHING", providerName(), null, "NEWS", newsArticle.getId(), startedAt, exception);
+            metricsRecorder.recordFailure("EVENT_MATCHING", "WF03_EVENT_MATCHING", providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
             log.error("event detection failed during AI matching: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
             throw exception;
         }
-        metricsRecorder.recordSuccess("EVENT_MATCHING", "WF03_EVENT_MATCHING", providerName(), null, "NEWS", newsArticle.getId(), startedAt);
+        metricsRecorder.recordSuccess("EVENT_MATCHING", "WF03_EVENT_MATCHING", providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt);
 
         Event event = findAutomaticMatch(activeEvents, aiResponse);
         boolean created = false;

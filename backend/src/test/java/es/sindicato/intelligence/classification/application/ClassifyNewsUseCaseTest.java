@@ -21,6 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -34,13 +37,15 @@ class ClassifyNewsUseCaseTest {
         NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
         ClassifyNewsPromptBuilder promptBuilder = new ClassifyNewsPromptBuilder();
         AIProvider aiProvider = mock(AIProvider.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, mock(AiOperationMetricsRecorder.class));
+        AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, metricsRecorder);
         NewsArticle newsArticle = newsArticle();
         NewsClassification savedClassification = classification(10L, newsArticle.getId());
 
         when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
         when(classificationRepository.existsByNewsId(newsArticle.getId())).thenReturn(false);
         when(aiProvider.classify(any(ClassificationAIRequest.class))).thenReturn(aiResponse());
+        when(aiProvider.modelName()).thenReturn("test-model");
         when(classificationRepository.save(any(NewsClassification.class))).thenReturn(savedClassification);
 
         NewsClassification result = useCase.execute(new ClassifyNewsCommand(newsArticle.getId()));
@@ -56,6 +61,15 @@ class ClassifyNewsUseCaseTest {
         assertEquals(BigDecimal.valueOf(95), classificationToSave.getRelevanceScore());
         assertEquals(NewsStatus.CLASSIFIED, newsArticle.getProcessingStatus());
         assertNotNull(classificationToSave.getClassifiedAt());
+        verify(metricsRecorder).recordSuccess(
+                eq("CLASSIFICATION"),
+                eq("WF02_CLASSIFICATION"),
+                anyString(),
+                eq("test-model"),
+                eq("NEWS"),
+                eq(newsArticle.getId()),
+                isNull()
+        );
     }
 
     @Test

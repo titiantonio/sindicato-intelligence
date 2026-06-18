@@ -5,6 +5,7 @@ import es.sindicato.intelligence.ai.domain.AiOperationMetricRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Repository
@@ -45,6 +46,26 @@ public class JpaAiOperationMetricRepository implements AiOperationMetricReposito
                         AiOperationMetricEntity.class
                 )
                 .setMaxResults(limit)
+                .getResultList()
+                .stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<AiOperationMetric> findByCreatedAtBetween(OffsetDateTime fromInclusive, OffsetDateTime toExclusive) {
+        return entityManager.createQuery(
+                        """
+                        SELECT metric
+                        FROM AiOperationMetricEntity metric
+                        WHERE metric.createdAt >= :fromInclusive
+                          AND metric.createdAt < :toExclusive
+                        ORDER BY metric.createdAt DESC, metric.id DESC
+                        """,
+                        AiOperationMetricEntity.class
+                )
+                .setParameter("fromInclusive", fromInclusive)
+                .setParameter("toExclusive", toExclusive)
                 .getResultList()
                 .stream()
                 .map(this::toDomain)

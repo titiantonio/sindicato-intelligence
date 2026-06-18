@@ -81,7 +81,7 @@ public class GenerateAnalysisUseCase {
                     prompt.userPrompt()
             ));
         } catch (RuntimeException exception) {
-            metricsRecorder.recordFailure("ANALYSIS", "WF04_ANALYSIS", providerName(), null, "EVENT", event.getId(), startedAt, exception);
+            metricsRecorder.recordFailure("ANALYSIS", "WF04_ANALYSIS", providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt, exception);
             log.error("analysis generation failed during AI generation: eventId={}, reason={}", event.getId(), exception.getMessage(), exception);
             throw exception;
         }

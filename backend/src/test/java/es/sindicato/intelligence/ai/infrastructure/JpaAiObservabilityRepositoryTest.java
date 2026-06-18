@@ -51,6 +51,44 @@ class JpaAiObservabilityRepositoryTest {
     }
 
     @Test
+    void listsMetricsByCreatedAtRange() {
+        AiOperationMetric inside = metricRepository.save(new AiOperationMetric(
+                null,
+                "ANALYSIS",
+                "WF04_ANALYSIS",
+                "TestProvider",
+                "test-model",
+                AiMetricStatus.FAILED,
+                "EVENT",
+                30L,
+                250,
+                "failed",
+                OffsetDateTime.parse("2126-06-18T10:00:00+02:00")
+        ));
+        metricRepository.save(new AiOperationMetric(
+                null,
+                "CONTENT_GENERATION",
+                "WF05_CONTENT",
+                "TestProvider",
+                "test-model",
+                AiMetricStatus.SUCCESS,
+                "EVENT",
+                31L,
+                150,
+                null,
+                OffsetDateTime.parse("2126-06-17T23:59:59+02:00")
+        ));
+
+        List<AiOperationMetric> metrics = metricRepository.findByCreatedAtBetween(
+                OffsetDateTime.parse("2126-06-18T00:00:00+02:00"),
+                OffsetDateTime.parse("2126-06-19T00:00:00+02:00")
+        );
+
+        assertEquals(1, metrics.size());
+        assertEquals(inside.getId(), metrics.getFirst().getId());
+    }
+
+    @Test
     void listsSeededActivePromptVersions() {
         assertEquals(4, promptVersionRepository.findActive().size());
     }

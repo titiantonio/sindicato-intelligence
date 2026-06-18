@@ -2162,6 +2162,33 @@ Estado:
 
 ---
 
+## [x] T12.26
+
+Ajustar observabilidad IA diaria en `/settings`.
+
+Resultado:
+- `GET /api/v1/ai/metrics` permite consultar metricas diarias mediante `date=YYYY-MM-DD`, usando el dia operativo `Europe/Madrid`.
+- El resumen IA calcula operaciones, correctas, fallidas, tasas, latencia media, P95 y comparativa contra el dia anterior.
+- La pantalla `/settings` cambia “Metricas recientes” por “Metricas diarias”, con selector de fecha y cards reutilizando el estilo del dashboard.
+- La tabla de metricas IA elimina columnas visibles `ID` y `Entidad ID`, mantiene filtros/orden/paginacion sobre campos visibles y evita scroll horizontal.
+- Las filas fallidas se distinguen con fondo rojo suave.
+- El error se consulta desde `Ver error` en modal, sin ocupar ancho de tabla.
+- El click en una fila abre un modal de detalle operativo y enlaza a `/events/{id}` cuando la entidad relacionada es `EVENT`.
+- Las metricas de clasificacion, matching, analisis y generacion de contenido registran el modelo IA usado en exito y fallo.
+- Incrementado `backend/pom.xml` a `0.0.58-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=ListAiMetricsUseCaseTest,AiObservabilityControllerTest,JpaAiObservabilityRepositoryTest,ClassifyNewsUseCaseTest,GenerateContentUseCaseTest" test` OK, 17 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts --include=src/app/core/services/ai-observability.service.spec.ts` OK, 13 tests.
+- Backend completo: `mvn test` OK, 238 tests y Flyway valida 9 migraciones.
+- Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 117 tests.
+- Frontend build: `npm.cmd run build` OK, con warnings no bloqueantes de presupuesto inicial, `sources-page.component.scss` y `users-page.component.scss`.
+
+Estado:
+- Sprint 12 permanece cerrado; esta tarea refina la observabilidad ADMIN diaria y la trazabilidad de errores/modelos IA.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

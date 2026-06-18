@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -35,13 +36,27 @@ public class AiObservabilityController {
     }
 
     @GetMapping("/metrics")
-    public AiMetricsResponse listMetrics(@RequestParam(required = false) Integer limit) {
-        AiMetricsSnapshot snapshot = listAiMetricsUseCase.execute(limit);
+    public AiMetricsResponse listMetrics(
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) LocalDate date
+    ) {
+        AiMetricsSnapshot snapshot = date == null ? listAiMetricsUseCase.execute(limit) : listAiMetricsUseCase.execute(date);
         return new AiMetricsResponse(
                 snapshot.summary().totalOperations(),
                 snapshot.summary().successCount(),
                 snapshot.summary().failedCount(),
                 snapshot.summary().averageLatencyMs(),
+                snapshot.summary().p95LatencyMs(),
+                snapshot.summary().successRate(),
+                snapshot.summary().failureRate(),
+                snapshot.summary().previousTotalOperations(),
+                snapshot.summary().previousSuccessCount(),
+                snapshot.summary().previousFailedCount(),
+                snapshot.summary().previousAverageLatencyMs(),
+                snapshot.summary().totalDifference(),
+                snapshot.summary().successRateDifference(),
+                snapshot.summary().failureRateDifference(),
+                snapshot.summary().averageLatencyDifference(),
                 snapshot.recentMetrics().stream().map(this::toResponse).toList()
         );
     }

@@ -23,6 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -36,8 +39,9 @@ class GenerateContentUseCaseTest {
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         ContentAIProvider aiProvider = mock(ContentAIProvider.class);
+        AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
         CurrentContentAuthorProvider authorProvider = () -> 1L;
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, authorProvider, mock(AiOperationMetricsRecorder.class));
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, authorProvider, metricsRecorder);
         Event event = event();
         EventAIAnalysis analysis = analysis(20L, event.getId());
         GeneratedContent savedContent = content(30L, event.getId(), 1L);
@@ -45,6 +49,7 @@ class GenerateContentUseCaseTest {
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(analysisRepository.findByEventId(event.getId())).thenReturn(List.of(analysis));
         when(aiProvider.generate(any(ContentAIRequest.class))).thenReturn(aiResponse());
+        when(aiProvider.modelName()).thenReturn("test-content-model");
         when(contentRepository.save(any(GeneratedContent.class))).thenReturn(savedContent);
 
         GeneratedContent result = useCase.execute(new GenerateContentCommand(event.getId(), null, "telegram", "informativo", "standard"));
@@ -68,6 +73,15 @@ class GenerateContentUseCaseTest {
         assertEquals("Titulo Telegram", contentToSave.getTitle());
         assertEquals("Mensaje generado\n\n#Educacion #Andalucia", contentToSave.getContent());
         assertNotNull(contentToSave.getGeneratedAt());
+        verify(metricsRecorder).recordSuccess(
+                eq("CONTENT_GENERATION"),
+                eq("WF05_CONTENT"),
+                anyString(),
+                eq("test-content-model"),
+                eq("EVENT"),
+                eq(event.getId()),
+                isNull()
+        );
     }
 
     @Test

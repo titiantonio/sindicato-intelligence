@@ -23,4 +23,9 @@ public class DeterministicAnalysisAIProvider implements AnalysisAIProvider {
                 "deterministic-analysis"
         );
     }
+
+    @Override
+    public String modelName() {
+        return "deterministic-analysis";
+    }
 }

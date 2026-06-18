@@ -37,30 +37,11 @@
           <h2>Prompts y observabilidad</h2>
         </header>
 
-        @if (aiMetrics(); as metrics) {
-          <div class="summary-grid">
-            <article class="summary-card">
-              <span>Operaciones</span>
-              <strong>{{ metrics.totalOperations }}</strong>
-              <p>Ultimas ejecuciones registradas</p>
-            </article>
-            <article class="summary-card">
-              <span>Correctas</span>
-              <strong>{{ metrics.successCount }}</strong>
-              <p>Respuestas IA procesadas</p>
-            </article>
-            <article class="summary-card">
-              <span>Fallidas</span>
-              <strong>{{ metrics.failedCount }}</strong>
-              <p>Errores controlados</p>
-            </article>
-            <article class="summary-card">
-              <span>Latencia media</span>
-              <strong>{{ metrics.averageLatencyMs }} ms</strong>
-              <p>Sobre la muestra reciente</p>
-            </article>
-          </div>
-        }
+        <div class="metric-grid">
+          @for (metric of aiMetricCards(); track metric.label) {
+            <app-metric-card [card]="metric" />
+          }
+        </div>
       </section>
 
       <section class="settings-section">
@@ -147,27 +128,31 @@
       <section class="settings-section">
         <header class="section-header">
           <span>Observabilidad IA</span>
-          <h2>Metricas recientes</h2>
+          <h2>Metricas diarias</h2>
         </header>
+
+        <div class="daily-filter">
+          <label>
+            Dia operativo
+            <input type="date" [ngModel]="metricDate()" (ngModelChange)="setMetricDate($event)" />
+          </label>
+        </div>
 
         <div class="table-wrapper">
           <table class="data-table data-table--metrics">
             <colgroup>
-              <col style="width: 6rem" />
-              <col style="width: 10rem" />
-              <col style="width: 12rem" />
-              <col style="width: 14rem" />
-              <col style="width: 12rem" />
-              <col style="width: 9rem" />
-              <col style="width: 9rem" />
-              <col style="width: 12rem" />
-              <col style="width: 6rem" />
-              <col style="width: 6rem" />
-              <col style="width: 20rem" />
+              <col style="width: 12%" />
+              <col style="width: 13%" />
+              <col style="width: 15%" />
+              <col style="width: 12%" />
+              <col style="width: 13%" />
+              <col style="width: 8%" />
+              <col style="width: 8%" />
+              <col style="width: 9%" />
+              <col style="width: 10%" />
             </colgroup>
             <thead>
               <tr>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('id')">ID {{ metricSortLabel('id') }}</button></th>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('createdAt')">Fecha {{ metricSortLabel('createdAt') }}</button></th>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('operationType')">Operacion {{ metricSortLabel('operationType') }}</button></th>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('promptKey')">Prompt {{ metricSortLabel('promptKey') }}</button></th>
@@ -175,12 +160,10 @@
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('model')">Modelo {{ metricSortLabel('model') }}</button></th>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('status')">Estado {{ metricSortLabel('status') }}</button></th>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('relatedEntityType')">Entidad {{ metricSortLabel('relatedEntityType') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('relatedEntityId')">Entidad ID {{ metricSortLabel('relatedEntityId') }}</button></th>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('latencyMs')">Latencia {{ metricSortLabel('latencyMs') }}</button></th>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('errorMessage')">Error {{ metricSortLabel('errorMessage') }}</button></th>
               </tr>
               <tr class="column-filters">
-                <th><input type="search" aria-label="Filtrar ID de metrica" [ngModel]="metricIdFilter()" (ngModelChange)="setMetricIdFilter($event)" /></th>
                 <th><input type="search" aria-label="Filtrar fecha de metrica" [ngModel]="metricCreatedAtFilter()" (ngModelChange)="setMetricCreatedAtFilter($event)" /></th>
                 <th><input type="search" aria-label="Filtrar operacion de metrica" [ngModel]="metricOperationFilter()" (ngModelChange)="setMetricOperationFilter($event)" /></th>
                 <th><input type="search" aria-label="Filtrar prompt de metrica" [ngModel]="metricPromptFilter()" (ngModelChange)="setMetricPromptFilter($event)" /></th>
@@ -194,15 +177,13 @@
                   </select>
                 </th>
                 <th><input type="search" aria-label="Filtrar entidad de metrica" [ngModel]="metricRelatedEntityTypeFilter()" (ngModelChange)="setMetricRelatedEntityTypeFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar ID de entidad" [ngModel]="metricRelatedEntityIdFilter()" (ngModelChange)="setMetricRelatedEntityIdFilter($event)" /></th>
                 <th><input type="search" aria-label="Filtrar latencia de metrica" [ngModel]="metricLatencyFilter()" (ngModelChange)="setMetricLatencyFilter($event)" /></th>
                 <th><input type="search" aria-label="Filtrar error de metrica" [ngModel]="metricErrorFilter()" (ngModelChange)="setMetricErrorFilter($event)" /></th>
               </tr>
             </thead>
             <tbody>
               @for (metric of paginatedMetrics(); track metric.id) {
-                <tr>
-                  <td class="table-cell-nowrap">{{ metric.id }}</td>
+                <tr class="metric-row" [class.metric-row--failed]="metric.status === 'FAILED'" (click)="openMetricDetail(metric)" tabindex="0">
                   <td class="table-cell-nowrap">{{ formatDate(metric.createdAt) }}</td>
                   <td class="table-cell-nowrap">{{ metric.operationType }}</td>
                   <td class="table-cell-nowrap"><code>{{ metric.promptKey }}</code></td>
@@ -210,13 +191,18 @@
                   <td class="table-cell-nowrap">{{ metric.model || '-' }}</td>
                   <td class="table-cell-nowrap">{{ metricStatusLabel(metric.status) }}</td>
                   <td class="table-cell-nowrap">{{ metric.relatedEntityType || '-' }}</td>
-                  <td class="table-cell-nowrap">{{ metric.relatedEntityId ?? '-' }}</td>
                   <td class="table-cell-nowrap">{{ metric.latencyMs }} ms</td>
-                  <td class="table-cell-break">{{ metric.errorMessage || '-' }}</td>
+                  <td class="table-cell-nowrap">
+                    @if (metric.errorMessage) {
+                      <button type="button" class="inline-action" (click)="openMetricError($event, metric)">Ver error</button>
+                    } @else {
+                      -
+                    }
+                  </td>
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="11" class="empty-cell">No hay metricas que coincidan con los filtros.</td>
+                  <td colspan="9" class="empty-cell">No hay metricas que coincidan con los filtros.</td>
                 </tr>
               }
             </tbody>
@@ -437,6 +423,86 @@
           }
         </div>
       </section>
+    }
+
+    @if (selectedErrorMetric(); as errorMetric) {
+      <div class="modal-backdrop" (click)="closeMetricError()">
+        <section class="metric-modal" role="dialog" aria-modal="true" aria-labelledby="metric-error-title" (click)="$event.stopPropagation()">
+          <header>
+            <div>
+              <span>Error IA</span>
+              <h2 id="metric-error-title">Detalle del error</h2>
+            </div>
+            <button type="button" class="secondary" (click)="closeMetricError()">Cerrar</button>
+          </header>
+          <dl class="workflow-status">
+            <div>
+              <dt>Operacion</dt>
+              <dd>{{ errorMetric.operationType }}</dd>
+            </div>
+            <div>
+              <dt>Proveedor</dt>
+              <dd>{{ errorMetric.provider }}</dd>
+            </div>
+            <div>
+              <dt>Modelo</dt>
+              <dd>{{ errorMetric.model || '-' }}</dd>
+            </div>
+            <div>
+              <dt>Fecha</dt>
+              <dd>{{ formatDate(errorMetric.createdAt) }}</dd>
+            </div>
+          </dl>
+          <pre class="error-detail">{{ errorMetric.errorMessage }}</pre>
+        </section>
+      </div>
+    }
+
+    @if (selectedMetricDetail(); as detailMetric) {
+      <div class="modal-backdrop" (click)="closeMetricDetail()">
+        <section class="metric-modal" role="dialog" aria-modal="true" aria-labelledby="metric-detail-title" (click)="$event.stopPropagation()">
+          <header>
+            <div>
+              <span>Operacion IA</span>
+              <h2 id="metric-detail-title">{{ metricDetailTitle(detailMetric) }}</h2>
+            </div>
+            <button type="button" class="secondary" (click)="closeMetricDetail()">Cerrar</button>
+          </header>
+          <dl class="workflow-status">
+            <div>
+              <dt>Fecha</dt>
+              <dd>{{ formatDate(detailMetric.createdAt) }}</dd>
+            </div>
+            <div>
+              <dt>Prompt</dt>
+              <dd><code>{{ detailMetric.promptKey }}</code></dd>
+            </div>
+            <div>
+              <dt>Proveedor</dt>
+              <dd>{{ detailMetric.provider }}</dd>
+            </div>
+            <div>
+              <dt>Modelo</dt>
+              <dd>{{ detailMetric.model || '-' }}</dd>
+            </div>
+            <div>
+              <dt>Estado</dt>
+              <dd>{{ metricStatusLabel(detailMetric.status) }}</dd>
+            </div>
+            <div>
+              <dt>Entidad</dt>
+              <dd>{{ detailMetric.relatedEntityType || '-' }} {{ detailMetric.relatedEntityId ?? '' }}</dd>
+            </div>
+            <div>
+              <dt>Latencia</dt>
+              <dd>{{ detailMetric.latencyMs }} ms</dd>
+            </div>
+          </dl>
+          @if (entityDetailLink(detailMetric); as detailLink) {
+            <a class="detail-link" [routerLink]="detailLink" (click)="closeMetricDetail()">Abrir evento relacionado</a>
+          }
+        </section>
+      </div>
     }
   </article>
 </section>

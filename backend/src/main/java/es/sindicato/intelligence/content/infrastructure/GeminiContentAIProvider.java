@@ -76,6 +76,11 @@ public class GeminiContentAIProvider implements ContentAIProvider {
         throw lastException;
     }
 
+    @Override
+    public String modelName() {
+        return normalizeModel(model);
+    }
+
     private JsonNode callGemini(ContentAIRequest request, String resolvedApiKey, String resolvedModel) {
         Map<String, Object> body = Map.of(
                 "systemInstruction", Map.of(

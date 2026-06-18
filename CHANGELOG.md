@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend IA: `GET /api/v1/ai/metrics` permite consultar metricas diarias por `date=YYYY-MM-DD`, con resumen del dia, comparativa contra ayer, tasas de exito/fallo y latencia P95.
+- Frontend ADMIN: `/settings` muestra metricas IA diarias con selector de fecha, cards estilo dashboard, modales de error/detalle y enlace a evento relacionado cuando aplica.
 - Frontend ADMIN: `/settings` organiza la configuracion por tabs de IA/prompts, proveedores de publicacion y automatizaciones.
 - Frontend ADMIN: las tablas de prompts versionados y metricas IA incorporan filtros por columna, ordenacion por todos sus campos visibles y paginacion con selector de filas.
 - Backend IA: anadidas tablas `ai_prompt_versions` y `ai_operation_metrics` para versionado tecnico de prompts y observabilidad de operaciones IA.
@@ -66,6 +68,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Backend IA: las metricas de clasificacion, matching de eventos, analisis y generacion de contenido registran el modelo IA usado tambien en fallos.
+- Frontend ADMIN: la tabla de metricas IA elimina columnas tecnicas `ID` y `Entidad ID`, compacta anchos sin scroll horizontal y marca filas fallidas con fondo rojo suave.
+- Versionado del backend actualizado a `0.0.58-SNAPSHOT`.
 - Frontend backoffice: ajustados anchos de columnas y comportamiento de salto de linea en todas las tablas de visualizacion para compactar campos cortos y evitar cortes en nombres, emails y textos principales.
 - Versionado del backend actualizado a `0.0.57-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.56-SNAPSHOT`.

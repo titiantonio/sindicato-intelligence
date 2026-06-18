@@ -20,4 +20,9 @@ public class DeterministicContentAIProvider implements ContentAIProvider {
                 List.of("#EducacionPublica", "#Andalucia")
         );
     }
+
+    @Override
+    public String modelName() {
+        return "deterministic-content";
+    }
 }

@@ -39,4 +39,14 @@ describe('AiObservabilityService', () => {
     expect(request.request.method).toBe('GET');
     request.flush({ totalOperations: 1, successCount: 1, failedCount: 0, averageLatencyMs: 120, recentMetrics: [] });
   });
+
+  it('lists daily ai metrics by date', () => {
+    service.listDailyMetrics('2026-06-18').subscribe((response) => {
+      expect(response.totalOperations).toBe(2);
+    });
+
+    const request = httpTestingController.expectOne('/api/v1/ai/metrics?date=2026-06-18');
+    expect(request.request.method).toBe('GET');
+    request.flush({ totalOperations: 2, successCount: 1, failedCount: 1, averageLatencyMs: 120, recentMetrics: [] });
+  });
 });

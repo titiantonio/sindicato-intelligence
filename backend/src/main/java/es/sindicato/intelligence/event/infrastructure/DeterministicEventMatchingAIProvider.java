@@ -52,6 +52,11 @@ public class DeterministicEventMatchingAIProvider implements EventMatchingAIProv
         return new EventMatchingAIResponse(false, null, bestConfidence, "No hay coincidencia suficiente para asociacion automatica.");
     }
 
+    @Override
+    public String modelName() {
+        return "deterministic-event-matching";
+    }
+
     private int confidence(String newsText, Set<String> newsTokens, EventMatchCandidate candidate) {
         String candidateText = normalize(String.join(" ", safe(candidate.title()), safe(candidate.description()), candidate.category().name()));
         Set<String> candidateTokens = tokens(candidateText);

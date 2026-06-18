@@ -40,6 +40,11 @@ public class DeterministicAIProvider implements AIProvider {
         return response(ClassificationCategory.OTROS, "Sin clasificar", 50, ImpactLevel.LOW, UrgencyLevel.LOW, List.of("educacion"));
     }
 
+    @Override
+    public String modelName() {
+        return "deterministic-classification";
+    }
+
     private ClassificationAIResponse response(
             ClassificationCategory category,
             String subcategory,

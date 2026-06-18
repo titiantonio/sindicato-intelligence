@@ -1,17 +1,20 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
-import { AiMetricsSnapshot, AiPromptVersion } from '../../core/models/ai-observability.models';
+import { AiMetric, AiMetricsSnapshot, AiPromptVersion } from '../../core/models/ai-observability.models';
 import { TelegramPublicationSettings } from '../../core/models/application-settings.models';
 import { AutomationOverview, AutomationRunResult, AutomationWorkflowCode, AutomationWorkflowSetting } from '../../core/models/automation.models';
+import { MetricCard } from '../../core/models/dashboard.models';
 import { AiObservabilityService } from '../../core/services/ai-observability.service';
 import { ApplicationSettingsService } from '../../core/services/application-settings.service';
 import { AutomationService } from '../../core/services/automation.service';
+import { MetricCardComponent } from '../../shared/components/metric-card/metric-card.component';
 
 type SettingsTab = 'ai' | 'publication' | 'automation';
 type SortDirection = 'asc' | 'desc';
 type PromptSortColumn = 'promptKey' | 'promptName' | 'module' | 'version' | 'checksum' | 'active' | 'createdAt';
-type MetricSortColumn = 'id' | 'operationType' | 'promptKey' | 'provider' | 'model' | 'status' | 'relatedEntityType' | 'relatedEntityId' | 'latencyMs' | 'errorMessage' | 'createdAt';
+type MetricSortColumn = 'operationType' | 'promptKey' | 'provider' | 'model' | 'status' | 'relatedEntityType' | 'latencyMs' | 'errorMessage' | 'createdAt';
 
 interface AutomationSettingForm {
   enabled: boolean;
@@ -29,7 +32,7 @@ interface TelegramSettingsForm {
 
 @Component({
   selector: 'app-settings-page',
-  imports: [FormsModule],
+  imports: [FormsModule, MetricCardComponent, RouterLink],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss'
 })
@@ -61,6 +64,9 @@ export class SettingsPageComponent implements OnInit {
   protected readonly lastRunResult = signal<Record<string, AutomationRunResult>>({});
   protected readonly activeTab = signal<SettingsTab>('ai');
   protected readonly pageSizeOptions = [5, 10, 25, 50];
+  protected readonly metricDate = signal(this.todayInputValue());
+  protected readonly selectedErrorMetric = signal<AiMetric | null>(null);
+  protected readonly selectedMetricDetail = signal<AiMetric | null>(null);
 
   protected readonly promptKeyFilter = signal('');
   protected readonly promptNameFilter = signal('');
@@ -82,14 +88,12 @@ export class SettingsPageComponent implements OnInit {
     return this.displayedPrompts().slice(start, start + this.promptPageSize());
   });
 
-  protected readonly metricIdFilter = signal('');
   protected readonly metricOperationFilter = signal('');
   protected readonly metricPromptFilter = signal('');
   protected readonly metricProviderFilter = signal('');
   protected readonly metricModelFilter = signal('');
   protected readonly metricStatusFilter = signal('');
   protected readonly metricRelatedEntityTypeFilter = signal('');
-  protected readonly metricRelatedEntityIdFilter = signal('');
   protected readonly metricLatencyFilter = signal('');
   protected readonly metricErrorFilter = signal('');
   protected readonly metricCreatedAtFilter = signal('');
@@ -105,6 +109,7 @@ export class SettingsPageComponent implements OnInit {
     const start = (page - 1) * this.metricPageSize();
     return this.displayedMetrics().slice(start, start + this.metricPageSize());
   });
+  protected readonly aiMetricCards = computed(() => this.toAiMetricCards(this.aiMetrics()));
 
   ngOnInit(): void {
     this.loadSettings();
@@ -174,7 +179,7 @@ export class SettingsPageComponent implements OnInit {
         this.errorMessage.set(error.error?.error ?? 'No se pudo cargar el versionado de prompts IA.');
       }
     });
-    this.aiObservabilityService.listMetrics().subscribe({
+    this.aiObservabilityService.listDailyMetrics(this.metricDate()).subscribe({
       next: (metrics) => {
         this.aiMetrics.set(metrics);
         this.isAiLoading.set(false);
@@ -357,20 +362,57 @@ export class SettingsPageComponent implements OnInit {
   protected previousPromptPage(): void { this.promptCurrentPage.update((page) => Math.max(1, page - 1)); }
   protected nextPromptPage(): void { this.promptCurrentPage.update((page) => Math.min(this.promptTotalPages(), page + 1)); }
 
-  protected setMetricIdFilter(value: string): void { this.metricIdFilter.set(value); this.metricCurrentPage.set(1); }
   protected setMetricOperationFilter(value: string): void { this.metricOperationFilter.set(value); this.metricCurrentPage.set(1); }
   protected setMetricPromptFilter(value: string): void { this.metricPromptFilter.set(value); this.metricCurrentPage.set(1); }
   protected setMetricProviderFilter(value: string): void { this.metricProviderFilter.set(value); this.metricCurrentPage.set(1); }
   protected setMetricModelFilter(value: string): void { this.metricModelFilter.set(value); this.metricCurrentPage.set(1); }
   protected setMetricStatusFilter(value: string): void { this.metricStatusFilter.set(value); this.metricCurrentPage.set(1); }
   protected setMetricRelatedEntityTypeFilter(value: string): void { this.metricRelatedEntityTypeFilter.set(value); this.metricCurrentPage.set(1); }
-  protected setMetricRelatedEntityIdFilter(value: string): void { this.metricRelatedEntityIdFilter.set(value); this.metricCurrentPage.set(1); }
   protected setMetricLatencyFilter(value: string): void { this.metricLatencyFilter.set(value); this.metricCurrentPage.set(1); }
   protected setMetricErrorFilter(value: string): void { this.metricErrorFilter.set(value); this.metricCurrentPage.set(1); }
   protected setMetricCreatedAtFilter(value: string): void { this.metricCreatedAtFilter.set(value); this.metricCurrentPage.set(1); }
   protected setMetricPageSize(value: string): void { this.metricPageSize.set(Number(value)); this.metricCurrentPage.set(1); }
   protected previousMetricPage(): void { this.metricCurrentPage.update((page) => Math.max(1, page - 1)); }
   protected nextMetricPage(): void { this.metricCurrentPage.update((page) => Math.min(this.metricTotalPages(), page + 1)); }
+  protected setMetricDate(value: string): void {
+    this.metricDate.set(value || this.todayInputValue());
+    this.metricCurrentPage.set(1);
+    this.loadAiObservability();
+  }
+
+  protected openMetricError(event: Event, metric: AiMetric): void {
+    event.stopPropagation();
+    this.selectedErrorMetric.set(metric);
+  }
+
+  protected closeMetricError(): void {
+    this.selectedErrorMetric.set(null);
+  }
+
+  protected openMetricDetail(metric: AiMetric): void {
+    this.selectedMetricDetail.set(metric);
+  }
+
+  protected closeMetricDetail(): void {
+    this.selectedMetricDetail.set(null);
+  }
+
+  protected metricDetailTitle(metric: AiMetric): string {
+    const labels: Record<string, string> = {
+      CLASSIFICATION: 'Detalle de clasificacion IA',
+      EVENT_MATCHING: 'Detalle de matching de evento',
+      ANALYSIS: 'Detalle de analisis IA',
+      CONTENT_GENERATION: 'Detalle de generacion de contenido'
+    };
+    return labels[metric.operationType] ?? 'Detalle de operacion IA';
+  }
+
+  protected entityDetailLink(metric: AiMetric): string[] | null {
+    if (metric.relatedEntityType === 'EVENT' && metric.relatedEntityId) {
+      return ['/events', metric.relatedEntityId.toString()];
+    }
+    return null;
+  }
 
   private updateForm(workflowCode: AutomationWorkflowCode, patch: Partial<AutomationSettingForm>): void {
     this.forms.update((forms) => ({
@@ -419,14 +461,12 @@ export class SettingsPageComponent implements OnInit {
 
   private filterMetrics(metrics: NonNullable<AiMetricsSnapshot['recentMetrics']>): NonNullable<AiMetricsSnapshot['recentMetrics']> {
     return metrics
-      .filter((metric) => this.matchesText(metric.id.toString(), this.metricIdFilter()))
       .filter((metric) => this.matchesText(metric.operationType, this.metricOperationFilter()))
       .filter((metric) => this.matchesText(metric.promptKey, this.metricPromptFilter()))
       .filter((metric) => this.matchesText(metric.provider, this.metricProviderFilter()))
       .filter((metric) => this.matchesText(metric.model ?? '-', this.metricModelFilter()))
       .filter((metric) => this.matchesOption(this.metricStatusLabel(metric.status), this.metricStatusFilter()))
       .filter((metric) => this.matchesText(metric.relatedEntityType ?? '-', this.metricRelatedEntityTypeFilter()))
-      .filter((metric) => this.matchesText(metric.relatedEntityId?.toString() ?? '-', this.metricRelatedEntityIdFilter()))
       .filter((metric) => this.matchesText(metric.latencyMs.toString(), this.metricLatencyFilter()))
       .filter((metric) => this.matchesText(metric.errorMessage ?? '-', this.metricErrorFilter()))
       .filter((metric) => this.matchesText(this.formatDate(metric.createdAt), this.metricCreatedAtFilter()));
@@ -439,11 +479,8 @@ export class SettingsPageComponent implements OnInit {
   }
 
   private compareMetrics(left: NonNullable<AiMetricsSnapshot['recentMetrics']>[number], right: NonNullable<AiMetricsSnapshot['recentMetrics']>[number], column: MetricSortColumn): number {
-    if (column === 'id' || column === 'latencyMs') {
+    if (column === 'latencyMs') {
       return left[column] - right[column];
-    }
-    if (column === 'relatedEntityId') {
-      return (left.relatedEntityId ?? 0) - (right.relatedEntityId ?? 0);
     }
     if (column === 'createdAt') {
       return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
@@ -451,7 +488,7 @@ export class SettingsPageComponent implements OnInit {
     return this.metricValue(left, column).localeCompare(this.metricValue(right, column), 'es', { sensitivity: 'base' });
   }
 
-  private metricValue(metric: NonNullable<AiMetricsSnapshot['recentMetrics']>[number], column: Exclude<MetricSortColumn, 'id' | 'latencyMs' | 'relatedEntityId' | 'createdAt'>): string {
+  private metricValue(metric: NonNullable<AiMetricsSnapshot['recentMetrics']>[number], column: Exclude<MetricSortColumn, 'latencyMs' | 'createdAt'>): string {
     const values = {
       operationType: metric.operationType,
       promptKey: metric.promptKey,
@@ -462,6 +499,122 @@ export class SettingsPageComponent implements OnInit {
       errorMessage: metric.errorMessage ?? '-'
     };
     return values[column];
+  }
+
+  private toAiMetricCards(metrics: AiMetricsSnapshot | null): MetricCard[] {
+    const snapshot = metrics ?? this.emptyMetrics();
+    const updatedAt = new Date().toISOString();
+    return [
+      {
+        label: 'Operaciones IA',
+        value: snapshot.totalOperations.toString(),
+        trend: this.formatSigned(snapshot.totalDifference),
+        tone: 'primary',
+        todayValue: snapshot.totalOperations,
+        yesterdayValue: snapshot.previousTotalOperations,
+        difference: snapshot.totalDifference,
+        title: 'Operaciones IA',
+        subtitle: `Dia ${this.metricDate()}`,
+        icon: 'total',
+        badgeLabel: 'Diario',
+        lastUpdatedAt: updatedAt,
+        items: [
+          { label: 'Hoy', value: snapshot.totalOperations, tone: 'primary', icon: 'calendar', signed: false },
+          { label: 'Ayer', value: snapshot.previousTotalOperations, tone: 'neutral', icon: 'clock', signed: false },
+          { label: 'Diferencia', value: snapshot.totalDifference, tone: 'primary', icon: 'trend', signed: true }
+        ]
+      },
+      {
+        label: 'Correctas',
+        value: snapshot.successCount.toString(),
+        trend: this.formatSigned(snapshot.successRateDifference),
+        tone: 'success',
+        todayValue: snapshot.successCount,
+        yesterdayValue: snapshot.previousSuccessCount,
+        difference: snapshot.successRateDifference,
+        title: 'Correctas',
+        subtitle: 'Tasa de exito diaria',
+        icon: 'check',
+        badgeLabel: `${snapshot.successRate}%`,
+        lastUpdatedAt: updatedAt,
+        items: [
+          { label: 'Correctas', value: snapshot.successCount, tone: 'success', icon: 'check', signed: false },
+          { label: 'Exito (%)', value: snapshot.successRate, tone: 'success', icon: 'target', signed: false },
+          { label: 'Dif. tasa', value: snapshot.successRateDifference, tone: 'success', icon: 'trend', signed: true }
+        ]
+      },
+      {
+        label: 'Fallidas',
+        value: snapshot.failedCount.toString(),
+        trend: this.formatSigned(snapshot.failureRateDifference),
+        tone: snapshot.failedCount > 0 ? 'danger' : 'success',
+        todayValue: snapshot.failedCount,
+        yesterdayValue: snapshot.previousFailedCount,
+        difference: snapshot.failureRateDifference,
+        title: 'Fallidas',
+        subtitle: 'Errores controlados',
+        icon: 'alert',
+        badgeLabel: `${snapshot.failureRate}%`,
+        lastUpdatedAt: updatedAt,
+        items: [
+          { label: 'Fallidas', value: snapshot.failedCount, tone: snapshot.failedCount > 0 ? 'danger' : 'success', icon: 'x', signed: false },
+          { label: 'Fallo (%)', value: snapshot.failureRate, tone: snapshot.failureRate > 0 ? 'danger' : 'success', icon: 'alert', signed: false },
+          { label: 'Dif. tasa', value: snapshot.failureRateDifference, tone: snapshot.failureRateDifference > 0 ? 'danger' : 'success', icon: 'trend', signed: true }
+        ]
+      },
+      {
+        label: 'Latencia',
+        value: `${snapshot.averageLatencyMs} ms`,
+        trend: this.formatSigned(snapshot.averageLatencyDifference),
+        tone: snapshot.averageLatencyDifference > 0 ? 'warning' : 'primary',
+        todayValue: snapshot.averageLatencyMs,
+        yesterdayValue: snapshot.previousAverageLatencyMs,
+        difference: snapshot.averageLatencyDifference,
+        title: 'Latencia',
+        subtitle: 'Rendimiento IA',
+        icon: 'clock',
+        badgeLabel: 'ms',
+        lastUpdatedAt: updatedAt,
+        items: [
+          { label: 'Media ms', value: snapshot.averageLatencyMs, tone: 'primary', icon: 'clock', signed: false },
+          { label: 'P95 ms', value: snapshot.p95LatencyMs, tone: 'warning', icon: 'trend', signed: false },
+          { label: 'Dif. media', value: snapshot.averageLatencyDifference, tone: snapshot.averageLatencyDifference > 0 ? 'warning' : 'success', icon: 'trend', signed: true }
+        ]
+      }
+    ];
+  }
+
+  private emptyMetrics(): AiMetricsSnapshot {
+    return {
+      totalOperations: 0,
+      successCount: 0,
+      failedCount: 0,
+      averageLatencyMs: 0,
+      p95LatencyMs: 0,
+      successRate: 0,
+      failureRate: 0,
+      previousTotalOperations: 0,
+      previousSuccessCount: 0,
+      previousFailedCount: 0,
+      previousAverageLatencyMs: 0,
+      totalDifference: 0,
+      successRateDifference: 0,
+      failureRateDifference: 0,
+      averageLatencyDifference: 0,
+      recentMetrics: []
+    };
+  }
+
+  private formatSigned(value: number): string {
+    return value > 0 ? `+${value}` : value.toString();
+  }
+
+  private todayInputValue(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = `${now.getMonth() + 1}`.padStart(2, '0');
+    const day = `${now.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private matchesText(value: string, filter: string): boolean {
