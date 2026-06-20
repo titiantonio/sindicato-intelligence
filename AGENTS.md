@@ -9,13 +9,13 @@ Tu especialidad principal es Spring Boot backend, DDD, Clean Architecture y Modu
 - Backend Spring Boot.
 - Frontend Angular.
 - Base de datos PostgreSQL y migraciones Flyway.
-- Workflows n8n.
+- Workflow n8n de captura RSS (`WF-01`) y automatizaciones internas en Spring Boot.
 - Integraciones IA.
 - Seguridad JWT y roles.
 - Infraestructura Docker, Nginx y Proxmox.
 - Publicacion Telegram.
 
-La logica de negocio debe residir en Spring Boot. n8n orquesta workflows, Angular consume la API, PostgreSQL persiste datos y la IA apoya clasificacion, analisis y generacion de contenido sin tomar decisiones fuera de las reglas del dominio.
+La logica de negocio debe residir en Spring Boot. n8n conserva la captura RSS/XML (`WF-01`), Angular consume la API, PostgreSQL persiste datos y la IA apoya clasificacion, analisis y generacion de contenido sin tomar decisiones fuera de las reglas del dominio.
 
 El objetivo del proyecto es reducir el trabajo manual de seguimiento informativo y generacion de contenidos mediante una plataforma que capture noticias educativas, las clasifique con IA, agrupe duplicados en eventos, genere analisis consolidados y produzca contenido listo para revision y publicacion.
 
@@ -43,6 +43,7 @@ Documentos especialmente relevantes:
 - `Documento 30 - MVP Tecnico Ejecutable`: plan maestro y secuencia del MVP.
 - `Documento 31 - Plan de Implementacion Detallado`: backlog operativo, sprints, tareas, subtareas y control de avance mediante checks.
 - `Documento 21 - Convenciones de Desarrollo`: convenciones obligatorias de codigo, API, Flyway, SQL, Angular, n8n y Git.
+- `Documento 09 V2.0 - Arquitectura de Integraciones y Workflows n8n`: estado operativo de WF-01 en n8n y WF-02 a WF-06 migrados a Spring Boot.
 - `Documento 20 - ERD Final MVP + Estrategia Flyway`: modelo fisico definitivo del MVP.
 - `Documento 19 - Diseno de Casos de Uso (Application Layer)`: casos de uso oficiales.
 - `Documento 18 - Estructura Spring Boot`: estructura Clean Architecture + DDD + Modular Monolith.
@@ -68,6 +69,7 @@ Skills especificas del proyecto:
 - `skills/sindicato-spring-backend-ddd/SKILL.md`: usar para implementar o revisar backend Spring Boot con DDD, Clean Architecture, casos de uso, dominio, infraestructura y API.
 - `skills/sindicato-flyway-modelo-datos/SKILL.md`: usar para crear o revisar migraciones Flyway, tablas, indices, constraints y coherencia con el modelo fisico MVP.
 - `skills/sindicato-api-security/SKILL.md`: usar para disenar o revisar endpoints REST, DTOs, seguridad JWT, roles, validaciones y auditoria.
+- `skills/sindicato-security-review/SKILL.md`: usar para auditorias transversales de seguridad, hardening, secretos, privacidad, infraestructura, n8n, IA, Telegram, despliegue seguro y controles de seguridad de extremo a extremo.
 - `skills/sindicato-ia-n8n-workflows/SKILL.md`: usar para trabajar con prompts IA oficiales, workflows n8n, clasificacion, eventos, analisis, contenido y publicacion Telegram.
 - `skills/sindicato-testing-quality/SKILL.md`: usar para crear o revisar pruebas JUnit 5/Mockito, criterios de aceptacion, cobertura y regresiones.
 - `skills/sindicato-documentacion-changelog/SKILL.md`: usar para documentar intervenciones, aplicar convenciones documentales, versionado Maven y changelog Keep a Changelog.
@@ -82,13 +84,14 @@ El flujo funcional correcto es:
 
 ```text
 Fuentes RSS
-  -> Captura Noticias
-  -> Clasificacion IA
-  -> Agrupacion Eventos
-  -> Analisis IA
-  -> Generacion Contenido
+  -> WF-01 n8n Captura Noticias
+  -> Spring Boot / PostgreSQL
+  -> Automatizacion Clasificacion IA
+  -> Automatizacion Agrupacion Eventos
+  -> Automatizacion Analisis IA
+  -> Generacion Contenido bajo demanda
   -> Revision Humana
-  -> Publicacion Telegram
+  -> Publicacion Telegram inmediata o programada
 ```
 
 El flujo de dominio correcto es:
@@ -121,10 +124,15 @@ Backend:
 Frontend:
 
 - Angular.
+- Backoffice operativo con rutas `login`, `dashboard`, `events`, `content`, `publications`, `sources`, `users`, `audit` y `settings`.
+- `/settings` es el centro ADMIN de configuracion: Telegram, automatizaciones backend, prompts IA versionados, metricas IA y vision operativa.
+- `/audit` es la pantalla ADMIN de auditoria de usuarios y auditoria editorial.
 
 Automatizacion:
 
-- n8n.
+- n8n solo para `WF-01-Capture-News`.
+- Automatizaciones internas `WF-02` a `WF-04` en Spring Boot con scheduler dinamico.
+- `WF-05` y `WF-06` se ejecutan desde Spring Boot bajo demanda, programacion o acciones del backoffice.
 
 Infraestructura:
 
@@ -160,6 +168,13 @@ Modulos de negocio esperados:
 - `content`: contenido editorial.
 - `publication`: publicacion Telegram.
 - `user`: usuarios.
+- `auth`: autenticacion, refresh token, cambio y recuperacion de password.
+- `automation`: configuracion y ejecucion de automatizaciones internas en Spring Boot.
+- `ai`: observabilidad IA, metricas y versionado tecnico de prompts.
+- `audit`: auditoria visible de acciones de usuario y editoriales.
+- `dashboard`: resumen operativo del backoffice.
+- `health`: health check tecnico.
+- `core`: configuracion transversal, seguridad, excepciones y soporte compartido.
 
 Estructura interna por modulo:
 
@@ -232,7 +247,8 @@ Estados principales:
 - `News`: `CAPTURED`, `CLASSIFIED`, `EVENT_MATCHED`, `ARCHIVED`.
 - `Event`: `OPEN`, `MONITORING`, `CLOSED`, `ARCHIVED`.
 - `Content`: `GENERATED`, `PENDING_REVIEW`, `APPROVED`, `REJECTED`, `PUBLISHED`.
-- `Publication`: `PENDING`, `PUBLISHED`, `FAILED`.
+- `Publication`: `PENDING`, `SCHEDULED`, `PUBLISHED`, `FAILED`.
+- `User`: `PENDING_ACTIVATION`, `ACTIVE`, `INACTIVE`, `LOCKED`.
 - `Importance`: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
 
 ## Base de Datos y Flyway
@@ -253,6 +269,7 @@ Reglas obligatorias:
 Tablas MVP oficiales:
 
 - `sources`.
+- `password_reset_tokens`.
 - `news_articles`.
 - `news_classifications`.
 - `events`.
@@ -261,6 +278,12 @@ Tablas MVP oficiales:
 - `generated_content`.
 - `publications`.
 - `users`.
+- `user_audit_log`.
+- `audit_log`.
+- `automation_workflow_settings`.
+- `telegram_publication_settings`.
+- `ai_prompt_versions`.
+- `ai_operation_metrics`.
 
 ## API REST
 
@@ -277,10 +300,16 @@ Endpoints MVP de referencia:
 
 ```http
 GET /api/v1/health
+POST /api/v1/auth/login
+POST /api/v1/auth/refresh
+POST /api/v1/auth/forgot-password
+POST /api/v1/auth/reset-password
+POST /api/v1/auth/change-password
 GET /api/v1/sources
 POST /api/v1/sources
 PUT /api/v1/sources/{id}
 POST /api/v1/news
+POST /api/v1/news/bulk
 GET /api/v1/news
 GET /api/v1/news/{id}
 GET /api/v1/events
@@ -289,7 +318,31 @@ POST /api/v1/events/merge
 POST /api/v1/content/generate
 POST /api/v1/content/{id}/approve
 POST /api/v1/content/{id}/reject
+PUT /api/v1/content/{id}
 POST /api/v1/publications/{id}/publish
+POST /api/v1/publications/{id}/schedule
+GET /api/v1/users
+POST /api/v1/users
+PUT /api/v1/users/{id}
+POST /api/v1/users/{id}/activate
+POST /api/v1/users/{id}/disable
+POST /api/v1/users/{id}/lock
+POST /api/v1/users/{id}/unlock
+POST /api/v1/users/{id}/reset-temporary-password
+DELETE /api/v1/users/{id}
+GET /api/v1/audit/users
+GET /api/v1/audit/editorial
+POST /api/v1/automation/classifications/run
+POST /api/v1/automation/events/run
+POST /api/v1/automation/analysis/run
+GET /api/v1/automation/overview
+GET /api/v1/automation/settings
+PUT /api/v1/automation/settings/{workflowCode}
+POST /api/v1/automation/settings/{workflowCode}/run
+GET /api/v1/settings/telegram
+PUT /api/v1/settings/telegram
+GET /api/v1/ai/prompts
+GET /api/v1/ai/metrics
 ```
 
 ## Seguridad
@@ -305,19 +358,39 @@ Reglas:
 - Access token: 15 minutos.
 - Refresh token: 7 dias.
 - Registrar auditoria de login, logout, aprobaciones, publicaciones y cambios de eventos.
+- El login, refresh, recuperacion de password y cambio obligatorio de password pertenecen al modulo `auth`.
+- La gestion de usuarios es responsabilidad de `ADMIN` y debe usar estados `PENDING_ACTIVATION`, `ACTIVE`, `INACTIVE` y `LOCKED`.
+- Las altas de usuario no deben solicitar ni persistir passwords en claro: se genera password temporal, se notifica por email y se fuerza cambio en el primer acceso.
+- La auditoria de usuario se registra en `user_audit_log`; la auditoria editorial y operativa se registra en `audit_log`.
+- Los endpoints `/api/v1/audit/**`, `/api/v1/settings/**`, `/api/v1/users/**`, `/api/v1/ai/**` y la configuracion de automatizaciones son de uso `ADMIN`.
+- La ejecucion manual de automatizaciones y el flujo editorial/publicacion pueden estar disponibles para `ADMIN` y `EDITOR` segun `SecurityConfig`.
+- No confiar en controles solo de frontend. Toda autorizacion efectiva debe aplicarse en backend.
+- No registrar secretos, JWT completos, refresh tokens, passwords, API keys, tokens IA, tokens n8n ni tokens Telegram.
+- Revisar CORS, cabeceras de seguridad, CSRF segun el modo de autenticacion, rate limiting y errores sin stack traces ni datos sensibles.
+- Proteger credenciales de n8n, proveedores IA y Telegram mediante configuracion segura, variables de entorno, almacenamiento enmascarado o mecanismos equivalentes definidos por el proyecto.
+- Validar respuestas de IA antes de persistirlas, ejecutar acciones de dominio o generar contenido publicable.
+- El canal social activo del MVP es Telegram. Facebook y X quedan fuera del alcance operativo salvo decision futura explicita y documentada.
 
-## IA y n8n
+## IA, Automatizaciones y n8n
 
-n8n orquesta workflows, pero la logica de negocio debe residir en Spring Boot.
+n8n orquesta solo la captura RSS/XML externa (`WF-01`). La logica de negocio, automatizaciones internas, IA, auditoria, configuracion y publicacion residen en Spring Boot.
 
-Flujos oficiales:
+Flujos oficiales actuales:
 
-- `WF-01-Capture-News`: captura noticias y llama a `CreateNewsUseCase`.
-- `WF-02-Classify-News`: clasifica noticias y llama a `ClassifyNewsUseCase`.
-- `WF-03-Detect-Events`: detecta eventos con `MatchEventUseCase`, `CreateEventUseCase` y `AddNewsToEventUseCase`.
-- `WF-04-Analysis`: genera analisis con `GenerateAnalysisUseCase`.
-- `WF-05-Generate-Content`: genera contenido con `GenerateContentUseCase`.
-- `WF-06-Publish-Telegram`: publica con `PublishContentUseCase`.
+- `WF-01-Capture-News`: workflow n8n vigente. Captura RSS/XML, autentica contra backend y envia noticias a `POST /api/v1/news/bulk`.
+- `WF-02-Classify-News`: proceso Spring Boot. Clasifica noticias `CAPTURED` mediante `ProcessPendingClassificationsUseCase` y `ClassifyNewsUseCase`.
+- `WF-03-Detect-Events`: proceso Spring Boot. Agrupa noticias `CLASSIFIED` mediante `ProcessPendingEventDetectionUseCase` y casos de uso de eventos.
+- `WF-04-Analysis`: proceso Spring Boot. Genera analisis pendientes mediante `ProcessPendingEventAnalysisUseCase` y `GenerateAnalysisUseCase`.
+- `WF-05-Generate-Content`: accion bajo demanda en Spring Boot desde backoffice/API mediante `GenerateContentUseCase`.
+- `WF-06-Publish-Telegram`: publicacion inmediata o programada en Spring Boot mediante `PublishContentUseCase`, `SchedulePublicationUseCase` y `PublishScheduledPublicationsUseCase`.
+
+Automatizaciones operativas:
+
+- `WF-02`, `WF-03` y `WF-04` se configuran en PostgreSQL mediante `automation_workflow_settings`.
+- La pantalla ADMIN `/settings` permite configurar intervalos, lotes, activacion, ejecucion manual y estado operativo.
+- `GET /api/v1/automation/overview` resume `WF-01` externo y automatizaciones backend.
+- `WF-05` y `WF-06` no vuelven a n8n salvo decision arquitectonica futura.
+- `n8n/validate-workflows.ps1` debe validar solo `WF-01` mientras este sea el unico workflow n8n activo.
 
 Reglas IA:
 
@@ -327,6 +400,9 @@ Reglas IA:
 - Nunca inventar informacion.
 - Toda conclusion debe estar basada solo en la informacion proporcionada.
 - Responder en JSON cuando el workflow lo requiera.
+- Versionar tecnicamente prompts activos en `ai_prompt_versions`.
+- Registrar metricas de operaciones IA en `ai_operation_metrics`, incluyendo operacion, prompt, proveedor, modelo, estado, latencia, entidad relacionada y error resumido.
+- No habilitar edicion de prompts desde UI salvo decision futura explicita; el contenido oficial sigue en codigo y Documento 23.
 
 Taxonomia oficial de clasificacion:
 
@@ -403,7 +479,11 @@ Criterios funcionales de aceptacion:
 - Clasificacion: categoria correcta.
 - Eventos: varias noticias de la misma tematica producen un unico evento.
 - Analisis: informacion coherente y sin alucinaciones.
-- Telegram: publicacion generada y enviada.
+- Contenido: generacion desde evento, revision humana, aprobacion, rechazo y edicion manual.
+- Publicacion: envio inmediato y programado en Telegram, con estados `PENDING`, `SCHEDULED`, `PUBLISHED` y `FAILED`.
+- Seguridad: login, refresh, recuperacion, password temporal, cambio obligatorio y roles `ADMIN`/`EDITOR`.
+- Auditoria: acciones de usuario y editoriales visibles para `ADMIN`.
+- Observabilidad IA: prompts versionados y metricas diarias consultables desde `/settings`.
 
 ## Orden de Implementacion y Control de Avance
 
@@ -423,6 +503,15 @@ Orden de referencia del `Documento 30`:
 - Fase 9: contenido.
 - Fase 10: publicacion.
 - Fase 11: frontend Angular.
+- Fase 12: optimizacion IA, automatizaciones internas, observabilidad y configuracion ADMIN.
+
+Estado operativo actual:
+
+- Sprint 10 Seguridad completado con JWT, roles, login, refresh, recuperacion de password, password temporal y gestion de usuarios.
+- Sprint 11 Frontend completado con backoffice operativo y APIs reales.
+- Sprint 12 completado como consolidacion de automatizaciones internas, configuracion ADMIN, Telegram, observabilidad IA y `/settings`.
+- `WF-02` a `WF-06` estan migrados a Spring Boot; no recrearlos en n8n salvo peticion explicita y decision arquitectonica documentada.
+- Pendientes no bloqueantes documentados: CI/CD, secretos productivos, despliegue Proxmox/Nginx, E2E versionado y normalizacion de mojibake documental.
 
 Antes de implementar cualquier funcionalidad, explica brevemente el plan de implementacion y valida que encaja con la fase correspondiente del MVP.
 
