@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Auditoria seguridad: retirada clave Gemini versionada y scripts temporales con credenciales/tokens; se anade plantilla segura `set_ai_env.example.ps1` y exclusiones en `.gitignore`.
+- Backend seguridad: el perfil productivo exige `JWT_SECRET` explicito y rechaza el secreto JWT placeholder; se anade rate limiting en memoria para endpoints publicos de autenticacion.
+- Backend seguridad: anadida persistencia hasheada, revocacion y rotacion de refresh tokens; cambio/reset de password y bloqueo/desactivacion revocan sesiones activas.
+- Backend seguridad: los nuevos tokens de recuperacion de password se persisten hasheados y solo se envia el token original por email.
+- Backend seguridad: el token Telegram configurable se cifra en reposo mediante AES-GCM con clave externa `SETTINGS_ENCRYPTION_KEY`.
+- Backend IA: saneados errores de proveedores IA para no devolver ni persistir cuerpos externos crudos con posibles secretos, prompts o payloads sensibles.
+- Infraestructura: `database/docker-compose.yml` pasa a requerir secretos por variables de entorno y se anade `database/.env.example`; Nginx frontend incorpora cabeceras basicas de seguridad.
+- Frontend seguridad: actualizadas dependencias Angular/build tooling para eliminar vulnerabilidades altas detectadas por `npm audit`.
+
 ### Added
 
 - Backend auditoria: anadido formateo legible para detalles de auditoria editorial y de usuarios, con referencias a eventos, contenidos, publicaciones, estados y errores.
@@ -72,6 +83,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.64-SNAPSHOT`.
+- Versionado del backend actualizado a `0.0.63-SNAPSHOT`.
+- Versionado del backend actualizado a `0.0.62-SNAPSHOT`.
+- Versionado del backend actualizado a `0.0.61-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.60-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.59-SNAPSHOT`.
 - Backend IA: las metricas de clasificacion, matching de eventos, analisis y generacion de contenido registran el modelo IA usado tambien en fallos.

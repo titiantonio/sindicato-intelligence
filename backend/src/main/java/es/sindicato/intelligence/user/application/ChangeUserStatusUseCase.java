@@ -1,6 +1,7 @@
 package es.sindicato.intelligence.user.application;
 
 import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
+import es.sindicato.intelligence.auth.application.RefreshTokenRepository;
 import es.sindicato.intelligence.user.domain.UserAccount;
 import es.sindicato.intelligence.user.domain.UserAuditAction;
 import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
@@ -19,15 +20,18 @@ public class ChangeUserStatusUseCase {
     private final UserRepository userRepository;
     private final UserAuditLogRepository userAuditLogRepository;
     private final UserAccountNotificationSender userAccountNotificationSender;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public ChangeUserStatusUseCase(
             UserRepository userRepository,
             UserAuditLogRepository userAuditLogRepository,
-            UserAccountNotificationSender userAccountNotificationSender
+            UserAccountNotificationSender userAccountNotificationSender,
+            RefreshTokenRepository refreshTokenRepository
     ) {
         this.userRepository = userRepository;
         this.userAuditLogRepository = userAuditLogRepository;
         this.userAccountNotificationSender = userAccountNotificationSender;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @Transactional
@@ -37,6 +41,9 @@ public class ChangeUserStatusUseCase {
 
         UserStatus previousStatus = existing.getStatus();
         UserAccount updated = userRepository.save(existing.withStatus(status));
+        if (!updated.canAuthenticate()) {
+            refreshTokenRepository.revokeActiveTokensForUser(updated.getId(), java.time.OffsetDateTime.now());
+        }
         userAuditLogRepository.record(userId, actorEmail, actionFor(status), AuditDetailFormatter.userStatusChanged(previousStatus, status));
         sendNotificationIfRequired(updated, previousStatus, status);
         log.info("user status changed: userId={}, status={}", userId, status);

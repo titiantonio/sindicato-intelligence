@@ -42,6 +42,8 @@ app:
       mail-from: ${PASSWORD_RESET_MAIL_FROM:no-reply@sindicato.local}
     temporary-password:
       expiration-days: ${TEMPORARY_PASSWORD_EXPIRATION_DAYS:7}
+    settings:
+      encryption-key: ${SETTINGS_ENCRYPTION_KEY:change-this-settings-encryption-key-in-production-min-32-bytes}
 
   content:
     default-created-by: ${CONTENT_DEFAULT_CREATED_BY:1}

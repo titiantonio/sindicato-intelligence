@@ -6,8 +6,8 @@ services:
 
     environment:
       POSTGRES_DB: sindicato_intelligence
-      POSTGRES_USER: sindicato
-      POSTGRES_PASSWORD: sindicato123
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
 
     ports:
       - "5432:5432"
@@ -23,11 +23,11 @@ services:
       - "5678:5678"
 
     environment:
-      N8N_SECURE_COOKIE: "false"
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-false}
       GENERIC_TIMEZONE: Europe/Madrid
-      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
-      BACKEND_N8N_AUTH_EMAIL: n8n@sindicato.es
-      BACKEND_N8N_AUTH_PASSWORD: Admin@123
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: ${N8N_BLOCK_ENV_ACCESS_IN_NODE:-false}
+      BACKEND_N8N_AUTH_EMAIL: ${BACKEND_N8N_AUTH_EMAIL:?BACKEND_N8N_AUTH_EMAIL is required}
+      BACKEND_N8N_AUTH_PASSWORD: ${BACKEND_N8N_AUTH_PASSWORD:?BACKEND_N8N_AUTH_PASSWORD is required}
 
     volumes:
       - n8n_data:/home/node/.n8n

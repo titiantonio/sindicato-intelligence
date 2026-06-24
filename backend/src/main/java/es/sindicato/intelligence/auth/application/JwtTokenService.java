@@ -15,6 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class JwtTokenService {
@@ -52,11 +53,16 @@ public class JwtTokenService {
     }
 
     public String generateRefreshToken(AuthenticatedUser user) {
+        return issueRefreshToken(user).value();
+    }
+
+    public GeneratedRefreshToken issueRefreshToken(AuthenticatedUser user) {
         Objects.requireNonNull(user, "user is required");
 
         Instant issuedAt = clock.instant();
         Instant expiresAt = issuedAt.plus(jwtSecurityProperties.refreshTokenDays(), ChronoUnit.DAYS);
-        String token = encode(user, TokenType.REFRESH, issuedAt, expiresAt);
+        String tokenId = UUID.randomUUID().toString();
+        String token = encode(user, TokenType.REFRESH, issuedAt, expiresAt, tokenId);
 
         log.info(
                 "jwt refresh token generated: userId={}, role={}, expiresInDays={}",
@@ -64,10 +70,14 @@ public class JwtTokenService {
                 user.role(),
                 jwtSecurityProperties.refreshTokenDays()
         );
-        return token;
+        return new GeneratedRefreshToken(token, tokenId, expiresAt);
     }
 
     private String encode(AuthenticatedUser user, TokenType tokenType, Instant issuedAt, Instant expiresAt) {
+        return encode(user, tokenType, issuedAt, expiresAt, null);
+    }
+
+    private String encode(AuthenticatedUser user, TokenType tokenType, Instant issuedAt, Instant expiresAt, String tokenId) {
         JwtClaimsSet.Builder claimsSetBuilder = JwtClaimsSet.builder()
                 .issuer(jwtSecurityProperties.issuer())
                 .issuedAt(issuedAt)
@@ -78,6 +88,10 @@ public class JwtTokenService {
                 .claim("tokenType", tokenType.name())
                 .claim("aud", List.of("sindicato-intelligence-api"))
                 .claim("ctx", Map.of("module", "auth"));
+
+        if (tokenId != null) {
+            claimsSetBuilder.id(tokenId);
+        }
 
         if (tokenType == TokenType.ACCESS) {
             claimsSetBuilder

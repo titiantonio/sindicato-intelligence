@@ -101,7 +101,7 @@ public class ContentController {
     @ExceptionHandler(ContentAIProviderException.class)
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     public Map<String, String> handleAIProviderException(ContentAIProviderException exception) {
-        return Map.of("error", exception.getMessage());
+        return Map.of("error", "AI provider request failed");
     }
 
     @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})

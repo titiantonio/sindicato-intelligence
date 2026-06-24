@@ -33,7 +33,7 @@ public class AnalysisController {
     @ExceptionHandler(AnalysisAIProviderException.class)
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     public Map<String, String> handleAIProviderException(AnalysisAIProviderException exception) {
-        return Map.of("error", exception.getMessage());
+        return Map.of("error", "AI provider request failed");
     }
 
     @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})

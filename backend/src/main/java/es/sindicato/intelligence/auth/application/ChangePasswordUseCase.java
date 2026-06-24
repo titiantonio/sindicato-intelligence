@@ -25,6 +25,7 @@ public class ChangePasswordUseCase {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordHistoryPolicyService passwordHistoryPolicyService;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final UserAuditLogRepository userAuditLogRepository;
     private final UserAccountNotificationSender userAccountNotificationSender;
 
@@ -32,12 +33,14 @@ public class ChangePasswordUseCase {
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             PasswordHistoryPolicyService passwordHistoryPolicyService,
+            RefreshTokenRepository refreshTokenRepository,
             UserAuditLogRepository userAuditLogRepository,
             UserAccountNotificationSender userAccountNotificationSender
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordHistoryPolicyService = passwordHistoryPolicyService;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.userAuditLogRepository = userAuditLogRepository;
         this.userAccountNotificationSender = userAccountNotificationSender;
     }
@@ -69,6 +72,7 @@ public class ChangePasswordUseCase {
 
         String encoded = passwordEncoder.encode(newPassword);
         UserAccount updated = userRepository.save(user.withCredentials(encoded, false, null, now));
+        refreshTokenRepository.revokeActiveTokensForUser(updated.getId(), now);
         userAuditLogRepository.record(updated.getId(), updated.getEmail(), UserAuditAction.PASSWORD_CHANGED, AuditDetailFormatter.passwordChanged(now));
         userAccountNotificationSender.sendPasswordChangedEmail(updated.getEmail(), updated.getName());
 

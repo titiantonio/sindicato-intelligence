@@ -2213,6 +2213,100 @@ Estado:
 
 ---
 
+## [x] T12.28
+
+Corregir hallazgos prioritarios de la auditoria de seguridad local.
+
+Resultado:
+- Retirada clave Gemini versionada y sustitucion por plantilla local segura `set_ai_env.example.ps1`.
+- Eliminados scripts temporales versionados `tmp_*.ps1` que contenian credenciales, tokens de reset o salida de tokens.
+- Anadidas exclusiones en `.gitignore` para `.env`, `tmp_*.ps1` y scripts locales de IA con secretos.
+- El perfil `prod` exige `JWT_SECRET` explicito y `JwtConfig` rechaza el placeholder de desarrollo cuando el perfil activo es `prod`.
+- Anadido rate limiting en memoria para endpoints publicos de autenticacion.
+- Saneados errores de proveedores IA para no devolver ni persistir cuerpos externos crudos con posibles secretos, prompts o payloads sensibles.
+- `database/docker-compose.yml` requiere credenciales por variables de entorno y se anade `database/.env.example`.
+- Anadidas cabeceras basicas de seguridad en `frontend/nginx.conf`.
+- El contenedor backend se ejecuta con usuario no root.
+- Actualizadas dependencias Angular/build tooling para eliminar vulnerabilidades altas detectadas por `npm audit`.
+- Incrementado `backend/pom.xml` a `0.0.61-SNAPSHOT`.
+
+Verificacion:
+- Backend: `./mvnw.cmd -DskipTests compile` OK con version `0.0.61-SNAPSHOT`.
+- Backend focal: reportes Surefire OK para `JwtConfigTest`, `AuthRateLimitingFilterTest`, `AiErrorSanitizerTest`, `SecurityConfigTest`, `JwtTokenServiceTest`, `AuthControllerTest`, `ClassificationControllerTest`, `AnalysisControllerTest` y `ContentControllerTest`.
+- Frontend: `npm.cmd audit --audit-level=high` OK sin vulnerabilidades altas; quedan vulnerabilidades bajas transitivas sin fix no rompedor.
+- Frontend: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 120 tests.
+- Frontend: `npm.cmd run build` OK con avisos de presupuestos existentes de bundle/SCSS.
+- n8n: `.\n8n\validate-workflows.ps1` OK para `WF-01-Capture-News`.
+- Docker: `docker compose --env-file .env.example config` OK en `database`.
+- Secret scan: busqueda focal sin secretos IA ni passwords Docker anteriores en codigo/configuracion activa; las coincidencias restantes corresponden a documentacion historica, seeds de desarrollo o tests.
+
+Estado:
+- Mantenimiento correctivo de seguridad posterior al Sprint 12. Permanecen como backlog de mayor alcance: refresh tokens revocables, cifrado/hash de secretos en reposo y auditoria de Proxmox/Nginx productivo real.
+
+---
+
+## [x] T12.29
+
+Implementar refresh tokens revocables y rotables.
+
+Resultado:
+- Creada migracion `V10__refresh_tokens.sql` con tabla `refresh_tokens`, `token_id` unico, hash SHA-256 del token, expiracion, revocacion y marca de reemplazo.
+- Anadido puerto `RefreshTokenRepository`, adaptador JPA y entidad `RefreshTokenEntity`.
+- Los refresh tokens emitidos incluyen `jti` unico y se persisten hasheados al hacer login.
+- `POST /api/v1/auth/refresh` valida que el refresh exista, siga activo, no este revocado/reemplazado, pertenezca al usuario y coincida con el hash antes de emitir nuevos tokens.
+- Cada refresh aceptado reemplaza el token anterior y persiste uno nuevo.
+- Cambio de password, reset de password, bloqueo y desactivacion revocan refresh tokens activos del usuario.
+- Incrementado `backend/pom.xml` a `0.0.62-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: reportes Surefire OK para `JwtTokenServiceTest`, `LoginUseCaseTest`, `RefreshTokenUseCaseTest`, `ChangePasswordUseCaseTest`, `ResetPasswordUseCaseTest`, `ChangeUserStatusUseCaseTest`, `AuthControllerTest` y `SecurityConfigTest`.
+- Backend: `./mvnw.cmd -DskipTests compile` OK.
+
+Estado:
+- Mantenimiento correctivo de seguridad posterior al Sprint 12. Quedan como pendientes de mayor alcance: cifrado/hash de secretos configurables en reposo, auditoria real Proxmox/Nginx y limpieza de historial Git si el repositorio fue compartido con secretos.
+
+---
+
+## [x] T12.30
+
+Persistir tokens de recuperacion de password en formato hasheado.
+
+Resultado:
+- Anadido `PasswordResetTokenHasher` con SHA-256 para tokens de recuperacion.
+- `RequestPasswordResetUseCase` envia el token original por email, pero persiste solo su hash.
+- `ResetPasswordUseCase` hashea el token recibido antes de buscarlo en `password_reset_tokens`.
+- Anadida cobertura focal para verificar que el repositorio no recibe el token original.
+- Incrementado `backend/pom.xml` a `0.0.63-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: reportes Surefire OK para `RequestPasswordResetUseCaseTest`, `ResetPasswordUseCaseTest` y bateria auth relacionada.
+- Backend: `./mvnw.cmd -DskipTests compile` OK con version `0.0.63-SNAPSHOT`.
+
+Estado:
+- Mantenimiento correctivo de seguridad posterior al Sprint 12. Los nuevos tokens de recuperacion dejan de persistirse en claro; tokens existentes previos al despliegue deben considerarse invalidados operativamente.
+
+---
+
+## [x] T12.31
+
+Cifrar token Telegram configurable en reposo.
+
+Resultado:
+- Anadido `SecretTextCipher` con AES-GCM y prefijo `enc:v1:` para secretos configurables.
+- `JpaTelegramPublicationSettingsRepository` cifra `botToken` antes de persistir y descifra al reconstruir el modelo de dominio.
+- El perfil `prod` exige `SETTINGS_ENCRYPTION_KEY`; el placeholder de desarrollo se rechaza en produccion.
+- Anadida configuracion `app.security.settings.encryption-key`.
+- Incrementado `backend/pom.xml` a `0.0.64-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `./mvnw.cmd "-Dtest=SecretTextCipherTest,JpaTelegramPublicationSettingsRepositoryTest" test` OK, 4 tests.
+- Backend: `./mvnw.cmd -DskipTests compile` OK con version `0.0.64-SNAPSHOT`.
+
+Estado:
+- Mantenimiento correctivo de seguridad posterior al Sprint 12. El token Telegram deja de ser legible en nuevos volcados de base de datos tras guardar la configuracion con la version actual.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

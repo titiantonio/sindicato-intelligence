@@ -1,2 +1,9 @@
 docs/Promt
 docs/.obsidian/
+
+# Local secrets and temporary validation scripts
+.env
+.env.*
+!.env.example
+tmp_*.ps1
+set_ai_env.ps1

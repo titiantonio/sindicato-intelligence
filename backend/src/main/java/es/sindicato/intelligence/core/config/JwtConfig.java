@@ -5,6 +5,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -15,15 +16,20 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
+import java.util.Arrays;
 
 @Configuration
 @EnableConfigurationProperties(JwtSecurityProperties.class)
 public class JwtConfig {
 
-    private final JwtSecurityProperties jwtSecurityProperties;
+    static final String DEFAULT_DEVELOPMENT_SECRET = "change-this-jwt-secret-in-production-min-32-bytes";
 
-    public JwtConfig(JwtSecurityProperties jwtSecurityProperties) {
+    private final JwtSecurityProperties jwtSecurityProperties;
+    private final Environment environment;
+
+    public JwtConfig(JwtSecurityProperties jwtSecurityProperties, Environment environment) {
         this.jwtSecurityProperties = jwtSecurityProperties;
+        this.environment = environment;
     }
 
     @PostConstruct
@@ -34,6 +40,10 @@ public class JwtConfig {
 
         if (jwtSecurityProperties.secret().getBytes(StandardCharsets.UTF_8).length < 32) {
             throw new IllegalStateException("JWT secret must have at least 32 bytes");
+        }
+
+        if (isProductionProfile() && DEFAULT_DEVELOPMENT_SECRET.equals(jwtSecurityProperties.secret())) {
+            throw new IllegalStateException("JWT secret must be provided explicitly in production");
         }
     }
 
@@ -56,5 +66,10 @@ public class JwtConfig {
 
     private SecretKey secretKey() {
         return new SecretKeySpec(jwtSecurityProperties.secret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+    }
+
+    private boolean isProductionProfile() {
+        return Arrays.stream(environment.getActiveProfiles())
+                .anyMatch("prod"::equalsIgnoreCase);
     }
 }

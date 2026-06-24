@@ -16,6 +16,13 @@ server:
 
 app:
   security:
+    jwt:
+      secret: ${JWT_SECRET}
+      issuer: ${JWT_ISSUER:sindicato-intelligence}
+      access-token-minutes: ${JWT_ACCESS_TOKEN_MINUTES:15}
+      refresh-token-days: ${JWT_REFRESH_TOKEN_DAYS:7}
+    settings:
+      encryption-key: ${SETTINGS_ENCRYPTION_KEY}
     temporary-password:
       expiration-days: ${TEMPORARY_PASSWORD_EXPIRATION_DAYS:7}
 

@@ -3,6 +3,7 @@ package es.sindicato.intelligence.classification.infrastructure;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import es.sindicato.intelligence.ai.application.AiErrorSanitizer;
 import es.sindicato.intelligence.classification.application.AIProvider;
 import es.sindicato.intelligence.classification.application.AIProviderException;
 import es.sindicato.intelligence.classification.application.ClassificationAIRequest;
@@ -112,8 +113,7 @@ public class GeminiAIProvider implements AIProvider {
                     .body(JsonNode.class);
         } catch (RestClientResponseException exception) {
             throw new AIProviderException(
-                    "Gemini classification request failed with HTTP " + exception.getStatusCode().value()
-                            + ": " + exception.getResponseBodyAsString(),
+                    AiErrorSanitizer.providerHttpError("classification", exception),
                     exception
             );
         } catch (RestClientException exception) {

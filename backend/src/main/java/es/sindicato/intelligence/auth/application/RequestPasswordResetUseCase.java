@@ -18,17 +18,20 @@ public class RequestPasswordResetUseCase {
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final PasswordResetTokenHasher passwordResetTokenHasher;
     private final PasswordResetEmailSender passwordResetEmailSender;
     private final int resetTokenMinutes;
 
     public RequestPasswordResetUseCase(
             UserRepository userRepository,
             PasswordResetTokenRepository passwordResetTokenRepository,
+            PasswordResetTokenHasher passwordResetTokenHasher,
             PasswordResetEmailSender passwordResetEmailSender,
             @Value("${app.security.password-reset.token-minutes:30}") int resetTokenMinutes
     ) {
         this.userRepository = userRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.passwordResetTokenHasher = passwordResetTokenHasher;
         this.passwordResetEmailSender = passwordResetEmailSender;
         this.resetTokenMinutes = resetTokenMinutes;
     }
@@ -50,7 +53,7 @@ public class RequestPasswordResetUseCase {
         OffsetDateTime expiresAt = now.plusMinutes(resetTokenMinutes);
 
         passwordResetTokenRepository.invalidateActiveTokensForUser(user.getId(), now);
-        passwordResetTokenRepository.create(user.getId(), token, expiresAt);
+        passwordResetTokenRepository.create(user.getId(), passwordResetTokenHasher.hash(token), expiresAt);
         passwordResetEmailSender.sendPasswordResetEmail(user.getEmail(), token);
 
         log.info("password reset token created: userId={}, expiresAt={}", user.getId(), expiresAt);

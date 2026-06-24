@@ -3,6 +3,7 @@ package es.sindicato.intelligence.content.infrastructure;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import es.sindicato.intelligence.ai.application.AiErrorSanitizer;
 import es.sindicato.intelligence.content.application.ContentAIProvider;
 import es.sindicato.intelligence.content.application.ContentAIProviderException;
 import es.sindicato.intelligence.content.application.ContentAIRequest;
@@ -110,8 +111,7 @@ public class GeminiContentAIProvider implements ContentAIProvider {
                     .body(JsonNode.class);
         } catch (RestClientResponseException exception) {
             throw new ContentAIProviderException(
-                    "Gemini content request failed with HTTP " + exception.getStatusCode().value()
-                            + ": " + exception.getResponseBodyAsString(),
+                    AiErrorSanitizer.providerHttpError("content", exception),
                     exception
             );
         } catch (RestClientException exception) {

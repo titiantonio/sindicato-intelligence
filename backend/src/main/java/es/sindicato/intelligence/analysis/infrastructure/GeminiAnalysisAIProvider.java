@@ -3,6 +3,7 @@ package es.sindicato.intelligence.analysis.infrastructure;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import es.sindicato.intelligence.ai.application.AiErrorSanitizer;
 import es.sindicato.intelligence.analysis.application.AnalysisAIProvider;
 import es.sindicato.intelligence.analysis.application.AnalysisAIProviderException;
 import es.sindicato.intelligence.analysis.application.AnalysisAIRequest;
@@ -110,8 +111,7 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                     .body(JsonNode.class);
         } catch (RestClientResponseException exception) {
             throw new AnalysisAIProviderException(
-                    "Gemini analysis request failed with HTTP " + exception.getStatusCode().value()
-                            + ": " + exception.getResponseBodyAsString(),
+                    AiErrorSanitizer.providerHttpError("analysis", exception),
                     exception
             );
         } catch (RestClientException exception) {

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 
 @Service
@@ -26,17 +27,23 @@ public class LoginUseCase {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenService jwtTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenHasher refreshTokenHasher;
     private final UserRepository userRepository;
     private final UserAuditLogRepository userAuditLogRepository;
 
     public LoginUseCase(
             AuthenticationManager authenticationManager,
             JwtTokenService jwtTokenService,
+            RefreshTokenRepository refreshTokenRepository,
+            RefreshTokenHasher refreshTokenHasher,
             UserRepository userRepository,
             UserAuditLogRepository userAuditLogRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenService = jwtTokenService;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenHasher = refreshTokenHasher;
         this.userRepository = userRepository;
         this.userAuditLogRepository = userAuditLogRepository;
     }
@@ -79,13 +86,20 @@ public class LoginUseCase {
                 userWithLogin.mustChangePassword()
         );
         String accessToken = jwtTokenService.generateAccessToken(user);
-        String refreshToken = jwtTokenService.generateRefreshToken(user);
+        GeneratedRefreshToken refreshToken = jwtTokenService.issueRefreshToken(user);
+        refreshTokenRepository.create(
+                user.id(),
+                refreshToken.tokenId(),
+                refreshTokenHasher.hash(refreshToken.value()),
+                now,
+                OffsetDateTime.ofInstant(refreshToken.expiresAt(), ZoneOffset.UTC)
+        );
 
         log.info("login completed: userId={}, role={}", user.id(), user.role());
 
         return new LoginResult(
                 accessToken,
-                refreshToken,
+                refreshToken.value(),
                 user.id(),
                 user.name(),
                 user.role(),

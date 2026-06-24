@@ -54,7 +54,7 @@ public class AiOperationMetricsRecorder {
             OffsetDateTime startedAt,
             RuntimeException exception
     ) {
-        record(operationType, promptKey, provider, model, AiMetricStatus.FAILED, relatedEntityType, relatedEntityId, startedAt, exception.getMessage());
+        record(operationType, promptKey, provider, model, AiMetricStatus.FAILED, relatedEntityType, relatedEntityId, startedAt, AiErrorSanitizer.metricMessage(exception.getMessage()));
     }
 
     private void record(

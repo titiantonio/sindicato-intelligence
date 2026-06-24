@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 
 @Service
@@ -22,19 +23,25 @@ public class RefreshTokenUseCase {
 
     private final JwtDecoder jwtDecoder;
     private final JwtTokenService jwtTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenHasher refreshTokenHasher;
     private final UserRepository userRepository;
 
     public RefreshTokenUseCase(
             JwtDecoder jwtDecoder,
             JwtTokenService jwtTokenService,
+            RefreshTokenRepository refreshTokenRepository,
+            RefreshTokenHasher refreshTokenHasher,
             UserRepository userRepository
     ) {
         this.jwtDecoder = jwtDecoder;
         this.jwtTokenService = jwtTokenService;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenHasher = refreshTokenHasher;
         this.userRepository = userRepository;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public LoginResult execute(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new BadCredentialsException("refresh token is required");
@@ -45,14 +52,29 @@ public class RefreshTokenUseCase {
             log.warn("refresh token rejected because token type is invalid: subject={}", jwt.getSubject());
             throw new BadCredentialsException("invalid refresh token");
         }
+        String tokenId = jwt.getId();
+        if (tokenId == null || tokenId.isBlank()) {
+            log.warn("refresh token rejected because token id is missing: subject={}", jwt.getSubject());
+            throw new BadCredentialsException("invalid refresh token");
+        }
+
+        OffsetDateTime now = OffsetDateTime.now();
 
         UserAccount userAccount = userRepository.findByEmail(Objects.requireNonNull(jwt.getSubject(), "subject is required"))
                 .orElseThrow(() -> new BadCredentialsException("invalid refresh token"));
+        RefreshTokenRecord tokenRecord = refreshTokenRepository.findByTokenId(tokenId)
+                .orElseThrow(() -> new BadCredentialsException("invalid refresh token"));
+        if (!Objects.equals(tokenRecord.userId(), userAccount.getId())
+                || !tokenRecord.isActive(now)
+                || !refreshTokenHasher.matches(refreshToken, tokenRecord.tokenHash())) {
+            log.warn("refresh token rejected because persisted token state is invalid: userId={}", userAccount.getId());
+            throw new BadCredentialsException("invalid refresh token");
+        }
         if (!userAccount.canAuthenticate()) {
             log.warn("refresh token rejected because user cannot authenticate: userId={}, status={}", userAccount.getId(), userAccount.getStatus());
             throw new BadCredentialsException("invalid refresh token");
         }
-        if (userAccount.isTemporaryPasswordExpired(OffsetDateTime.now())) {
+        if (userAccount.isTemporaryPasswordExpired(now)) {
             log.warn("refresh token rejected because temporary password expired: userId={}", userAccount.getId());
             throw new CredentialsExpiredException("temporary password expired");
         }
@@ -65,10 +87,20 @@ public class RefreshTokenUseCase {
                 userAccount.mustChangePassword()
         );
 
+        refreshTokenRepository.markAsReplaced(tokenRecord.id(), now);
+        GeneratedRefreshToken newRefreshToken = jwtTokenService.issueRefreshToken(user);
+        refreshTokenRepository.create(
+                user.id(),
+                newRefreshToken.tokenId(),
+                refreshTokenHasher.hash(newRefreshToken.value()),
+                now,
+                OffsetDateTime.ofInstant(newRefreshToken.expiresAt(), ZoneOffset.UTC)
+        );
+
         log.info("refresh token accepted: userId={}, role={}", user.id(), user.role());
         return new LoginResult(
                 jwtTokenService.generateAccessToken(user),
-                jwtTokenService.generateRefreshToken(user),
+                newRefreshToken.value(),
                 user.id(),
                 user.name(),
                 user.role(),

@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.user.application;
 
+import es.sindicato.intelligence.auth.application.RefreshTokenRepository;
 import es.sindicato.intelligence.user.domain.UserAccount;
 import es.sindicato.intelligence.user.domain.UserAuditAction;
 import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
@@ -26,7 +27,8 @@ class ChangeUserStatusUseCaseTest {
         UserRepository userRepository = mock(UserRepository.class);
         UserAuditLogRepository userAuditLogRepository = mock(UserAuditLogRepository.class);
         UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
-        ChangeUserStatusUseCase useCase = new ChangeUserStatusUseCase(userRepository, userAuditLogRepository, userAccountNotificationSender);
+        RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
+        ChangeUserStatusUseCase useCase = new ChangeUserStatusUseCase(userRepository, userAuditLogRepository, userAccountNotificationSender, refreshTokenRepository);
         UserAccount user = new UserAccount(1L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, true, false);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -35,6 +37,7 @@ class ChangeUserStatusUseCaseTest {
         useCase.execute(1L, UserStatus.LOCKED, "admin@sindicato.es");
 
         verify(userAccountNotificationSender).sendUserBlockedEmail("editor@sindicato.es", "Editor");
+        verify(refreshTokenRepository).revokeActiveTokensForUser(eq(1L), any());
         verify(userAccountNotificationSender, never()).sendUserDeactivatedEmail(any(), any());
         ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
         verify(userAuditLogRepository).record(eq(1L), eq("admin@sindicato.es"), eq(UserAuditAction.USER_LOCKED), detailCaptor.capture());
@@ -46,7 +49,8 @@ class ChangeUserStatusUseCaseTest {
         UserRepository userRepository = mock(UserRepository.class);
         UserAuditLogRepository userAuditLogRepository = mock(UserAuditLogRepository.class);
         UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
-        ChangeUserStatusUseCase useCase = new ChangeUserStatusUseCase(userRepository, userAuditLogRepository, userAccountNotificationSender);
+        RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
+        ChangeUserStatusUseCase useCase = new ChangeUserStatusUseCase(userRepository, userAuditLogRepository, userAccountNotificationSender, refreshTokenRepository);
         UserAccount user = new UserAccount(1L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, true, false);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -55,6 +59,7 @@ class ChangeUserStatusUseCaseTest {
         useCase.execute(1L, UserStatus.INACTIVE, "admin@sindicato.es");
 
         verify(userAccountNotificationSender).sendUserDeactivatedEmail("editor@sindicato.es", "Editor");
+        verify(refreshTokenRepository).revokeActiveTokensForUser(eq(1L), any());
         verify(userAccountNotificationSender, never()).sendUserBlockedEmail(any(), any());
     }
 
@@ -63,7 +68,8 @@ class ChangeUserStatusUseCaseTest {
         UserRepository userRepository = mock(UserRepository.class);
         UserAuditLogRepository userAuditLogRepository = mock(UserAuditLogRepository.class);
         UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
-        ChangeUserStatusUseCase useCase = new ChangeUserStatusUseCase(userRepository, userAuditLogRepository, userAccountNotificationSender);
+        RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
+        ChangeUserStatusUseCase useCase = new ChangeUserStatusUseCase(userRepository, userAuditLogRepository, userAccountNotificationSender, refreshTokenRepository);
         UserAccount user = new UserAccount(1L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, false, false,
                 UserStatus.INACTIVE, null, null, null);
 
@@ -81,7 +87,8 @@ class ChangeUserStatusUseCaseTest {
         UserRepository userRepository = mock(UserRepository.class);
         UserAuditLogRepository userAuditLogRepository = mock(UserAuditLogRepository.class);
         UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
-        ChangeUserStatusUseCase useCase = new ChangeUserStatusUseCase(userRepository, userAuditLogRepository, userAccountNotificationSender);
+        RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
+        ChangeUserStatusUseCase useCase = new ChangeUserStatusUseCase(userRepository, userAuditLogRepository, userAccountNotificationSender, refreshTokenRepository);
         UserAccount user = new UserAccount(1L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, false, false,
                 UserStatus.LOCKED, null, null, null);
 

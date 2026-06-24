@@ -39,7 +39,7 @@ public class ClassificationController {
     @ExceptionHandler(AIProviderException.class)
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     public Map<String, String> handleAIProviderException(AIProviderException exception) {
-        return Map.of("error", exception.getMessage());
+        return Map.of("error", "AI provider request failed");
     }
 
     private NewsClassificationResponse toResponse(NewsClassification classification) {

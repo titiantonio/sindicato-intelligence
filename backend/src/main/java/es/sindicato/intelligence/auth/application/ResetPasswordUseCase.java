@@ -22,23 +22,29 @@ public class ResetPasswordUseCase {
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final PasswordResetTokenHasher passwordResetTokenHasher;
     private final PasswordEncoder passwordEncoder;
     private final PasswordHistoryPolicyService passwordHistoryPolicyService;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final UserAuditLogRepository userAuditLogRepository;
     private final UserAccountNotificationSender userAccountNotificationSender;
 
     public ResetPasswordUseCase(
             UserRepository userRepository,
             PasswordResetTokenRepository passwordResetTokenRepository,
+            PasswordResetTokenHasher passwordResetTokenHasher,
             PasswordEncoder passwordEncoder,
             PasswordHistoryPolicyService passwordHistoryPolicyService,
+            RefreshTokenRepository refreshTokenRepository,
             UserAuditLogRepository userAuditLogRepository,
             UserAccountNotificationSender userAccountNotificationSender
     ) {
         this.userRepository = userRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.passwordResetTokenHasher = passwordResetTokenHasher;
         this.passwordEncoder = passwordEncoder;
         this.passwordHistoryPolicyService = passwordHistoryPolicyService;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.userAuditLogRepository = userAuditLogRepository;
         this.userAccountNotificationSender = userAccountNotificationSender;
     }
@@ -52,7 +58,7 @@ public class ResetPasswordUseCase {
         passwordHistoryPolicyService.validateComplexity(newPassword);
 
         OffsetDateTime now = OffsetDateTime.now();
-        PasswordResetTokenRecord tokenRecord = passwordResetTokenRepository.findByToken(token)
+        PasswordResetTokenRecord tokenRecord = passwordResetTokenRepository.findByToken(passwordResetTokenHasher.hash(token))
                 .orElseThrow(() -> new IllegalArgumentException("invalid token"));
 
         if (tokenRecord.isUsed()) {
@@ -70,6 +76,7 @@ public class ResetPasswordUseCase {
         passwordHistoryPolicyService.storeInHistory(user);
         UserAccount updated = userRepository.save(user.withCredentials(passwordEncoder.encode(newPassword), false, null, now));
         passwordResetTokenRepository.markAsUsed(tokenRecord.id(), now);
+        refreshTokenRepository.revokeActiveTokensForUser(updated.getId(), now);
         userAuditLogRepository.record(updated.getId(), updated.getEmail(), UserAuditAction.PASSWORD_CHANGED, AuditDetailFormatter.passwordChanged(now));
         userAccountNotificationSender.sendPasswordChangedEmail(updated.getEmail(), updated.getName());
         log.info("password reset completed: userId={}", updated.getId());

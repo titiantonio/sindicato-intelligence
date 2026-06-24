@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.publication.infrastructure;
 
+import es.sindicato.intelligence.core.security.SecretTextCipher;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationSettings;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationSettingsRepository;
 import jakarta.persistence.EntityManager;
@@ -13,9 +14,11 @@ public class JpaTelegramPublicationSettingsRepository implements TelegramPublica
     private static final short SETTINGS_ID = 1;
 
     private final EntityManager entityManager;
+    private final SecretTextCipher secretTextCipher;
 
-    public JpaTelegramPublicationSettingsRepository(EntityManager entityManager) {
+    public JpaTelegramPublicationSettingsRepository(EntityManager entityManager, SecretTextCipher secretTextCipher) {
         this.entityManager = entityManager;
+        this.secretTextCipher = secretTextCipher;
     }
 
     @Override
@@ -34,7 +37,7 @@ public class JpaTelegramPublicationSettingsRepository implements TelegramPublica
                 settings.getId(),
                 settings.isEnabled(),
                 settings.getBaseUrl(),
-                settings.getBotToken(),
+                secretTextCipher.encrypt(settings.getBotToken()),
                 settings.getChatId(),
                 settings.isDisableWebPagePreview(),
                 settings.getCreatedAt(),
@@ -47,7 +50,7 @@ public class JpaTelegramPublicationSettingsRepository implements TelegramPublica
                 entity.getId(),
                 entity.isEnabled(),
                 entity.getBaseUrl(),
-                entity.getBotToken(),
+                secretTextCipher.decryptIfNeeded(entity.getBotToken()),
                 entity.getChatId(),
                 entity.isDisableWebPagePreview(),
                 entity.getCreatedAt(),

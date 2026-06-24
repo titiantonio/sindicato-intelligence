@@ -23,10 +23,16 @@ public class SecurityConfig {
         }
 
     @Bean
+    AuthRateLimitingFilter authRateLimitingFilter() {
+        return new AuthRateLimitingFilter(java.time.Clock.systemUTC());
+    }
+
+    @Bean
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtDecoder jwtDecoder,
-            ForcePasswordChangeFilter forcePasswordChangeFilter
+            ForcePasswordChangeFilter forcePasswordChangeFilter,
+            AuthRateLimitingFilter authRateLimitingFilter
     ) throws Exception {
 
         http
@@ -52,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/content/**", "/api/v1/publications/**").hasAnyRole("ADMIN", "EDITOR")
                         .anyRequest().hasAnyRole("ADMIN", "EDITOR")
                 )
+                .addFilterBefore(authRateLimitingFilter, BearerTokenAuthenticationFilter.class)
                 .addFilterAfter(forcePasswordChangeFilter, BearerTokenAuthenticationFilter.class)
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
