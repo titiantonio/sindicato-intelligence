@@ -40,3 +40,41 @@ export interface AiMetricsSnapshot {
   averageLatencyDifference: number;
   recentMetrics: AiMetric[];
 }
+
+export interface AiProviderSetting {
+  providerCode: string;
+  displayName: string;
+  enabled: boolean;
+  apiKeyConfigured: boolean;
+  apiKeyPreview: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateAiProviderSettingRequest {
+  enabled: boolean;
+  apiKey: string | null;
+}
+
+export interface AiModelOption {
+  name: string;
+  displayName: string;
+}
+
+export interface AiWorkflowSetting {
+  workflowCode: string;
+  providerCode: string;
+  providerName: string;
+  modelName: string;
+  temperature: number;
+  maxOutputTokens: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateAiWorkflowSettingRequest {
+  providerCode: string;
+  modelName: string;
+  temperature: number;
+  maxOutputTokens: number;
+}

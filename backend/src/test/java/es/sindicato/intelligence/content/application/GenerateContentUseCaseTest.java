@@ -49,6 +49,7 @@ class GenerateContentUseCaseTest {
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(analysisRepository.findByEventId(event.getId())).thenReturn(List.of(analysis));
         when(aiProvider.generate(any(ContentAIRequest.class))).thenReturn(aiResponse());
+        when(aiProvider.providerName()).thenReturn("test-content-provider");
         when(aiProvider.modelName()).thenReturn("test-content-model");
         when(contentRepository.save(any(GeneratedContent.class))).thenReturn(savedContent);
 

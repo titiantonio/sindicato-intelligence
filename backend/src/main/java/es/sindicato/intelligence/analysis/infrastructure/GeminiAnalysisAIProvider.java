@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import es.sindicato.intelligence.ai.application.AiErrorSanitizer;
+import es.sindicato.intelligence.ai.application.AiWorkflowRuntimeSettings;
 import es.sindicato.intelligence.analysis.application.AnalysisAIProvider;
 import es.sindicato.intelligence.analysis.application.AnalysisAIProviderException;
 import es.sindicato.intelligence.analysis.application.AnalysisAIRequest;
@@ -11,7 +12,6 @@ import es.sindicato.intelligence.analysis.application.AnalysisAIResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@ConditionalOnProperty(name = "app.ai.provider", havingValue = "gemini")
 public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiAnalysisAIProvider.class);
@@ -57,11 +56,24 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
     public AnalysisAIResponse generate(AnalysisAIRequest request) {
         String resolvedApiKey = requireText(apiKey, "Gemini API key is required when app.ai.provider=gemini");
         String resolvedModel = normalizeModel(requireText(model, "Gemini model is required when app.ai.provider=gemini"));
+        return generate(request, resolvedApiKey, resolvedModel, temperature, maxOutputTokens);
+    }
 
+    public AnalysisAIResponse generate(AnalysisAIRequest request, AiWorkflowRuntimeSettings settings) {
+        return generate(
+                request,
+                requireText(settings.apiKey(), "Gemini API key is required"),
+                normalizeModel(requireText(settings.modelName(), "Gemini model is required")),
+                settings.temperature().doubleValue(),
+                settings.maxOutputTokens()
+        );
+    }
+
+    private AnalysisAIResponse generate(AnalysisAIRequest request, String resolvedApiKey, String resolvedModel, double resolvedTemperature, int resolvedMaxOutputTokens) {
         AnalysisAIProviderException lastException = null;
         for (int attempt = 1; attempt <= MAX_ANALYSIS_ATTEMPTS; attempt++) {
             try {
-                JsonNode response = callGemini(request, resolvedApiKey, resolvedModel);
+                JsonNode response = callGemini(request, resolvedApiKey, resolvedModel, resolvedTemperature, resolvedMaxOutputTokens);
                 String responseText = extractResponseText(response);
                 return parseAnalysisResponse(responseText, resolvedModel);
             } catch (AnalysisAIProviderException exception) {
@@ -78,11 +90,16 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
     }
 
     @Override
+    public String providerName() {
+        return "gemini";
+    }
+
+    @Override
     public String modelName() {
         return normalizeModel(model);
     }
 
-    private JsonNode callGemini(AnalysisAIRequest request, String resolvedApiKey, String resolvedModel) {
+    private JsonNode callGemini(AnalysisAIRequest request, String resolvedApiKey, String resolvedModel, double resolvedTemperature, int resolvedMaxOutputTokens) {
         Map<String, Object> body = Map.of(
                 "systemInstruction", Map.of(
                         "parts", List.of(Map.of("text", request.systemPrompt()))
@@ -92,8 +109,8 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                         "parts", List.of(Map.of("text", buildUserPrompt(request)))
                 )),
                 "generationConfig", Map.of(
-                        "temperature", temperature,
-                        "maxOutputTokens", maxOutputTokens,
+                        "temperature", resolvedTemperature,
+                        "maxOutputTokens", resolvedMaxOutputTokens,
                         "responseMimeType", "application/json",
                         "responseSchema", analysisResponseSchema()
                 )
@@ -103,9 +120,9 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
             return restClient.post()
                     .uri(uriBuilder -> uriBuilder
                             .path("/" + resolvedModel + ":generateContent")
-                            .queryParam("key", resolvedApiKey)
                             .build())
                     .contentType(MediaType.APPLICATION_JSON)
+                    .header("x-goog-api-key", resolvedApiKey)
                     .body(body)
                     .retrieve()
                     .body(JsonNode.class);

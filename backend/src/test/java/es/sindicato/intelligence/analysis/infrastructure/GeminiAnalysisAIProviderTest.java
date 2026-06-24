@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -28,8 +29,9 @@ class GeminiAnalysisAIProviderTest {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         GeminiAnalysisAIProvider provider = provider(builder, "test-key");
-        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=test-key"))
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent"))
                 .andExpect(method(POST))
+                .andExpect(header("x-goog-api-key", "test-key"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("systemInstruction")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("responseSchema")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Tu salida debe ser el objeto JSON final de analisis")))
@@ -70,9 +72,11 @@ class GeminiAnalysisAIProviderTest {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         GeminiAnalysisAIProvider provider = provider(builder, "test-key");
-        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=test-key"))
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent"))
+                .andExpect(header("x-goog-api-key", "test-key"))
                 .andRespond(withSuccess(geminiResponse("sin json"), MediaType.APPLICATION_JSON));
-        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=test-key"))
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent"))
+                .andExpect(header("x-goog-api-key", "test-key"))
                 .andRespond(withSuccess(geminiResponse("sin json"), MediaType.APPLICATION_JSON));
 
         AnalysisAIProviderException exception = assertThrows(AnalysisAIProviderException.class, () -> provider.generate(request()));

@@ -95,11 +95,11 @@ public class DetectEventUseCase {
                     prompt.userPrompt()
             ));
         } catch (RuntimeException exception) {
-            metricsRecorder.recordFailure("EVENT_MATCHING", "WF03_EVENT_MATCHING", providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
+            metricsRecorder.recordFailure("EVENT_MATCHING", "WF03_EVENT_MATCHING", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
             log.error("event detection failed during AI matching: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
             throw exception;
         }
-        metricsRecorder.recordSuccess("EVENT_MATCHING", "WF03_EVENT_MATCHING", providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt);
+        metricsRecorder.recordSuccess("EVENT_MATCHING", "WF03_EVENT_MATCHING", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt);
 
         Event event = findAutomaticMatch(activeEvents, aiResponse);
         boolean created = false;
@@ -184,9 +184,5 @@ public class DetectEventUseCase {
 
     private Importance importanceOf(ImpactLevel impactLevel) {
         return Importance.valueOf(impactLevel.name());
-    }
-
-    private String providerName() {
-        return aiProvider.getClass().getSimpleName();
     }
 }

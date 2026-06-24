@@ -2307,6 +2307,30 @@ Estado:
 
 ---
 
+## [x] T12.32
+
+Configurar proveedores IA y modelo por workflow desde `/settings`.
+
+Resultado:
+- Creada migracion `V11__ai_provider_workflow_settings.sql` con `ai_provider_settings` y `ai_workflow_settings`.
+- Anadida API ADMIN `/api/v1/ai/providers` y `/api/v1/ai/workflow-settings`.
+- Las API keys IA se cifran con `SecretTextCipher` y se devuelven solo como estado/enmascarado.
+- `WF-02`, `WF-03`, `WF-04` y `WF-05` resuelven proveedor y modelo desde PostgreSQL en runtime.
+- Anadido proveedor Gemini para `WF-03` matching de eventos.
+- `/settings` permite habilitar proveedores IA, cargar modelos de Gemini y asignar proveedor/modelo por workflow IA.
+- Incrementado `backend/pom.xml` a `0.0.65-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=AIProviderSelectionTest,AiSettingsControllerTest,AiObservabilityControllerTest,JpaAiObservabilityRepositoryTest,GeminiAiProviderModelClientTest,GeminiAIProviderTest,GeminiAnalysisAIProviderTest,GeminiContentAIProviderTest" test` OK, 28 tests.
+- Backend completo: `mvn test` OK, 257 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts --include=src/app/core/services/ai-observability.service.spec.ts` OK, 17 tests.
+- Frontend build: `npm.cmd run build` OK con warnings preexistentes de presupuesto inicial, `users`, `sources` y `audit`.
+
+Estado:
+- Sprint 12 permanece cerrado; esta tarea amplia la configuracion ADMIN de IA solicitada sin reintroducir workflows IA en n8n ni cambiar la secuencia MVP.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

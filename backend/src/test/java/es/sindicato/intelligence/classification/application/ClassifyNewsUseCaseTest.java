@@ -45,6 +45,7 @@ class ClassifyNewsUseCaseTest {
         when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
         when(classificationRepository.existsByNewsId(newsArticle.getId())).thenReturn(false);
         when(aiProvider.classify(any(ClassificationAIRequest.class))).thenReturn(aiResponse());
+        when(aiProvider.providerName()).thenReturn("test-provider");
         when(aiProvider.modelName()).thenReturn("test-model");
         when(classificationRepository.save(any(NewsClassification.class))).thenReturn(savedClassification);
 

@@ -46,6 +46,128 @@
 
       <section class="settings-section">
         <header class="section-header">
+          <span>Proveedores IA</span>
+          <h2>Configuracion por workflow</h2>
+        </header>
+
+        <div class="ai-settings-grid">
+          <article class="ai-settings-panel">
+            <h3>Proveedores</h3>
+            @for (provider of aiProviders(); track provider.providerCode) {
+              <form class="ai-provider-form" (submit)="$event.preventDefault(); saveAiProvider(provider)">
+                <header>
+                  <div>
+                    <strong>{{ provider.displayName }}</strong>
+                    <span>{{ provider.apiKeyConfigured ? provider.apiKeyPreview : 'Sin clave configurada' }}</span>
+                  </div>
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      [ngModel]="aiProviderFormFor(provider.providerCode).enabled"
+                      (ngModelChange)="updateAiProviderForm(provider.providerCode, { enabled: $event })"
+                      [name]="provider.providerCode + 'Enabled'"
+                    />
+                    <span>{{ aiProviderFormFor(provider.providerCode).enabled ? 'Activo' : 'Pausado' }}</span>
+                  </label>
+                </header>
+
+                <label>
+                  API key
+                  <input
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="Mantener clave actual"
+                    [ngModel]="aiProviderFormFor(provider.providerCode).apiKey"
+                    (ngModelChange)="updateAiProviderForm(provider.providerCode, { apiKey: $event })"
+                    [name]="provider.providerCode + 'ApiKey'"
+                  />
+                </label>
+
+                <footer>
+                  <button type="submit" [disabled]="busyAiProvider() === provider.providerCode">Guardar</button>
+                  <button type="button" class="secondary" (click)="loadModels(provider.providerCode)" [disabled]="busyModelProvider() === provider.providerCode">
+                    Cargar modelos
+                  </button>
+                </footer>
+              </form>
+            }
+          </article>
+
+          <article class="ai-settings-panel">
+            <h3>Workflows IA</h3>
+            @for (setting of aiWorkflowSettings(); track setting.workflowCode) {
+              <form class="ai-workflow-form" (submit)="$event.preventDefault(); saveAiWorkflow(setting)">
+                <header>
+                  <div>
+                    <strong>{{ aiWorkflowLabel(setting.workflowCode) }}</strong>
+                    <span>{{ setting.providerName }} · {{ setting.modelName }}</span>
+                  </div>
+                </header>
+
+                <div class="ai-workflow-fields">
+                  <label>
+                    Proveedor
+                    <select
+                      [ngModel]="aiWorkflowFormFor(setting.workflowCode).providerCode"
+                      (ngModelChange)="updateAiWorkflowForm(setting.workflowCode, { providerCode: $event })"
+                      [name]="setting.workflowCode + 'Provider'"
+                    >
+                      @for (provider of aiProviders(); track provider.providerCode) {
+                        <option [value]="provider.providerCode">{{ provider.displayName }}</option>
+                      }
+                    </select>
+                  </label>
+
+                  <label>
+                    Modelo
+                    <select
+                      [ngModel]="aiWorkflowFormFor(setting.workflowCode).modelName"
+                      (ngModelChange)="updateAiWorkflowForm(setting.workflowCode, { modelName: $event })"
+                      [name]="setting.workflowCode + 'Model'"
+                    >
+                      <option [value]="aiWorkflowFormFor(setting.workflowCode).modelName">{{ aiWorkflowFormFor(setting.workflowCode).modelName }}</option>
+                      @for (model of modelsFor(aiWorkflowFormFor(setting.workflowCode).providerCode); track model.name) {
+                        <option [value]="model.name">{{ model.displayName }} ({{ model.name }})</option>
+                      }
+                    </select>
+                  </label>
+
+                  <label>
+                    Temperatura
+                    <input
+                      type="number"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      [ngModel]="aiWorkflowFormFor(setting.workflowCode).temperature"
+                      (ngModelChange)="updateAiWorkflowForm(setting.workflowCode, { temperature: $event })"
+                      [name]="setting.workflowCode + 'Temperature'"
+                    />
+                  </label>
+
+                  <label>
+                    Max tokens
+                    <input
+                      type="number"
+                      min="1"
+                      [ngModel]="aiWorkflowFormFor(setting.workflowCode).maxOutputTokens"
+                      (ngModelChange)="updateAiWorkflowForm(setting.workflowCode, { maxOutputTokens: $event })"
+                      [name]="setting.workflowCode + 'Tokens'"
+                    />
+                  </label>
+                </div>
+
+                <footer>
+                  <button type="submit" [disabled]="busyAiWorkflow() === setting.workflowCode">Guardar workflow</button>
+                </footer>
+              </form>
+            }
+          </article>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <header class="section-header">
           <span>Versionado IA</span>
           <h2>Prompts versionados</h2>
         </header>

@@ -15,12 +15,26 @@ describe('SettingsPageComponent', () => {
   let automationService: jasmine.SpyObj<AutomationService>;
 
   beforeEach(async () => {
-    aiObservabilityService = jasmine.createSpyObj<AiObservabilityService>('AiObservabilityService', ['listPrompts', 'listMetrics', 'listDailyMetrics']);
+    aiObservabilityService = jasmine.createSpyObj<AiObservabilityService>('AiObservabilityService', [
+      'listPrompts',
+      'listMetrics',
+      'listDailyMetrics',
+      'listProviders',
+      'updateProvider',
+      'listProviderModels',
+      'listWorkflowSettings',
+      'updateWorkflowSetting'
+    ]);
     applicationSettingsService = jasmine.createSpyObj<ApplicationSettingsService>('ApplicationSettingsService', ['getTelegramSettings', 'updateTelegramSettings']);
     automationService = jasmine.createSpyObj<AutomationService>('AutomationService', ['listSettings', 'updateSetting', 'runWorkflow', 'getOverview']);
     aiObservabilityService.listPrompts.and.returnValue(of(promptVersions()));
     aiObservabilityService.listMetrics.and.returnValue(of(metrics()));
     aiObservabilityService.listDailyMetrics.and.returnValue(of(metrics()));
+    aiObservabilityService.listProviders.and.returnValue(of(aiProviders()));
+    aiObservabilityService.updateProvider.and.returnValue(of(aiProviders()[1]));
+    aiObservabilityService.listProviderModels.and.returnValue(of([{ name: 'models/gemini-2.5-flash', displayName: 'Gemini 2.5 Flash' }]));
+    aiObservabilityService.listWorkflowSettings.and.returnValue(of(aiWorkflowSettings()));
+    aiObservabilityService.updateWorkflowSetting.and.returnValue(of(aiWorkflowSettings()[0]));
     applicationSettingsService.getTelegramSettings.and.returnValue(of(telegramSettings()));
     applicationSettingsService.updateTelegramSettings.and.returnValue(of({ ...telegramSettings(), enabled: true, readyToPublish: true }));
     automationService.listSettings.and.returnValue(of([setting()]));
@@ -54,6 +68,8 @@ describe('SettingsPageComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
     expect(compiled.textContent).toContain('IA y prompts');
+    expect(compiled.textContent).toContain('Proveedores IA');
+    expect(compiled.textContent).toContain('Configuracion por workflow');
     expect(compiled.textContent).toContain('Prompts versionados');
     expect(compiled.textContent).toContain('Metricas diarias');
     expect(compiled.textContent).toContain('Clasificacion de noticias');
@@ -113,6 +129,39 @@ describe('SettingsPageComponent', () => {
       botToken: 'token',
       chatId: 'chat-id',
       disableWebPagePreview: true
+    });
+  });
+
+  it('loads models and saves ai provider settings', () => {
+    const component = fixture.componentInstance as any;
+
+    component.updateAiProviderForm('gemini', { enabled: true, apiKey: 'test-key' });
+    component.loadModels('gemini');
+    component.saveAiProvider(aiProviders()[1]);
+
+    expect(aiObservabilityService.listProviderModels).toHaveBeenCalledWith('gemini', 'test-key');
+    expect(aiObservabilityService.updateProvider).toHaveBeenCalledWith('gemini', {
+      enabled: true,
+      apiKey: 'test-key'
+    });
+  });
+
+  it('saves ai workflow provider and model settings', () => {
+    const component = fixture.componentInstance as any;
+
+    component.updateAiWorkflowForm('WF04_ANALYSIS', {
+      providerCode: 'gemini',
+      modelName: 'models/gemini-2.5-flash',
+      temperature: 0.3,
+      maxOutputTokens: 2048
+    });
+    component.saveAiWorkflow(aiWorkflowSettings()[2]);
+
+    expect(aiObservabilityService.updateWorkflowSetting).toHaveBeenCalledWith('WF04_ANALYSIS', {
+      providerCode: 'gemini',
+      modelName: 'models/gemini-2.5-flash',
+      temperature: 0.3,
+      maxOutputTokens: 2048
     });
   });
 
@@ -218,6 +267,74 @@ describe('SettingsPageComponent', () => {
       readyToPublish: false,
       updatedAt: '2026-06-16T10:00:00Z'
     };
+  }
+
+  function aiProviders() {
+    return [
+      {
+        providerCode: 'deterministic',
+        displayName: 'Determinista local',
+        enabled: true,
+        apiKeyConfigured: false,
+        apiKeyPreview: null,
+        createdAt: '2026-06-24T10:00:00Z',
+        updatedAt: '2026-06-24T10:00:00Z'
+      },
+      {
+        providerCode: 'gemini',
+        displayName: 'Google Gemini',
+        enabled: false,
+        apiKeyConfigured: true,
+        apiKeyPreview: 'abcd...wxyz',
+        createdAt: '2026-06-24T10:00:00Z',
+        updatedAt: '2026-06-24T10:00:00Z'
+      }
+    ];
+  }
+
+  function aiWorkflowSettings() {
+    return [
+      {
+        workflowCode: 'WF02_CLASSIFICATION',
+        providerCode: 'deterministic',
+        providerName: 'Determinista local',
+        modelName: 'deterministic-classification',
+        temperature: 0.2,
+        maxOutputTokens: 1024,
+        createdAt: '2026-06-24T10:00:00Z',
+        updatedAt: '2026-06-24T10:00:00Z'
+      },
+      {
+        workflowCode: 'WF03_EVENT_MATCHING',
+        providerCode: 'deterministic',
+        providerName: 'Determinista local',
+        modelName: 'deterministic-event-matching',
+        temperature: 0.2,
+        maxOutputTokens: 1024,
+        createdAt: '2026-06-24T10:00:00Z',
+        updatedAt: '2026-06-24T10:00:00Z'
+      },
+      {
+        workflowCode: 'WF04_ANALYSIS',
+        providerCode: 'deterministic',
+        providerName: 'Determinista local',
+        modelName: 'deterministic-analysis',
+        temperature: 0.2,
+        maxOutputTokens: 1024,
+        createdAt: '2026-06-24T10:00:00Z',
+        updatedAt: '2026-06-24T10:00:00Z'
+      },
+      {
+        workflowCode: 'WF05_CONTENT',
+        providerCode: 'deterministic',
+        providerName: 'Determinista local',
+        modelName: 'deterministic-content',
+        temperature: 0.2,
+        maxOutputTokens: 1024,
+        createdAt: '2026-06-24T10:00:00Z',
+        updatedAt: '2026-06-24T10:00:00Z'
+      }
+    ];
   }
 
   function promptVersions() {

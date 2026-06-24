@@ -3,13 +3,11 @@ package es.sindicato.intelligence.analysis.infrastructure;
 import es.sindicato.intelligence.analysis.application.AnalysisAIProvider;
 import es.sindicato.intelligence.analysis.application.AnalysisAIRequest;
 import es.sindicato.intelligence.analysis.application.AnalysisAIResponse;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-@ConditionalOnProperty(name = "app.ai.provider", havingValue = "deterministic", matchIfMissing = true)
 public class DeterministicAnalysisAIProvider implements AnalysisAIProvider {
 
     @Override
@@ -22,6 +20,11 @@ public class DeterministicAnalysisAIProvider implements AnalysisAIProvider {
                 List.of("Monitorizar novedades oficiales y nuevas publicaciones relacionadas."),
                 "deterministic-analysis"
         );
+    }
+
+    @Override
+    public String providerName() {
+        return "deterministic";
     }
 
     @Override

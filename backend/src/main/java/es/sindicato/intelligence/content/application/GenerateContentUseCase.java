@@ -82,11 +82,11 @@ public class GenerateContentUseCase {
         try {
             aiResponse = aiProvider.generate(new ContentAIRequest(event, analysis, channel, tone, length, prompt.systemPrompt(), prompt.userPrompt()));
         } catch (RuntimeException exception) {
-            metricsRecorder.recordFailure("CONTENT_GENERATION", "WF05_CONTENT", providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt, exception);
+            metricsRecorder.recordFailure("CONTENT_GENERATION", "WF05_CONTENT", aiProvider.providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt, exception);
             log.error("content generation failed during AI generation: eventId={}, analysisId={}, reason={}", event.getId(), analysis.getId(), exception.getMessage(), exception);
             throw exception;
         }
-        metricsRecorder.recordSuccess("CONTENT_GENERATION", "WF05_CONTENT", providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt);
+        metricsRecorder.recordSuccess("CONTENT_GENERATION", "WF05_CONTENT", aiProvider.providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt);
 
         GeneratedContent content = new GeneratedContent(
                 null,
@@ -141,9 +141,5 @@ public class GenerateContentUseCase {
         }
 
         return value.trim().toUpperCase();
-    }
-
-    private String providerName() {
-        return aiProvider.getClass().getSimpleName();
     }
 }

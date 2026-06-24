@@ -81,11 +81,11 @@ public class GenerateAnalysisUseCase {
                     prompt.userPrompt()
             ));
         } catch (RuntimeException exception) {
-            metricsRecorder.recordFailure("ANALYSIS", "WF04_ANALYSIS", providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt, exception);
+            metricsRecorder.recordFailure("ANALYSIS", "WF04_ANALYSIS", aiProvider.providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt, exception);
             log.error("analysis generation failed during AI generation: eventId={}, reason={}", event.getId(), exception.getMessage(), exception);
             throw exception;
         }
-        metricsRecorder.recordSuccess("ANALYSIS", "WF04_ANALYSIS", providerName(), aiResponse.modelUsed(), "EVENT", event.getId(), startedAt);
+        metricsRecorder.recordSuccess("ANALYSIS", "WF04_ANALYSIS", aiProvider.providerName(), aiResponse.modelUsed(), "EVENT", event.getId(), startedAt);
 
         EventAIAnalysis analysis = new EventAIAnalysis(
                 null,
@@ -131,9 +131,5 @@ public class GenerateAnalysisUseCase {
                 newsArticle.getContent(),
                 newsArticle.getPublishedAt()
         );
-    }
-
-    private String providerName() {
-        return aiProvider.getClass().getSimpleName();
     }
 }

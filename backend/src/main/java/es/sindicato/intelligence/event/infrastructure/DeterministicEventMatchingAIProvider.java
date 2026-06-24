@@ -53,6 +53,11 @@ public class DeterministicEventMatchingAIProvider implements EventMatchingAIProv
     }
 
     @Override
+    public String providerName() {
+        return "deterministic";
+    }
+
+    @Override
     public String modelName() {
         return "deterministic-event-matching";
     }

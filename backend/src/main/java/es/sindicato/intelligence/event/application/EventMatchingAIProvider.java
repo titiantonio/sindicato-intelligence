@@ -4,6 +4,10 @@ public interface EventMatchingAIProvider {
 
     EventMatchingAIResponse match(EventMatchingAIRequest request);
 
+    default String providerName() {
+        return getClass().getSimpleName();
+    }
+
     default String modelName() {
         return getClass().getSimpleName();
     }

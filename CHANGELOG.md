@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Backend IA: las claves API de proveedores IA configurables se guardan cifradas en reposo y no se exponen en respuestas API, logs ni URLs de llamadas a Gemini.
 - Auditoria seguridad: retirada clave Gemini versionada y scripts temporales con credenciales/tokens; se anade plantilla segura `set_ai_env.example.ps1` y exclusiones en `.gitignore`.
 - Backend seguridad: el perfil productivo exige `JWT_SECRET` explicito y rechaza el secreto JWT placeholder; se anade rate limiting en memoria para endpoints publicos de autenticacion.
 - Backend seguridad: anadida persistencia hasheada, revocacion y rotacion de refresh tokens; cambio/reset de password y bloqueo/desactivacion revocan sesiones activas.
@@ -20,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend IA: anadida configuracion ADMIN de proveedores IA y seleccion de proveedor/modelo por workflow para `WF-02`, `WF-03`, `WF-04` y `WF-05`, con Gemini funcional y estructura extensible.
+- Backend IA: anadido listado de modelos Gemini desde la API oficial filtrando modelos compatibles con `generateContent`.
+- Backend IA: anadido proveedor Gemini para matching de eventos `WF-03`, manteniendo proveedor determinista para desarrollo y pruebas.
+- Frontend ADMIN: `/settings` permite habilitar proveedores IA, reemplazar API keys, cargar modelos y asignar proveedor/modelo por workflow IA.
 - Backend auditoria: anadido formateo legible para detalles de auditoria editorial y de usuarios, con referencias a eventos, contenidos, publicaciones, estados y errores.
 - Backend auditoria: `GET /api/v1/audit/users` y `GET /api/v1/audit/editorial` aceptan `date=YYYY-MM-DD` para consultar auditoria diaria en zona operativa `Europe/Madrid`.
 - Backend publicaciones: anadida auditoria de publicaciones directas y ejecuciones programadas tanto en exito como en fallo.

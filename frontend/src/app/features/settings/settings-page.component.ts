@@ -2,7 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { AiMetric, AiMetricsSnapshot, AiPromptVersion } from '../../core/models/ai-observability.models';
+import { AiMetric, AiMetricsSnapshot, AiModelOption, AiPromptVersion, AiProviderSetting, AiWorkflowSetting } from '../../core/models/ai-observability.models';
 import { TelegramPublicationSettings } from '../../core/models/application-settings.models';
 import { AutomationOverview, AutomationRunResult, AutomationWorkflowCode, AutomationWorkflowSetting } from '../../core/models/automation.models';
 import { MetricCard } from '../../core/models/dashboard.models';
@@ -30,6 +30,18 @@ interface TelegramSettingsForm {
   disableWebPagePreview: boolean;
 }
 
+interface AiProviderForm {
+  enabled: boolean;
+  apiKey: string;
+}
+
+interface AiWorkflowForm {
+  providerCode: string;
+  modelName: string;
+  temperature: number;
+  maxOutputTokens: number;
+}
+
 @Component({
   selector: 'app-settings-page',
   imports: [FormsModule, MetricCardComponent, RouterLink],
@@ -44,6 +56,11 @@ export class SettingsPageComponent implements OnInit {
   protected readonly settings = signal<AutomationWorkflowSetting[]>([]);
   protected readonly overview = signal<AutomationOverview | null>(null);
   protected readonly promptVersions = signal<AiPromptVersion[]>([]);
+  protected readonly aiProviders = signal<AiProviderSetting[]>([]);
+  protected readonly aiWorkflowSettings = signal<AiWorkflowSetting[]>([]);
+  protected readonly aiProviderForms = signal<Record<string, AiProviderForm>>({});
+  protected readonly aiWorkflowForms = signal<Record<string, AiWorkflowForm>>({});
+  protected readonly aiModelOptions = signal<Record<string, AiModelOption[]>>({});
   protected readonly aiMetrics = signal<AiMetricsSnapshot | null>(null);
   protected readonly forms = signal<Record<string, AutomationSettingForm>>({});
   protected readonly telegramSettings = signal<TelegramPublicationSettings | null>(null);
@@ -58,6 +75,9 @@ export class SettingsPageComponent implements OnInit {
   protected readonly isTelegramLoading = signal(false);
   protected readonly isAiLoading = signal(false);
   protected readonly isTelegramSaving = signal(false);
+  protected readonly busyAiProvider = signal<string | null>(null);
+  protected readonly busyAiWorkflow = signal<string | null>(null);
+  protected readonly busyModelProvider = signal<string | null>(null);
   protected readonly busyWorkflow = signal<AutomationWorkflowCode | null>(null);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly successMessage = signal<string | null>(null);
@@ -179,6 +199,7 @@ export class SettingsPageComponent implements OnInit {
         this.errorMessage.set(error.error?.error ?? 'No se pudo cargar el versionado de prompts IA.');
       }
     });
+    this.loadAiProviderSettings();
     this.aiObservabilityService.listDailyMetrics(this.metricDate()).subscribe({
       next: (metrics) => {
         this.aiMetrics.set(metrics);
@@ -187,6 +208,42 @@ export class SettingsPageComponent implements OnInit {
       error: (error: { error?: { error?: string } }) => {
         this.errorMessage.set(error.error?.error ?? 'No se pudieron cargar las metricas IA.');
         this.isAiLoading.set(false);
+      }
+    });
+  }
+
+  protected loadAiProviderSettings(): void {
+    this.aiObservabilityService.listProviders().subscribe({
+      next: (providers) => {
+        this.aiProviders.set(providers);
+        this.aiProviderForms.set(Object.fromEntries(providers.map((provider) => [
+          provider.providerCode,
+          { enabled: provider.enabled, apiKey: '' }
+        ])));
+        this.loadAiWorkflowSettings();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar la configuracion de proveedores IA.');
+      }
+    });
+  }
+
+  protected loadAiWorkflowSettings(): void {
+    this.aiObservabilityService.listWorkflowSettings().subscribe({
+      next: (settings) => {
+        this.aiWorkflowSettings.set(settings);
+        this.aiWorkflowForms.set(Object.fromEntries(settings.map((setting) => [
+          setting.workflowCode,
+          {
+            providerCode: setting.providerCode,
+            modelName: setting.modelName,
+            temperature: setting.temperature,
+            maxOutputTokens: setting.maxOutputTokens
+          }
+        ])));
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar la configuracion IA por workflow.');
       }
     });
   }
@@ -209,6 +266,88 @@ export class SettingsPageComponent implements OnInit {
 
   protected updateTelegramForm(patch: Partial<TelegramSettingsForm>): void {
     this.telegramForm.update((form) => ({ ...form, ...patch }));
+  }
+
+  protected updateAiProviderForm(providerCode: string, patch: Partial<AiProviderForm>): void {
+    this.aiProviderForms.update((forms) => ({
+      ...forms,
+      [providerCode]: { ...this.aiProviderFormFor(providerCode), ...patch }
+    }));
+  }
+
+  protected updateAiWorkflowForm(workflowCode: string, patch: Partial<AiWorkflowForm>): void {
+    this.aiWorkflowForms.update((forms) => ({
+      ...forms,
+      [workflowCode]: { ...this.aiWorkflowFormFor(workflowCode), ...patch }
+    }));
+  }
+
+  protected aiProviderFormFor(providerCode: string): AiProviderForm {
+    return this.aiProviderForms()[providerCode] ?? { enabled: false, apiKey: '' };
+  }
+
+  protected aiWorkflowFormFor(workflowCode: string): AiWorkflowForm {
+    return this.aiWorkflowForms()[workflowCode] ?? { providerCode: 'deterministic', modelName: '', temperature: 0.2, maxOutputTokens: 1024 };
+  }
+
+  protected saveAiProvider(provider: AiProviderSetting): void {
+    const form = this.aiProviderFormFor(provider.providerCode);
+    this.busyAiProvider.set(provider.providerCode);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.aiObservabilityService.updateProvider(provider.providerCode, {
+      enabled: form.enabled,
+      apiKey: form.apiKey.trim() ? form.apiKey.trim() : null
+    }).subscribe({
+      next: () => {
+        this.successMessage.set('Proveedor IA guardado.');
+        this.busyAiProvider.set(null);
+        this.loadAiProviderSettings();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo guardar el proveedor IA.');
+        this.busyAiProvider.set(null);
+      }
+    });
+  }
+
+  protected loadModels(providerCode: string): void {
+    const form = this.aiProviderFormFor(providerCode);
+    this.busyModelProvider.set(providerCode);
+    this.errorMessage.set(null);
+    this.aiObservabilityService.listProviderModels(providerCode, form.apiKey.trim() ? form.apiKey.trim() : null).subscribe({
+      next: (models) => {
+        this.aiModelOptions.update((options) => ({ ...options, [providerCode]: models }));
+        this.busyModelProvider.set(null);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudieron cargar los modelos del proveedor IA.');
+        this.busyModelProvider.set(null);
+      }
+    });
+  }
+
+  protected saveAiWorkflow(setting: AiWorkflowSetting): void {
+    const form = this.aiWorkflowFormFor(setting.workflowCode);
+    this.busyAiWorkflow.set(setting.workflowCode);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.aiObservabilityService.updateWorkflowSetting(setting.workflowCode, {
+      providerCode: form.providerCode,
+      modelName: form.modelName,
+      temperature: Number(form.temperature),
+      maxOutputTokens: Math.max(1, Math.round(Number(form.maxOutputTokens)))
+    }).subscribe({
+      next: () => {
+        this.successMessage.set('Configuracion IA del workflow guardada.');
+        this.busyAiWorkflow.set(null);
+        this.loadAiWorkflowSettings();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo guardar la configuracion IA del workflow.');
+        this.busyAiWorkflow.set(null);
+      }
+    });
   }
 
   protected saveTelegramSettings(): void {
@@ -301,6 +440,20 @@ export class SettingsPageComponent implements OnInit {
       WF04_ANALYSIS: 'WF04 - Analisis'
     };
     return labels[workflowCode];
+  }
+
+  protected aiWorkflowLabel(workflowCode: string): string {
+    const labels: Record<string, string> = {
+      WF02_CLASSIFICATION: 'WF02 - Clasificacion',
+      WF03_EVENT_MATCHING: 'WF03 - Matching de eventos',
+      WF04_ANALYSIS: 'WF04 - Analisis',
+      WF05_CONTENT: 'WF05 - Generacion de contenido'
+    };
+    return labels[workflowCode] ?? workflowCode;
+  }
+
+  protected modelsFor(providerCode: string): AiModelOption[] {
+    return this.aiModelOptions()[providerCode] || [];
   }
 
   protected formatDate(value: string | null): string {

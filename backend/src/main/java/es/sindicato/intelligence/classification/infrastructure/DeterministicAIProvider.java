@@ -6,7 +6,6 @@ import es.sindicato.intelligence.classification.application.ClassificationAIResp
 import es.sindicato.intelligence.classification.domain.ClassificationCategory;
 import es.sindicato.intelligence.classification.domain.ImpactLevel;
 import es.sindicato.intelligence.classification.domain.UrgencyLevel;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -14,7 +13,6 @@ import java.text.Normalizer;
 import java.util.List;
 
 @Component
-@ConditionalOnProperty(name = "app.ai.provider", havingValue = "deterministic", matchIfMissing = true)
 public class DeterministicAIProvider implements AIProvider {
 
     @Override
@@ -38,6 +36,11 @@ public class DeterministicAIProvider implements AIProvider {
         }
 
         return response(ClassificationCategory.OTROS, "Sin clasificar", 50, ImpactLevel.LOW, UrgencyLevel.LOW, List.of("educacion"));
+    }
+
+    @Override
+    public String providerName() {
+        return "deterministic";
     }
 
     @Override

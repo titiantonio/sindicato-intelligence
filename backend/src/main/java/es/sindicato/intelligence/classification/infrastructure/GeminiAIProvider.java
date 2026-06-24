@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import es.sindicato.intelligence.ai.application.AiErrorSanitizer;
+import es.sindicato.intelligence.ai.application.AiWorkflowRuntimeSettings;
 import es.sindicato.intelligence.classification.application.AIProvider;
 import es.sindicato.intelligence.classification.application.AIProviderException;
 import es.sindicato.intelligence.classification.application.ClassificationAIRequest;
@@ -11,7 +12,6 @@ import es.sindicato.intelligence.classification.application.ClassificationAIResp
 import es.sindicato.intelligence.classification.domain.ClassificationCategory;
 import es.sindicato.intelligence.classification.domain.ImpactLevel;
 import es.sindicato.intelligence.classification.domain.UrgencyLevel;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 
 @Component
-@ConditionalOnProperty(name = "app.ai.provider", havingValue = "gemini")
 public class GeminiAIProvider implements AIProvider {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiAIProvider.class);
@@ -54,11 +53,24 @@ public class GeminiAIProvider implements AIProvider {
         AiProviderProperties.Gemini gemini = properties.getGemini();
         String apiKey = requireText(gemini.getApiKey(), "Gemini API key is required when app.ai.provider=gemini");
         String model = normalizeModel(requireText(gemini.getModel(), "Gemini model is required when app.ai.provider=gemini"));
+        return classify(request, apiKey, model, gemini.getTemperature(), gemini.getMaxOutputTokens());
+    }
 
+    public ClassificationAIResponse classify(ClassificationAIRequest request, AiWorkflowRuntimeSettings settings) {
+        return classify(
+                request,
+                requireText(settings.apiKey(), "Gemini API key is required"),
+                normalizeModel(requireText(settings.modelName(), "Gemini model is required")),
+                settings.temperature().doubleValue(),
+                settings.maxOutputTokens()
+        );
+    }
+
+    private ClassificationAIResponse classify(ClassificationAIRequest request, String apiKey, String model, double temperature, int maxOutputTokens) {
         AIProviderException lastException = null;
         for (int attempt = 1; attempt <= MAX_CLASSIFICATION_ATTEMPTS; attempt++) {
             try {
-                JsonNode response = callGemini(request, gemini, apiKey, model);
+                JsonNode response = callGemini(request, apiKey, model, temperature, maxOutputTokens);
                 String responseText = extractResponseText(response);
                 return parseClassificationResponse(responseText);
             } catch (AIProviderException exception) {
@@ -75,15 +87,21 @@ public class GeminiAIProvider implements AIProvider {
     }
 
     @Override
+    public String providerName() {
+        return "gemini";
+    }
+
+    @Override
     public String modelName() {
         return normalizeModel(properties.getGemini().getModel());
     }
 
     private JsonNode callGemini(
             ClassificationAIRequest request,
-            AiProviderProperties.Gemini gemini,
             String apiKey,
-            String model
+            String model,
+            double temperature,
+            int maxOutputTokens
     ) {
         Map<String, Object> body = Map.of(
                 "systemInstruction", Map.of(
@@ -94,8 +112,8 @@ public class GeminiAIProvider implements AIProvider {
                         "parts", List.of(Map.of("text", buildUserPrompt(request)))
                 )),
                 "generationConfig", Map.of(
-                        "temperature", gemini.getTemperature(),
-                        "maxOutputTokens", gemini.getMaxOutputTokens(),
+                        "temperature", temperature,
+                        "maxOutputTokens", maxOutputTokens,
                         "responseMimeType", "application/json",
                         "responseSchema", classificationResponseSchema()
                 )
@@ -105,9 +123,9 @@ public class GeminiAIProvider implements AIProvider {
             return restClient.post()
                     .uri(uriBuilder -> uriBuilder
                             .path("/" + model + ":generateContent")
-                            .queryParam("key", apiKey)
                             .build())
                     .contentType(MediaType.APPLICATION_JSON)
+                    .header("x-goog-api-key", apiKey)
                     .body(body)
                     .retrieve()
                     .body(JsonNode.class);

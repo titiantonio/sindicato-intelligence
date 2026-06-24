@@ -3,7 +3,10 @@ package es.sindicato.intelligence.ai.infrastructure;
 import es.sindicato.intelligence.ai.domain.AiMetricStatus;
 import es.sindicato.intelligence.ai.domain.AiOperationMetric;
 import es.sindicato.intelligence.ai.domain.AiOperationMetricRepository;
+import es.sindicato.intelligence.ai.domain.AiProviderSettingRepository;
 import es.sindicato.intelligence.ai.domain.AiPromptVersionRepository;
+import es.sindicato.intelligence.ai.domain.AiWorkflowSettingRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @Transactional
@@ -25,6 +29,15 @@ class JpaAiObservabilityRepositoryTest {
 
     @Autowired
     private AiPromptVersionRepository promptVersionRepository;
+
+    @Autowired
+    private AiProviderSettingRepository providerSettingRepository;
+
+    @Autowired
+    private AiWorkflowSettingRepository workflowSettingRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Test
     void savesMetricAndListsRecentMetrics() {
@@ -91,5 +104,26 @@ class JpaAiObservabilityRepositoryTest {
     @Test
     void listsSeededActivePromptVersions() {
         assertEquals(4, promptVersionRepository.findActive().size());
+    }
+
+    @Test
+    void savesProviderApiKeyEncryptedAndReturnsDecryptedDomainValue() {
+        var setting = providerSettingRepository.findByCode("gemini").orElseThrow();
+        setting.update(true, "secret-api-key", true, OffsetDateTime.now());
+        providerSettingRepository.save(setting);
+        entityManager.flush();
+        entityManager.clear();
+
+        String storedValue = (String) entityManager.createNativeQuery("SELECT api_key_encrypted FROM ai_provider_settings WHERE provider_code = 'gemini'")
+                .getSingleResult();
+
+        assertTrue(storedValue.startsWith("enc:v1:"));
+        assertEquals("secret-api-key", providerSettingRepository.findByCode("gemini").orElseThrow().getApiKey());
+    }
+
+    @Test
+    void listsSeededAiWorkflowSettings() {
+        assertEquals(4, workflowSettingRepository.findAll().size());
+        assertEquals("deterministic", workflowSettingRepository.findByWorkflowCode("WF05_CONTENT").orElseThrow().getProviderCode());
     }
 }

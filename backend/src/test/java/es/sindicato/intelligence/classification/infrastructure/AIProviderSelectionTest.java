@@ -1,54 +1,48 @@
 package es.sindicato.intelligence.classification.infrastructure;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import es.sindicato.intelligence.classification.application.AIProvider;
+import es.sindicato.intelligence.ai.application.AiWorkflowRuntimeSettings;
+import es.sindicato.intelligence.ai.application.AiWorkflowRuntimeSettingsResolver;
+import es.sindicato.intelligence.classification.application.ClassificationAIRequest;
+import es.sindicato.intelligence.classification.domain.ClassificationCategory;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.web.client.RestClient;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AIProviderSelectionTest {
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(ConfigurationPropertiesAutoConfiguration.class))
-            .withUserConfiguration(TestConfiguration.class);
-
     @Test
-    void usesDeterministicProviderByDefault() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(AIProvider.class);
-            assertThat(context.getBean(AIProvider.class)).isInstanceOf(DeterministicAIProvider.class);
-        });
+    void dynamicProviderUsesDeterministicWorkflowSettings() {
+        AiWorkflowRuntimeSettingsResolver resolver = mock(AiWorkflowRuntimeSettingsResolver.class);
+        when(resolver.resolve("WF02_CLASSIFICATION")).thenReturn(new AiWorkflowRuntimeSettings(
+                "WF02_CLASSIFICATION",
+                "deterministic",
+                "deterministic-classification",
+                BigDecimal.valueOf(0.2),
+                1024,
+                null
+        ));
+        DynamicClassificationAIProvider provider = new DynamicClassificationAIProvider(
+                resolver,
+                new DeterministicAIProvider(),
+                mock(GeminiAIProvider.class)
+        );
+
+        assertEquals(ClassificationCategory.SIPRI, provider.classify(request()).category());
+        assertEquals("deterministic", provider.providerName());
+        assertEquals("deterministic-classification", provider.modelName());
     }
 
-    @Test
-    void usesGeminiProviderWhenConfigured() {
-        contextRunner
-                .withPropertyValues("app.ai.provider=gemini")
-                .run(context -> {
-                    assertThat(context).hasSingleBean(AIProvider.class);
-                    assertThat(context.getBean(AIProvider.class)).isInstanceOf(GeminiAIProvider.class);
-                });
-    }
-
-    @Configuration
-    @Import({AiProviderProperties.class, DeterministicAIProvider.class, GeminiAIProvider.class})
-    static class TestConfiguration {
-
-        @Bean
-        RestClient.Builder restClientBuilder() {
-            return RestClient.builder();
-        }
-
-        @Bean
-        ObjectMapper objectMapper() {
-            return new ObjectMapper();
-        }
+    private ClassificationAIRequest request() {
+        return new ClassificationAIRequest(
+                "SIPRI publica adjudicaciones",
+                "Resumen",
+                "Contenido",
+                "system",
+                "prompt"
+        );
     }
 }

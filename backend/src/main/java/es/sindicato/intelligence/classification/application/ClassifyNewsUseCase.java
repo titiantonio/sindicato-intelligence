@@ -69,11 +69,11 @@ public class ClassifyNewsUseCase {
                     prompt.userPrompt()
             ));
         } catch (RuntimeException exception) {
-            metricsRecorder.recordFailure("CLASSIFICATION", "WF02_CLASSIFICATION", providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
+            metricsRecorder.recordFailure("CLASSIFICATION", "WF02_CLASSIFICATION", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
             log.error("classification failed: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
             throw exception;
         }
-        metricsRecorder.recordSuccess("CLASSIFICATION", "WF02_CLASSIFICATION", providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt);
+        metricsRecorder.recordSuccess("CLASSIFICATION", "WF02_CLASSIFICATION", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt);
 
         NewsClassification classification = new NewsClassification(
                 null,
@@ -117,9 +117,5 @@ public class ClassifyNewsUseCase {
         }
 
         return trimmed.substring(0, 117) + "...";
-    }
-
-    private String providerName() {
-        return aiProvider.getClass().getSimpleName();
     }
 }
