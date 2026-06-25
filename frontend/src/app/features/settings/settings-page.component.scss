@@ -1,44 +1,24 @@
-.panel,
-.workflow-panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 1.25rem;
-  box-shadow: var(--shadow-soft);
-}
-
-.panel {
-  padding: 1.5rem;
-}
+.panel,.workflow-panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:8px;box-shadow:var(--shadow-soft)}
+.panel,.workflow-panel,.telegram-panel,.summary-card,.workflow-subpanel,.ai-provider-form,.metric-modal{padding:1rem}
 
 .page-header {
   margin-bottom: 1.5rem;
 }
 
-.page-header__eyebrow,
-.section-header span,
-.workflow-panel header span,
-.workflow-status dt {
+.page-header__eyebrow,.section-header span,.workflow-panel header span,.workflow-status dt,.summary-card span,.metric-modal header span {
   color: var(--color-primary);
   font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.page-header h1,
-.workflow-panel h2 {
-  margin: 0.35rem 0;
-}
+.page-header h1,.section-header h2,.workflow-panel h2,.metric-modal h2{margin:.3rem 0 0}
 
-.page-header p {
+.page-header p,.summary-card p,.workflow-panel header p {
   color: var(--color-text-muted);
-  margin: 0;
-}
-
-.settings-section {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
 }
 
 .settings-tabs {
@@ -61,78 +41,36 @@
   border-bottom-color: var(--color-primary);
 }
 
-.section-header h2 {
-  margin: 0.3rem 0 0;
+.settings-section,.workflow-stack,.workflow-panel,.telegram-panel,.ai-provider-form,.metric-modal{display:grid;gap:1rem}
+
+.settings-section {
+  margin-top: 1.5rem;
 }
 
-.settings-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.summary-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.summary-card {
-  background: var(--color-muted-surface);
-  border: 1px solid var(--color-neutral-soft);
-  border-radius: 1rem;
-  display: grid;
-  gap: 0.35rem;
-  padding: 1rem;
-}
-
-.summary-card span {
-  color: var(--color-primary);
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.summary-card strong {
-  font-size: 1.5rem;
-}
-
-.summary-card p {
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
-.workflow-panel {
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
-}
-
-.telegram-panel {
-  background: var(--color-muted-surface);
-  border: 1px solid var(--color-neutral-soft);
-  border-radius: 1rem;
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
-}
-
-.telegram-form {
-  align-items: end;
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.workflow-panel header,
-.workflow-panel footer,
-.workflow-form {
+.section-header--with-action,.workflow-panel header,.workflow-panel footer,.workflow-form,.ai-provider-form header,.ai-provider-form footer,.table-pagination,.table-pagination label,.table-pagination__pager,.metric-modal header {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: space-between;
+}
+
+.workflow-panel header > div,.ai-provider-form header > div,.switch{min-width:0}
+
+.summary-grid,.workflow-panel__content,.ai-provider-grid,.telegram-form {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.summary-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.summary-card,.workflow-subpanel,.telegram-panel,.ai-provider-form {
+  background: var(--color-muted-surface);
+  border: 1px solid var(--color-neutral-soft);
+  border-radius: 8px;
 }
 
 .switch {
@@ -142,8 +80,7 @@
   gap: 0.5rem;
 }
 
-.workflow-form label,
-.telegram-form label {
+.workflow-form label,.telegram-form label,.ai-provider-form label,.ai-workflow-fields label,.daily-filter {
   color: var(--color-text-muted);
   display: grid;
   font-size: 0.85rem;
@@ -155,16 +92,23 @@
   flex: 1 1 8rem;
 }
 
-.workflow-form input,
-.telegram-form input,
-.column-filters input,
-.column-filters select,
-.table-pagination select {
+input,
+select {
   border: 1px solid var(--color-input-border);
   border-radius: 0.5rem;
   color: var(--color-field-text);
+  min-width: 0;
   padding: 0.6rem 0.7rem;
+  width: 100%;
 }
+
+.ai-workflow-fields {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ai-workflow-fields label:nth-child(2){grid-column:1 / -1}
 
 .workflow-status {
   display: grid;
@@ -173,15 +117,16 @@
   margin: 0;
 }
 
-.workflow-status dd {
+.workflow-status dd,.ai-provider-form strong,.ai-provider-form span {
   color: var(--color-text);
   font-weight: 800;
   margin: 0.15rem 0 0;
+  overflow-wrap: anywhere;
 }
 
 .workflow-error {
   background: var(--color-danger-soft);
-  border-radius: 0.75rem;
+  border-radius: 8px;
   color: var(--color-danger-text);
   margin: 0;
   padding: 0.75rem;
@@ -189,7 +134,7 @@
 
 .table-wrapper {
   border: 1px solid var(--color-border);
-  border-radius: 1rem;
+  border-radius: 8px;
   overflow-x: auto;
 }
 
@@ -198,12 +143,9 @@ table {
   width: 100%;
 }
 
-.data-table--prompts {
-  min-width: 76rem;
-}
+.data-table--prompts{min-width:78rem}
 
-th,
-td {
+th,td {
   border-bottom: 1px solid var(--color-border);
   padding: 0.75rem;
   text-align: left;
@@ -222,39 +164,11 @@ th {
   padding-top: 0;
 }
 
-.column-filters input,
-.column-filters select {
-  font-size: 0.8rem;
-  min-width: 7rem;
-  width: 100%;
-}
+.column-filters input,.column-filters select{font-size:.8rem}
 
 .sort-button {
   all: unset;
   cursor: pointer;
-  text-align: left;
-}
-
-td {
-  color: var(--color-text);
-}
-
-.table-pagination {
-  align-items: center;
-  color: var(--color-text-muted);
-  display: flex;
-  flex-wrap: wrap;
-  font-size: 0.9rem;
-  font-weight: 800;
-  gap: 0.75rem;
-  justify-content: space-between;
-}
-
-.table-pagination label,
-.table-pagination__pager {
-  align-items: center;
-  display: flex;
-  gap: 0.5rem;
 }
 
 code {
@@ -273,20 +187,21 @@ button {
   padding: 0.65rem 0.9rem;
 }
 
-button.secondary {
-  background: var(--color-neutral-soft);
-  color: var(--color-text);
-}
-
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
+button.secondary{background:var(--color-neutral-soft);color:var(--color-text)}
 
 @media (max-width: 1200px) {
-  .settings-grid,
-  .telegram-form,
-  .summary-grid {
+  .summary-grid,.workflow-panel__content,.ai-provider-grid,.telegram-form {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 720px) {
+  .panel {
+    padding: 1rem;
+  }
+
+  .ai-workflow-fields,.workflow-status {
     grid-template-columns: 1fr;
   }
 }

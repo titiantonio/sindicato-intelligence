@@ -195,10 +195,9 @@ p {
 
 .settings-page .data-table--metrics th,
 .settings-page .data-table--metrics td {
-  overflow: hidden;
   padding-inline: 0.5rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .settings-page .metric-row {

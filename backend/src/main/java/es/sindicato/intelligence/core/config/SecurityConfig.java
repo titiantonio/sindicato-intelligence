@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.core.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,10 +18,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-        @Bean
-        ForcePasswordChangeFilter forcePasswordChangeFilter() {
-                return new ForcePasswordChangeFilter();
-        }
+    @Bean
+    ForcePasswordChangeFilter forcePasswordChangeFilter() {
+        return new ForcePasswordChangeFilter();
+    }
 
     @Bean
     AuthRateLimitingFilter authRateLimitingFilter() {
@@ -32,32 +33,40 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtDecoder jwtDecoder,
             ForcePasswordChangeFilter forcePasswordChangeFilter,
-            AuthRateLimitingFilter authRateLimitingFilter
+            AuthRateLimitingFilter authRateLimitingFilter,
+            @Value("${app.openapi.public-access:true}") boolean openApiPublicAccess,
+            @Value("${springdoc.api-docs.enabled:true}") boolean openApiDocsEnabled,
+            @Value("${springdoc.swagger-ui.enabled:true}") boolean swaggerUiEnabled
     ) throws Exception {
+
+        boolean allowOpenApiWithoutAuthentication = openApiPublicAccess && (openApiDocsEnabled || swaggerUiEnabled);
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/health", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password", "/api/v1/auth/request-temporary-password").permitAll()
-                        .requestMatchers("/api/v1/auth/change-password").hasAnyRole("ADMIN", "EDITOR")
-                        .requestMatchers("/api/v1/audit/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/ai/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/settings/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/sources/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/news/bulk").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/automation/settings/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/automation/settings/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/automation/settings/*/run").hasAnyRole("ADMIN", "EDITOR")
-                        .requestMatchers("/api/v1/automation/**").hasAnyRole("ADMIN", "EDITOR")
-                        .requestMatchers("/api/v1/classifications/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/analysis/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/events/detect").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/news/**", "/api/v1/events/**").hasAnyRole("ADMIN", "EDITOR")
-                        .requestMatchers("/api/v1/content/**", "/api/v1/publications/**").hasAnyRole("ADMIN", "EDITOR")
-                        .anyRequest().hasAnyRole("ADMIN", "EDITOR")
-                )
+                .authorizeHttpRequests(auth -> {
+                    if (allowOpenApiWithoutAuthentication) {
+                        auth.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll();
+                    }
+                    auth.requestMatchers("/api/v1/health", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password", "/api/v1/auth/request-temporary-password").permitAll()
+                            .requestMatchers("/api/v1/auth/change-password").hasAnyRole("ADMIN", "EDITOR")
+                            .requestMatchers("/api/v1/audit/**").hasRole("ADMIN")
+                            .requestMatchers("/api/v1/ai/**").hasRole("ADMIN")
+                            .requestMatchers("/api/v1/settings/**").hasRole("ADMIN")
+                            .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
+                            .requestMatchers("/api/v1/sources/**").hasRole("ADMIN")
+                            .requestMatchers("/api/v1/news/bulk").hasRole("ADMIN")
+                            .requestMatchers(HttpMethod.GET, "/api/v1/automation/settings/**").hasRole("ADMIN")
+                            .requestMatchers(HttpMethod.PUT, "/api/v1/automation/settings/**").hasRole("ADMIN")
+                            .requestMatchers(HttpMethod.POST, "/api/v1/automation/settings/*/run").hasAnyRole("ADMIN", "EDITOR")
+                            .requestMatchers("/api/v1/automation/**").hasAnyRole("ADMIN", "EDITOR")
+                            .requestMatchers("/api/v1/classifications/**").hasRole("ADMIN")
+                            .requestMatchers("/api/v1/analysis/**").hasRole("ADMIN")
+                            .requestMatchers("/api/v1/events/detect").hasRole("ADMIN")
+                            .requestMatchers("/api/v1/news/**", "/api/v1/events/**").hasAnyRole("ADMIN", "EDITOR")
+                            .requestMatchers("/api/v1/content/**", "/api/v1/publications/**").hasAnyRole("ADMIN", "EDITOR")
+                            .anyRequest().hasAnyRole("ADMIN", "EDITOR");
+                })
                 .addFilterBefore(authRateLimitingFilter, BearerTokenAuthenticationFilter.class)
                 .addFilterAfter(forcePasswordChangeFilter, BearerTokenAuthenticationFilter.class)
                 .oauth2ResourceServer(oauth2 -> oauth2

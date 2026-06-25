@@ -3,7 +3,7 @@
     <header class="page-header">
       <span class="page-header__eyebrow">ADMIN</span>
       <h1>Configuracion</h1>
-      <p>Centro unico para administrar IA, proveedores de publicacion y automatizaciones operativas.</p>
+      <p>Centro unico para administrar metricas IA, prompts, automatizaciones y publicacion.</p>
     </header>
 
     @if (errorMessage()) {
@@ -19,22 +19,31 @@
     }
 
     <nav class="settings-tabs" aria-label="Areas de configuracion">
-      <button type="button" class="settings-tab" [class.settings-tab--active]="activeTab() === 'ai'" (click)="setTab('ai')">
-        IA y prompts
+      <button type="button" class="settings-tab" [class.settings-tab--active]="activeTab() === 'metrics'" (click)="setTab('metrics')">
+        Metricas IA
       </button>
-      <button type="button" class="settings-tab" [class.settings-tab--active]="activeTab() === 'publication'" (click)="setTab('publication')">
-        Proveedores de publicacion
+      <button type="button" class="settings-tab" [class.settings-tab--active]="activeTab() === 'prompts'" (click)="setTab('prompts')">
+        Prompts IA
       </button>
       <button type="button" class="settings-tab" [class.settings-tab--active]="activeTab() === 'automation'" (click)="setTab('automation')">
         Automatizaciones
       </button>
+      <button type="button" class="settings-tab" [class.settings-tab--active]="activeTab() === 'publication'" (click)="setTab('publication')">
+        Publicacion
+      </button>
     </nav>
 
-    @if (activeTab() === 'ai') {
+    @if (activeTab() === 'metrics') {
       <section class="settings-section">
-        <header class="section-header">
-          <span>IA</span>
-          <h2>Prompts y observabilidad</h2>
+        <header class="section-header section-header--with-action">
+          <div>
+            <span>Observabilidad IA</span>
+            <h2>Metricas diarias</h2>
+          </div>
+          <label class="daily-filter">
+            Dia operativo
+            <input type="date" [ngModel]="metricDate()" (ngModelChange)="setMetricDate($event)" />
+          </label>
         </header>
 
         <div class="metric-grid">
@@ -46,219 +55,9 @@
 
       <section class="settings-section">
         <header class="section-header">
-          <span>Proveedores IA</span>
-          <h2>Configuracion por workflow</h2>
+          <span>Detalle IA</span>
+          <h2>Operaciones del dia</h2>
         </header>
-
-        <div class="ai-settings-grid">
-          <article class="ai-settings-panel">
-            <h3>Proveedores</h3>
-            @for (provider of aiProviders(); track provider.providerCode) {
-              <form class="ai-provider-form" (submit)="$event.preventDefault(); saveAiProvider(provider)">
-                <header>
-                  <div>
-                    <strong>{{ provider.displayName }}</strong>
-                    <span>{{ provider.apiKeyConfigured ? provider.apiKeyPreview : 'Sin clave configurada' }}</span>
-                  </div>
-                  <label class="switch">
-                    <input
-                      type="checkbox"
-                      [ngModel]="aiProviderFormFor(provider.providerCode).enabled"
-                      (ngModelChange)="updateAiProviderForm(provider.providerCode, { enabled: $event })"
-                      [name]="provider.providerCode + 'Enabled'"
-                    />
-                    <span>{{ aiProviderFormFor(provider.providerCode).enabled ? 'Activo' : 'Pausado' }}</span>
-                  </label>
-                </header>
-
-                <label>
-                  API key
-                  <input
-                    type="password"
-                    autocomplete="new-password"
-                    placeholder="Mantener clave actual"
-                    [ngModel]="aiProviderFormFor(provider.providerCode).apiKey"
-                    (ngModelChange)="updateAiProviderForm(provider.providerCode, { apiKey: $event })"
-                    [name]="provider.providerCode + 'ApiKey'"
-                  />
-                </label>
-
-                <footer>
-                  <button type="submit" [disabled]="busyAiProvider() === provider.providerCode">Guardar</button>
-                  <button type="button" class="secondary" (click)="loadModels(provider.providerCode)" [disabled]="busyModelProvider() === provider.providerCode">
-                    Cargar modelos
-                  </button>
-                </footer>
-              </form>
-            }
-          </article>
-
-          <article class="ai-settings-panel">
-            <h3>Workflows IA</h3>
-            @for (setting of aiWorkflowSettings(); track setting.workflowCode) {
-              <form class="ai-workflow-form" (submit)="$event.preventDefault(); saveAiWorkflow(setting)">
-                <header>
-                  <div>
-                    <strong>{{ aiWorkflowLabel(setting.workflowCode) }}</strong>
-                    <span>{{ setting.providerName }} · {{ setting.modelName }}</span>
-                  </div>
-                </header>
-
-                <div class="ai-workflow-fields">
-                  <label>
-                    Proveedor
-                    <select
-                      [ngModel]="aiWorkflowFormFor(setting.workflowCode).providerCode"
-                      (ngModelChange)="updateAiWorkflowForm(setting.workflowCode, { providerCode: $event })"
-                      [name]="setting.workflowCode + 'Provider'"
-                    >
-                      @for (provider of aiProviders(); track provider.providerCode) {
-                        <option [value]="provider.providerCode">{{ provider.displayName }}</option>
-                      }
-                    </select>
-                  </label>
-
-                  <label>
-                    Modelo
-                    <select
-                      [ngModel]="aiWorkflowFormFor(setting.workflowCode).modelName"
-                      (ngModelChange)="updateAiWorkflowForm(setting.workflowCode, { modelName: $event })"
-                      [name]="setting.workflowCode + 'Model'"
-                    >
-                      <option [value]="aiWorkflowFormFor(setting.workflowCode).modelName">{{ aiWorkflowFormFor(setting.workflowCode).modelName }}</option>
-                      @for (model of modelsFor(aiWorkflowFormFor(setting.workflowCode).providerCode); track model.name) {
-                        <option [value]="model.name">{{ model.displayName }} ({{ model.name }})</option>
-                      }
-                    </select>
-                  </label>
-
-                  <label>
-                    Temperatura
-                    <input
-                      type="number"
-                      min="0"
-                      max="2"
-                      step="0.1"
-                      [ngModel]="aiWorkflowFormFor(setting.workflowCode).temperature"
-                      (ngModelChange)="updateAiWorkflowForm(setting.workflowCode, { temperature: $event })"
-                      [name]="setting.workflowCode + 'Temperature'"
-                    />
-                  </label>
-
-                  <label>
-                    Max tokens
-                    <input
-                      type="number"
-                      min="1"
-                      [ngModel]="aiWorkflowFormFor(setting.workflowCode).maxOutputTokens"
-                      (ngModelChange)="updateAiWorkflowForm(setting.workflowCode, { maxOutputTokens: $event })"
-                      [name]="setting.workflowCode + 'Tokens'"
-                    />
-                  </label>
-                </div>
-
-                <footer>
-                  <button type="submit" [disabled]="busyAiWorkflow() === setting.workflowCode">Guardar workflow</button>
-                </footer>
-              </form>
-            }
-          </article>
-        </div>
-      </section>
-
-      <section class="settings-section">
-        <header class="section-header">
-          <span>Versionado IA</span>
-          <h2>Prompts versionados</h2>
-        </header>
-
-        <div class="table-wrapper">
-          <table class="data-table data-table--prompts">
-            <colgroup>
-              <col style="width: 14rem" />
-              <col style="width: 18rem" />
-              <col style="width: 8rem" />
-              <col style="width: 8rem" />
-              <col style="width: 16rem" />
-              <col style="width: 8rem" />
-              <col style="width: 10rem" />
-            </colgroup>
-            <thead>
-              <tr>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('promptKey')">Clave {{ promptSortLabel('promptKey') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('promptName')">Prompt {{ promptSortLabel('promptName') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('module')">Modulo {{ promptSortLabel('module') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('version')">Version {{ promptSortLabel('version') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('checksum')">Checksum {{ promptSortLabel('checksum') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('active')">Estado {{ promptSortLabel('active') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('createdAt')">Creado {{ promptSortLabel('createdAt') }}</button></th>
-              </tr>
-              <tr class="column-filters">
-                <th><input type="search" aria-label="Filtrar clave de prompt" [ngModel]="promptKeyFilter()" (ngModelChange)="setPromptKeyFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar nombre de prompt" [ngModel]="promptNameFilter()" (ngModelChange)="setPromptNameFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar modulo de prompt" [ngModel]="promptModuleFilter()" (ngModelChange)="setPromptModuleFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar version de prompt" [ngModel]="promptVersionFilter()" (ngModelChange)="setPromptVersionFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar checksum de prompt" [ngModel]="promptChecksumFilter()" (ngModelChange)="setPromptChecksumFilter($event)" /></th>
-                <th>
-                  <select aria-label="Filtrar estado de prompt" [ngModel]="promptActiveFilter()" (ngModelChange)="setPromptActiveFilter($event)">
-                    <option value="">Todos</option>
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                  </select>
-                </th>
-                <th><input type="search" aria-label="Filtrar fecha de prompt" [ngModel]="promptCreatedAtFilter()" (ngModelChange)="setPromptCreatedAtFilter($event)" /></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (prompt of paginatedPrompts(); track prompt.promptKey + prompt.version) {
-                <tr>
-                  <td class="table-cell-nowrap"><code>{{ prompt.promptKey }}</code></td>
-                  <td class="table-cell-nowrap">{{ prompt.promptName }}</td>
-                  <td class="table-cell-nowrap">{{ prompt.module }}</td>
-                  <td class="table-cell-nowrap">{{ prompt.version }}</td>
-                  <td class="table-cell-nowrap"><code>{{ prompt.checksum }}</code></td>
-                  <td class="table-cell-nowrap">{{ prompt.active ? 'Activo' : 'Inactivo' }}</td>
-                  <td class="table-cell-nowrap">{{ formatDate(prompt.createdAt) }}</td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="7" class="empty-cell">No hay prompts que coincidan con los filtros.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <footer class="table-pagination">
-          <span>{{ displayedPrompts().length }} prompts</span>
-          <label>
-            Filas
-            <select [ngModel]="promptPageSize()" (ngModelChange)="setPromptPageSize($event)">
-              @for (pageSize of pageSizeOptions; track pageSize) {
-                <option [value]="pageSize">{{ pageSize }}</option>
-              }
-            </select>
-          </label>
-          <div class="table-pagination__pager">
-            <button type="button" class="secondary" (click)="previousPromptPage()" [disabled]="promptCurrentPage() === 1">Anterior</button>
-            <span>Pagina {{ promptDisplayPage() }} de {{ promptTotalPages() }}</span>
-            <button type="button" class="secondary" (click)="nextPromptPage()" [disabled]="promptCurrentPage() === promptTotalPages()">Siguiente</button>
-          </div>
-        </footer>
-      </section>
-
-      <section class="settings-section">
-        <header class="section-header">
-          <span>Observabilidad IA</span>
-          <h2>Metricas diarias</h2>
-        </header>
-
-        <div class="daily-filter">
-          <label>
-            Dia operativo
-            <input type="date" [ngModel]="metricDate()" (ngModelChange)="setMetricDate($event)" />
-          </label>
-        </div>
 
         <div class="table-wrapper">
           <table class="data-table data-table--metrics">
@@ -345,6 +144,89 @@
             <button type="button" class="secondary" (click)="previousMetricPage()" [disabled]="metricCurrentPage() === 1">Anterior</button>
             <span>Pagina {{ metricDisplayPage() }} de {{ metricTotalPages() }}</span>
             <button type="button" class="secondary" (click)="nextMetricPage()" [disabled]="metricCurrentPage() === metricTotalPages()">Siguiente</button>
+          </div>
+        </footer>
+      </section>
+    }
+
+    @if (activeTab() === 'prompts') {
+      <section class="settings-section">
+        <header class="section-header">
+          <span>Versionado IA</span>
+          <h2>Prompts versionados</h2>
+        </header>
+
+        <div class="table-wrapper">
+          <table class="data-table data-table--prompts">
+            <colgroup>
+              <col style="width: 14rem" />
+              <col style="width: 18rem" />
+              <col style="width: 8rem" />
+              <col style="width: 8rem" />
+              <col style="width: 16rem" />
+              <col style="width: 8rem" />
+              <col style="width: 10rem" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th><button type="button" class="sort-button" (click)="changePromptSort('promptKey')">Clave {{ promptSortLabel('promptKey') }}</button></th>
+                <th><button type="button" class="sort-button" (click)="changePromptSort('promptName')">Prompt {{ promptSortLabel('promptName') }}</button></th>
+                <th><button type="button" class="sort-button" (click)="changePromptSort('module')">Modulo {{ promptSortLabel('module') }}</button></th>
+                <th><button type="button" class="sort-button" (click)="changePromptSort('version')">Version {{ promptSortLabel('version') }}</button></th>
+                <th><button type="button" class="sort-button" (click)="changePromptSort('checksum')">Checksum {{ promptSortLabel('checksum') }}</button></th>
+                <th><button type="button" class="sort-button" (click)="changePromptSort('active')">Estado {{ promptSortLabel('active') }}</button></th>
+                <th><button type="button" class="sort-button" (click)="changePromptSort('createdAt')">Creado {{ promptSortLabel('createdAt') }}</button></th>
+              </tr>
+              <tr class="column-filters">
+                <th><input type="search" aria-label="Filtrar clave de prompt" [ngModel]="promptKeyFilter()" (ngModelChange)="setPromptKeyFilter($event)" /></th>
+                <th><input type="search" aria-label="Filtrar nombre de prompt" [ngModel]="promptNameFilter()" (ngModelChange)="setPromptNameFilter($event)" /></th>
+                <th><input type="search" aria-label="Filtrar modulo de prompt" [ngModel]="promptModuleFilter()" (ngModelChange)="setPromptModuleFilter($event)" /></th>
+                <th><input type="search" aria-label="Filtrar version de prompt" [ngModel]="promptVersionFilter()" (ngModelChange)="setPromptVersionFilter($event)" /></th>
+                <th><input type="search" aria-label="Filtrar checksum de prompt" [ngModel]="promptChecksumFilter()" (ngModelChange)="setPromptChecksumFilter($event)" /></th>
+                <th>
+                  <select aria-label="Filtrar estado de prompt" [ngModel]="promptActiveFilter()" (ngModelChange)="setPromptActiveFilter($event)">
+                    <option value="">Todos</option>
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                  </select>
+                </th>
+                <th><input type="search" aria-label="Filtrar fecha de prompt" [ngModel]="promptCreatedAtFilter()" (ngModelChange)="setPromptCreatedAtFilter($event)" /></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (prompt of paginatedPrompts(); track prompt.promptKey + prompt.version) {
+                <tr>
+                  <td class="table-cell-nowrap"><code>{{ prompt.promptKey }}</code></td>
+                  <td class="table-cell-nowrap">{{ prompt.promptName }}</td>
+                  <td class="table-cell-nowrap">{{ prompt.module }}</td>
+                  <td class="table-cell-nowrap">{{ prompt.version }}</td>
+                  <td class="table-cell-nowrap"><code>{{ prompt.checksum }}</code></td>
+                  <td class="table-cell-nowrap">{{ prompt.active ? 'Activo' : 'Inactivo' }}</td>
+                  <td class="table-cell-nowrap">{{ formatDate(prompt.createdAt) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="empty-cell">No hay prompts que coincidan con los filtros.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="table-pagination">
+          <span>{{ displayedPrompts().length }} prompts</span>
+          <label>
+            Filas
+            <select [ngModel]="promptPageSize()" (ngModelChange)="setPromptPageSize($event)">
+              @for (pageSize of pageSizeOptions; track pageSize) {
+                <option [value]="pageSize">{{ pageSize }}</option>
+              }
+            </select>
+          </label>
+          <div class="table-pagination__pager">
+            <button type="button" class="secondary" (click)="previousPromptPage()" [disabled]="promptCurrentPage() === 1">Anterior</button>
+            <span>Pagina {{ promptDisplayPage() }} de {{ promptTotalPages() }}</span>
+            <button type="button" class="secondary" (click)="nextPromptPage()" [disabled]="promptCurrentPage() === promptTotalPages()">Siguiente</button>
           </div>
         </footer>
       </section>
@@ -472,76 +354,209 @@
       <section class="settings-section">
         <header class="section-header">
           <span>Automatizaciones</span>
-          <h2>Workflows migrados</h2>
+          <h2>Workflows operativos e IA</h2>
         </header>
 
-        <div class="settings-grid">
-          @for (setting of settings(); track setting.workflowCode) {
-            <article class="workflow-panel">
+        <div class="workflow-stack">
+          @for (aiSetting of aiWorkflowSettings(); track aiSetting.workflowCode) {
+            <article class="workflow-panel workflow-panel--wide">
               <header>
                 <div>
-                  <span>{{ setting.workflowCode }}</span>
-                  <h2>{{ workflowLabel(setting.workflowCode) }}</h2>
+                  <span>{{ aiSetting.workflowCode }}</span>
+                  <h2>{{ aiWorkflowLabel(aiSetting.workflowCode) }}</h2>
+                  <p>{{ aiSetting.providerName }} - {{ aiSetting.modelName }}</p>
+                </div>
+                @if (automationSettingForAiWorkflow(aiSetting.workflowCode); as automationSetting) {
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      [ngModel]="formFor(automationSetting.workflowCode).enabled"
+                      (ngModelChange)="updateEnabled(automationSetting.workflowCode, $event)"
+                    />
+                    <span>{{ formFor(automationSetting.workflowCode).enabled ? 'Activa' : 'Pausada' }}</span>
+                  </label>
+                } @else {
+                  <span class="workflow-chip">Bajo demanda</span>
+                }
+              </header>
+
+              <div class="workflow-panel__content">
+                @if (automationSettingForAiWorkflow(aiSetting.workflowCode); as automationSetting) {
+                  <section class="workflow-subpanel">
+                    <h3>Operacion</h3>
+                    <div class="workflow-form">
+                      <label>
+                        Intervalo (min)
+                        <input
+                          type="number"
+                          min="1"
+                          [ngModel]="formFor(automationSetting.workflowCode).intervalMinutes"
+                          (ngModelChange)="updateInterval(automationSetting.workflowCode, $event)"
+                        />
+                      </label>
+                      <label>
+                        Lote
+                        <input
+                          type="number"
+                          min="1"
+                          [ngModel]="formFor(automationSetting.workflowCode).batchSize"
+                          (ngModelChange)="updateBatchSize(automationSetting.workflowCode, $event)"
+                        />
+                      </label>
+                    </div>
+
+                    <dl class="workflow-status">
+                      <div>
+                        <dt>Ultima ejecucion</dt>
+                        <dd>{{ formatDate(automationSetting.lastRunAt) }}</dd>
+                      </div>
+                      <div>
+                        <dt>Proximo intento</dt>
+                        <dd>{{ formatDate(automationSetting.nextRunAt) }}</dd>
+                      </div>
+                      <div>
+                        <dt>Resultado</dt>
+                        <dd>{{ resultText(automationSetting) }} P/C/F/O</dd>
+                      </div>
+                      <div>
+                        <dt>Estado</dt>
+                        <dd>{{ automationSetting.running ? 'En ejecucion' : 'Disponible' }}</dd>
+                      </div>
+                    </dl>
+
+                    @if (automationSetting.lastError) {
+                      <p class="workflow-error">{{ automationSetting.lastError }}</p>
+                    }
+                  </section>
+                } @else {
+                  <section class="workflow-subpanel">
+                    <h3>Operacion</h3>
+                    <dl class="workflow-status">
+                      <div>
+                        <dt>Modo</dt>
+                        <dd>Bajo demanda</dd>
+                      </div>
+                      <div>
+                        <dt>Scheduler</dt>
+                        <dd>No aplica</dd>
+                      </div>
+                    </dl>
+                  </section>
+                }
+
+                <section class="workflow-subpanel">
+                  <h3>IA</h3>
+                  <div class="ai-workflow-fields">
+                    <label>
+                      Proveedor
+                      <select
+                        [ngModel]="aiWorkflowFormFor(aiSetting.workflowCode).providerCode"
+                        (ngModelChange)="updateAiWorkflowForm(aiSetting.workflowCode, { providerCode: $event })"
+                        [name]="aiSetting.workflowCode + 'Provider'"
+                      >
+                        @for (provider of aiProviders(); track provider.providerCode) {
+                          <option [value]="provider.providerCode">{{ provider.displayName }}</option>
+                        }
+                      </select>
+                    </label>
+
+                    <label>
+                      Modelo
+                      <select
+                        [ngModel]="aiWorkflowFormFor(aiSetting.workflowCode).modelName"
+                        (ngModelChange)="updateAiWorkflowForm(aiSetting.workflowCode, { modelName: $event })"
+                        [name]="aiSetting.workflowCode + 'Model'"
+                      >
+                        <option [value]="aiWorkflowFormFor(aiSetting.workflowCode).modelName">{{ aiWorkflowFormFor(aiSetting.workflowCode).modelName }}</option>
+                        @for (model of modelsFor(aiWorkflowFormFor(aiSetting.workflowCode).providerCode); track model.name) {
+                          <option [value]="model.name">{{ model.displayName }} ({{ model.name }})</option>
+                        }
+                      </select>
+                    </label>
+
+                    <label>
+                      Temperatura
+                      <input
+                        type="number"
+                        min="0"
+                        max="2"
+                        step="0.1"
+                        [ngModel]="aiWorkflowFormFor(aiSetting.workflowCode).temperature"
+                        (ngModelChange)="updateAiWorkflowForm(aiSetting.workflowCode, { temperature: $event })"
+                        [name]="aiSetting.workflowCode + 'Temperature'"
+                      />
+                    </label>
+
+                    <label>
+                      Max tokens
+                      <input
+                        type="number"
+                        min="1"
+                        [ngModel]="aiWorkflowFormFor(aiSetting.workflowCode).maxOutputTokens"
+                        (ngModelChange)="updateAiWorkflowForm(aiSetting.workflowCode, { maxOutputTokens: $event })"
+                        [name]="aiSetting.workflowCode + 'Tokens'"
+                      />
+                    </label>
+                  </div>
+                </section>
+              </div>
+
+              <footer>
+                @if (automationSettingForAiWorkflow(aiSetting.workflowCode); as automationSetting) {
+                  <button type="button" (click)="save(automationSetting)" [disabled]="busyWorkflow() === automationSetting.workflowCode">Guardar automatizacion</button>
+                  <button type="button" class="secondary" (click)="runNow(automationSetting)" [disabled]="busyWorkflow() === automationSetting.workflowCode || automationSetting.running">Ejecutar ahora</button>
+                }
+                <button type="button" (click)="saveAiWorkflow(aiSetting)" [disabled]="busyAiWorkflow() === aiSetting.workflowCode">Guardar IA</button>
+              </footer>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <header class="section-header">
+          <span>Proveedores IA</span>
+          <h2>Credenciales y modelos</h2>
+        </header>
+
+        <div class="ai-provider-grid">
+          @for (provider of aiProviders(); track provider.providerCode) {
+            <form class="ai-provider-form" (submit)="$event.preventDefault(); saveAiProvider(provider)">
+              <header>
+                <div>
+                  <strong>{{ provider.displayName }}</strong>
+                  <span>{{ provider.apiKeyConfigured ? provider.apiKeyPreview : 'Sin clave configurada' }}</span>
                 </div>
                 <label class="switch">
                   <input
                     type="checkbox"
-                    [ngModel]="formFor(setting.workflowCode).enabled"
-                    (ngModelChange)="updateEnabled(setting.workflowCode, $event)"
+                    [ngModel]="aiProviderFormFor(provider.providerCode).enabled"
+                    (ngModelChange)="updateAiProviderForm(provider.providerCode, { enabled: $event })"
+                    [name]="provider.providerCode + 'Enabled'"
                   />
-                  <span>{{ formFor(setting.workflowCode).enabled ? 'Activa' : 'Pausada' }}</span>
+                  <span>{{ aiProviderFormFor(provider.providerCode).enabled ? 'Activo' : 'Pausado' }}</span>
                 </label>
               </header>
 
-              <div class="workflow-form">
-                <label>
-                  Intervalo (min)
-                  <input
-                    type="number"
-                    min="1"
-                    [ngModel]="formFor(setting.workflowCode).intervalMinutes"
-                    (ngModelChange)="updateInterval(setting.workflowCode, $event)"
-                  />
-                </label>
-                <label>
-                  Lote
-                  <input
-                    type="number"
-                    min="1"
-                    [ngModel]="formFor(setting.workflowCode).batchSize"
-                    (ngModelChange)="updateBatchSize(setting.workflowCode, $event)"
-                  />
-                </label>
-              </div>
-
-              <dl class="workflow-status">
-                <div>
-                  <dt>Ultima ejecucion</dt>
-                  <dd>{{ formatDate(setting.lastRunAt) }}</dd>
-                </div>
-                <div>
-                  <dt>Proximo intento</dt>
-                  <dd>{{ formatDate(setting.nextRunAt) }}</dd>
-                </div>
-                <div>
-                  <dt>Resultado</dt>
-                  <dd>{{ resultText(setting) }} P/C/F/O</dd>
-                </div>
-                <div>
-                  <dt>Estado</dt>
-                  <dd>{{ setting.running ? 'En ejecucion' : 'Disponible' }}</dd>
-                </div>
-              </dl>
-
-              @if (setting.lastError) {
-                <p class="workflow-error">{{ setting.lastError }}</p>
-              }
+              <label>
+                API key
+                <input
+                  type="password"
+                  autocomplete="new-password"
+                  placeholder="Mantener clave actual"
+                  [ngModel]="aiProviderFormFor(provider.providerCode).apiKey"
+                  (ngModelChange)="updateAiProviderForm(provider.providerCode, { apiKey: $event })"
+                  [name]="provider.providerCode + 'ApiKey'"
+                />
+              </label>
 
               <footer>
-                <button type="button" (click)="save(setting)" [disabled]="busyWorkflow() === setting.workflowCode">Guardar</button>
-                <button type="button" class="secondary" (click)="runNow(setting)" [disabled]="busyWorkflow() === setting.workflowCode || setting.running">Ejecutar ahora</button>
+                <button type="submit" [disabled]="busyAiProvider() === provider.providerCode">Guardar</button>
+                <button type="button" class="secondary" (click)="loadModels(provider.providerCode)" [disabled]="busyModelProvider() === provider.providerCode">
+                  Cargar modelos
+                </button>
               </footer>
-            </article>
+            </form>
           }
         </div>
       </section>

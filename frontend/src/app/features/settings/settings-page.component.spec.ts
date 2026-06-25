@@ -64,24 +64,31 @@ describe('SettingsPageComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders ai tab with prompt and metric tables by default', () => {
+  it('renders ai metrics tab by default', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
-    expect(compiled.textContent).toContain('IA y prompts');
-    expect(compiled.textContent).toContain('Proveedores IA');
-    expect(compiled.textContent).toContain('Configuracion por workflow');
-    expect(compiled.textContent).toContain('Prompts versionados');
+    expect(compiled.textContent).toContain('Metricas IA');
     expect(compiled.textContent).toContain('Metricas diarias');
-    expect(compiled.textContent).toContain('Clasificacion de noticias');
+    expect(compiled.textContent).toContain('Operaciones del dia');
     expect(compiled.textContent).toContain('GeminiAIProvider');
     expect(compiled.textContent).toContain('gemini-1.5-flash');
+    expect(compiled.textContent).not.toContain('Prompts versionados');
+    expect(compiled.textContent).not.toContain('Proveedores IA');
     expect(compiled.textContent).not.toContain('Guardar Telegram');
     expect(aiObservabilityService.listDailyMetrics).toHaveBeenCalled();
   });
 
-  it('renders publication and automation configuration in separate tabs', () => {
+  it('renders prompts, publication and automation configuration in separate tabs', () => {
     const component = fixture.componentInstance as any;
     const compiled = fixture.nativeElement as HTMLElement;
+
+    component.setTab('prompts');
+    fixture.detectChanges();
+
+    expect(compiled.textContent).toContain('Prompts versionados');
+    expect(compiled.textContent).toContain('Clasificacion de noticias');
+    expect(compiled.textContent).not.toContain('Credenciales y modelos');
+    expect(compiled.textContent).not.toContain('Guardar Telegram');
 
     component.setTab('publication');
     fixture.detectChanges();
@@ -94,6 +101,9 @@ describe('SettingsPageComponent', () => {
     fixture.detectChanges();
 
     expect(compiled.textContent).toContain('WF02 - Clasificacion');
+    expect(compiled.textContent).toContain('Credenciales y modelos');
+    expect(compiled.textContent).toContain('Guardar IA');
+    expect(compiled.textContent).toContain('Google Gemini');
     expect(component.formFor('WF02_CLASSIFICATION').intervalMinutes).toBe(10);
   });
 
@@ -211,7 +221,8 @@ describe('SettingsPageComponent', () => {
     expect(component.aiMetricCards().length).toBe(4);
     expect(component.aiMetricCards()[0].title).toBe('Operaciones IA');
     expect(component.aiMetricCards()[0].items[0].value).toBe(2);
-    expect(component.aiMetricCards()[1].items[1].value).toBe(50);
+    expect(component.aiMetricCards()[1].title).toBe('Calidad');
+    expect(component.aiMetricCards()[1].items[2].value).toBe(50);
   });
 
   it('changes daily metrics date', () => {

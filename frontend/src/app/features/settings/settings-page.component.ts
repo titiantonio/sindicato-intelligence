@@ -11,7 +11,7 @@ import { ApplicationSettingsService } from '../../core/services/application-sett
 import { AutomationService } from '../../core/services/automation.service';
 import { MetricCardComponent } from '../../shared/components/metric-card/metric-card.component';
 
-type SettingsTab = 'ai' | 'publication' | 'automation';
+type SettingsTab = 'metrics' | 'prompts' | 'automation' | 'publication';
 type SortDirection = 'asc' | 'desc';
 type PromptSortColumn = 'promptKey' | 'promptName' | 'module' | 'version' | 'checksum' | 'active' | 'createdAt';
 type MetricSortColumn = 'operationType' | 'promptKey' | 'provider' | 'model' | 'status' | 'relatedEntityType' | 'latencyMs' | 'errorMessage' | 'createdAt';
@@ -82,7 +82,7 @@ export class SettingsPageComponent implements OnInit {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly successMessage = signal<string | null>(null);
   protected readonly lastRunResult = signal<Record<string, AutomationRunResult>>({});
-  protected readonly activeTab = signal<SettingsTab>('ai');
+  protected readonly activeTab = signal<SettingsTab>('metrics');
   protected readonly pageSizeOptions = [5, 10, 25, 50];
   protected readonly metricDate = signal(this.todayInputValue());
   protected readonly selectedErrorMetric = signal<AiMetric | null>(null);
@@ -452,6 +452,14 @@ export class SettingsPageComponent implements OnInit {
     return labels[workflowCode] ?? workflowCode;
   }
 
+  protected automationSettingForAiWorkflow(workflowCode: string): AutomationWorkflowSetting | null {
+    const automationCode = this.toAutomationWorkflowCode(workflowCode);
+    if (!automationCode) {
+      return null;
+    }
+    return this.settings().find((setting) => setting.workflowCode === automationCode) ?? null;
+  }
+
   protected modelsFor(providerCode: string): AiModelOption[] {
     return this.aiModelOptions()[providerCode] || [];
   }
@@ -577,6 +585,15 @@ export class SettingsPageComponent implements OnInit {
     }));
   }
 
+  private toAutomationWorkflowCode(workflowCode: string): AutomationWorkflowCode | null {
+    const mappings: Record<string, AutomationWorkflowCode> = {
+      WF02_CLASSIFICATION: 'WF02_CLASSIFICATION',
+      WF03_EVENT_MATCHING: 'WF03_EVENT_DETECTION',
+      WF04_ANALYSIS: 'WF04_ANALYSIS'
+    };
+    return mappings[workflowCode] ?? null;
+  }
+
   private toForm(setting: AutomationWorkflowSetting): AutomationSettingForm {
     return {
       enabled: setting.enabled,
@@ -678,40 +695,40 @@ export class SettingsPageComponent implements OnInit {
         ]
       },
       {
-        label: 'Correctas',
-        value: snapshot.successCount.toString(),
+        label: 'Calidad',
+        value: `${snapshot.successRate}%`,
         trend: this.formatSigned(snapshot.successRateDifference),
         tone: 'success',
         todayValue: snapshot.successCount,
         yesterdayValue: snapshot.previousSuccessCount,
         difference: snapshot.successRateDifference,
-        title: 'Correctas',
-        subtitle: 'Tasa de exito diaria',
+        title: 'Calidad',
+        subtitle: 'Exito y fallos del dia',
         icon: 'check',
         badgeLabel: `${snapshot.successRate}%`,
         lastUpdatedAt: updatedAt,
         items: [
           { label: 'Correctas', value: snapshot.successCount, tone: 'success', icon: 'check', signed: false },
-          { label: 'Exito (%)', value: snapshot.successRate, tone: 'success', icon: 'target', signed: false },
-          { label: 'Dif. tasa', value: snapshot.successRateDifference, tone: 'success', icon: 'trend', signed: true }
+          { label: 'Fallidas', value: snapshot.failedCount, tone: snapshot.failedCount > 0 ? 'danger' : 'success', icon: 'x', signed: false },
+          { label: 'Exito %', value: snapshot.successRate, tone: 'success', icon: 'target', signed: false }
         ]
       },
       {
-        label: 'Fallidas',
-        value: snapshot.failedCount.toString(),
+        label: 'Errores',
+        value: `${snapshot.failureRate}%`,
         trend: this.formatSigned(snapshot.failureRateDifference),
         tone: snapshot.failedCount > 0 ? 'danger' : 'success',
         todayValue: snapshot.failedCount,
         yesterdayValue: snapshot.previousFailedCount,
         difference: snapshot.failureRateDifference,
-        title: 'Fallidas',
-        subtitle: 'Errores controlados',
+        title: 'Errores',
+        subtitle: 'Tasa de fallo diaria',
         icon: 'alert',
         badgeLabel: `${snapshot.failureRate}%`,
         lastUpdatedAt: updatedAt,
         items: [
           { label: 'Fallidas', value: snapshot.failedCount, tone: snapshot.failedCount > 0 ? 'danger' : 'success', icon: 'x', signed: false },
-          { label: 'Fallo (%)', value: snapshot.failureRate, tone: snapshot.failureRate > 0 ? 'danger' : 'success', icon: 'alert', signed: false },
+          { label: 'Fallo %', value: snapshot.failureRate, tone: snapshot.failureRate > 0 ? 'danger' : 'success', icon: 'alert', signed: false },
           { label: 'Dif. tasa', value: snapshot.failureRateDifference, tone: snapshot.failureRateDifference > 0 ? 'danger' : 'success', icon: 'trend', signed: true }
         ]
       },

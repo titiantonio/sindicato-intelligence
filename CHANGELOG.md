@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend API: anadida documentacion OpenAPI/Swagger por perfil con Springdoc, esquema Bearer JWT y Swagger deshabilitado por defecto en produccion.
 - Backend IA: anadida configuracion ADMIN de proveedores IA y seleccion de proveedor/modelo por workflow para `WF-02`, `WF-03`, `WF-04` y `WF-05`, con Gemini funcional y estructura extensible.
 - Backend IA: anadido listado de modelos Gemini desde la API oficial filtrando modelos compatibles con `generateContent`.
 - Backend IA: anadido proveedor Gemini para matching de eventos `WF-03`, manteniendo proveedor determinista para desarrollo y pruebas.
@@ -88,6 +89,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.67-SNAPSHOT`.
+- Versionado del backend actualizado a `0.0.66-SNAPSHOT`.
+- Frontend ADMIN: `/settings` abre por defecto en `Metricas IA`, separa prompts, automatizaciones y publicacion en pestanas independientes, y mueve la seleccion de proveedor/modelo IA por workflow a `Automatizaciones`.
+- Frontend metricas: ajustadas las tarjetas de metricas para evitar cortes o desbordes en valores largos y mostrar indicadores IA diarios de operaciones, calidad, errores y rendimiento.
 - Versionado del backend actualizado a `0.0.64-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.63-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.62-SNAPSHOT`.

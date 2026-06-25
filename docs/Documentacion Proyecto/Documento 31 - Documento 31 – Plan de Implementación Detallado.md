@@ -2331,6 +2331,49 @@ Estado:
 
 ---
 
+## [x] T12.33
+
+Redisenar `/settings` separando metricas IA, prompts, automatizaciones y publicacion.
+
+Resultado:
+- `/settings` abre por defecto en la pestana `Metricas IA`.
+- Separadas las pestanas `Metricas IA`, `Prompts IA`, `Automatizaciones` y `Publicacion`.
+- Movida la configuracion de proveedor/modelo IA por workflow a la pestana `Automatizaciones`.
+- Redisenados los paneles de automatizaciones para mostrar operacion e IA por workflow en bloques separados.
+- Ajustadas las tarjetas de metricas para evitar cortes y mostrar operaciones, calidad, errores y rendimiento diario.
+- Incrementado `backend/pom.xml` a `0.0.66-SNAPSHOT`.
+
+Verificacion:
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts --include=src/app/shared/components/metric-card/metric-card.component.spec.ts` OK, 13 tests.
+- Frontend build: `npm.cmd run build` OK, con warnings preexistentes de presupuesto inicial, `users`, `sources` y `audit`; `settings-page.component.scss` queda bajo presupuesto.
+- Verificacion visual local en `http://localhost:4200/settings` OK: `Metricas IA` abre por defecto, `Automatizaciones` contiene proveedores/modelos IA y no se detectan desbordes relevantes.
+
+Estado:
+- Refinamiento visual y operativo posterior al cierre de Sprint 12; no introduce nuevos endpoints, migraciones ni cambios de arquitectura.
+
+---
+
+## [x] T12.34
+
+Implementar OpenAPI/Swagger por perfil.
+
+Resultado:
+- Anadida dependencia `springdoc-openapi-starter-webmvc-ui`.
+- Creada configuracion OpenAPI con titulo `Sindicato Intelligence API` y esquema Bearer JWT.
+- Swagger UI y `/v3/api-docs` quedan habilitados por defecto en entorno local/desarrollo.
+- `application-prod.yml` deshabilita Swagger UI y `/v3/api-docs` por defecto, salvo variables explicitas.
+- Ajustada seguridad para permitir la documentacion OpenAPI sin JWT solo cuando esta habilitada por perfil.
+- Incrementado `backend/pom.xml` a `0.0.67-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=SecurityConfigTest" test` OK, 7 tests.
+- Backend compile: `mvnw.cmd -DskipTests compile` OK.
+
+Estado:
+- Mantenimiento tecnico posterior al cierre de Sprint 12; completa la dependencia OpenAPI prevista en la Fase 1 del Documento 30 sin cambiar contratos REST ni logica de dominio.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:
