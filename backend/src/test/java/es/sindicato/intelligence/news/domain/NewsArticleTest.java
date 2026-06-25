@@ -36,6 +36,16 @@ class NewsArticleTest {
     }
 
     @Test
+    void marksNewsAsDiscarded() {
+        OffsetDateTime createdAt = OffsetDateTime.parse("2026-06-06T10:00:00Z");
+        NewsArticle newsArticle = newsArticle(createdAt, NewsStatus.CAPTURED);
+
+        newsArticle.markDiscarded();
+
+        assertEquals(NewsStatus.DISCARDED, newsArticle.getProcessingStatus());
+    }
+
+    @Test
     void rejectsInvalidHash() {
         OffsetDateTime now = OffsetDateTime.parse("2026-06-06T10:00:00Z");
 

@@ -74,6 +74,57 @@ class ClassifyNewsUseCaseTest {
     }
 
     @Test
+    void marksOutOfScopeNewsAsDiscardedAfterPersistingClassification() {
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
+        ClassifyNewsPromptBuilder promptBuilder = new ClassifyNewsPromptBuilder();
+        AIProvider aiProvider = mock(AIProvider.class);
+        AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, metricsRecorder);
+        NewsArticle newsArticle = newsArticle();
+        ClassificationAIResponse response = aiResponse(ClassificationCategory.OTROS, "FUERA_DE_AMBITO", BigDecimal.ZERO, ImpactLevel.LOW, UrgencyLevel.LOW);
+
+        when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
+        when(classificationRepository.existsByNewsId(newsArticle.getId())).thenReturn(false);
+        when(aiProvider.classify(any(ClassificationAIRequest.class))).thenReturn(response);
+        when(aiProvider.providerName()).thenReturn("test-provider");
+        when(aiProvider.modelName()).thenReturn("test-model");
+        when(classificationRepository.save(any(NewsClassification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(new ClassifyNewsCommand(newsArticle.getId()));
+
+        ArgumentCaptor<NewsClassification> captor = ArgumentCaptor.forClass(NewsClassification.class);
+        verify(classificationRepository).save(captor.capture());
+        verify(newsRepository).save(newsArticle);
+        assertEquals(ClassificationCategory.OTROS, captor.getValue().getCategory());
+        assertEquals("FUERA_DE_AMBITO", captor.getValue().getSubcategory());
+        assertEquals(NewsStatus.DISCARDED, newsArticle.getProcessingStatus());
+    }
+
+    @Test
+    void marksInsufficientInformationNewsAsDiscardedAfterPersistingClassification() {
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
+        ClassifyNewsPromptBuilder promptBuilder = new ClassifyNewsPromptBuilder();
+        AIProvider aiProvider = mock(AIProvider.class);
+        AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, metricsRecorder);
+        NewsArticle newsArticle = newsArticle();
+
+        when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
+        when(classificationRepository.existsByNewsId(newsArticle.getId())).thenReturn(false);
+        when(aiProvider.classify(any(ClassificationAIRequest.class))).thenReturn(aiResponse(ClassificationCategory.OTROS, "INFORMACION_INSUFICIENTE", BigDecimal.ZERO, ImpactLevel.LOW, UrgencyLevel.LOW));
+        when(aiProvider.providerName()).thenReturn("test-provider");
+        when(aiProvider.modelName()).thenReturn("test-model");
+        when(classificationRepository.save(any(NewsClassification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(new ClassifyNewsCommand(newsArticle.getId()));
+
+        verify(newsRepository).save(newsArticle);
+        assertEquals(NewsStatus.DISCARDED, newsArticle.getProcessingStatus());
+    }
+
+    @Test
     void rejectsUnknownNews() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
@@ -102,12 +153,22 @@ class ClassifyNewsUseCaseTest {
     }
 
     private ClassificationAIResponse aiResponse() {
+        return aiResponse(ClassificationCategory.SIPRI, "Adjudicaciones", BigDecimal.valueOf(95), ImpactLevel.HIGH, UrgencyLevel.HIGH);
+    }
+
+    private ClassificationAIResponse aiResponse(
+            ClassificationCategory category,
+            String subcategory,
+            BigDecimal relevance,
+            ImpactLevel impact,
+            UrgencyLevel urgency
+    ) {
         return new ClassificationAIResponse(
-                ClassificationCategory.SIPRI,
-                "Adjudicaciones",
-                BigDecimal.valueOf(95),
-                ImpactLevel.HIGH,
-                UrgencyLevel.HIGH,
+                category,
+                subcategory,
+                relevance,
+                impact,
+                urgency,
                 List.of("SIPRI"),
                 List.of("Junta de Andalucia"),
                 "Resumen IA"

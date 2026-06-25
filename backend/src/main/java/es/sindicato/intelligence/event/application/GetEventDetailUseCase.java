@@ -23,25 +23,31 @@ public class GetEventDetailUseCase {
     private final NewsClassificationRepository classificationRepository;
     private final EventAIAnalysisRepository analysisRepository;
     private final GeneratedContentRepository contentRepository;
+    private final EventVisibilityPolicy visibilityPolicy;
 
     public GetEventDetailUseCase(
             EventRepository eventRepository,
             NewsRepository newsRepository,
             NewsClassificationRepository classificationRepository,
             EventAIAnalysisRepository analysisRepository,
-            GeneratedContentRepository contentRepository
+            GeneratedContentRepository contentRepository,
+            EventVisibilityPolicy visibilityPolicy
     ) {
         this.eventRepository = eventRepository;
         this.newsRepository = newsRepository;
         this.classificationRepository = classificationRepository;
         this.analysisRepository = analysisRepository;
         this.contentRepository = contentRepository;
+        this.visibilityPolicy = visibilityPolicy;
     }
 
     @Transactional(readOnly = true)
     public EventDetail execute(Long eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(eventId));
+        if (!visibilityPolicy.isVisible(event)) {
+            throw new EventNotFoundException(eventId);
+        }
 
         List<EventNewsDetail> news = event.getNewsIds().stream()
                 .sorted()

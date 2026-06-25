@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend eventos/dashboard: anadida politica de visibilidad para ocultar eventos formados solo por noticias descartables y excluirlos de metricas operativas.
+- Backend clasificacion/eventos: anadido estado `DISCARDED` para noticias fuera de ambito o con informacion insuficiente, evitando que generen eventos en `WF-03`.
 - Backend API: anadida documentacion OpenAPI/Swagger por perfil con Springdoc, esquema Bearer JWT y Swagger deshabilitado por defecto en produccion.
 - Backend IA: anadida configuracion ADMIN de proveedores IA y seleccion de proveedor/modelo por workflow para `WF-02`, `WF-03`, `WF-04` y `WF-05`, con Gemini funcional y estructura extensible.
 - Backend IA: anadido listado de modelos Gemini desde la API oficial filtrando modelos compatibles con `generateContent`.
@@ -89,6 +91,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.69-SNAPSHOT`.
+- Backend datos: anadida migracion Flyway adicional para limpiar eventos residuales creados tras el primer saneamiento de noticias fuera de ambito.
+- Versionado del backend actualizado a `0.0.68-SNAPSHOT`.
+- Backend datos: anadida migracion Flyway para marcar noticias descartables historicas y archivar eventos activos compuestos exclusivamente por noticias fuera de ambito.
 - Versionado del backend actualizado a `0.0.67-SNAPSHOT`.
 - Versionado del backend actualizado a `0.0.66-SNAPSHOT`.
 - Frontend ADMIN: `/settings` abre por defecto en `Metricas IA`, separa prompts, automatizaciones y publicacion en pestanas independientes, y mueve la seleccion de proveedor/modelo IA por workflow a `Automatizaciones`.

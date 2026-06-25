@@ -82,6 +82,22 @@ public class NewsClassification {
         return classifiedAt;
     }
 
+    public boolean isDiscardableForEventDetection() {
+        return category == ClassificationCategory.OTROS
+                && relevanceScore.compareTo(BigDecimal.ZERO) == 0
+                && isDiscardSubcategory(subcategory);
+    }
+
+    private boolean isDiscardSubcategory(String subcategory) {
+        if (subcategory == null) {
+            return false;
+        }
+
+        String normalized = subcategory.trim();
+        return "FUERA_DE_AMBITO".equalsIgnoreCase(normalized)
+                || "INFORMACION_INSUFICIENTE".equalsIgnoreCase(normalized);
+    }
+
     private BigDecimal requireRelevanceScore(BigDecimal relevanceScore) {
         Objects.requireNonNull(relevanceScore, "relevanceScore is required");
 

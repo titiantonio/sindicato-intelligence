@@ -2374,6 +2374,48 @@ Estado:
 
 ---
 
+## 16.40 Descarte de noticias fuera de ambito antes de eventos - 2026-06-25
+
+Tarea de mantenimiento correctivo sobre Fases 6-7 y Sprint 12.
+
+Completado en esta iteracion:
+- Backend clasificacion: las noticias `OTROS/FUERA_DE_AMBITO` y `OTROS/INFORMACION_INSUFICIENTE` con relevancia `0` quedan en estado `DISCARDED` tras persistir su clasificacion.
+- Backend eventos: `DetectEventUseCase` rechaza defensivamente noticias descartadas o clasificaciones descartables, evitando creacion de eventos fuera de ambito.
+- Flyway: anadida migracion `V12__discard_out_of_scope_news_and_archive_events.sql` para sanear noticias historicas y archivar eventos activos compuestos exclusivamente por noticias descartables.
+- Proyecto: backend versionado a `0.0.68-SNAPSHOT` y `CHANGELOG.md` actualizado.
+
+Verificacion:
+- Bateria focal backend ejecutada con `mvn "-Dtest=ClassifyNewsUseCaseTest,NewsClassificationTest,NewsArticleTest,DetectEventUseCaseTest,ProcessPendingEventDetectionUseCaseTest" test`: 17 tests, 0 fallos, 0 errores.
+- Intentada suite completa backend con `mvn test`; no concluyo antes del timeout local de 180 segundos. Los informes parciales mostraron fallos no asociados al nuevo descarte, derivados de configuracion IA local persistida en `gemini` frente a expectativas deterministas.
+
+Estado:
+- Mantenimiento correctivo posterior al Sprint 12. La automatizacion `WF-03` queda protegida frente a ruido informativo fuera del ambito docente/sindical andaluz.
+
+---
+
+## 16.41 Ocultacion operativa de eventos descartables - 2026-06-25
+
+Tarea de mantenimiento correctivo sobre Fases 6-7, dashboard y Sprint 12.
+
+Completado en esta iteracion:
+- Diagnostico del evento `#1485`: evento `OPEN`/`OTROS` generado desde una noticia `EVENT_MATCHED` con clasificacion `OTROS/FUERA_DE_AMBITO`, relevancia `0`.
+- Backend eventos: anadida politica de visibilidad para ocultar eventos archivados o formados exclusivamente por noticias descartables.
+- Backend API: `GET /api/v1/events` deja de devolver eventos descartables y `GET /api/v1/events/{id}` responde 404 para esos casos.
+- Backend dashboard: las metricas y eventos prioritarios excluyen noticias, eventos, contenidos y publicaciones vinculados a eventos descartables.
+- Flyway: anadida migracion `V13__cleanup_discarded_event_residue.sql` para limpiar residuos creados tras `V12`, incluido el patron detectado en `#1485`.
+- Proyecto: backend versionado a `0.0.69-SNAPSHOT` y `CHANGELOG.md` actualizado.
+
+Verificacion:
+- Compilacion backend verificada con `mvn test-compile`.
+- Unitarias focales ejecutadas con `mvn "-Dtest=EventVisibilityPolicyTest,ClassifyNewsUseCaseTest,DetectEventUseCaseTest,ProcessPendingEventDetectionUseCaseTest" test`: 12 tests, 0 fallos, 0 errores.
+- Base local verificada: Flyway `V13` aplicado, evento `#1485` queda `ARCHIVED` y su noticia asociada queda `DISCARDED`.
+- API local verificada tras reiniciar backend: `GET /api/v1/events` no devuelve el evento `#1485`.
+
+Estado:
+- Mantenimiento correctivo posterior al Sprint 12. Los eventos descartables se conservan solo como trazabilidad interna en base de datos, pero quedan fuera de la operativa visible y de las metricas.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

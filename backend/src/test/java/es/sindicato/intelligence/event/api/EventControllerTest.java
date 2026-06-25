@@ -32,6 +32,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -135,6 +136,22 @@ class EventControllerTest {
                 .andExpect(jsonPath("$.contents").isArray())
                 .andExpect(jsonPath("$.analyses").isArray());
     }
+
+    @Test
+    void hidesEventsBackedOnlyByDiscardableNews() throws Exception {
+        Source source = sourceRepository.save(source());
+        NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-discarded-event"), hash('e'), NewsStatus.EVENT_MATCHED));
+        classificationRepository.save(discardableClassification(newsArticle.getId()));
+        Event event = eventRepository.save(outOfScopeEvent(newsArticle.getId()));
+
+        mockMvc.perform(get("/api/v1/events").with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id", not(hasItem(event.getId().intValue()))));
+
+        mockMvc.perform(get("/api/v1/events/{id}", event.getId()).with(adminJwt()))
+                .andExpect(status().isNotFound());
+    }
+
     private RequestPostProcessor adminJwt() {
         return jwt().authorities(() -> "ROLE_ADMIN");
     }
@@ -185,6 +202,21 @@ class EventControllerTest {
         );
     }
 
+    private NewsClassification discardableClassification(Long newsId) {
+        return new NewsClassification(
+                null,
+                newsId,
+                ClassificationCategory.OTROS,
+                "FUERA_DE_AMBITO",
+                BigDecimal.ZERO,
+                ImpactLevel.LOW,
+                UrgencyLevel.LOW,
+                List.of(),
+                List.of(),
+                OffsetDateTime.now()
+        );
+    }
+
     private Event event(Long newsId) {
         OffsetDateTime now = OffsetDateTime.now().minusDays(1);
         return new Event(
@@ -193,6 +225,23 @@ class EventControllerTest {
                 "Evento sobre adjudicacion SIPRI de mayo",
                 EventCategory.SIPRI,
                 Importance.HIGH,
+                EventStatus.OPEN,
+                Set.of(newsId),
+                now,
+                now,
+                now,
+                now
+        );
+    }
+
+    private Event outOfScopeEvent(Long newsId) {
+        OffsetDateTime now = OffsetDateTime.now().minusDays(1);
+        return new Event(
+                null,
+                "Sorprenden a 13 personas revendiendo entradas",
+                "Evento fuera de ambito",
+                EventCategory.OTROS,
+                Importance.LOW,
                 EventStatus.OPEN,
                 Set.of(newsId),
                 now,

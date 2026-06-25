@@ -89,13 +89,25 @@ public class ClassifyNewsUseCase {
         );
 
         NewsClassification savedClassification = classificationRepository.save(classification);
-        newsArticle.markClassified();
+        if (classification.isDiscardableForEventDetection()) {
+            newsArticle.markDiscarded();
+            log.warn(
+                    "classification discarded news outside event scope: newsId={}, category={}, subcategory='{}', relevance={}",
+                    newsArticle.getId(),
+                    classification.getCategory(),
+                    classification.getSubcategory(),
+                    classification.getRelevanceScore()
+            );
+        } else {
+            newsArticle.markClassified();
+        }
         newsRepository.save(newsArticle);
 
         log.info(
-                "classification completed: newsId={}, classificationId={}, category={}, subcategory='{}', relevance={}, impact={}, urgency={}",
+                "classification completed: newsId={}, classificationId={}, status={}, category={}, subcategory='{}', relevance={}, impact={}, urgency={}",
                 newsArticle.getId(),
                 savedClassification.getId(),
+                newsArticle.getProcessingStatus(),
                 savedClassification.getCategory(),
                 savedClassification.getSubcategory(),
                 savedClassification.getRelevanceScore(),

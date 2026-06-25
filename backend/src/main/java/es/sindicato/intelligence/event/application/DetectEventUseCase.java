@@ -74,6 +74,19 @@ public class DetectEventUseCase {
         NewsClassification classification = classificationRepository.findByNewsId(newsArticle.getId())
                 .orElseThrow(() -> new IllegalArgumentException("news classification not found: " + newsArticle.getId()));
 
+        if (classification.isDiscardableForEventDetection()) {
+            newsArticle.markDiscarded();
+            newsRepository.save(newsArticle);
+            log.warn(
+                    "event detection skipped because news classification is outside event scope: newsId={}, category={}, subcategory='{}', relevance={}",
+                    newsArticle.getId(),
+                    classification.getCategory(),
+                    classification.getSubcategory(),
+                    classification.getRelevanceScore()
+            );
+            throw new IllegalArgumentException("discarded news cannot generate events");
+        }
+
         EventCategory category = EventCategory.valueOf(classification.getCategory().name());
         List<Event> activeEvents = eventRepository.findByStatusIn(List.of(EventStatus.OPEN, EventStatus.MONITORING)).stream()
                 .filter(event -> event.getCategory() == category)

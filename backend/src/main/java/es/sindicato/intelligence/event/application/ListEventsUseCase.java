@@ -11,13 +11,20 @@ import java.util.List;
 public class ListEventsUseCase {
 
     private final EventRepository eventRepository;
+    private final EventVisibilityPolicy visibilityPolicy;
 
-    public ListEventsUseCase(EventRepository eventRepository) {
+    public ListEventsUseCase(
+            EventRepository eventRepository,
+            EventVisibilityPolicy visibilityPolicy
+    ) {
         this.eventRepository = eventRepository;
+        this.visibilityPolicy = visibilityPolicy;
     }
 
     @Transactional(readOnly = true)
     public List<Event> execute() {
-        return eventRepository.findAll();
+        return eventRepository.findAll().stream()
+                .filter(visibilityPolicy::isVisible)
+                .toList();
     }
 }

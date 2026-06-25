@@ -54,6 +54,10 @@ public class NewsArticle {
         changeStatus(NewsStatus.CLASSIFIED, OffsetDateTime.now());
     }
 
+    public void markDiscarded() {
+        changeStatus(NewsStatus.DISCARDED, OffsetDateTime.now());
+    }
+
     public void markEventMatched() {
         changeStatus(NewsStatus.EVENT_MATCHED, OffsetDateTime.now());
     }

@@ -7,6 +7,7 @@ import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
 import es.sindicato.intelligence.event.domain.EventRepository;
 import es.sindicato.intelligence.event.domain.Importance;
+import es.sindicato.intelligence.event.application.EventVisibilityPolicy;
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import es.sindicato.intelligence.news.domain.NewsRepository;
 import es.sindicato.intelligence.publication.domain.Publication;
@@ -35,6 +36,7 @@ public class DashboardSnapshotUseCase {
     private final EventRepository eventRepository;
     private final GeneratedContentRepository contentRepository;
     private final PublicationRepository publicationRepository;
+    private final EventVisibilityPolicy eventVisibilityPolicy;
     private final Clock clock;
 
     public DashboardSnapshotUseCase(
@@ -42,12 +44,14 @@ public class DashboardSnapshotUseCase {
             EventRepository eventRepository,
             GeneratedContentRepository contentRepository,
             PublicationRepository publicationRepository,
+            EventVisibilityPolicy eventVisibilityPolicy,
             Clock clock
     ) {
         this.newsRepository = newsRepository;
         this.eventRepository = eventRepository;
         this.contentRepository = contentRepository;
         this.publicationRepository = publicationRepository;
+        this.eventVisibilityPolicy = eventVisibilityPolicy;
         this.clock = clock;
     }
 
@@ -55,10 +59,24 @@ public class DashboardSnapshotUseCase {
     public DashboardSnapshot execute() {
         DateRange today = todayRange();
         DateRange yesterday = yesterdayRange(today);
-        List<NewsArticle> news = newsRepository.findAll();
-        List<Event> events = eventRepository.findAll();
-        List<GeneratedContent> contents = contentRepository.findAll();
-        List<Publication> publications = publicationRepository.findAll();
+        List<NewsArticle> news = newsRepository.findAll().stream()
+                .filter(eventVisibilityPolicy::isVisibleNews)
+                .toList();
+        List<Event> events = eventRepository.findAll().stream()
+                .filter(eventVisibilityPolicy::isVisible)
+                .toList();
+        List<Long> visibleEventIds = events.stream()
+                .map(Event::getId)
+                .toList();
+        List<GeneratedContent> contents = contentRepository.findAll().stream()
+                .filter(content -> visibleEventIds.contains(content.getEventId()))
+                .toList();
+        List<Long> visibleContentIds = contents.stream()
+                .map(GeneratedContent::getId)
+                .toList();
+        List<Publication> publications = publicationRepository.findAll().stream()
+                .filter(publication -> visibleContentIds.contains(publication.getContentId()))
+                .toList();
 
         DashboardMetric capturedNews = metric("capturedNews", news, NewsArticle::getCapturedAt, today, yesterday);
         DashboardMetric detectedEvents = metric("detectedEvents", events, Event::getFirstDetectedAt, today, yesterday);
