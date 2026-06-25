@@ -7,6 +7,7 @@ import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.event.application.DetectEventCommand;
 import es.sindicato.intelligence.event.application.DetectEventResult;
 import es.sindicato.intelligence.event.application.DetectEventUseCase;
+import es.sindicato.intelligence.event.application.DiscardEventUseCase;
 import es.sindicato.intelligence.event.application.EventNotFoundException;
 import es.sindicato.intelligence.event.application.GetEventDetailUseCase;
 import es.sindicato.intelligence.event.application.GetEventDetailUseCase.EventDetail;
@@ -38,17 +39,20 @@ public class EventController {
     private final ListEventsUseCase listEventsUseCase;
     private final GetEventDetailUseCase getEventDetailUseCase;
     private final MergeEventsUseCase mergeEventsUseCase;
+    private final DiscardEventUseCase discardEventUseCase;
 
     public EventController(
             DetectEventUseCase detectEventUseCase,
             ListEventsUseCase listEventsUseCase,
             GetEventDetailUseCase getEventDetailUseCase,
-            MergeEventsUseCase mergeEventsUseCase
+            MergeEventsUseCase mergeEventsUseCase,
+            DiscardEventUseCase discardEventUseCase
     ) {
         this.detectEventUseCase = detectEventUseCase;
         this.listEventsUseCase = listEventsUseCase;
         this.getEventDetailUseCase = getEventDetailUseCase;
         this.mergeEventsUseCase = mergeEventsUseCase;
+        this.discardEventUseCase = discardEventUseCase;
     }
 
     @GetMapping
@@ -75,6 +79,11 @@ public class EventController {
                 request.sourceEventIds()
         ));
         return toDetailResponse(getEventDetailUseCase.execute(mergedEvent.getId()));
+    }
+
+    @PostMapping("/{id}/discard")
+    public EventSummaryResponse discardEvent(@PathVariable Long id) {
+        return toSummaryResponse(discardEventUseCase.execute(id));
     }
 
     @ExceptionHandler(EventNotFoundException.class)

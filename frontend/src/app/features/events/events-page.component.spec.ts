@@ -18,8 +18,9 @@ describe('EventsPageComponent', () => {
   ];
 
   beforeEach(async () => {
-    eventService = jasmine.createSpyObj<EventService>('EventService', ['listEvents', 'mergeEvents']);
+    eventService = jasmine.createSpyObj<EventService>('EventService', ['listEvents', 'mergeEvents', 'discardEvent']);
     eventService.listEvents.and.returnValue(of(events));
+    eventService.discardEvent.and.returnValue(of(events[0]));
 
     await TestBed.configureTestingModule({
       imports: [EventsPageComponent],
@@ -46,6 +47,8 @@ describe('EventsPageComponent', () => {
   });
 
   it('sorts by any visible column', () => {
+    expect((component as any).displayedEvents().map((event: EventListItem) => event.id)).toEqual([3, 1, 2]);
+
     (component as any).changeSort('newsCount');
 
     expect((component as any).displayedEvents().map((event: EventListItem) => event.id)).toEqual([2, 1, 3]);
@@ -63,6 +66,36 @@ describe('EventsPageComponent', () => {
     (component as any).goToNextPage();
 
     expect((component as any).paginatedEvents().map((event: EventListItem) => event.id)).toEqual([1]);
+  });
+
+  it('discards active events and reloads the list', () => {
+    const confirmSpy = spyOn(window, 'confirm');
+
+    (component as any).discardEvent(events[0]);
+    expect((component as any).pendingConfirmation()?.title).toBe('Descartar evento');
+    expect(confirmSpy).not.toHaveBeenCalled();
+
+    (component as any).confirmPendingAction();
+
+    expect(eventService.discardEvent).toHaveBeenCalledWith(1);
+    expect(eventService.listEvents).toHaveBeenCalledTimes(2);
+    expect((component as any).successMessage()).toContain('#1');
+  });
+
+  it('opens app confirmation modal before merging events', () => {
+    eventService.mergeEvents.and.returnValue(of({ ...events[0], createdAt: events[0].updatedAt, news: [], analyses: [], contents: [] }));
+    const confirmSpy = spyOn(window, 'confirm');
+
+    (component as any).setTargetEventId(1);
+    (component as any).toggleSourceEvent(3, true);
+    (component as any).requestMergeEvents();
+
+    expect((component as any).pendingConfirmation()?.title).toBe('Fusionar eventos');
+    expect(confirmSpy).not.toHaveBeenCalled();
+
+    (component as any).confirmPendingAction();
+
+    expect(eventService.mergeEvents).toHaveBeenCalledWith(1, [3]);
   });
 
   function eventItem(

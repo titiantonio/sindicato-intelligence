@@ -23,4 +23,8 @@ export class EventService {
       sourceEventIds
     });
   }
+
+  discardEvent(eventId: number) {
+    return this.httpClient.post<EventListItem>(`/api/v1/events/${eventId}/discard`, {});
+  }
 }

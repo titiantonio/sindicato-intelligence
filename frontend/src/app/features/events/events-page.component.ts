@@ -8,6 +8,9 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 
 type EventSortColumn = 'id' | 'title' | 'category' | 'importance' | 'newsCount' | 'status' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
+type PendingConfirmation =
+  | { type: 'merge'; title: string; message: string; confirmLabel: string }
+  | { type: 'discard'; event: EventListItem; title: string; message: string; confirmLabel: string };
 
 @Component({
   selector: 'app-events-page',
@@ -25,6 +28,10 @@ export class EventsPageComponent implements OnInit {
   protected readonly targetEventId = signal<number | null>(null);
   protected readonly sourceEventIds = signal<number[]>([]);
   protected readonly activeEvents = computed(() => this.events().filter((event) => event.status === 'OPEN' || event.status === 'MONITORING'));
+  protected readonly targetEvent = computed(() => this.activeEvents().find((event) => event.id === this.targetEventId()) ?? null);
+  protected readonly selectedSourceEvents = computed(() => this.activeEvents().filter((event) => this.sourceEventIds().includes(event.id)));
+  protected readonly selectedSourceNewsCount = computed(() => this.selectedSourceEvents().reduce((total, event) => total + event.newsCount, 0));
+  protected readonly pendingConfirmation = signal<PendingConfirmation | null>(null);
   protected readonly globalFilter = signal('');
   protected readonly idFilter = signal('');
   protected readonly titleFilter = signal('');
@@ -33,8 +40,8 @@ export class EventsPageComponent implements OnInit {
   protected readonly newsCountFilter = signal('');
   protected readonly statusFilter = signal('');
   protected readonly updatedAtFilter = signal('');
-  protected readonly sortColumn = signal<EventSortColumn>('updatedAt');
-  protected readonly sortDirection = signal<SortDirection>('desc');
+  protected readonly sortColumn = signal<EventSortColumn>('importance');
+  protected readonly sortDirection = signal<SortDirection>('asc');
   protected readonly pageSize = signal(10);
   protected readonly currentPage = signal(1);
   protected readonly pageSizeOptions = [5, 10, 25, 50];
@@ -138,7 +145,7 @@ export class EventsPageComponent implements OnInit {
     return this.sortDirection() === 'asc' ? '↑' : '↓';
   }
 
-  protected setTargetEventId(value: string): void {
+  protected setTargetEventId(value: string | number): void {
     const targetId = Number(value);
     this.targetEventId.set(Number.isNaN(targetId) ? null : targetId);
     this.sourceEventIds.update((ids) => ids.filter((id) => id !== targetId));
@@ -155,7 +162,7 @@ export class EventsPageComponent implements OnInit {
     return this.sourceEventIds().includes(eventId);
   }
 
-  protected mergeEvents(): void {
+  protected requestMergeEvents(): void {
     const targetId = this.targetEventId();
     const sourceIds = this.sourceEventIds();
 
@@ -164,7 +171,49 @@ export class EventsPageComponent implements OnInit {
       return;
     }
 
-    if (!confirm('La fusion archivara los eventos origen y movera sus noticias al evento destino.')) {
+    this.pendingConfirmation.set({
+      type: 'merge',
+      title: 'Fusionar eventos',
+      message: `Se archivaran ${sourceIds.length} eventos origen y se moveran ${this.selectedSourceNewsCount()} noticias al evento destino #${targetId}.`,
+      confirmLabel: 'Fusionar eventos'
+    });
+  }
+
+  protected discardEvent(event: EventListItem): void {
+    this.pendingConfirmation.set({
+      type: 'discard',
+      event,
+      title: 'Descartar evento',
+      message: `El evento #${event.id} se archivara y dejara de aparecer en la operativa visible. Conserva ${event.newsCount} noticias asociadas como trazabilidad.`,
+      confirmLabel: 'Descartar evento'
+    });
+  }
+
+  protected closeConfirmation(): void {
+    this.pendingConfirmation.set(null);
+  }
+
+  protected confirmPendingAction(): void {
+    const confirmation = this.pendingConfirmation();
+    if (!confirmation) {
+      return;
+    }
+
+    this.pendingConfirmation.set(null);
+    if (confirmation.type === 'merge') {
+      this.mergeEvents();
+      return;
+    }
+
+    this.executeDiscardEvent(confirmation.event);
+  }
+
+  private mergeEvents(): void {
+    const targetId = this.targetEventId();
+    const sourceIds = this.sourceEventIds();
+
+    if (targetId === null || sourceIds.length === 0) {
+      this.errorMessage.set('Selecciona un evento destino y al menos un evento origen.');
       return;
     }
 
@@ -179,6 +228,24 @@ export class EventsPageComponent implements OnInit {
       },
       error: (error: { error?: { error?: string } }) => {
         this.errorMessage.set(error.error?.error ?? 'No se pudo fusionar los eventos.');
+      }
+    });
+  }
+
+  private executeDiscardEvent(event: EventListItem): void {
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.eventService.discardEvent(event.id).subscribe({
+      next: () => {
+        this.successMessage.set(`Evento #${event.id} descartado correctamente.`);
+        this.sourceEventIds.update((ids) => ids.filter((id) => id !== event.id));
+        if (this.targetEventId() === event.id) {
+          this.targetEventId.set(null);
+        }
+        this.loadEvents();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo descartar el evento.');
       }
     });
   }
@@ -238,6 +305,11 @@ export class EventsPageComponent implements OnInit {
       return left[column] - right[column];
     }
 
+    if (column === 'importance') {
+      const importanceComparison = this.importanceScore(left.importance) - this.importanceScore(right.importance);
+      return importanceComparison !== 0 ? importanceComparison : right.newsCount - left.newsCount;
+    }
+
     if (column === 'updatedAt') {
       return new Date(left.updatedAt).getTime() - new Date(right.updatedAt).getTime();
     }
@@ -256,6 +328,16 @@ export class EventsPageComponent implements OnInit {
 
   private uniqueOptions(selector: (event: EventListItem) => string): string[] {
     return [...new Set(this.events().map(selector))].sort((left, right) => left.localeCompare(right, 'es'));
+  }
+
+  private importanceScore(importance: string): number {
+    const scores: Record<string, number> = {
+      CRITICAL: 0,
+      HIGH: 1,
+      MEDIUM: 2,
+      LOW: 3
+    };
+    return scores[importance] ?? 4;
   }
 
   private normalize(value: string): string {

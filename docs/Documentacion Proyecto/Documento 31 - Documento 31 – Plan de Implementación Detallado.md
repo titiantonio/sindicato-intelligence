@@ -2416,6 +2416,49 @@ Estado:
 
 ---
 
+## 16.42 Priorizacion y descarte manual de eventos - 2026-06-25
+
+Tarea de mejora correctiva sobre Fase 7 Eventos y Sprint 11 Frontend Angular.
+
+Completado en esta iteracion:
+- Backend eventos: `GET /api/v1/events` ordena por impacto, numero de noticias asociadas, ultima actualizacion e id, manteniendo la politica de visibilidad existente.
+- Backend eventos: anadido `DiscardEventUseCase` y endpoint `POST /api/v1/events/{id}/discard` para archivar manualmente eventos activos.
+- Backend auditoria: el descarte manual registra `EVENT_DISCARDED` con evento, titulo, impacto y numero de noticias.
+- Frontend eventos: la tabla `/events` inicia ordenada por impacto y noticias.
+- Frontend eventos: la fusion muestra impacto, numero de noticias y descripcion para facilitar la seleccion de destino/origen.
+- Frontend eventos: anadida accion manual `Descartar` para eventos `OPEN` y `MONITORING`.
+- Proyecto: backend versionado a `0.0.70-SNAPSHOT` y `CHANGELOG.md` actualizado.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=DiscardEventUseCaseTest,MergeEventsUseCaseTest,EventControllerTest" test`: 10 tests, 0 fallos, 0 errores.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/events/events-page.component.spec.ts --include=src/app/core/services/event.service.spec.ts`: 7 tests, 0 fallos.
+- Primer intento paralelo backend/frontend supero el timeout local de 120 segundos sin resultado util; se repitio de forma separada con timeout ampliado.
+
+Estado:
+- Mejora posterior al Sprint 12. No cambia la arquitectura ni introduce nuevas tecnologias; amplifica la operativa manual sobre eventos, que siguen siendo la entidad central.
+
+---
+
+## 16.43 Ajuste UX pantalla eventos y confirmaciones - 2026-06-25
+
+Tarea de mejora correctiva sobre Sprint 11 Frontend Angular.
+
+Completado en esta iteracion:
+- Frontend eventos: sustituido el dropdown nativo de destino de fusion por una lista compacta con radios, evitando que el selector se haga mas ancho que la pantalla.
+- Frontend eventos: acotados titulos, descripciones y opciones de fusion con truncado y scroll interno.
+- Frontend eventos: reducida la anchura minima de la tabla y ajustada la columna de acciones para que `Ver` y `Descartar` no deformen la tabla.
+- Frontend eventos: reemplazados los `confirm()` nativos de navegador por un modal visual propio para fusionar y descartar eventos.
+- Proyecto: backend versionado a `0.0.71-SNAPSHOT` y `CHANGELOG.md` actualizado.
+
+Verificacion:
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/events/events-page.component.spec.ts --include=src/app/core/services/event.service.spec.ts`: 8 tests, 0 fallos.
+- Frontend build: `npm.cmd run build`: OK. Mantiene avisos de budgets de Angular, incluido `events-page.component.scss` por superar el limite configurado de 4 KB.
+
+Estado:
+- Mejora visual y de consistencia de confirmaciones, sin cambios de contrato API ni logica de dominio.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

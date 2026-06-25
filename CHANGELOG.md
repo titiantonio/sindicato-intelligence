@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend eventos: anadido descarte manual de eventos mediante `POST /api/v1/events/{id}/discard`, archivado operativo y auditoria `EVENT_DISCARDED`.
+- Frontend eventos: anadida accion `Descartar` en la tabla de eventos activos y mas contexto de impacto, volumen y descripcion en la fusion de eventos.
 - Backend eventos/dashboard: anadida politica de visibilidad para ocultar eventos formados solo por noticias descartables y excluirlos de metricas operativas.
 - Backend clasificacion/eventos: anadido estado `DISCARDED` para noticias fuera de ambito o con informacion insuficiente, evitando que generen eventos en `WF-03`.
 - Backend API: anadida documentacion OpenAPI/Swagger por perfil con Springdoc, esquema Bearer JWT y Swagger deshabilitado por defecto en produccion.
@@ -91,6 +93,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.71-SNAPSHOT`.
+- Frontend eventos: redisenada la fusion para sustituir el dropdown largo por listas compactas, contener titulos/descripciones, ajustar la tabla de acciones y usar un modal propio de confirmacion para fusionar o descartar eventos.
+- Versionado del backend actualizado a `0.0.70-SNAPSHOT`.
+- Backend/frontend eventos: el listado general de eventos y la tabla `/events` priorizan inicialmente por impacto, numero de noticias y ultima actualizacion.
 - Versionado del backend actualizado a `0.0.69-SNAPSHOT`.
 - Backend datos: anadida migracion Flyway adicional para limpiar eventos residuales creados tras el primer saneamiento de noticias fuera de ambito.
 - Versionado del backend actualizado a `0.0.68-SNAPSHOT`.

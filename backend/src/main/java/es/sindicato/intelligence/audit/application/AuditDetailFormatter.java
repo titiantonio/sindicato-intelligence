@@ -18,6 +18,13 @@ public final class AuditDetailFormatter {
                 + ". Noticias asociadas tras la fusion: " + newsCount + ".";
     }
 
+    public static String eventDiscarded(Long eventId, String title, Object importance, int newsCount) {
+        return "Evento " + idText(eventId)
+                + " descartado manualmente. Titulo: \"" + safe(title)
+                + "\". Impacto: " + importance
+                + ". Noticias asociadas: " + newsCount + ".";
+    }
+
     public static String contentEditedBefore(Long contentId, Long eventId, String title, String tone, String status) {
         return "Contenido " + idText(contentId)
                 + " del evento " + idText(eventId)

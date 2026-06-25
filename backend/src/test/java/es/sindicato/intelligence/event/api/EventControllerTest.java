@@ -32,6 +32,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -138,6 +139,41 @@ class EventControllerTest {
     }
 
     @Test
+    void listsEventsByImpactAndNewsCountPriority() throws Exception {
+        Source source = sourceRepository.save(source());
+        NewsArticle criticalNewsA = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-critical-a"), hash('f'), NewsStatus.EVENT_MATCHED));
+        NewsArticle criticalNewsB = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-critical-b"), hash('g'), NewsStatus.EVENT_MATCHED));
+        NewsArticle criticalNewsC = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-critical-c"), hash('h'), NewsStatus.EVENT_MATCHED));
+        Event critical = eventRepository.save(event(
+                Set.of(criticalNewsA.getId(), criticalNewsB.getId(), criticalNewsC.getId()),
+                "Evento critical varios",
+                Importance.CRITICAL
+        ));
+
+        mockMvc.perform(get("/api/v1/events").with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is(critical.getId().intValue())))
+                .andExpect(jsonPath("$[0].importance").value("CRITICAL"))
+                .andExpect(jsonPath("$[0].newsCount").value(3));
+    }
+
+    @Test
+    void discardsActiveEventManually() throws Exception {
+        Source source = sourceRepository.save(source());
+        NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-discard-manual"), hash('j'), NewsStatus.EVENT_MATCHED));
+        Event event = eventRepository.save(event(newsArticle.getId()));
+
+        mockMvc.perform(post("/api/v1/events/{id}/discard", event.getId()).with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(event.getId()))
+                .andExpect(jsonPath("$.status").value("ARCHIVED"));
+
+        mockMvc.perform(get("/api/v1/events").with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id", not(hasItem(event.getId().intValue()))));
+    }
+
+    @Test
     void hidesEventsBackedOnlyByDiscardableNews() throws Exception {
         Source source = sourceRepository.save(source());
         NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-discarded-event"), hash('e'), NewsStatus.EVENT_MATCHED));
@@ -218,15 +254,23 @@ class EventControllerTest {
     }
 
     private Event event(Long newsId) {
+        return event(newsId, "Adjudicacion SIPRI mayo 2026", Importance.HIGH);
+    }
+
+    private Event event(Long newsId, String title, Importance importance) {
+        return event(Set.of(newsId), title, importance);
+    }
+
+    private Event event(Set<Long> newsIds, String title, Importance importance) {
         OffsetDateTime now = OffsetDateTime.now().minusDays(1);
         return new Event(
                 null,
-                "Adjudicacion SIPRI mayo 2026",
+                title,
                 "Evento sobre adjudicacion SIPRI de mayo",
                 EventCategory.SIPRI,
-                Importance.HIGH,
+                importance,
                 EventStatus.OPEN,
-                Set.of(newsId),
+                newsIds,
                 now,
                 now,
                 now,

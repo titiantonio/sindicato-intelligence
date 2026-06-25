@@ -29,4 +29,13 @@ describe('EventService', () => {
     expect(request.request.body).toEqual({ targetEventId: 10, sourceEventIds: [11, 12] });
     request.flush({ id: 10 });
   });
+
+  it('discards events', () => {
+    service.discardEvent(10).subscribe();
+
+    const request = httpTestingController.expectOne('/api/v1/events/10/discard');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({});
+    request.flush({ id: 10 });
+  });
 });
