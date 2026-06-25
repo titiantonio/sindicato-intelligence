@@ -6,11 +6,13 @@ import es.sindicato.intelligence.automation.application.AutomationOverview;
 import es.sindicato.intelligence.automation.application.GetAutomationOverviewUseCase;
 import es.sindicato.intelligence.automation.application.GetAutomationSettingUseCase;
 import es.sindicato.intelligence.automation.application.ListAutomationSettingsUseCase;
+import es.sindicato.intelligence.automation.application.ListWorkflowOperationsUseCase;
 import es.sindicato.intelligence.automation.application.ProcessPendingEventAnalysisUseCase;
 import es.sindicato.intelligence.automation.application.RunPendingAnalysisCommand;
 import es.sindicato.intelligence.automation.application.RunAutomationWorkflowUseCase;
 import es.sindicato.intelligence.automation.application.UpdateAutomationSettingUseCase;
 import es.sindicato.intelligence.automation.application.UpdateAutomationWorkflowSettingCommand;
+import es.sindicato.intelligence.automation.application.WorkflowOperationView;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowCode;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowSetting;
 import es.sindicato.intelligence.core.config.SecurityConfig;
@@ -25,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -62,6 +65,9 @@ class AutomationControllerTest {
 
     @MockBean
     private GetAutomationOverviewUseCase getAutomationOverviewUseCase;
+
+    @MockBean
+    private ListWorkflowOperationsUseCase listWorkflowOperationsUseCase;
 
     @Test
     void allowsEditorToRunPendingClassifications() throws Exception {
@@ -140,6 +146,32 @@ class AutomationControllerTest {
                 .andExpect(jsonPath("$.n8nStatus").value("EXTERNAL_N8N"))
                 .andExpect(jsonPath("$.backendEnabledCount").value(1))
                 .andExpect(jsonPath("$.backendWorkflows[0].workflowCode").value("WF02_CLASSIFICATION"));
+    }
+
+    @Test
+    void allowsAdminToListWorkflowOperations() throws Exception {
+        when(listWorkflowOperationsUseCase.execute(java.time.LocalDate.parse("2026-06-18"))).thenReturn(List.of(new WorkflowOperationView(
+                "AI-1",
+                "WF02_CLASSIFICATION",
+                "CLASSIFICATION",
+                "SUCCESS",
+                "NEWS",
+                7L,
+                OffsetDateTime.parse("2026-06-18T10:00:00Z"),
+                120L,
+                "WF02_CLASSIFICATION",
+                "GeminiAIProvider",
+                "gemini-1.5-flash",
+                null,
+                Map.of("category", "OTROS", "finalNewsStatus", "DISCARDED")
+        )));
+
+        mockMvc.perform(get("/api/v1/automation/operations?date=2026-06-18")
+                        .with(jwt().authorities(() -> "ROLE_ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].workflowCode").value("WF02_CLASSIFICATION"))
+                .andExpect(jsonPath("$[0].details.category").value("OTROS"))
+                .andExpect(jsonPath("$[0].details.finalNewsStatus").value("DISCARDED"));
     }
 
     @Test

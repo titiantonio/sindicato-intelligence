@@ -6,11 +6,13 @@ import es.sindicato.intelligence.automation.application.AutomationOverview;
 import es.sindicato.intelligence.automation.application.GetAutomationOverviewUseCase;
 import es.sindicato.intelligence.automation.application.GetAutomationSettingUseCase;
 import es.sindicato.intelligence.automation.application.ListAutomationSettingsUseCase;
+import es.sindicato.intelligence.automation.application.ListWorkflowOperationsUseCase;
 import es.sindicato.intelligence.automation.application.ProcessPendingEventAnalysisUseCase;
 import es.sindicato.intelligence.automation.application.RunPendingAnalysisCommand;
 import es.sindicato.intelligence.automation.application.RunAutomationWorkflowUseCase;
 import es.sindicato.intelligence.automation.application.UpdateAutomationSettingUseCase;
 import es.sindicato.intelligence.automation.application.UpdateAutomationWorkflowSettingCommand;
+import es.sindicato.intelligence.automation.application.WorkflowOperationView;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowCode;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowSetting;
 import jakarta.validation.Valid;
@@ -22,9 +24,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +42,7 @@ public class AutomationController {
     private final UpdateAutomationSettingUseCase updateAutomationSettingUseCase;
     private final RunAutomationWorkflowUseCase runAutomationWorkflowUseCase;
     private final GetAutomationOverviewUseCase getAutomationOverviewUseCase;
+    private final ListWorkflowOperationsUseCase listWorkflowOperationsUseCase;
 
     public AutomationController(
             ProcessPendingEventAnalysisUseCase processPendingEventAnalysisUseCase,
@@ -45,7 +50,8 @@ public class AutomationController {
             GetAutomationSettingUseCase getAutomationSettingUseCase,
             UpdateAutomationSettingUseCase updateAutomationSettingUseCase,
             RunAutomationWorkflowUseCase runAutomationWorkflowUseCase,
-            GetAutomationOverviewUseCase getAutomationOverviewUseCase
+            GetAutomationOverviewUseCase getAutomationOverviewUseCase,
+            ListWorkflowOperationsUseCase listWorkflowOperationsUseCase
     ) {
         this.processPendingEventAnalysisUseCase = processPendingEventAnalysisUseCase;
         this.listAutomationSettingsUseCase = listAutomationSettingsUseCase;
@@ -53,6 +59,7 @@ public class AutomationController {
         this.updateAutomationSettingUseCase = updateAutomationSettingUseCase;
         this.runAutomationWorkflowUseCase = runAutomationWorkflowUseCase;
         this.getAutomationOverviewUseCase = getAutomationOverviewUseCase;
+        this.listWorkflowOperationsUseCase = listWorkflowOperationsUseCase;
     }
 
     @PostMapping("/classifications/run")
@@ -95,6 +102,13 @@ public class AutomationController {
         );
     }
 
+    @GetMapping("/operations")
+    public List<WorkflowOperationResponse> listOperations(@RequestParam(required = false) LocalDate date) {
+        return listWorkflowOperationsUseCase.execute(date).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     @GetMapping("/settings/{workflowCode}")
     public AutomationWorkflowSettingResponse getSetting(@PathVariable AutomationWorkflowCode workflowCode) {
         return toResponse(getAutomationSettingUseCase.execute(workflowCode));
@@ -128,6 +142,24 @@ public class AutomationController {
 
     private AutomationRunErrorResponse toResponse(AutomationRunError error) {
         return new AutomationRunErrorResponse(error.entityId(), error.message());
+    }
+
+    private WorkflowOperationResponse toResponse(WorkflowOperationView operation) {
+        return new WorkflowOperationResponse(
+                operation.id(),
+                operation.workflowCode(),
+                operation.operationType(),
+                operation.status(),
+                operation.relatedEntityType(),
+                operation.relatedEntityId(),
+                operation.createdAt(),
+                operation.latencyMs(),
+                operation.promptKey(),
+                operation.provider(),
+                operation.model(),
+                operation.errorMessage(),
+                operation.details()
+        );
     }
 
     @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})

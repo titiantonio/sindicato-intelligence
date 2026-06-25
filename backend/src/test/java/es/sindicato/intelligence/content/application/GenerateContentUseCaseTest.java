@@ -16,6 +16,7 @@ import org.mockito.ArgumentCaptor;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -81,7 +82,8 @@ class GenerateContentUseCaseTest {
                 eq("test-content-model"),
                 eq("EVENT"),
                 eq(event.getId()),
-                isNull()
+                isNull(),
+                org.mockito.ArgumentMatchers.<Map<String, Object>>any()
         );
     }
 

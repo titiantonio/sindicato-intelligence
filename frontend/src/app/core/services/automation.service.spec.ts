@@ -92,4 +92,14 @@ describe('AutomationService', () => {
       backendWorkflows: []
     });
   });
+
+  it('lists workflow operations for a day', () => {
+    service.listOperations('2026-06-18').subscribe((response) => {
+      expect(response[0].workflowCode).toBe('WF06_PUBLICATION_TELEGRAM');
+    });
+
+    const request = httpTestingController.expectOne('/api/v1/automation/operations?date=2026-06-18');
+    expect(request.request.method).toBe('GET');
+    request.flush([{ id: 'WF06-1', workflowCode: 'WF06_PUBLICATION_TELEGRAM', details: {} }]);
+  });
 });

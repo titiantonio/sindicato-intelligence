@@ -26,7 +26,7 @@ describe('SettingsPageComponent', () => {
       'updateWorkflowSetting'
     ]);
     applicationSettingsService = jasmine.createSpyObj<ApplicationSettingsService>('ApplicationSettingsService', ['getTelegramSettings', 'updateTelegramSettings']);
-    automationService = jasmine.createSpyObj<AutomationService>('AutomationService', ['listSettings', 'updateSetting', 'runWorkflow', 'getOverview']);
+    automationService = jasmine.createSpyObj<AutomationService>('AutomationService', ['listSettings', 'updateSetting', 'runWorkflow', 'getOverview', 'listOperations']);
     aiObservabilityService.listPrompts.and.returnValue(of(promptVersions()));
     aiObservabilityService.listMetrics.and.returnValue(of(metrics()));
     aiObservabilityService.listDailyMetrics.and.returnValue(of(metrics()));
@@ -49,6 +49,7 @@ describe('SettingsPageComponent', () => {
       backendRunningCount: 0,
       backendWorkflows: [setting()]
     }));
+    automationService.listOperations.and.returnValue(of(operations()));
 
     await TestBed.configureTestingModule({
       imports: [SettingsPageComponent],
@@ -70,6 +71,7 @@ describe('SettingsPageComponent', () => {
     expect(compiled.textContent).toContain('Metricas IA');
     expect(compiled.textContent).toContain('Metricas diarias');
     expect(compiled.textContent).toContain('Operaciones del dia');
+    expect(compiled.textContent).toContain('WF-02');
     expect(compiled.textContent).toContain('GeminiAIProvider');
     expect(compiled.textContent).toContain('gemini-1.5-flash');
     expect(compiled.textContent).not.toContain('Prompts versionados');
@@ -203,11 +205,12 @@ describe('SettingsPageComponent', () => {
 
     component.setMetricStatusFilter('Fallida');
     expect(component.displayedMetrics().length).toBe(1);
+    expect(component.displayedMetrics().length).toBe(1);
     expect(component.displayedMetrics()[0].status).toBe('FAILED');
 
     component.setMetricStatusFilter('');
     component.changeMetricSort('latencyMs');
-    expect(component.displayedMetrics()[0].latencyMs).toBe(120);
+    expect(component.displayedMetrics()[0].latencyMs).toBe(null);
 
     component.setMetricPageSize('1');
     expect(component.paginatedMetrics().length).toBe(1);
@@ -231,21 +234,23 @@ describe('SettingsPageComponent', () => {
     component.setMetricDate('2026-06-17');
 
     expect(aiObservabilityService.listDailyMetrics).toHaveBeenCalledWith('2026-06-17');
+    expect(automationService.listOperations).toHaveBeenCalledWith('2026-06-17');
   });
 
   it('opens error and detail modals from metric rows', () => {
     const component = fixture.componentInstance as any;
-    const failedMetric = metrics().recentMetrics[1];
+    const failedMetric = operations()[1];
 
     component.openMetricDetail(failedMetric);
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Detalle de analisis IA');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Detalle de publicacion Telegram');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Abrir evento relacionado');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Publicacion');
 
     component.closeMetricDetail();
     component.openMetricError(new Event('click'), failedMetric);
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Respuesta IA invalida');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Telegram publication failed');
   });
 
   function setting(): AutomationWorkflowSetting {
@@ -418,5 +423,54 @@ describe('SettingsPageComponent', () => {
       failureRateDifference: 50,
       averageLatencyDifference: 70
     };
+  }
+
+  function operations() {
+    return [
+      {
+        id: 'AI-1',
+        workflowCode: 'WF02_CLASSIFICATION',
+        operationType: 'CLASSIFICATION',
+        promptKey: 'WF02_CLASSIFICATION',
+        provider: 'GeminiAIProvider',
+        model: 'gemini-1.5-flash',
+        status: 'SUCCESS' as const,
+        relatedEntityType: 'NEWS',
+        relatedEntityId: 1,
+        latencyMs: 120,
+        errorMessage: null,
+        createdAt: '2026-06-18T10:00:00Z',
+        details: {
+          category: 'OTROS',
+          subcategory: 'FUERA_DE_AMBITO',
+          relevance: 0,
+          finalNewsStatus: 'DISCARDED',
+          discardReason: 'FUERA_DE_AMBITO'
+        }
+      },
+      {
+        id: 'WF06-2',
+        workflowCode: 'WF06_PUBLICATION_TELEGRAM',
+        operationType: 'TELEGRAM_PUBLICATION',
+        promptKey: null,
+        provider: 'Telegram',
+        model: null,
+        status: 'FAILED' as const,
+        relatedEntityType: 'PUBLICATION',
+        relatedEntityId: 2,
+        latencyMs: null,
+        errorMessage: 'Telegram publication failed',
+        createdAt: '2026-06-18T11:00:00Z',
+        details: {
+          publicationId: 2,
+          contentId: 3,
+          eventId: 4,
+          channel: 'TELEGRAM',
+          publicationStatus: 'FAILED',
+          triggerType: 'IMMEDIATE',
+          error: 'Telegram publication failed'
+        }
+      }
+    ];
   }
 });

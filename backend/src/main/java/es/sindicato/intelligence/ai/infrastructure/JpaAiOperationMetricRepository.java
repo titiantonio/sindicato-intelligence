@@ -1,5 +1,8 @@
 package es.sindicato.intelligence.ai.infrastructure;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import es.sindicato.intelligence.ai.domain.AiOperationMetric;
 import es.sindicato.intelligence.ai.domain.AiOperationMetricRepository;
 import jakarta.persistence.EntityManager;
@@ -7,14 +10,20 @@ import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class JpaAiOperationMetricRepository implements AiOperationMetricRepository {
 
-    private final EntityManager entityManager;
+    private static final TypeReference<Map<String, Object>> DETAILS_TYPE = new TypeReference<>() {
+    };
 
-    public JpaAiOperationMetricRepository(EntityManager entityManager) {
+    private final EntityManager entityManager;
+    private final ObjectMapper objectMapper;
+
+    public JpaAiOperationMetricRepository(EntityManager entityManager, ObjectMapper objectMapper) {
         this.entityManager = entityManager;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -30,6 +39,7 @@ public class JpaAiOperationMetricRepository implements AiOperationMetricReposito
                 metric.getRelatedEntityId(),
                 metric.getLatencyMs(),
                 metric.getErrorMessage(),
+                toJsonNode(metric.getOperationDetails()),
                 metric.getCreatedAt()
         );
         return toDomain(entityManager.merge(entity));
@@ -84,7 +94,22 @@ public class JpaAiOperationMetricRepository implements AiOperationMetricReposito
                 entity.getRelatedEntityId(),
                 entity.getLatencyMs(),
                 entity.getErrorMessage(),
+                toMap(entity.getOperationDetails()),
                 entity.getCreatedAt()
         );
+    }
+
+    private JsonNode toJsonNode(Map<String, Object> details) {
+        if (details == null || details.isEmpty()) {
+            return null;
+        }
+        return objectMapper.valueToTree(details);
+    }
+
+    private Map<String, Object> toMap(JsonNode details) {
+        if (details == null || details.isNull()) {
+            return Map.of();
+        }
+        return objectMapper.convertValue(details, DETAILS_TYPE);
     }
 }

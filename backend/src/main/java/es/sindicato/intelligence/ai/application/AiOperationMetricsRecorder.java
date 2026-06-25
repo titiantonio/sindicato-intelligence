@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 @Service
 public class AiOperationMetricsRecorder {
@@ -40,7 +41,21 @@ public class AiOperationMetricsRecorder {
             Long relatedEntityId,
             OffsetDateTime startedAt
     ) {
-        record(operationType, promptKey, provider, model, AiMetricStatus.SUCCESS, relatedEntityType, relatedEntityId, startedAt, null);
+        recordSuccess(operationType, promptKey, provider, model, relatedEntityType, relatedEntityId, startedAt, Map.of());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordSuccess(
+            String operationType,
+            String promptKey,
+            String provider,
+            String model,
+            String relatedEntityType,
+            Long relatedEntityId,
+            OffsetDateTime startedAt,
+            Map<String, Object> operationDetails
+    ) {
+        record(operationType, promptKey, provider, model, AiMetricStatus.SUCCESS, relatedEntityType, relatedEntityId, startedAt, null, operationDetails);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -54,7 +69,22 @@ public class AiOperationMetricsRecorder {
             OffsetDateTime startedAt,
             RuntimeException exception
     ) {
-        record(operationType, promptKey, provider, model, AiMetricStatus.FAILED, relatedEntityType, relatedEntityId, startedAt, AiErrorSanitizer.metricMessage(exception.getMessage()));
+        recordFailure(operationType, promptKey, provider, model, relatedEntityType, relatedEntityId, startedAt, exception, Map.of());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordFailure(
+            String operationType,
+            String promptKey,
+            String provider,
+            String model,
+            String relatedEntityType,
+            Long relatedEntityId,
+            OffsetDateTime startedAt,
+            RuntimeException exception,
+            Map<String, Object> operationDetails
+    ) {
+        record(operationType, promptKey, provider, model, AiMetricStatus.FAILED, relatedEntityType, relatedEntityId, startedAt, AiErrorSanitizer.metricMessage(exception.getMessage()), operationDetails);
     }
 
     private void record(
@@ -66,10 +96,12 @@ public class AiOperationMetricsRecorder {
             String relatedEntityType,
             Long relatedEntityId,
             OffsetDateTime startedAt,
-            String errorMessage
+            String errorMessage,
+            Map<String, Object> operationDetails
     ) {
         try {
             OffsetDateTime now = OffsetDateTime.now(clock);
+            OffsetDateTime start = startedAt == null ? now : startedAt;
             repository.save(new AiOperationMetric(
                     null,
                     operationType,
@@ -79,8 +111,9 @@ public class AiOperationMetricsRecorder {
                     status,
                     relatedEntityType,
                     relatedEntityId,
-                    Duration.between(startedAt, now).toMillis(),
+                    Duration.between(start, now).toMillis(),
                     errorMessage,
+                    operationDetails,
                     now
             ));
         } catch (RuntimeException exception) {

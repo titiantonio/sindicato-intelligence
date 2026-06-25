@@ -51,6 +51,26 @@ public class JpaPublicationRepository implements PublicationRepository {
                 .map(this::toDomain)
                 .toList();
     }
+
+    @Override
+    public List<Publication> findScheduledBetween(OffsetDateTime fromInclusive, OffsetDateTime toExclusive) {
+        return entityManager.createQuery(
+                        """
+                        SELECT publication
+                        FROM PublicationEntity publication
+                        WHERE publication.scheduledAt >= :fromInclusive
+                          AND publication.scheduledAt < :toExclusive
+                        ORDER BY publication.scheduledAt DESC, publication.id DESC
+                        """,
+                        PublicationEntity.class
+                )
+                .setParameter("fromInclusive", fromInclusive)
+                .setParameter("toExclusive", toExclusive)
+                .getResultStream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     @Override
     public List<Publication> findByContentId(Long contentId) {
         return entityManager.createQuery(

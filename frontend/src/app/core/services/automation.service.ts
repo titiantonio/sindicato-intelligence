@@ -6,7 +6,8 @@ import {
   AutomationRunResult,
   AutomationWorkflowCode,
   AutomationWorkflowSetting,
-  UpdateAutomationSettingRequest
+  UpdateAutomationSettingRequest,
+  WorkflowOperation
 } from '../models/automation.models';
 
 @Injectable({
@@ -46,5 +47,9 @@ export class AutomationService {
 
   getOverview() {
     return this.httpClient.get<AutomationOverview>('/api/v1/automation/overview');
+  }
+
+  listOperations(date: string) {
+    return this.httpClient.get<WorkflowOperation[]>(`/api/v1/automation/operations?date=${date}`);
   }
 }

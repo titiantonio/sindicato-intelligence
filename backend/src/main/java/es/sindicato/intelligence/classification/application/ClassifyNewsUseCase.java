@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -73,8 +75,6 @@ public class ClassifyNewsUseCase {
             log.error("classification failed: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
             throw exception;
         }
-        metricsRecorder.recordSuccess("CLASSIFICATION", "WF02_CLASSIFICATION", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt);
-
         NewsClassification classification = new NewsClassification(
                 null,
                 newsArticle.getId(),
@@ -103,6 +103,17 @@ public class ClassifyNewsUseCase {
         }
         newsRepository.save(newsArticle);
 
+        metricsRecorder.recordSuccess(
+                "CLASSIFICATION",
+                "WF02_CLASSIFICATION",
+                aiProvider.providerName(),
+                aiProvider.modelName(),
+                "NEWS",
+                newsArticle.getId(),
+                startedAt,
+                classificationDetails(newsArticle, savedClassification, aiResponse.summary())
+        );
+
         log.info(
                 "classification completed: newsId={}, classificationId={}, status={}, category={}, subcategory='{}', relevance={}, impact={}, urgency={}",
                 newsArticle.getId(),
@@ -116,6 +127,27 @@ public class ClassifyNewsUseCase {
         );
 
         return savedClassification;
+    }
+
+    private Map<String, Object> classificationDetails(NewsArticle newsArticle, NewsClassification classification, String aiSummary) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("workflowCode", "WF02_CLASSIFICATION");
+        details.put("newsId", newsArticle.getId());
+        details.put("newsTitle", abbreviate(newsArticle.getTitle()));
+        details.put("category", classification.getCategory().name());
+        details.put("subcategory", classification.getSubcategory());
+        details.put("relevance", classification.getRelevanceScore());
+        details.put("impact", classification.getImpactLevel().name());
+        details.put("urgency", classification.getUrgencyLevel().name());
+        details.put("keywords", classification.getKeywords());
+        details.put("entities", classification.getEntities());
+        details.put("aiSummary", abbreviate(aiSummary));
+        details.put("finalNewsStatus", newsArticle.getProcessingStatus().name());
+        details.put("discarded", newsArticle.getProcessingStatus().name().equals("DISCARDED"));
+        if (newsArticle.getProcessingStatus().name().equals("DISCARDED")) {
+            details.put("discardReason", classification.getSubcategory());
+        }
+        return details;
     }
 
     private String abbreviate(String value) {

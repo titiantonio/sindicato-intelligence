@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -112,8 +114,6 @@ public class DetectEventUseCase {
             log.error("event detection failed during AI matching: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
             throw exception;
         }
-        metricsRecorder.recordSuccess("EVENT_MATCHING", "WF03_EVENT_MATCHING", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt);
-
         Event event = findAutomaticMatch(activeEvents, aiResponse);
         boolean created = false;
         boolean matched = event != null;
@@ -141,6 +141,16 @@ public class DetectEventUseCase {
                 aiResponse.reason(),
                 savedEvent.getStatus()
         );
+        metricsRecorder.recordSuccess(
+                "EVENT_MATCHING",
+                "WF03_EVENT_MATCHING",
+                aiProvider.providerName(),
+                aiProvider.modelName(),
+                "NEWS",
+                newsArticle.getId(),
+                startedAt,
+                eventDetectionDetails(newsArticle, classification, candidates.size(), aiResponse, result)
+        );
         log.info(
                 "event detection completed: newsId={}, eventId={}, created={}, matched={}, confidence={}, status={}",
                 result.newsId(),
@@ -152,6 +162,45 @@ public class DetectEventUseCase {
         );
 
         return result;
+    }
+
+    private Map<String, Object> eventDetectionDetails(
+            NewsArticle newsArticle,
+            NewsClassification classification,
+            int candidateCount,
+            EventMatchingAIResponse aiResponse,
+            DetectEventResult result
+    ) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("workflowCode", "WF03_EVENT_MATCHING");
+        details.put("newsId", newsArticle.getId());
+        details.put("newsTitle", abbreviate(newsArticle.getTitle()));
+        details.put("category", classification.getCategory().name());
+        details.put("candidateCount", candidateCount);
+        details.put("aiMatch", aiResponse.match());
+        details.put("aiSuggestedEventId", aiResponse.eventId());
+        details.put("confidence", aiResponse.confidence());
+        details.put("automaticMatchThreshold", AUTOMATIC_MATCH_THRESHOLD);
+        details.put("decision", result.created() ? "CREATED_EVENT" : "MATCHED_EXISTING_EVENT");
+        details.put("created", result.created());
+        details.put("matched", result.matched());
+        details.put("finalEventId", result.eventId());
+        details.put("eventStatus", result.eventStatus().name());
+        details.put("reason", abbreviate(aiResponse.reason()));
+        return details;
+    }
+
+    private String abbreviate(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+
+        String trimmed = value.replaceAll("\\s+", " ").trim();
+        if (trimmed.length() <= 160) {
+            return trimmed;
+        }
+
+        return trimmed.substring(0, 157) + "...";
     }
 
     private Event findAutomaticMatch(List<Event> activeEvents, EventMatchingAIResponse aiResponse) {

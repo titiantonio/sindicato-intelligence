@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -85,8 +87,6 @@ public class GenerateAnalysisUseCase {
             log.error("analysis generation failed during AI generation: eventId={}, reason={}", event.getId(), exception.getMessage(), exception);
             throw exception;
         }
-        metricsRecorder.recordSuccess("ANALYSIS", "WF04_ANALYSIS", aiProvider.providerName(), aiResponse.modelUsed(), "EVENT", event.getId(), startedAt);
-
         EventAIAnalysis analysis = new EventAIAnalysis(
                 null,
                 event.getId(),
@@ -100,6 +100,17 @@ public class GenerateAnalysisUseCase {
         );
         EventAIAnalysis savedAnalysis = analysisRepository.save(analysis);
 
+        metricsRecorder.recordSuccess(
+                "ANALYSIS",
+                "WF04_ANALYSIS",
+                aiProvider.providerName(),
+                aiResponse.modelUsed(),
+                "EVENT",
+                event.getId(),
+                startedAt,
+                analysisDetails(event, newsArticles.size(), savedAnalysis)
+        );
+
         log.info(
                 "analysis generation completed: eventId={}, analysisId={}, keyPoints={}, risks={}, opportunities={}, modelUsed={}",
                 event.getId(),
@@ -111,6 +122,41 @@ public class GenerateAnalysisUseCase {
         );
 
         return savedAnalysis;
+    }
+
+    private Map<String, Object> analysisDetails(Event event, int newsCount, EventAIAnalysis analysis) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("workflowCode", "WF04_ANALYSIS");
+        details.put("eventId", event.getId());
+        details.put("eventTitle", abbreviate(event.getTitle()));
+        details.put("eventCategory", event.getCategory().name());
+        details.put("eventImportance", event.getImportance().name());
+        details.put("newsCount", newsCount);
+        details.put("analysisId", analysis.getId());
+        details.put("executiveSummary", abbreviate(analysis.getExecutiveSummary()));
+        details.put("unionSummary", abbreviate(analysis.getUnionSummary()));
+        details.put("keyPoints", abbreviateList(analysis.getKeyPoints()));
+        details.put("risks", abbreviateList(analysis.getRisks()));
+        details.put("opportunities", abbreviateList(analysis.getOpportunities()));
+        details.put("modelUsed", analysis.getModelUsed());
+        return details;
+    }
+
+    private List<String> abbreviateList(List<String> values) {
+        return values.stream().limit(5).map(this::abbreviate).toList();
+    }
+
+    private String abbreviate(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+
+        String trimmed = value.replaceAll("\\s+", " ").trim();
+        if (trimmed.length() <= 220) {
+            return trimmed;
+        }
+
+        return trimmed.substring(0, 217) + "...";
     }
 
     private List<NewsArticle> loadNewsArticles(Event event) {

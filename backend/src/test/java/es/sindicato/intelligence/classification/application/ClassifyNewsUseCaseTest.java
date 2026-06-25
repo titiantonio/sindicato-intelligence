@@ -15,6 +15,7 @@ import org.mockito.ArgumentCaptor;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,7 +70,8 @@ class ClassifyNewsUseCaseTest {
                 eq("test-model"),
                 eq("NEWS"),
                 eq(newsArticle.getId()),
-                isNull()
+                isNull(),
+                org.mockito.ArgumentMatchers.<Map<String, Object>>any()
         );
     }
 
@@ -94,11 +96,24 @@ class ClassifyNewsUseCaseTest {
         useCase.execute(new ClassifyNewsCommand(newsArticle.getId()));
 
         ArgumentCaptor<NewsClassification> captor = ArgumentCaptor.forClass(NewsClassification.class);
+        ArgumentCaptor<Map<String, Object>> detailsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(classificationRepository).save(captor.capture());
         verify(newsRepository).save(newsArticle);
+        verify(metricsRecorder).recordSuccess(
+                eq("CLASSIFICATION"),
+                eq("WF02_CLASSIFICATION"),
+                anyString(),
+                eq("test-model"),
+                eq("NEWS"),
+                eq(newsArticle.getId()),
+                isNull(),
+                detailsCaptor.capture()
+        );
         assertEquals(ClassificationCategory.OTROS, captor.getValue().getCategory());
         assertEquals("FUERA_DE_AMBITO", captor.getValue().getSubcategory());
         assertEquals(NewsStatus.DISCARDED, newsArticle.getProcessingStatus());
+        assertEquals("DISCARDED", detailsCaptor.getValue().get("finalNewsStatus"));
+        assertEquals("FUERA_DE_AMBITO", detailsCaptor.getValue().get("discardReason"));
     }
 
     @Test

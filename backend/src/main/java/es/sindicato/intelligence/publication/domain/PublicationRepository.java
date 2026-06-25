@@ -12,6 +12,8 @@ public interface PublicationRepository {
 
     List<Publication> findAll();
 
+    List<Publication> findScheduledBetween(OffsetDateTime fromInclusive, OffsetDateTime toExclusive);
+
     List<Publication> findByContentId(Long contentId);
 
     List<Publication> findDueScheduled(OffsetDateTime now, int limit);

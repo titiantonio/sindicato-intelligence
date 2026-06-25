@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend/Frontend ADMIN: anadido detalle funcional de operaciones por workflow en `/settings`, combinando metricas IA `WF-02` a `WF-05` con operaciones Telegram `WF-06`, incluyendo snapshots sanitizados de clasificacion, eventos, analisis, contenido y publicacion.
 - Backend eventos: anadido descarte manual de eventos mediante `POST /api/v1/events/{id}/discard`, archivado operativo y auditoria `EVENT_DISCARDED`.
 - Frontend eventos: anadida accion `Descartar` en la tabla de eventos activos y mas contexto de impacto, volumen y descripcion en la fusion de eventos.
 - Backend eventos/dashboard: anadida politica de visibilidad para ocultar eventos formados solo por noticias descartables y excluirlos de metricas operativas.

@@ -1,6 +1,9 @@
 package es.sindicato.intelligence.ai.domain;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class AiOperationMetric {
@@ -15,6 +18,7 @@ public class AiOperationMetric {
     private final Long relatedEntityId;
     private final long latencyMs;
     private final String errorMessage;
+    private final Map<String, Object> operationDetails;
     private final OffsetDateTime createdAt;
 
     public AiOperationMetric(
@@ -30,6 +34,23 @@ public class AiOperationMetric {
             String errorMessage,
             OffsetDateTime createdAt
     ) {
+        this(id, operationType, promptKey, provider, model, status, relatedEntityType, relatedEntityId, latencyMs, errorMessage, Map.of(), createdAt);
+    }
+
+    public AiOperationMetric(
+            Long id,
+            String operationType,
+            String promptKey,
+            String provider,
+            String model,
+            AiMetricStatus status,
+            String relatedEntityType,
+            Long relatedEntityId,
+            long latencyMs,
+            String errorMessage,
+            Map<String, Object> operationDetails,
+            OffsetDateTime createdAt
+    ) {
         this.id = id;
         this.operationType = requireText(operationType, "operationType is required");
         this.promptKey = requireText(promptKey, "promptKey is required");
@@ -40,6 +61,7 @@ public class AiOperationMetric {
         this.relatedEntityId = relatedEntityId;
         this.latencyMs = Math.max(0, latencyMs);
         this.errorMessage = truncate(errorMessage);
+        this.operationDetails = sanitizeDetails(operationDetails);
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt is required");
     }
 
@@ -83,6 +105,10 @@ public class AiOperationMetric {
         return errorMessage;
     }
 
+    public Map<String, Object> getOperationDetails() {
+        return operationDetails;
+    }
+
     public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
@@ -108,5 +134,12 @@ public class AiOperationMetric {
             return null;
         }
         return normalized.length() <= 500 ? normalized : normalized.substring(0, 500);
+    }
+
+    private Map<String, Object> sanitizeDetails(Map<String, Object> details) {
+        if (details == null || details.isEmpty()) {
+            return Map.of();
+        }
+        return Collections.unmodifiableMap(new LinkedHashMap<>(details));
     }
 }

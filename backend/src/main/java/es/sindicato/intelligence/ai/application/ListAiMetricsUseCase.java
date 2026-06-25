@@ -149,6 +149,7 @@ public class ListAiMetricsUseCase {
                 metric.getRelatedEntityId(),
                 metric.getLatencyMs(),
                 metric.getErrorMessage(),
+                metric.getOperationDetails(),
                 metric.getCreatedAt()
         );
     }

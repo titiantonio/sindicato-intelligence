@@ -62,19 +62,21 @@
         <div class="table-wrapper">
           <table class="data-table data-table--metrics">
             <colgroup>
-              <col style="width: 12%" />
+              <col style="width: 11%" />
+              <col style="width: 8%" />
               <col style="width: 13%" />
-              <col style="width: 15%" />
-              <col style="width: 12%" />
               <col style="width: 13%" />
+              <col style="width: 11%" />
+              <col style="width: 12%" />
               <col style="width: 8%" />
               <col style="width: 8%" />
+              <col style="width: 7%" />
               <col style="width: 9%" />
-              <col style="width: 10%" />
             </colgroup>
             <thead>
               <tr>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('createdAt')">Fecha {{ metricSortLabel('createdAt') }}</button></th>
+                <th><button type="button" class="sort-button" (click)="changeMetricSort('workflowCode')">WF {{ metricSortLabel('workflowCode') }}</button></th>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('operationType')">Operacion {{ metricSortLabel('operationType') }}</button></th>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('promptKey')">Prompt {{ metricSortLabel('promptKey') }}</button></th>
                 <th><button type="button" class="sort-button" (click)="changeMetricSort('provider')">Proveedor {{ metricSortLabel('provider') }}</button></th>
@@ -86,6 +88,7 @@
               </tr>
               <tr class="column-filters">
                 <th><input type="search" aria-label="Filtrar fecha de metrica" [ngModel]="metricCreatedAtFilter()" (ngModelChange)="setMetricCreatedAtFilter($event)" /></th>
+                <th><input type="search" aria-label="Filtrar workflow de metrica" [ngModel]="metricOperationFilter()" (ngModelChange)="setMetricOperationFilter($event)" /></th>
                 <th><input type="search" aria-label="Filtrar operacion de metrica" [ngModel]="metricOperationFilter()" (ngModelChange)="setMetricOperationFilter($event)" /></th>
                 <th><input type="search" aria-label="Filtrar prompt de metrica" [ngModel]="metricPromptFilter()" (ngModelChange)="setMetricPromptFilter($event)" /></th>
                 <th><input type="search" aria-label="Filtrar proveedor de metrica" [ngModel]="metricProviderFilter()" (ngModelChange)="setMetricProviderFilter($event)" /></th>
@@ -106,13 +109,14 @@
               @for (metric of paginatedMetrics(); track metric.id) {
                 <tr class="metric-row" [class.metric-row--failed]="metric.status === 'FAILED'" (click)="openMetricDetail(metric)" tabindex="0">
                   <td class="table-cell-nowrap">{{ formatDate(metric.createdAt) }}</td>
+                  <td class="table-cell-nowrap">{{ workflowLabelForOperation(metric) }}</td>
                   <td class="table-cell-nowrap">{{ metric.operationType }}</td>
-                  <td class="table-cell-nowrap"><code>{{ metric.promptKey }}</code></td>
-                  <td class="table-cell-nowrap">{{ metric.provider }}</td>
+                  <td class="table-cell-nowrap"><code>{{ metric.promptKey || '-' }}</code></td>
+                  <td class="table-cell-nowrap">{{ metric.provider || '-' }}</td>
                   <td class="table-cell-nowrap">{{ metric.model || '-' }}</td>
                   <td class="table-cell-nowrap">{{ metricStatusLabel(metric.status) }}</td>
                   <td class="table-cell-nowrap">{{ metric.relatedEntityType || '-' }}</td>
-                  <td class="table-cell-nowrap">{{ metric.latencyMs }} ms</td>
+                  <td class="table-cell-nowrap">{{ metric.latencyMs === null ? '-' : metric.latencyMs + ' ms' }}</td>
                   <td class="table-cell-nowrap">
                     @if (metric.errorMessage) {
                       <button type="button" class="inline-action" (click)="openMetricError($event, metric)">Ver error</button>
@@ -123,7 +127,7 @@
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="9" class="empty-cell">No hay metricas que coincidan con los filtros.</td>
+                  <td colspan="10" class="empty-cell">No hay operaciones que coincidan con los filtros.</td>
                 </tr>
               }
             </tbody>
@@ -578,8 +582,12 @@
               <dd>{{ errorMetric.operationType }}</dd>
             </div>
             <div>
+              <dt>Workflow</dt>
+              <dd>{{ workflowLabelForOperation(errorMetric) }}</dd>
+            </div>
+            <div>
               <dt>Proveedor</dt>
-              <dd>{{ errorMetric.provider }}</dd>
+              <dd>{{ errorMetric.provider || '-' }}</dd>
             </div>
             <div>
               <dt>Modelo</dt>
@@ -607,16 +615,20 @@
           </header>
           <dl class="workflow-status">
             <div>
+              <dt>Workflow</dt>
+              <dd>{{ workflowLabelForOperation(detailMetric) }}</dd>
+            </div>
+            <div>
               <dt>Fecha</dt>
               <dd>{{ formatDate(detailMetric.createdAt) }}</dd>
             </div>
             <div>
               <dt>Prompt</dt>
-              <dd><code>{{ detailMetric.promptKey }}</code></dd>
+              <dd><code>{{ detailMetric.promptKey || '-' }}</code></dd>
             </div>
             <div>
               <dt>Proveedor</dt>
-              <dd>{{ detailMetric.provider }}</dd>
+              <dd>{{ detailMetric.provider || '-' }}</dd>
             </div>
             <div>
               <dt>Modelo</dt>
@@ -632,9 +644,19 @@
             </div>
             <div>
               <dt>Latencia</dt>
-              <dd>{{ detailMetric.latencyMs }} ms</dd>
+              <dd>{{ detailMetric.latencyMs === null ? '-' : detailMetric.latencyMs + ' ms' }}</dd>
             </div>
           </dl>
+          @if (operationDetailEntries(detailMetric).length > 0) {
+            <dl class="workflow-status">
+              @for (entry of operationDetailEntries(detailMetric); track entry.label) {
+                <div>
+                  <dt>{{ entry.label }}</dt>
+                  <dd>{{ entry.value }}</dd>
+                </div>
+              }
+            </dl>
+          }
           @if (entityDetailLink(detailMetric); as detailLink) {
             <a class="detail-link" [routerLink]="detailLink" (click)="closeMetricDetail()">Abrir evento relacionado</a>
           }

@@ -2459,6 +2459,31 @@ Estado:
 
 ---
 
+## 16.44 Detalle funcional de operaciones por workflow en settings - 2026-06-25
+
+Tarea de mejora sobre Sprint 12 Observabilidad IA, automatizaciones internas y configuracion ADMIN.
+
+Completado en esta iteracion:
+- Backend IA: anadida migracion `V14__ai_operation_metric_details.sql` con `operation_details JSONB` en `ai_operation_metrics`.
+- Backend IA: `WF-02`, `WF-03`, `WF-04` y `WF-05` registran snapshots funcionales sanitizados con resultado de negocio, sin prompts completos ni payloads sensibles.
+- Backend clasificacion: el detalle de `WF-02` registra `finalNewsStatus=DISCARDED` y motivo cuando la noticia queda como `OTROS/FUERA_DE_AMBITO` o `OTROS/INFORMACION_INSUFICIENTE` con relevancia `0`.
+- Backend automatizaciones: anadido endpoint ADMIN `GET /api/v1/automation/operations?date=YYYY-MM-DD` para combinar operaciones IA `WF-02` a `WF-05` y operaciones Telegram `WF-06`.
+- Backend publicaciones: `WF-06` se muestra como operacion de workflow desde auditoria/publicaciones, pero no como metrica IA.
+- Frontend ADMIN: `/settings` mantiene las tarjetas de metricas IA y cambia la tabla de operaciones del dia para consumir la vista unificada por workflow.
+- Frontend ADMIN: el modal de detalle muestra resultado funcional, trazabilidad tecnica cuando aplica y detalle Telegram para `WF-06`.
+- Proyecto: backend versionado a `0.0.72-SNAPSHOT` y `CHANGELOG.md` actualizado.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=JpaAiObservabilityRepositoryTest,AutomationControllerTest,ListWorkflowOperationsUseCaseTest,ClassifyNewsUseCaseTest,GenerateContentUseCaseTest" test`: 23 tests, 0 fallos, 0 errores.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts --include=src/app/core/services/automation.service.spec.ts`: 20 tests, 0 fallos.
+- Backend compile: `mvn -DskipTests compile` OK con version `0.0.72-SNAPSHOT`.
+- Frontend build: `npm.cmd run build` OK, con warnings preexistentes de budgets inicial, `sources`, `audit`, `events` y `users`.
+
+Estado:
+- Refinamiento posterior al Sprint 12. No cambia la arquitectura: `WF-02` a `WF-06` siguen en Spring Boot y `WF-01` permanece en n8n.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -86,8 +88,6 @@ public class GenerateContentUseCase {
             log.error("content generation failed during AI generation: eventId={}, analysisId={}, reason={}", event.getId(), analysis.getId(), exception.getMessage(), exception);
             throw exception;
         }
-        metricsRecorder.recordSuccess("CONTENT_GENERATION", "WF05_CONTENT", aiProvider.providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt);
-
         GeneratedContent content = new GeneratedContent(
                 null,
                 event.getId(),
@@ -102,9 +102,57 @@ public class GenerateContentUseCase {
         );
         GeneratedContent savedContent = contentRepository.save(content);
 
+        metricsRecorder.recordSuccess(
+                "CONTENT_GENERATION",
+                "WF05_CONTENT",
+                aiProvider.providerName(),
+                aiProvider.modelName(),
+                "EVENT",
+                event.getId(),
+                startedAt,
+                contentDetails(event, analysis, savedContent, length, aiResponse.hashtags())
+        );
+
         log.info("content generation completed: eventId={}, analysisId={}, contentId={}, status={}, channel={}, tone={}", event.getId(), analysis.getId(), savedContent.getId(), savedContent.getStatus(), savedContent.getChannel(), savedContent.getTone());
 
         return savedContent;
+    }
+
+    private Map<String, Object> contentDetails(
+            Event event,
+            EventAIAnalysis analysis,
+            GeneratedContent content,
+            String length,
+            List<String> hashtags
+    ) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("workflowCode", "WF05_CONTENT");
+        details.put("eventId", event.getId());
+        details.put("eventTitle", abbreviate(event.getTitle()));
+        details.put("analysisId", analysis.getId());
+        details.put("contentId", content.getId());
+        details.put("channel", content.getChannel());
+        details.put("tone", content.getTone());
+        details.put("length", length);
+        details.put("title", abbreviate(content.getTitle()));
+        details.put("excerpt", abbreviate(content.getContent()));
+        details.put("hashtags", hashtags == null ? List.of() : hashtags);
+        details.put("editorialStatus", content.getStatus().name());
+        details.put("createdBy", content.getCreatedBy());
+        return details;
+    }
+
+    private String abbreviate(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+
+        String trimmed = value.replaceAll("\\s+", " ").trim();
+        if (trimmed.length() <= 220) {
+            return trimmed;
+        }
+
+        return trimmed.substring(0, 217) + "...";
     }
 
     private EventAIAnalysis resolveAnalysis(GenerateContentCommand command, Long eventId) {

@@ -45,3 +45,19 @@ export interface AutomationOverview {
   backendRunningCount: number;
   backendWorkflows: AutomationWorkflowSetting[];
 }
+
+export interface WorkflowOperation {
+  id: string;
+  workflowCode: string;
+  operationType: string;
+  status: 'SUCCESS' | 'FAILED' | string;
+  relatedEntityType: string | null;
+  relatedEntityId: number | null;
+  createdAt: string;
+  latencyMs: number | null;
+  promptKey: string | null;
+  provider: string | null;
+  model: string | null;
+  errorMessage: string | null;
+  details: Record<string, unknown>;
+}

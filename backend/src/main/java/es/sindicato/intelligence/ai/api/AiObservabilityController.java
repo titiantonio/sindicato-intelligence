@@ -85,6 +85,7 @@ public class AiObservabilityController {
                 metric.relatedEntityId(),
                 metric.latencyMs(),
                 metric.errorMessage(),
+                metric.operationDetails(),
                 metric.createdAt()
         );
     }

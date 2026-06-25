@@ -2,9 +2,9 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { AiMetric, AiMetricsSnapshot, AiModelOption, AiPromptVersion, AiProviderSetting, AiWorkflowSetting } from '../../core/models/ai-observability.models';
+import { AiMetricsSnapshot, AiModelOption, AiPromptVersion, AiProviderSetting, AiWorkflowSetting } from '../../core/models/ai-observability.models';
 import { TelegramPublicationSettings } from '../../core/models/application-settings.models';
-import { AutomationOverview, AutomationRunResult, AutomationWorkflowCode, AutomationWorkflowSetting } from '../../core/models/automation.models';
+import { AutomationOverview, AutomationRunResult, AutomationWorkflowCode, AutomationWorkflowSetting, WorkflowOperation } from '../../core/models/automation.models';
 import { MetricCard } from '../../core/models/dashboard.models';
 import { AiObservabilityService } from '../../core/services/ai-observability.service';
 import { ApplicationSettingsService } from '../../core/services/application-settings.service';
@@ -14,7 +14,7 @@ import { MetricCardComponent } from '../../shared/components/metric-card/metric-
 type SettingsTab = 'metrics' | 'prompts' | 'automation' | 'publication';
 type SortDirection = 'asc' | 'desc';
 type PromptSortColumn = 'promptKey' | 'promptName' | 'module' | 'version' | 'checksum' | 'active' | 'createdAt';
-type MetricSortColumn = 'operationType' | 'promptKey' | 'provider' | 'model' | 'status' | 'relatedEntityType' | 'latencyMs' | 'errorMessage' | 'createdAt';
+type MetricSortColumn = 'workflowCode' | 'operationType' | 'promptKey' | 'provider' | 'model' | 'status' | 'relatedEntityType' | 'latencyMs' | 'errorMessage' | 'createdAt';
 
 interface AutomationSettingForm {
   enabled: boolean;
@@ -62,6 +62,7 @@ export class SettingsPageComponent implements OnInit {
   protected readonly aiWorkflowForms = signal<Record<string, AiWorkflowForm>>({});
   protected readonly aiModelOptions = signal<Record<string, AiModelOption[]>>({});
   protected readonly aiMetrics = signal<AiMetricsSnapshot | null>(null);
+  protected readonly workflowOperations = signal<WorkflowOperation[]>([]);
   protected readonly forms = signal<Record<string, AutomationSettingForm>>({});
   protected readonly telegramSettings = signal<TelegramPublicationSettings | null>(null);
   protected readonly telegramForm = signal<TelegramSettingsForm>({
@@ -85,8 +86,8 @@ export class SettingsPageComponent implements OnInit {
   protected readonly activeTab = signal<SettingsTab>('metrics');
   protected readonly pageSizeOptions = [5, 10, 25, 50];
   protected readonly metricDate = signal(this.todayInputValue());
-  protected readonly selectedErrorMetric = signal<AiMetric | null>(null);
-  protected readonly selectedMetricDetail = signal<AiMetric | null>(null);
+  protected readonly selectedErrorMetric = signal<WorkflowOperation | null>(null);
+  protected readonly selectedMetricDetail = signal<WorkflowOperation | null>(null);
 
   protected readonly promptKeyFilter = signal('');
   protected readonly promptNameFilter = signal('');
@@ -121,7 +122,7 @@ export class SettingsPageComponent implements OnInit {
   protected readonly metricSortDirection = signal<SortDirection>('desc');
   protected readonly metricPageSize = signal(10);
   protected readonly metricCurrentPage = signal(1);
-  protected readonly displayedMetrics = computed(() => this.sortMetrics(this.filterMetrics(this.aiMetrics()?.recentMetrics ?? [])));
+  protected readonly displayedMetrics = computed(() => this.sortMetrics(this.filterMetrics(this.workflowOperations())));
   protected readonly metricTotalPages = computed(() => Math.max(1, Math.ceil(this.displayedMetrics().length / this.metricPageSize())));
   protected readonly metricDisplayPage = computed(() => Math.min(this.metricCurrentPage(), this.metricTotalPages()));
   protected readonly paginatedMetrics = computed(() => {
@@ -203,10 +204,23 @@ export class SettingsPageComponent implements OnInit {
     this.aiObservabilityService.listDailyMetrics(this.metricDate()).subscribe({
       next: (metrics) => {
         this.aiMetrics.set(metrics);
-        this.isAiLoading.set(false);
+        this.loadWorkflowOperations();
       },
       error: (error: { error?: { error?: string } }) => {
         this.errorMessage.set(error.error?.error ?? 'No se pudieron cargar las metricas IA.');
+        this.isAiLoading.set(false);
+      }
+    });
+  }
+
+  protected loadWorkflowOperations(): void {
+    this.automationService.listOperations(this.metricDate()).subscribe({
+      next: (operations) => {
+        this.workflowOperations.set(operations);
+        this.isAiLoading.set(false);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudieron cargar las operaciones del dia.');
         this.isAiLoading.set(false);
       }
     });
@@ -541,7 +555,7 @@ export class SettingsPageComponent implements OnInit {
     this.loadAiObservability();
   }
 
-  protected openMetricError(event: Event, metric: AiMetric): void {
+  protected openMetricError(event: Event, metric: WorkflowOperation): void {
     event.stopPropagation();
     this.selectedErrorMetric.set(metric);
   }
@@ -550,7 +564,7 @@ export class SettingsPageComponent implements OnInit {
     this.selectedErrorMetric.set(null);
   }
 
-  protected openMetricDetail(metric: AiMetric): void {
+  protected openMetricDetail(metric: WorkflowOperation): void {
     this.selectedMetricDetail.set(metric);
   }
 
@@ -558,21 +572,86 @@ export class SettingsPageComponent implements OnInit {
     this.selectedMetricDetail.set(null);
   }
 
-  protected metricDetailTitle(metric: AiMetric): string {
+  protected metricDetailTitle(metric: WorkflowOperation): string {
     const labels: Record<string, string> = {
       CLASSIFICATION: 'Detalle de clasificacion IA',
       EVENT_MATCHING: 'Detalle de matching de evento',
       ANALYSIS: 'Detalle de analisis IA',
-      CONTENT_GENERATION: 'Detalle de generacion de contenido'
+      CONTENT_GENERATION: 'Detalle de generacion de contenido',
+      TELEGRAM_PUBLICATION: 'Detalle de publicacion Telegram'
     };
     return labels[metric.operationType] ?? 'Detalle de operacion IA';
   }
 
-  protected entityDetailLink(metric: AiMetric): string[] | null {
+  protected entityDetailLink(metric: WorkflowOperation): string[] | null {
     if (metric.relatedEntityType === 'EVENT' && metric.relatedEntityId) {
       return ['/events', metric.relatedEntityId.toString()];
     }
+    const eventId = this.detailNumber(metric, 'eventId');
+    if (eventId) {
+      return ['/events', eventId.toString()];
+    }
     return null;
+  }
+
+  protected workflowLabelForOperation(operation: WorkflowOperation): string {
+    const labels: Record<string, string> = {
+      WF02_CLASSIFICATION: 'WF-02',
+      WF03_EVENT_MATCHING: 'WF-03',
+      WF04_ANALYSIS: 'WF-04',
+      WF05_CONTENT: 'WF-05',
+      WF06_PUBLICATION_TELEGRAM: 'WF-06'
+    };
+    return labels[operation.workflowCode] ?? operation.workflowCode;
+  }
+
+  protected operationDetailEntries(operation: WorkflowOperation): { label: string; value: string }[] {
+    const labels: Record<string, string> = {
+      newsTitle: 'Noticia',
+      category: 'Categoria',
+      subcategory: 'Subcategoria',
+      relevance: 'Relevancia',
+      impact: 'Impacto',
+      urgency: 'Urgencia',
+      keywords: 'Keywords',
+      entities: 'Entidades',
+      aiSummary: 'Resumen IA',
+      finalNewsStatus: 'Estado noticia',
+      discardReason: 'Motivo descarte',
+      candidateCount: 'Eventos candidatos',
+      confidence: 'Confianza',
+      automaticMatchThreshold: 'Umbral automatico',
+      decision: 'Decision',
+      finalEventId: 'Evento final',
+      reason: 'Razon IA',
+      newsCount: 'Noticias analizadas',
+      analysisId: 'Analisis',
+      executiveSummary: 'Resumen ejecutivo',
+      unionSummary: 'Resumen sindical',
+      keyPoints: 'Puntos clave',
+      risks: 'Riesgos',
+      opportunities: 'Oportunidades',
+      contentId: 'Contenido',
+      channel: 'Canal',
+      tone: 'Tono',
+      length: 'Longitud',
+      title: 'Titulo',
+      excerpt: 'Extracto',
+      hashtags: 'Hashtags',
+      editorialStatus: 'Estado editorial',
+      publicationId: 'Publicacion',
+      publicationStatus: 'Estado publicacion',
+      triggerType: 'Tipo',
+      externalId: 'Mensaje externo',
+      scheduledAt: 'Programada',
+      publishedAt: 'Publicada',
+      auditDetail: 'Detalle auditoria',
+      error: 'Error'
+    };
+    const hiddenKeys = new Set(['workflowCode', 'newsId', 'eventId', 'createdBy', 'auditAction', 'discarded', 'aiMatch', 'aiSuggestedEventId', 'created', 'matched', 'eventTitle', 'eventCategory', 'eventImportance', 'modelUsed', 'contentTitle']);
+    return Object.entries(operation.details ?? {})
+      .filter(([key, value]) => !hiddenKeys.has(key) && value !== null && value !== undefined && this.formatDetailValue(value) !== '')
+      .map(([key, value]) => ({ label: labels[key] ?? key, value: this.formatDetailValue(value) }));
   }
 
   private updateForm(workflowCode: AutomationWorkflowCode, patch: Partial<AutomationSettingForm>): void {
@@ -629,28 +708,28 @@ export class SettingsPageComponent implements OnInit {
     return left[column].localeCompare(right[column], 'es', { sensitivity: 'base' });
   }
 
-  private filterMetrics(metrics: NonNullable<AiMetricsSnapshot['recentMetrics']>): NonNullable<AiMetricsSnapshot['recentMetrics']> {
+  private filterMetrics(metrics: WorkflowOperation[]): WorkflowOperation[] {
     return metrics
-      .filter((metric) => this.matchesText(metric.operationType, this.metricOperationFilter()))
-      .filter((metric) => this.matchesText(metric.promptKey, this.metricPromptFilter()))
-      .filter((metric) => this.matchesText(metric.provider, this.metricProviderFilter()))
+      .filter((metric) => this.matchesText(`${metric.workflowCode} ${metric.operationType}`, this.metricOperationFilter()))
+      .filter((metric) => this.matchesText(metric.promptKey ?? '-', this.metricPromptFilter()))
+      .filter((metric) => this.matchesText(metric.provider ?? '-', this.metricProviderFilter()))
       .filter((metric) => this.matchesText(metric.model ?? '-', this.metricModelFilter()))
       .filter((metric) => this.matchesOption(this.metricStatusLabel(metric.status), this.metricStatusFilter()))
       .filter((metric) => this.matchesText(metric.relatedEntityType ?? '-', this.metricRelatedEntityTypeFilter()))
-      .filter((metric) => this.matchesText(metric.latencyMs.toString(), this.metricLatencyFilter()))
+      .filter((metric) => this.matchesText(metric.latencyMs?.toString() ?? '-', this.metricLatencyFilter()))
       .filter((metric) => this.matchesText(metric.errorMessage ?? '-', this.metricErrorFilter()))
       .filter((metric) => this.matchesText(this.formatDate(metric.createdAt), this.metricCreatedAtFilter()));
   }
 
-  private sortMetrics(metrics: NonNullable<AiMetricsSnapshot['recentMetrics']>): NonNullable<AiMetricsSnapshot['recentMetrics']> {
+  private sortMetrics(metrics: WorkflowOperation[]): WorkflowOperation[] {
     const direction = this.metricSortDirection() === 'asc' ? 1 : -1;
     const column = this.metricSortColumn();
     return [...metrics].sort((left, right) => direction * this.compareMetrics(left, right, column));
   }
 
-  private compareMetrics(left: NonNullable<AiMetricsSnapshot['recentMetrics']>[number], right: NonNullable<AiMetricsSnapshot['recentMetrics']>[number], column: MetricSortColumn): number {
+  private compareMetrics(left: WorkflowOperation, right: WorkflowOperation, column: MetricSortColumn): number {
     if (column === 'latencyMs') {
-      return left[column] - right[column];
+      return (left[column] ?? -1) - (right[column] ?? -1);
     }
     if (column === 'createdAt') {
       return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
@@ -658,11 +737,12 @@ export class SettingsPageComponent implements OnInit {
     return this.metricValue(left, column).localeCompare(this.metricValue(right, column), 'es', { sensitivity: 'base' });
   }
 
-  private metricValue(metric: NonNullable<AiMetricsSnapshot['recentMetrics']>[number], column: Exclude<MetricSortColumn, 'latencyMs' | 'createdAt'>): string {
+  private metricValue(metric: WorkflowOperation, column: Exclude<MetricSortColumn, 'latencyMs' | 'createdAt'>): string {
     const values = {
+      workflowCode: metric.workflowCode,
       operationType: metric.operationType,
-      promptKey: metric.promptKey,
-      provider: metric.provider,
+      promptKey: metric.promptKey ?? '-',
+      provider: metric.provider ?? '-',
       model: metric.model ?? '-',
       status: this.metricStatusLabel(metric.status),
       relatedEntityType: metric.relatedEntityType ?? '-',
@@ -777,6 +857,27 @@ export class SettingsPageComponent implements OnInit {
 
   private formatSigned(value: number): string {
     return value > 0 ? `+${value}` : value.toString();
+  }
+
+  private detailNumber(operation: WorkflowOperation, key: string): number | null {
+    const value = operation.details?.[key];
+    return typeof value === 'number' ? value : null;
+  }
+
+  private formatDetailValue(value: unknown): string {
+    if (Array.isArray(value)) {
+      return value.map((item) => this.formatDetailValue(item)).filter(Boolean).join(', ');
+    }
+    if (typeof value === 'string') {
+      if (/^\d{4}-\d{2}-\d{2}T/.test(value)) {
+        return this.formatDate(value);
+      }
+      return value;
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return value.toString();
+    }
+    return '';
   }
 
   private todayInputValue(): string {

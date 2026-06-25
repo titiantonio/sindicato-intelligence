@@ -1,6 +1,7 @@
 package es.sindicato.intelligence.ai.api;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 public record AiMetricResponse(
         Long id,
@@ -13,6 +14,7 @@ public record AiMetricResponse(
         Long relatedEntityId,
         long latencyMs,
         String errorMessage,
+        Map<String, Object> operationDetails,
         OffsetDateTime createdAt
 ) {
 }
