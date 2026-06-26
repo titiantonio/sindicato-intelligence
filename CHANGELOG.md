@@ -94,6 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.73-SNAPSHOT`.
+- Backend IA/WF-02: las noticias descartadas por `FUERA_DE_AMBITO` o `INFORMACION_INSUFICIENTE` usan respuesta minima de clasificacion y no generan ni registran `keywords`, `entities` ni `summary`.
 - Versionado del backend actualizado a `0.0.71-SNAPSHOT`.
 - Frontend eventos: redisenada la fusion para sustituir el dropdown largo por listas compactas, contener titulos/descripciones, ajustar la tabla de acciones y usar un modal propio de confirmacion para fusionar o descartar eventos.
 - Versionado del backend actualizado a `0.0.70-SNAPSHOT`.

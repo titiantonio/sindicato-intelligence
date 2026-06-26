@@ -150,7 +150,8 @@ public class GeminiAIProvider implements AIProvider {
                 - Usa impact exacto de esta lista: LOW, MEDIUM, HIGH, CRITICAL.
                 - Usa urgency exacto de esta lista: LOW, MEDIUM, HIGH.
                 - relevance debe ser un numero entre 0 y 100.
-                - keywords y entities deben ser arrays de strings.
+                - Para noticias clasificables puedes devolver keywords y entities como arrays de strings, y summary como texto breve.
+                - Para category OTROS con subcategory FUERA_DE_AMBITO o INFORMACION_INSUFICIENTE no devuelvas keywords, entities ni summary.
                 """;
     }
 
@@ -182,7 +183,7 @@ public class GeminiAIProvider implements AIProvider {
                         ),
                         "summary", Map.of("type", "STRING")
                 ),
-                "required", List.of("category", "subcategory", "relevance", "impact", "urgency", "keywords", "entities", "summary"),
+                "required", List.of("category", "subcategory", "relevance", "impact", "urgency"),
                 "propertyOrdering", List.of("category", "subcategory", "relevance", "impact", "urgency", "keywords", "entities", "summary")
         );
     }

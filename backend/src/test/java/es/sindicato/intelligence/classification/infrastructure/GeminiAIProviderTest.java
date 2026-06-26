@@ -135,10 +135,7 @@ class GeminiAIProviderTest {
                           "subcategory": "INFORMACION_INSUFICIENTE",
                           "relevance": 0,
                           "impact": "LOW",
-                          "urgency": "LOW",
-                          "keywords": [],
-                          "entities": [],
-                          "summary": "Informacion insuficiente"
+                          "urgency": "LOW"
                         }
                         """), MediaType.APPLICATION_JSON));
 
@@ -147,6 +144,38 @@ class GeminiAIProviderTest {
         assertEquals(ClassificationCategory.OTROS, response.category());
         assertEquals("INFORMACION_INSUFICIENTE", response.subcategory());
         assertEquals(BigDecimal.ZERO, response.relevance());
+        assertEquals(java.util.List.of(), response.keywords());
+        assertEquals(java.util.List.of(), response.entities());
+        assertEquals("", response.summary());
+        server.verify();
+    }
+
+    @Test
+    void acceptsMinimalDiscardClassificationWithoutEnrichedFields() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        GeminiAIProvider provider = new GeminiAIProvider(builder, new ObjectMapper(), properties("test-key"));
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent"))
+                .andExpect(header("x-goog-api-key", "test-key"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("no devuelvas keywords, entities ni summary")))
+                .andRespond(withSuccess(geminiResponse("""
+                        {
+                          "category": "OTROS",
+                          "subcategory": "FUERA_DE_AMBITO",
+                          "relevance": 0,
+                          "impact": "LOW",
+                          "urgency": "LOW"
+                        }
+                        """), MediaType.APPLICATION_JSON));
+
+        ClassificationAIResponse response = provider.classify(request());
+
+        assertEquals(ClassificationCategory.OTROS, response.category());
+        assertEquals("FUERA_DE_AMBITO", response.subcategory());
+        assertEquals(BigDecimal.ZERO, response.relevance());
+        assertEquals(java.util.List.of(), response.keywords());
+        assertEquals(java.util.List.of(), response.entities());
+        assertEquals("", response.summary());
         server.verify();
     }
 

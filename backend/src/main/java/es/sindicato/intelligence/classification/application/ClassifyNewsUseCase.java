@@ -139,13 +139,14 @@ public class ClassifyNewsUseCase {
         details.put("relevance", classification.getRelevanceScore());
         details.put("impact", classification.getImpactLevel().name());
         details.put("urgency", classification.getUrgencyLevel().name());
-        details.put("keywords", classification.getKeywords());
-        details.put("entities", classification.getEntities());
-        details.put("aiSummary", abbreviate(aiSummary));
         details.put("finalNewsStatus", newsArticle.getProcessingStatus().name());
         details.put("discarded", newsArticle.getProcessingStatus().name().equals("DISCARDED"));
         if (newsArticle.getProcessingStatus().name().equals("DISCARDED")) {
             details.put("discardReason", classification.getSubcategory());
+        } else {
+            details.put("keywords", classification.getKeywords());
+            details.put("entities", classification.getEntities());
+            details.put("aiSummary", abbreviate(aiSummary));
         }
         return details;
     }

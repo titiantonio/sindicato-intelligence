@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -111,9 +112,14 @@ class ClassifyNewsUseCaseTest {
         );
         assertEquals(ClassificationCategory.OTROS, captor.getValue().getCategory());
         assertEquals("FUERA_DE_AMBITO", captor.getValue().getSubcategory());
+        assertEquals(List.of(), captor.getValue().getKeywords());
+        assertEquals(List.of(), captor.getValue().getEntities());
         assertEquals(NewsStatus.DISCARDED, newsArticle.getProcessingStatus());
         assertEquals("DISCARDED", detailsCaptor.getValue().get("finalNewsStatus"));
         assertEquals("FUERA_DE_AMBITO", detailsCaptor.getValue().get("discardReason"));
+        assertFalse(detailsCaptor.getValue().containsKey("keywords"));
+        assertFalse(detailsCaptor.getValue().containsKey("entities"));
+        assertFalse(detailsCaptor.getValue().containsKey("aiSummary"));
     }
 
     @Test
@@ -184,9 +190,9 @@ class ClassifyNewsUseCaseTest {
                 relevance,
                 impact,
                 urgency,
-                List.of("SIPRI"),
-                List.of("Junta de Andalucia"),
-                "Resumen IA"
+                relevance.compareTo(BigDecimal.ZERO) == 0 ? null : List.of("SIPRI"),
+                relevance.compareTo(BigDecimal.ZERO) == 0 ? null : List.of("Junta de Andalucia"),
+                relevance.compareTo(BigDecimal.ZERO) == 0 ? null : "Resumen IA"
         );
     }
 

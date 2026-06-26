@@ -2484,6 +2484,25 @@ Estado:
 
 ---
 
+## 16.45 Optimizacion de respuesta minima en descartes WF-02 - 2026-06-26
+
+Tarea de mejora correctiva sobre Fase 6 Clasificacion IA y Sprint 12 Observabilidad IA.
+
+Completado en esta iteracion:
+- Documento 23: actualizado el prompt oficial `WF-02` para que `FUERA_DE_AMBITO` e `INFORMACION_INSUFICIENTE` devuelvan solo `category`, `subcategory`, `relevance`, `impact` y `urgency`.
+- Backend clasificacion: `ClassifyNewsPromptBuilder` deja de pedir `keywords`, `entities` y `summary` para noticias descartadas.
+- Backend Gemini: el `responseSchema` mantiene `keywords`, `entities` y `summary` como opcionales y solo obliga los campos minimos de clasificacion.
+- Backend clasificacion: `ClassifyNewsUseCase` persiste listas vacias y evita registrar `keywords`, `entities` y `aiSummary` en detalles de metricas cuando la noticia queda `DISCARDED`.
+- Proyecto: backend versionado a `0.0.73-SNAPSHOT` y `CHANGELOG.md` actualizado.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=ClassifyNewsPromptBuilderTest,ClassifyNewsUseCaseTest,GeminiAIProviderTest,NewsClassificationTest" test`: 17 tests, 0 fallos, 0 errores.
+
+Estado:
+- Mejora de coste y limpieza de datos para `WF-02`, sin cambiar contratos API publicos ni la regla de descarte.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:
