@@ -18,13 +18,22 @@
   <p class="page-alert page-alert--error">{{ automationError() }}</p>
 }
 
-@if (isLoading()) {
-  <p class="page-alert">Cargando dashboard...</p>
+@if (isLoading() && metricCards().length > 0) {
+  <p class="page-alert">Actualizando dashboard...</p>
 }
 
 <section class="metric-grid">
   @for (metric of metricCards(); track metric.label) {
     <app-metric-card [card]="metric" />
+  } @empty {
+    @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+      <article class="metric-skeleton" aria-hidden="true">
+        <span></span>
+        <strong></strong>
+        <p></p>
+        <div></div>
+      </article>
+    }
   }
 </section>
 
@@ -100,7 +109,20 @@
         </tr>
       </thead>
       <tbody>
-        @for (event of paginatedPriorityEvents(); track event.id) {
+        @if (isLoading() && priorityEvents().length === 0) {
+          @for (placeholder of [1, 2, 3, 4, 5]; track placeholder) {
+            <tr class="table-skeleton" aria-hidden="true">
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+            </tr>
+          }
+        } @else {
+          @for (event of paginatedPriorityEvents(); track event.id) {
           <tr class="event-row" [routerLink]="['/events', event.id]" tabindex="0">
             <td>{{ event.title }}</td>
             <td class="table-cell-nowrap">{{ event.category }}</td>
@@ -114,10 +136,11 @@
               </button>
             </td>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="7">No hay eventos prioritarios que requieran atencion inmediata.</td>
-          </tr>
+          } @empty {
+            <tr>
+              <td colspan="7">No hay eventos prioritarios que requieran atencion inmediata.</td>
+            </tr>
+          }
         }
       </tbody>
     </table>

@@ -24,8 +24,8 @@
   <p class="page-alert page-alert--success">{{ successMessage() }}</p>
 }
 
-@if (isLoading()) {
-  <p class="page-alert">Cargando eventos...</p>
+@if (isLoading() && events().length > 0) {
+  <p class="page-alert">Actualizando eventos...</p>
 }
 
 <section class="panel merge-panel">
@@ -34,11 +34,16 @@
     <h2>Fusionar eventos</h2>
   </div>
 
-  <div class="merge-panel__grid">
+    <div class="merge-panel__grid">
     <div class="merge-panel__targets">
       <span>Evento destino</span>
       <div class="merge-panel__target-list">
-        @for (event of activeEvents(); track event.id) {
+        @if (isLoading() && events().length === 0) {
+          @for (placeholder of [1, 2, 3]; track placeholder) {
+            <div class="event-option event-option--skeleton" aria-hidden="true"><span></span></div>
+          }
+        } @else {
+          @for (event of activeEvents(); track event.id) {
           <label class="event-option">
             <input
               type="radio"
@@ -52,6 +57,7 @@
               <em>{{ event.title }}</em>
             </span>
           </label>
+          }
         }
       </div>
     </div>
@@ -168,7 +174,22 @@
         </tr>
       </thead>
       <tbody>
-        @for (event of paginatedEvents(); track event.id) {
+        @if (isLoading() && events().length === 0) {
+          @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
+            <tr class="table-skeleton" aria-hidden="true">
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+              <td><span></span></td>
+            </tr>
+          }
+        } @else {
+          @for (event of paginatedEvents(); track event.id) {
           <tr>
             <td class="table-cell-nowrap">#{{ event.id }}</td>
             <td class="event-title-cell">{{ event.title }}</td>
@@ -190,10 +211,11 @@
               </div>
             </td>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="9">No hay eventos que coincidan con los filtros.</td>
-          </tr>
+          } @empty {
+            <tr>
+              <td colspan="9">No hay eventos que coincidan con los filtros.</td>
+            </tr>
+          }
         }
       </tbody>
     </table>

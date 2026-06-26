@@ -3,6 +3,7 @@ package es.sindicato.intelligence.dashboard.api;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import com.jayway.jsonpath.JsonPath;
+import es.sindicato.intelligence.classification.domain.NewsClassificationRepository;
 import es.sindicato.intelligence.content.domain.ContentStatus;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
@@ -33,6 +34,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -49,7 +51,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        "app.automation.scheduler.enabled=false",
+        "app.publication.scheduler.enabled=false"
+})
 @AutoConfigureMockMvc
 @Transactional
 class DashboardControllerTest {
@@ -64,6 +69,9 @@ class DashboardControllerTest {
 
     @Autowired
     private NewsRepository newsRepository;
+
+    @Autowired
+    private NewsClassificationRepository classificationRepository;
 
     @Autowired
     private EventRepository eventRepository;
@@ -128,48 +136,59 @@ class DashboardControllerTest {
 
         DateRange todayRange = todayRange();
         DateRange yesterdayRange = new DateRange(todayRange.start().minusDays(1), todayRange.start());
-        long todayNewsCount = countInRange(newsRepository.findAll(), NewsArticle::getCapturedAt, todayRange);
-        long yesterdayNewsCount = countInRange(newsRepository.findAll(), NewsArticle::getCapturedAt, yesterdayRange);
-        long todayEvents = countInRange(eventRepository.findAll(), Event::getFirstDetectedAt, todayRange);
-        long yesterdayEvents = countInRange(eventRepository.findAll(), Event::getFirstDetectedAt, yesterdayRange);
+        List<NewsArticle> visibleNews = newsRepository.findAll().stream().filter(this::isVisibleNews).toList();
+        List<Event> visibleEvents = eventRepository.findAll().stream().filter(this::isVisibleEvent).toList();
+        List<Long> visibleEventIds = visibleEvents.stream().map(Event::getId).toList();
+        List<GeneratedContent> visibleContents = contentRepository.findAll().stream()
+                .filter(content -> visibleEventIds.contains(content.getEventId()))
+                .toList();
+        List<Long> visibleContentIds = visibleContents.stream().map(GeneratedContent::getId).toList();
+        List<Publication> visiblePublications = publicationRepository.findAll().stream()
+                .filter(publication -> visibleContentIds.contains(publication.getContentId()))
+                .toList();
+
+        long todayNewsCount = countInRange(visibleNews, NewsArticle::getCapturedAt, todayRange);
+        long yesterdayNewsCount = countInRange(visibleNews, NewsArticle::getCapturedAt, yesterdayRange);
+        long todayEvents = countInRange(visibleEvents, Event::getFirstDetectedAt, todayRange);
+        long yesterdayEvents = countInRange(visibleEvents, Event::getFirstDetectedAt, yesterdayRange);
         long todayPendingContents = countInRange(
-                contentRepository.findAll().stream().filter(content -> content.getStatus() == ContentStatus.PENDING_REVIEW).toList(),
+                visibleContents.stream().filter(content -> content.getStatus() == ContentStatus.PENDING_REVIEW).toList(),
                 GeneratedContent::getGeneratedAt,
                 todayRange
         );
         long yesterdayPendingContents = countInRange(
-                contentRepository.findAll().stream().filter(content -> content.getStatus() == ContentStatus.PENDING_REVIEW).toList(),
+                visibleContents.stream().filter(content -> content.getStatus() == ContentStatus.PENDING_REVIEW).toList(),
                 GeneratedContent::getGeneratedAt,
                 yesterdayRange
         );
         long todayPublications = countInRange(
-                publicationRepository.findAll().stream().filter(publication -> publication.getStatus() == PublicationStatus.PUBLISHED).toList(),
+                visiblePublications.stream().filter(publication -> publication.getStatus() == PublicationStatus.PUBLISHED).toList(),
                 Publication::getPublishedAt,
                 todayRange
         );
         long yesterdayPublications = countInRange(
-                publicationRepository.findAll().stream().filter(publication -> publication.getStatus() == PublicationStatus.PUBLISHED).toList(),
+                visiblePublications.stream().filter(publication -> publication.getStatus() == PublicationStatus.PUBLISHED).toList(),
                 Publication::getPublishedAt,
                 yesterdayRange
         );
-        long totalNews = newsRepository.findAll().size();
-        long criticalEvents = eventRepository.findAll().stream()
+        long totalNews = visibleNews.size();
+        long criticalEvents = visibleEvents.stream()
                 .filter(Event::isActive)
                 .filter(event -> event.getImportance() == Importance.CRITICAL)
                 .count();
-        long pendingContents = contentRepository.findAll().stream()
+        long pendingContents = visibleContents.stream()
                 .filter(content -> content.getStatus() == ContentStatus.PENDING_REVIEW)
                 .count();
-        long generatedContents = contentRepository.findAll().stream()
+        long generatedContents = visibleContents.stream()
                 .filter(content -> content.getStatus() == ContentStatus.GENERATED)
                 .count();
-        long approvedContents = contentRepository.findAll().stream()
+        long approvedContents = visibleContents.stream()
                 .filter(content -> content.getStatus() == ContentStatus.APPROVED)
                 .count();
-        long scheduledPublications = publicationRepository.findAll().stream()
+        long scheduledPublications = visiblePublications.stream()
                 .filter(publication -> publication.getStatus() == PublicationStatus.SCHEDULED)
                 .count();
-        long failedPublications = publicationRepository.findAll().stream()
+        long failedPublications = visiblePublications.stream()
                 .filter(publication -> publication.getStatus() == PublicationStatus.FAILED)
                 .count();
 
@@ -359,6 +378,21 @@ class DashboardControllerTest {
         return count;
     }
 
+    private boolean isVisibleEvent(Event event) {
+        return event.getStatus() != EventStatus.ARCHIVED
+                && event.getNewsIds().stream()
+                .map(newsRepository::findById)
+                .flatMap(java.util.Optional::stream)
+                .anyMatch(this::isVisibleNews);
+    }
+
+    private boolean isVisibleNews(NewsArticle newsArticle) {
+        return newsArticle.getProcessingStatus() != NewsStatus.DISCARDED
+                && classificationRepository.findByNewsId(newsArticle.getId())
+                .map(classification -> !classification.isDiscardableForEventDetection())
+                .orElse(true);
+    }
+
     private DateRange todayRange() {
         LocalDate today = LocalDate.now(DASHBOARD_ZONE);
         OffsetDateTime start = today.atStartOfDay(DASHBOARD_ZONE).toOffsetDateTime();
@@ -366,7 +400,16 @@ class DashboardControllerTest {
     }
 
     private String formatDate(OffsetDateTime value) {
-        return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(value);
+        return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(roundToPostgresMicros(value));
+    }
+
+    private OffsetDateTime roundToPostgresMicros(OffsetDateTime value) {
+        int nanos = value.getNano();
+        int roundedMicros = (nanos + 500) / 1_000;
+        if (roundedMicros == 1_000_000) {
+            return value.plusSeconds(1).withNano(0);
+        }
+        return value.withNano(roundedMicros * 1_000);
     }
 
     private record DateRange(OffsetDateTime start, OffsetDateTime end) {

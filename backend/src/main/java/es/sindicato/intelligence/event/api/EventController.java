@@ -10,6 +10,7 @@ import es.sindicato.intelligence.event.application.DetectEventUseCase;
 import es.sindicato.intelligence.event.application.DiscardEventUseCase;
 import es.sindicato.intelligence.event.application.EventNotFoundException;
 import es.sindicato.intelligence.event.application.EventEditorialStatusResolver;
+import es.sindicato.intelligence.event.application.EventSummaryView;
 import es.sindicato.intelligence.event.application.GetEventDetailUseCase;
 import es.sindicato.intelligence.event.application.GetEventDetailUseCase.EventDetail;
 import es.sindicato.intelligence.event.application.GetEventDetailUseCase.EventNewsDetail;
@@ -136,6 +137,22 @@ public class EventController {
                 event.getFirstDetectedAt(),
                 event.getLastUpdatedAt(),
                 event.getUpdatedAt()
+        );
+    }
+
+    private EventSummaryResponse toSummaryResponse(EventSummaryView event) {
+        return new EventSummaryResponse(
+                event.id(),
+                event.title(),
+                event.description(),
+                event.category(),
+                event.importance(),
+                event.status(),
+                event.editorialStatus(),
+                event.newsCount(),
+                event.firstDetectedAt(),
+                event.lastUpdatedAt(),
+                event.updatedAt()
         );
     }
 

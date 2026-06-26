@@ -162,6 +162,11 @@ td {
   padding: 0.55rem 0.65rem;
 }
 
+.event-option--skeleton span,.table-skeleton span{animation:skeleton-pulse 1.2s ease-in-out infinite;background:linear-gradient(90deg,var(--color-neutral-soft),var(--color-muted-surface),var(--color-neutral-soft));background-size:200% 100%;border-radius:999px;display:block}
+.event-option--skeleton span{height:2.5rem;width:100%}
+.table-skeleton span{height:.9rem;min-width:3rem}
+@keyframes skeleton-pulse{from{background-position:200% 0}to{background-position:-200% 0}}
+
 .event-option input,
 .merge-panel__source-list input {
   flex: 0 0 auto;

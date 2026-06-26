@@ -112,6 +112,7 @@ describe('SettingsPageComponent', () => {
   });
 
   it('saves edited settings in seconds', () => {
+    (fixture.componentInstance as any).setTab('automation');
     (fixture.componentInstance as any).updateInterval('WF02_CLASSIFICATION', 5);
     (fixture.componentInstance as any).updateBatchSize('WF02_CLASSIFICATION', 2);
     (fixture.componentInstance as any).save(setting());
@@ -182,6 +183,7 @@ describe('SettingsPageComponent', () => {
   it('filters, sorts and paginates prompt versions', () => {
     const component = fixture.componentInstance as any;
 
+    component.setTab('prompts');
     component.setPromptNameFilter('Analisis');
     expect(component.displayedPrompts().length).toBe(1);
     expect(component.displayedPrompts()[0].promptKey).toBe('WF04_ANALYSIS');

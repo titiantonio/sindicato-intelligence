@@ -28,6 +28,66 @@
   margin-bottom: 1.5rem;
 }
 
+.metric-skeleton,
+.table-skeleton span {
+  background: linear-gradient(90deg, var(--color-neutral-soft), var(--color-muted-surface), var(--color-neutral-soft));
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+.metric-skeleton {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  display: grid;
+  gap: 0.9rem;
+  min-height: 13rem;
+  padding: 1rem;
+}
+
+.metric-skeleton span,
+.metric-skeleton strong,
+.metric-skeleton p,
+.metric-skeleton div,
+.table-skeleton span {
+  border-radius: 999px;
+  display: block;
+}
+
+.metric-skeleton span {
+  height: 0.8rem;
+  width: 45%;
+}
+
+.metric-skeleton strong {
+  height: 2rem;
+  width: 35%;
+}
+
+.metric-skeleton p {
+  height: 0.9rem;
+  width: 70%;
+}
+
+.metric-skeleton div {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.table-skeleton span {
+  height: 0.9rem;
+  min-width: 3rem;
+}
+
+@keyframes skeleton-pulse {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
 .automation-panel {
   align-items: center;
   background: var(--color-surface);

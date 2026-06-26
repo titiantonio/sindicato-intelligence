@@ -2565,6 +2565,28 @@ Verificacion:
 Estado:
 - Mantenimiento correctivo posterior al Sprint 12. `WF-04` sigue residiendo en Spring Boot y no se reintroduce logica IA en n8n.
 
+## 16.49 Optimizacion de carga del backoffice - 2026-06-26
+
+Tarea de mantenimiento correctivo posterior a Sprint 11/12, centrada en rendimiento percibido y consultas reales del backoffice.
+
+- [x] Dashboard: sustituida la lectura completa de repositorios por consultas agregadas especificas para metricas, ultimas actualizaciones y eventos prioritarios.
+- [x] Eventos: `GET /api/v1/events` devuelve resumen con `newsCount` y `editorialStatus` desde una consulta optimizada, manteniendo el contrato REST.
+- [x] Base de datos: creada migracion `V16__performance_indexes_backoffice.sql` con indices compuestos para dashboard, eventos, publicaciones, auditoria y metricas IA.
+- [x] Frontend: dashboard y eventos muestran estructura/skeleton inicial en vez de pantalla vacia con carga global.
+- [x] Settings: `/settings` carga por defecto solo metricas IA y operaciones del dia; prompts, automatizaciones, proveedores IA y Telegram se cargan bajo demanda por pestana.
+- [x] Tests focales backend y frontend ejecutados.
+
+Verificacion:
+
+- Backend focal: `mvnw.cmd "-Dtest=DashboardControllerTest,EventControllerTest" test` OK, 10 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/dashboard/dashboard-page.component.spec.ts --include=src/app/features/events/events-page.component.spec.ts --include=src/app/features/settings/settings-page.component.spec.ts` OK, 26 tests.
+- Frontend build: `npm.cmd run build` OK antes de la documentacion, con warnings de presupuesto preexistentes y warning de tamano en `events-page.component.scss`.
+
+Notas:
+
+- No se cambian URLs ni formato JSON de los endpoints publicos.
+- La logica de negocio sigue en Spring Boot; Angular solo cambia estrategia de carga y estados visuales.
+
 ---
 
 # 17. Regla Operativa

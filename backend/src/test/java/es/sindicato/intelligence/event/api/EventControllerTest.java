@@ -48,7 +48,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        "app.automation.scheduler.enabled=false",
+        "app.publication.scheduler.enabled=false"
+})
 @AutoConfigureMockMvc
 @Transactional
 class EventControllerTest {

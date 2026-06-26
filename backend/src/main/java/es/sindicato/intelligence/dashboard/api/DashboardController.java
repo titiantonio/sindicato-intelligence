@@ -3,8 +3,6 @@ package es.sindicato.intelligence.dashboard.api;
 import es.sindicato.intelligence.dashboard.application.DashboardSnapshotUseCase;
 import es.sindicato.intelligence.dashboard.application.DashboardSnapshotUseCase.DashboardMetric;
 import es.sindicato.intelligence.dashboard.application.DashboardSnapshotUseCase.DashboardSnapshot;
-import es.sindicato.intelligence.event.application.EventEditorialStatusResolver;
-import es.sindicato.intelligence.event.domain.Event;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,14 +14,9 @@ import java.util.List;
 public class DashboardController {
 
     private final DashboardSnapshotUseCase dashboardSnapshotUseCase;
-    private final EventEditorialStatusResolver editorialStatusResolver;
 
-    public DashboardController(
-            DashboardSnapshotUseCase dashboardSnapshotUseCase,
-            EventEditorialStatusResolver editorialStatusResolver
-    ) {
+    public DashboardController(DashboardSnapshotUseCase dashboardSnapshotUseCase) {
         this.dashboardSnapshotUseCase = dashboardSnapshotUseCase;
-        this.editorialStatusResolver = editorialStatusResolver;
     }
 
     @GetMapping
@@ -142,16 +135,16 @@ public class DashboardController {
         return difference > 0 ? "+" + difference : Long.toString(difference);
     }
 
-    private PriorityEventResponse toPriorityEvent(Event event) {
+    private PriorityEventResponse toPriorityEvent(DashboardSnapshotUseCase.PriorityEventView event) {
         return new PriorityEventResponse(
-                event.getId(),
-                event.getTitle(),
-                event.getCategory(),
-                event.getImportance(),
-                event.getNewsIds().size(),
-                event.getLastUpdatedAt(),
-                event.getStatus(),
-                editorialStatusResolver.resolve(event)
+                event.id(),
+                event.title(),
+                event.category(),
+                event.importance(),
+                event.relatedNews(),
+                event.updatedAt(),
+                event.status(),
+                event.editorialStatus()
         );
     }
 }

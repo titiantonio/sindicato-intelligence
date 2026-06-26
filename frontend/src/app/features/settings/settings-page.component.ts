@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { AiMetricsSnapshot, AiModelOption, AiPromptVersion, AiProviderSetting, AiWorkflowSetting } from '../../core/models/ai-observability.models';
 import { TelegramPublicationSettings } from '../../core/models/application-settings.models';
@@ -76,6 +77,10 @@ export class SettingsPageComponent implements OnInit {
   protected readonly isTelegramLoading = signal(false);
   protected readonly isAiLoading = signal(false);
   protected readonly isTelegramSaving = signal(false);
+  protected readonly metricsLoaded = signal(false);
+  protected readonly promptsLoaded = signal(false);
+  protected readonly automationLoaded = signal(false);
+  protected readonly publicationLoaded = signal(false);
   protected readonly busyAiProvider = signal<string | null>(null);
   protected readonly busyAiWorkflow = signal<string | null>(null);
   protected readonly busyModelProvider = signal<string | null>(null);
@@ -133,24 +138,46 @@ export class SettingsPageComponent implements OnInit {
   protected readonly aiMetricCards = computed(() => this.toAiMetricCards(this.aiMetrics()));
 
   ngOnInit(): void {
-    this.loadSettings();
-    this.loadTelegramSettings();
     this.loadAiObservability();
   }
 
-  protected loadSettings(): void {
+  protected loadSettings(force = false): void {
+    if (this.automationLoaded() && !force) {
+      return;
+    }
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.automationService.listSettings().subscribe({
-      next: (settings) => {
+    forkJoin({
+      settings: this.automationService.listSettings(),
+      overview: this.automationService.getOverview(),
+      providers: this.aiObservabilityService.listProviders(),
+      workflowSettings: this.aiObservabilityService.listWorkflowSettings()
+    }).subscribe({
+      next: ({ settings, overview, providers, workflowSettings }) => {
         this.settings.set(settings);
         this.forms.set(Object.fromEntries(settings.map((setting) => [setting.workflowCode, this.toForm(setting)])));
+        this.overview.set(overview);
+        this.aiProviders.set(providers);
+        this.aiProviderForms.set(Object.fromEntries(providers.map((provider) => [
+          provider.providerCode,
+          { enabled: provider.enabled, apiKey: '' }
+        ])));
+        this.aiWorkflowSettings.set(workflowSettings);
+        this.aiWorkflowForms.set(Object.fromEntries(workflowSettings.map((setting) => [
+          setting.workflowCode,
+          {
+            providerCode: setting.providerCode,
+            modelName: setting.modelName,
+            temperature: setting.temperature,
+            maxOutputTokens: setting.maxOutputTokens
+          }
+        ])));
+        this.automationLoaded.set(true);
         this.isLoading.set(false);
-        this.loadOverview();
       },
       error: (error: { error?: { error?: string } }) => {
-        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar la configuracion de automatizaciones.');
+        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar la configuracion de automatizaciones e IA.');
         this.isLoading.set(false);
       }
     });
@@ -167,7 +194,10 @@ export class SettingsPageComponent implements OnInit {
     });
   }
 
-  protected loadTelegramSettings(): void {
+  protected loadTelegramSettings(force = false): void {
+    if (this.publicationLoaded() && !force) {
+      return;
+    }
     this.isTelegramLoading.set(true);
     this.errorMessage.set(null);
 
@@ -181,6 +211,7 @@ export class SettingsPageComponent implements OnInit {
           chatId: settings.chatId ?? '',
           disableWebPagePreview: settings.disableWebPagePreview
         });
+        this.publicationLoaded.set(true);
         this.isTelegramLoading.set(false);
       },
       error: (error: { error?: { error?: string } }) => {
@@ -191,23 +222,22 @@ export class SettingsPageComponent implements OnInit {
   }
 
   protected loadAiObservability(): void {
+    this.metricsLoaded.set(false);
     this.isAiLoading.set(true);
-    this.aiObservabilityService.listPrompts().subscribe({
-      next: (prompts) => {
-        this.promptVersions.set(prompts);
-      },
-      error: (error: { error?: { error?: string } }) => {
-        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar el versionado de prompts IA.');
-      }
-    });
-    this.loadAiProviderSettings();
-    this.aiObservabilityService.listDailyMetrics(this.metricDate()).subscribe({
-      next: (metrics) => {
+    this.errorMessage.set(null);
+
+    forkJoin({
+      metrics: this.aiObservabilityService.listDailyMetrics(this.metricDate()),
+      operations: this.automationService.listOperations(this.metricDate())
+    }).subscribe({
+      next: ({ metrics, operations }) => {
         this.aiMetrics.set(metrics);
-        this.loadWorkflowOperations();
+        this.workflowOperations.set(operations);
+        this.metricsLoaded.set(true);
+        this.isAiLoading.set(false);
       },
       error: (error: { error?: { error?: string } }) => {
-        this.errorMessage.set(error.error?.error ?? 'No se pudieron cargar las metricas IA.');
+        this.errorMessage.set(error.error?.error ?? 'No se pudieron cargar las metricas IA y operaciones del dia.');
         this.isAiLoading.set(false);
       }
     });
@@ -264,6 +294,37 @@ export class SettingsPageComponent implements OnInit {
 
   protected setTab(tab: SettingsTab): void {
     this.activeTab.set(tab);
+    if (tab === 'metrics' && !this.metricsLoaded()) {
+      this.loadAiObservability();
+    }
+    if (tab === 'prompts') {
+      this.loadPrompts();
+    }
+    if (tab === 'automation') {
+      this.loadSettings();
+    }
+    if (tab === 'publication') {
+      this.loadTelegramSettings();
+    }
+  }
+
+  protected loadPrompts(force = false): void {
+    if (this.promptsLoaded() && !force) {
+      return;
+    }
+    this.isAiLoading.set(true);
+    this.errorMessage.set(null);
+    this.aiObservabilityService.listPrompts().subscribe({
+      next: (prompts) => {
+        this.promptVersions.set(prompts);
+        this.promptsLoaded.set(true);
+        this.isAiLoading.set(false);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo cargar el versionado de prompts IA.');
+        this.isAiLoading.set(false);
+      }
+    });
   }
 
   protected updateEnabled(workflowCode: AutomationWorkflowCode, value: boolean): void {
@@ -316,7 +377,8 @@ export class SettingsPageComponent implements OnInit {
       next: () => {
         this.successMessage.set('Proveedor IA guardado.');
         this.busyAiProvider.set(null);
-        this.loadAiProviderSettings();
+        this.automationLoaded.set(false);
+        this.loadSettings(true);
       },
       error: (error: { error?: { error?: string } }) => {
         this.errorMessage.set(error.error?.error ?? 'No se pudo guardar el proveedor IA.');
@@ -355,7 +417,8 @@ export class SettingsPageComponent implements OnInit {
       next: () => {
         this.successMessage.set('Configuracion IA del workflow guardada.');
         this.busyAiWorkflow.set(null);
-        this.loadAiWorkflowSettings();
+        this.automationLoaded.set(false);
+        this.loadSettings(true);
       },
       error: (error: { error?: { error?: string } }) => {
         this.errorMessage.set(error.error?.error ?? 'No se pudo guardar la configuracion IA del workflow.');
@@ -414,7 +477,7 @@ export class SettingsPageComponent implements OnInit {
       next: () => {
         this.successMessage.set('Configuracion guardada.');
         this.busyWorkflow.set(null);
-        this.loadSettings();
+        this.loadSettings(true);
       },
       error: (error: { error?: { error?: string } }) => {
         this.errorMessage.set(error.error?.error ?? 'No se pudo guardar la configuracion.');
@@ -433,7 +496,7 @@ export class SettingsPageComponent implements OnInit {
         this.lastRunResult.update((value) => ({ ...value, [setting.workflowCode]: result }));
         this.successMessage.set(`Ejecucion finalizada. Procesados ${result.processedCount}. Correctos ${result.successCount}. Fallidos ${result.failedCount}.`);
         this.busyWorkflow.set(null);
-        this.loadSettings();
+        this.loadSettings(true);
         this.loadAiObservability();
       },
       error: (error: { error?: { error?: string } }) => {
