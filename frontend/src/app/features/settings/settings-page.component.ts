@@ -491,9 +491,23 @@ export class SettingsPageComponent implements OnInit {
   protected resultText(setting: AutomationWorkflowSetting): string {
     const liveResult = this.lastRunResult()[setting.workflowCode];
     if (liveResult) {
-      return `${liveResult.processedCount}/${liveResult.successCount}/${liveResult.failedCount}/${liveResult.skippedCount}`;
+      return this.formatRunCounts(
+        liveResult.processedCount,
+        liveResult.successCount,
+        liveResult.failedCount,
+        liveResult.skippedCount
+      );
     }
-    return `${setting.lastProcessedCount}/${setting.lastSuccessCount}/${setting.lastFailedCount}/${setting.lastSkippedCount}`;
+    return this.formatRunCounts(
+      setting.lastProcessedCount,
+      setting.lastSuccessCount,
+      setting.lastFailedCount,
+      setting.lastSkippedCount
+    );
+  }
+
+  private formatRunCounts(processed: number, completed: number, failed: number, skipped: number): string {
+    return `Procesadas: ${processed} · Completadas: ${completed} · Fallidas: ${failed} · Omitidas: ${skipped}`;
   }
 
   protected metricStatusLabel(status: string): string {

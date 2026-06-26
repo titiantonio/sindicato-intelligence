@@ -94,6 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.74-SNAPSHOT`.
+- Frontend ADMIN: el resultado de automatizaciones en `/settings` muestra etiquetas completas de procesadas, completadas, fallidas y omitidas en lugar de la abreviatura `P/C/F/O`.
 - Versionado del backend actualizado a `0.0.73-SNAPSHOT`.
 - Backend IA/WF-02: las noticias descartadas por `FUERA_DE_AMBITO` o `INFORMACION_INSUFICIENTE` usan respuesta minima de clasificacion y no generan ni registran `keywords`, `entities` ni `summary`.
 - Versionado del backend actualizado a `0.0.71-SNAPSHOT`.

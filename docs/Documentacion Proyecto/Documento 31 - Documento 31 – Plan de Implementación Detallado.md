@@ -2503,6 +2503,24 @@ Estado:
 
 ---
 
+## 16.46 Etiquetas legibles en resultados de automatizaciones - 2026-06-26
+
+Tarea de mejora correctiva sobre Sprint 12 Configuracion ADMIN.
+
+Completado en esta iteracion:
+- Frontend ADMIN: `/settings` sustituye el texto compacto `P/C/F/O` por `Procesadas`, `Completadas`, `Fallidas` y `Omitidas`.
+- Frontend tests: anadida cobertura para evitar que vuelva a mostrarse la abreviatura críptica.
+- Proyecto: backend versionado a `0.0.74-SNAPSHOT` y `CHANGELOG.md` actualizado.
+
+Verificacion:
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts`: 12 tests, 0 fallos.
+- Frontend build: `npm.cmd run build`: OK, con warnings de budgets ya conocidos.
+
+Estado:
+- Mejora visual sin cambios de contrato API ni logica de dominio.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:

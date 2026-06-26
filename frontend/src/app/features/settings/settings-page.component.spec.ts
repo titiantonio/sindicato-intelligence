@@ -106,6 +106,8 @@ describe('SettingsPageComponent', () => {
     expect(compiled.textContent).toContain('Credenciales y modelos');
     expect(compiled.textContent).toContain('Guardar IA');
     expect(compiled.textContent).toContain('Google Gemini');
+    expect(compiled.textContent).toContain('Procesadas: 0 · Completadas: 0 · Fallidas: 0 · Omitidas: 0');
+    expect(compiled.textContent).not.toContain('P/C/F/O');
     expect(component.formFor('WF02_CLASSIFICATION').intervalMinutes).toBe(10);
   });
 
