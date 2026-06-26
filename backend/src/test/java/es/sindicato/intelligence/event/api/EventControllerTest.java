@@ -1,10 +1,15 @@
 package es.sindicato.intelligence.event.api;
 
+import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
+import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import es.sindicato.intelligence.classification.domain.ClassificationCategory;
 import es.sindicato.intelligence.classification.domain.ImpactLevel;
 import es.sindicato.intelligence.classification.domain.NewsClassification;
 import es.sindicato.intelligence.classification.domain.NewsClassificationRepository;
 import es.sindicato.intelligence.classification.domain.UrgencyLevel;
+import es.sindicato.intelligence.content.domain.ContentStatus;
+import es.sindicato.intelligence.content.domain.GeneratedContent;
+import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
 import es.sindicato.intelligence.event.domain.EventRepository;
@@ -62,6 +67,12 @@ class EventControllerTest {
 
     @Autowired
     private EventRepository eventRepository;
+
+    @Autowired
+    private EventAIAnalysisRepository analysisRepository;
+
+    @Autowired
+    private GeneratedContentRepository contentRepository;
 
     @Test
     void detectsEventCreatingNewEventWhenNoMatchExists() throws Exception {
@@ -132,6 +143,7 @@ class EventControllerTest {
         mockMvc.perform(get("/api/v1/events/{id}", event.getId()).with(adminJwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(event.getId()))
+                .andExpect(jsonPath("$.editorialStatus").value("PENDING_ANALYSIS"))
                 .andExpect(jsonPath("$.news[0].id").value(newsArticle.getId()))
                 .andExpect(jsonPath("$.news[0].classification.newsId").value(newsArticle.getId()))
                 .andExpect(jsonPath("$.contents").isArray())
@@ -166,11 +178,38 @@ class EventControllerTest {
         mockMvc.perform(post("/api/v1/events/{id}/discard", event.getId()).with(adminJwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(event.getId()))
-                .andExpect(jsonPath("$.status").value("ARCHIVED"));
+                .andExpect(jsonPath("$.status").value("OPEN"))
+                .andExpect(jsonPath("$.editorialStatus").value("DISCARDED"));
 
         mockMvc.perform(get("/api/v1/events").with(adminJwt()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].id", not(hasItem(event.getId().intValue()))));
+                .andExpect(jsonPath("$[*].id", hasItem(event.getId().intValue())))
+                .andExpect(jsonPath("$[?(@.id == %d)].editorialStatus".formatted(event.getId().intValue()), hasItem("DISCARDED")));
+
+        mockMvc.perform(post("/api/v1/events/{id}/restore", event.getId()).with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(event.getId()))
+                .andExpect(jsonPath("$.editorialStatus").value("PENDING_ANALYSIS"));
+    }
+
+    @Test
+    void exposesEditorialStatusForAnalyzedAndPublishedEvents() throws Exception {
+        Source source = sourceRepository.save(source());
+        NewsArticle analyzedNews = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-analyzed-event"), hash('k'), NewsStatus.EVENT_MATCHED));
+        Event analyzedEvent = eventRepository.save(event(analyzedNews.getId()));
+        analysisRepository.save(analysis(analyzedEvent.getId()));
+
+        NewsArticle publishedNews = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-published-event"), hash('l'), NewsStatus.EVENT_MATCHED));
+        Event publishedEvent = eventRepository.save(event(publishedNews.getId(), "Evento publicado", Importance.HIGH));
+        contentRepository.save(content(publishedEvent.getId(), ContentStatus.PUBLISHED));
+
+        mockMvc.perform(get("/api/v1/events/{id}", analyzedEvent.getId()).with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.editorialStatus").value("ANALYZED"));
+
+        mockMvc.perform(get("/api/v1/events/{id}", publishedEvent.getId()).with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.editorialStatus").value("PUBLISHED"));
     }
 
     @Test
@@ -292,6 +331,35 @@ class EventControllerTest {
                 now,
                 now,
                 now
+        );
+    }
+
+    private EventAIAnalysis analysis(Long eventId) {
+        return new EventAIAnalysis(
+                null,
+                eventId,
+                "Resumen ejecutivo",
+                "Resumen sindical",
+                List.of("Clave"),
+                List.of(),
+                List.of(),
+                "deterministic",
+                OffsetDateTime.now()
+        );
+    }
+
+    private GeneratedContent content(Long eventId, ContentStatus status) {
+        return new GeneratedContent(
+                null,
+                eventId,
+                1L,
+                "TELEGRAM",
+                "INFORMATIVO",
+                "Titulo",
+                "Contenido",
+                status,
+                OffsetDateTime.now(),
+                status == ContentStatus.APPROVED || status == ContentStatus.PUBLISHED ? OffsetDateTime.now() : null
         );
     }
 

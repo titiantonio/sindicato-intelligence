@@ -9,12 +9,14 @@ import es.sindicato.intelligence.event.application.DetectEventResult;
 import es.sindicato.intelligence.event.application.DetectEventUseCase;
 import es.sindicato.intelligence.event.application.DiscardEventUseCase;
 import es.sindicato.intelligence.event.application.EventNotFoundException;
+import es.sindicato.intelligence.event.application.EventEditorialStatusResolver;
 import es.sindicato.intelligence.event.application.GetEventDetailUseCase;
 import es.sindicato.intelligence.event.application.GetEventDetailUseCase.EventDetail;
 import es.sindicato.intelligence.event.application.GetEventDetailUseCase.EventNewsDetail;
 import es.sindicato.intelligence.event.application.ListEventsUseCase;
 import es.sindicato.intelligence.event.application.MergeEventsCommand;
 import es.sindicato.intelligence.event.application.MergeEventsUseCase;
+import es.sindicato.intelligence.event.application.RestoreDiscardedEventUseCase;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import jakarta.validation.Valid;
@@ -40,19 +42,25 @@ public class EventController {
     private final GetEventDetailUseCase getEventDetailUseCase;
     private final MergeEventsUseCase mergeEventsUseCase;
     private final DiscardEventUseCase discardEventUseCase;
+    private final RestoreDiscardedEventUseCase restoreDiscardedEventUseCase;
+    private final EventEditorialStatusResolver editorialStatusResolver;
 
     public EventController(
             DetectEventUseCase detectEventUseCase,
             ListEventsUseCase listEventsUseCase,
             GetEventDetailUseCase getEventDetailUseCase,
             MergeEventsUseCase mergeEventsUseCase,
-            DiscardEventUseCase discardEventUseCase
+            DiscardEventUseCase discardEventUseCase,
+            RestoreDiscardedEventUseCase restoreDiscardedEventUseCase,
+            EventEditorialStatusResolver editorialStatusResolver
     ) {
         this.detectEventUseCase = detectEventUseCase;
         this.listEventsUseCase = listEventsUseCase;
         this.getEventDetailUseCase = getEventDetailUseCase;
         this.mergeEventsUseCase = mergeEventsUseCase;
         this.discardEventUseCase = discardEventUseCase;
+        this.restoreDiscardedEventUseCase = restoreDiscardedEventUseCase;
+        this.editorialStatusResolver = editorialStatusResolver;
     }
 
     @GetMapping
@@ -84,6 +92,11 @@ public class EventController {
     @PostMapping("/{id}/discard")
     public EventSummaryResponse discardEvent(@PathVariable Long id) {
         return toSummaryResponse(discardEventUseCase.execute(id));
+    }
+
+    @PostMapping("/{id}/restore")
+    public EventSummaryResponse restoreEvent(@PathVariable Long id) {
+        return toSummaryResponse(restoreDiscardedEventUseCase.execute(id));
     }
 
     @ExceptionHandler(EventNotFoundException.class)
@@ -118,6 +131,7 @@ public class EventController {
                 event.getCategory(),
                 event.getImportance(),
                 event.getStatus(),
+                editorialStatusResolver.resolve(event),
                 event.getNewsIds().size(),
                 event.getFirstDetectedAt(),
                 event.getLastUpdatedAt(),
@@ -134,6 +148,7 @@ public class EventController {
                 event.getCategory(),
                 event.getImportance(),
                 event.getStatus(),
+                editorialStatusResolver.resolve(event),
                 event.getNewsIds().size(),
                 event.getFirstDetectedAt(),
                 event.getLastUpdatedAt(),

@@ -30,4 +30,5 @@ export interface PriorityEvent {
   relatedNews: number;
   updatedAt: string;
   status: string;
+  editorialStatus: string;
 }

@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -168,6 +169,26 @@ class EventTest {
         assertEquals(EventStatus.OPEN, event.getStatus());
         assertTrue(event.isActive());
         assertEquals(reopenedAt, event.getLastUpdatedAt());
+    }
+
+    @Test
+    void marksAndRestoresManualDiscardWithoutArchivingEvent() {
+        OffsetDateTime createdAt = OffsetDateTime.parse("2026-06-06T10:00:00Z");
+        OffsetDateTime discardedAt = OffsetDateTime.parse("2026-06-06T11:00:00Z");
+        OffsetDateTime restoredAt = OffsetDateTime.parse("2026-06-06T12:00:00Z");
+        Event event = event(createdAt, Set.of(10L));
+
+        event.markManuallyDiscarded(discardedAt);
+
+        assertTrue(event.isManualDiscarded());
+        assertEquals(discardedAt, event.getManualDiscardedAt());
+        assertEquals(EventStatus.OPEN, event.getStatus());
+
+        event.restoreManualDiscard(restoredAt);
+
+        assertFalse(event.isManualDiscarded());
+        assertEquals(null, event.getManualDiscardedAt());
+        assertEquals(restoredAt, event.getUpdatedAt());
     }
 
     private Event event(OffsetDateTime timestamp, Set<Long> newsIds) {

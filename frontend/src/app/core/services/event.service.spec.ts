@@ -38,4 +38,13 @@ describe('EventService', () => {
     expect(request.request.body).toEqual({});
     request.flush({ id: 10 });
   });
+
+  it('restores manually discarded events', () => {
+    service.restoreEvent(10).subscribe();
+
+    const request = httpTestingController.expectOne('/api/v1/events/10/restore');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({});
+    request.flush({ id: 10 });
+  });
 });

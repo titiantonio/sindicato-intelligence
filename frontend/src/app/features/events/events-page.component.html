@@ -104,6 +104,7 @@
         <col style="width: 5.5rem" />
         <col style="width: 7.5rem" />
         <col style="width: 9rem" />
+        <col style="width: 9rem" />
         <col style="width: 8rem" />
       </colgroup>
       <thead>
@@ -114,6 +115,7 @@
           <th><button type="button" class="sort-button" (click)="changeSort('importance')">Impacto {{ sortLabel('importance') }}</button></th>
           <th><button type="button" class="sort-button" (click)="changeSort('newsCount')">Noticias {{ sortLabel('newsCount') }}</button></th>
           <th><button type="button" class="sort-button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+          <th><button type="button" class="sort-button" (click)="changeSort('editorialStatus')">Editorial {{ sortLabel('editorialStatus') }}</button></th>
           <th><button type="button" class="sort-button" (click)="changeSort('updatedAt')">Actualizado {{ sortLabel('updatedAt') }}</button></th>
           <th>Acciones</th>
         </tr>
@@ -152,6 +154,14 @@
             </select>
           </th>
           <th>
+            <select aria-label="Filtrar por estado editorial" [ngModel]="editorialStatusFilter()" (ngModelChange)="setEditorialStatusFilter($event)">
+              <option value="">Todos</option>
+              @for (status of editorialStatusOptions(); track status) {
+                <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </th>
+          <th>
             <input type="search" aria-label="Filtrar por actualizado" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" />
           </th>
           <th></th>
@@ -166,19 +176,23 @@
             <td class="table-cell-nowrap"><app-status-badge [value]="event.importance" /></td>
             <td class="table-cell-nowrap">{{ event.newsCount }}</td>
             <td class="table-cell-nowrap"><app-status-badge [value]="event.status" /></td>
+            <td class="table-cell-nowrap"><app-status-badge [value]="event.editorialStatus" /></td>
             <td class="table-cell-nowrap">{{ formatDate(event.updatedAt) }}</td>
             <td>
               <div class="table-actions">
               <a class="table-action" [routerLink]="['/events', event.id]">Ver</a>
-              @if (event.status === 'OPEN' || event.status === 'MONITORING') {
+              @if (canDiscard(event)) {
                 <button type="button" class="table-action table-action--danger" (click)="discardEvent(event)">Descartar</button>
+              }
+              @if (canRestore(event)) {
+                <button type="button" class="table-action" (click)="restoreEvent(event)">Deshacer descarte</button>
               }
               </div>
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="8">No hay eventos que coincidan con los filtros.</td>
+            <td colspan="9">No hay eventos que coincidan con los filtros.</td>
           </tr>
         }
       </tbody>

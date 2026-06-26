@@ -5,6 +5,7 @@ export interface EventListItem {
   category: string;
   importance: string;
   status: string;
+  editorialStatus: string;
   newsCount: number;
   firstDetectedAt: string;
   lastUpdatedAt: string;

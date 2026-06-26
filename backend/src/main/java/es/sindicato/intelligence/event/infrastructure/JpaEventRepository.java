@@ -178,7 +178,9 @@ public class JpaEventRepository implements EventRepository {
                 event.getFirstDetectedAt(),
                 event.getLastUpdatedAt(),
                 event.getCreatedAt(),
-                event.getUpdatedAt()
+                event.getUpdatedAt(),
+                event.isManualDiscarded(),
+                event.getManualDiscardedAt()
         );
     }
 
@@ -190,6 +192,8 @@ public class JpaEventRepository implements EventRepository {
                 entity.getCategory(),
                 entity.getImportance(),
                 entity.getStatus(),
+                entity.isManualDiscarded(),
+                entity.getManualDiscardedAt(),
                 findNewsIdsByEventId(entity.getId()),
                 entity.getFirstDetectedAt(),
                 entity.getLastUpdatedAt(),

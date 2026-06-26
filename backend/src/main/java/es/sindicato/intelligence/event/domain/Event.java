@@ -13,6 +13,8 @@ public class Event {
     private final EventCategory category;
     private final Importance importance;
     private EventStatus status;
+    private boolean manualDiscarded;
+    private OffsetDateTime manualDiscardedAt;
     private final Set<Long> newsIds;
     private final OffsetDateTime firstDetectedAt;
     private OffsetDateTime lastUpdatedAt;
@@ -32,12 +34,46 @@ public class Event {
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt
     ) {
+        this(
+                id,
+                title,
+                description,
+                category,
+                importance,
+                status,
+                false,
+                null,
+                newsIds,
+                firstDetectedAt,
+                lastUpdatedAt,
+                createdAt,
+                updatedAt
+        );
+    }
+
+    public Event(
+            Long id,
+            String title,
+            String description,
+            EventCategory category,
+            Importance importance,
+            EventStatus status,
+            boolean manualDiscarded,
+            OffsetDateTime manualDiscardedAt,
+            Set<Long> newsIds,
+            OffsetDateTime firstDetectedAt,
+            OffsetDateTime lastUpdatedAt,
+            OffsetDateTime createdAt,
+            OffsetDateTime updatedAt
+    ) {
         this.id = id;
         this.title = requireText(title, "title");
         this.description = description;
         this.category = Objects.requireNonNull(category, "category is required");
         this.importance = Objects.requireNonNull(importance, "importance is required");
         this.status = Objects.requireNonNull(status, "status is required");
+        this.manualDiscarded = manualDiscarded;
+        this.manualDiscardedAt = manualDiscardedAt;
         this.newsIds = new LinkedHashSet<>(requireNewsIds(newsIds, this.status));
         this.firstDetectedAt = Objects.requireNonNull(firstDetectedAt, "firstDetectedAt is required");
         this.lastUpdatedAt = Objects.requireNonNull(lastUpdatedAt, "lastUpdatedAt is required");
@@ -50,6 +86,14 @@ public class Event {
 
         if (updatedAt.isBefore(createdAt)) {
             throw new IllegalArgumentException("updatedAt cannot be before createdAt");
+        }
+
+        if (manualDiscarded && manualDiscardedAt == null) {
+            throw new IllegalArgumentException("manualDiscardedAt is required when event is manually discarded");
+        }
+
+        if (!manualDiscarded && manualDiscardedAt != null) {
+            throw new IllegalArgumentException("manualDiscardedAt must be null when event is not manually discarded");
         }
     }
 
@@ -92,8 +136,38 @@ public class Event {
         changeStatus(EventStatus.ARCHIVED, updatedAt);
     }
 
+    public void markManuallyDiscarded(OffsetDateTime discardedAt) {
+        Objects.requireNonNull(discardedAt, "discardedAt is required");
+        if (!isActive()) {
+            throw new IllegalStateException("only active events can be discarded");
+        }
+
+        this.manualDiscarded = true;
+        this.manualDiscardedAt = discardedAt;
+        updateActivity(discardedAt);
+    }
+
+    public void restoreManualDiscard(OffsetDateTime restoredAt) {
+        Objects.requireNonNull(restoredAt, "restoredAt is required");
+        if (!manualDiscarded) {
+            throw new IllegalStateException("only manually discarded events can be restored");
+        }
+
+        this.manualDiscarded = false;
+        this.manualDiscardedAt = null;
+        updateActivity(restoredAt);
+    }
+
     public boolean isActive() {
         return status == EventStatus.OPEN || status == EventStatus.MONITORING;
+    }
+
+    public boolean isManualDiscarded() {
+        return manualDiscarded;
+    }
+
+    public OffsetDateTime getManualDiscardedAt() {
+        return manualDiscardedAt;
     }
 
     void changeStatus(EventStatus status, OffsetDateTime updatedAt) {
@@ -153,6 +227,8 @@ public class Event {
                 category,
                 importance,
                 status,
+                manualDiscarded,
+                manualDiscardedAt,
                 newsIds,
                 firstDetectedAt,
                 updatedAt,
@@ -169,6 +245,8 @@ public class Event {
                 category,
                 importance,
                 EventStatus.ARCHIVED,
+                manualDiscarded,
+                manualDiscardedAt,
                 Set.of(),
                 firstDetectedAt,
                 updatedAt,

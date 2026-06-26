@@ -18,9 +18,10 @@ describe('EventsPageComponent', () => {
   ];
 
   beforeEach(async () => {
-    eventService = jasmine.createSpyObj<EventService>('EventService', ['listEvents', 'mergeEvents', 'discardEvent']);
+    eventService = jasmine.createSpyObj<EventService>('EventService', ['listEvents', 'mergeEvents', 'discardEvent', 'restoreEvent']);
     eventService.listEvents.and.returnValue(of(events));
     eventService.discardEvent.and.returnValue(of(events[0]));
+    eventService.restoreEvent.and.returnValue(of({ ...events[0], editorialStatus: 'PENDING_ANALYSIS' }));
 
     await TestBed.configureTestingModule({
       imports: [EventsPageComponent],
@@ -42,6 +43,7 @@ describe('EventsPageComponent', () => {
     (component as any).setCategoryFilter('SIPRI');
     (component as any).setStatusFilter('OPEN');
     (component as any).setImportanceFilter('HIGH');
+    (component as any).setEditorialStatusFilter('PENDING_ANALYSIS');
 
     expect((component as any).displayedEvents().map((event: EventListItem) => event.id)).toEqual([1]);
   });
@@ -82,6 +84,19 @@ describe('EventsPageComponent', () => {
     expect((component as any).successMessage()).toContain('#1');
   });
 
+  it('restores manually discarded events and reloads the list', () => {
+    const discarded = { ...events[0], editorialStatus: 'DISCARDED' };
+
+    (component as any).restoreEvent(discarded);
+    expect((component as any).pendingConfirmation()?.title).toBe('Deshacer descarte');
+
+    (component as any).confirmPendingAction();
+
+    expect(eventService.restoreEvent).toHaveBeenCalledWith(1);
+    expect(eventService.listEvents).toHaveBeenCalledTimes(2);
+    expect((component as any).successMessage()).toContain('#1');
+  });
+
   it('opens app confirmation modal before merging events', () => {
     eventService.mergeEvents.and.returnValue(of({ ...events[0], createdAt: events[0].updatedAt, news: [], analyses: [], contents: [] }));
     const confirmSpy = spyOn(window, 'confirm');
@@ -114,6 +129,7 @@ describe('EventsPageComponent', () => {
       category,
       importance,
       status,
+      editorialStatus: 'PENDING_ANALYSIS',
       newsCount,
       firstDetectedAt: updatedAt,
       lastUpdatedAt: updatedAt,

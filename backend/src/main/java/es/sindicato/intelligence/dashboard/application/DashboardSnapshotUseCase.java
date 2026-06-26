@@ -7,6 +7,8 @@ import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
 import es.sindicato.intelligence.event.domain.EventRepository;
 import es.sindicato.intelligence.event.domain.Importance;
+import es.sindicato.intelligence.event.application.EventEditorialStatus;
+import es.sindicato.intelligence.event.application.EventEditorialStatusResolver;
 import es.sindicato.intelligence.event.application.EventVisibilityPolicy;
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import es.sindicato.intelligence.news.domain.NewsRepository;
@@ -37,6 +39,7 @@ public class DashboardSnapshotUseCase {
     private final GeneratedContentRepository contentRepository;
     private final PublicationRepository publicationRepository;
     private final EventVisibilityPolicy eventVisibilityPolicy;
+    private final EventEditorialStatusResolver editorialStatusResolver;
     private final Clock clock;
 
     public DashboardSnapshotUseCase(
@@ -45,6 +48,7 @@ public class DashboardSnapshotUseCase {
             GeneratedContentRepository contentRepository,
             PublicationRepository publicationRepository,
             EventVisibilityPolicy eventVisibilityPolicy,
+            EventEditorialStatusResolver editorialStatusResolver,
             Clock clock
     ) {
         this.newsRepository = newsRepository;
@@ -52,6 +56,7 @@ public class DashboardSnapshotUseCase {
         this.contentRepository = contentRepository;
         this.publicationRepository = publicationRepository;
         this.eventVisibilityPolicy = eventVisibilityPolicy;
+        this.editorialStatusResolver = editorialStatusResolver;
         this.clock = clock;
     }
 
@@ -155,6 +160,7 @@ public class DashboardSnapshotUseCase {
 
     private boolean requiresImmediateAttention(Event event) {
         return event.isActive()
+                && editorialStatusResolver.resolve(event) == EventEditorialStatus.PENDING_ANALYSIS
                 && event.getCategory() != EventCategory.OTROS
                 && (event.getImportance() == Importance.HIGH || event.getImportance() == Importance.CRITICAL);
     }

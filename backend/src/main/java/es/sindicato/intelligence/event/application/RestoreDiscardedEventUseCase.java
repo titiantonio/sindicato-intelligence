@@ -11,12 +11,12 @@ import java.time.OffsetDateTime;
 import java.util.Objects;
 
 @Service
-public class DiscardEventUseCase {
+public class RestoreDiscardedEventUseCase {
 
     private final EventRepository eventRepository;
     private final RecordAuditLogUseCase recordAuditLogUseCase;
 
-    public DiscardEventUseCase(EventRepository eventRepository, RecordAuditLogUseCase recordAuditLogUseCase) {
+    public RestoreDiscardedEventUseCase(EventRepository eventRepository, RecordAuditLogUseCase recordAuditLogUseCase) {
         this.eventRepository = eventRepository;
         this.recordAuditLogUseCase = recordAuditLogUseCase;
     }
@@ -27,15 +27,16 @@ public class DiscardEventUseCase {
 
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(eventId));
-        event.markManuallyDiscarded(OffsetDateTime.now());
+
+        event.restoreManualDiscard(OffsetDateTime.now());
         Event savedEvent = eventRepository.save(event);
 
         recordAuditLogUseCase.record(
-                "EVENT_DISCARDED",
+                "EVENT_RESTORED",
                 "EVENT",
                 savedEvent.getId(),
-                "Evento archivado por descarte manual.",
-                AuditDetailFormatter.eventDiscarded(
+                "Descarte manual de evento deshecho.",
+                AuditDetailFormatter.eventRestored(
                         savedEvent.getId(),
                         savedEvent.getTitle(),
                         savedEvent.getImportance(),

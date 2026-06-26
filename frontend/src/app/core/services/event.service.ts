@@ -27,4 +27,8 @@ export class EventService {
   discardEvent(eventId: number) {
     return this.httpClient.post<EventListItem>(`/api/v1/events/${eventId}/discard`, {});
   }
+
+  restoreEvent(eventId: number) {
+    return this.httpClient.post<EventListItem>(`/api/v1/events/${eventId}/restore`, {});
+  }
 }

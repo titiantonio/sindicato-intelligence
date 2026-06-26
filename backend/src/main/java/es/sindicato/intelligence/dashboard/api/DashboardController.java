@@ -3,6 +3,7 @@ package es.sindicato.intelligence.dashboard.api;
 import es.sindicato.intelligence.dashboard.application.DashboardSnapshotUseCase;
 import es.sindicato.intelligence.dashboard.application.DashboardSnapshotUseCase.DashboardMetric;
 import es.sindicato.intelligence.dashboard.application.DashboardSnapshotUseCase.DashboardSnapshot;
+import es.sindicato.intelligence.event.application.EventEditorialStatusResolver;
 import es.sindicato.intelligence.event.domain.Event;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,9 +16,14 @@ import java.util.List;
 public class DashboardController {
 
     private final DashboardSnapshotUseCase dashboardSnapshotUseCase;
+    private final EventEditorialStatusResolver editorialStatusResolver;
 
-    public DashboardController(DashboardSnapshotUseCase dashboardSnapshotUseCase) {
+    public DashboardController(
+            DashboardSnapshotUseCase dashboardSnapshotUseCase,
+            EventEditorialStatusResolver editorialStatusResolver
+    ) {
         this.dashboardSnapshotUseCase = dashboardSnapshotUseCase;
+        this.editorialStatusResolver = editorialStatusResolver;
     }
 
     @GetMapping
@@ -144,7 +150,8 @@ public class DashboardController {
                 event.getImportance(),
                 event.getNewsIds().size(),
                 event.getLastUpdatedAt(),
-                event.getStatus()
+                event.getStatus(),
+                editorialStatusResolver.resolve(event)
         );
     }
 }

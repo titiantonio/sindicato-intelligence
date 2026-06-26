@@ -114,7 +114,12 @@
 
   <section class="detail-grid">
     <div class="panel detail-section">
-      <h2>Analisis IA</h2>
+      <header class="section-header">
+        <h2>Analisis IA</h2>
+        <button type="button" (click)="generateAnalysis(item)" [disabled]="isGeneratingAnalysis() || item.editorialStatus === 'DISCARDED'">
+          {{ isGeneratingAnalysis() ? 'Analizando...' : 'Analizar evento' }}
+        </button>
+      </header>
       @for (analysis of item.analyses; track analysis.id) {
         <article class="stack-item">
           <span>{{ formatDate(analysis.generatedAt) }} · {{ analysis.modelUsed }}</span>

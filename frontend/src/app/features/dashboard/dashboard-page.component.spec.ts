@@ -49,7 +49,8 @@ describe('DashboardPageComponent', () => {
           importance: 'CRITICAL',
           relatedNews: 4,
           updatedAt: '2026-06-13T08:00:00Z',
-          status: 'OPEN'
+          status: 'OPEN',
+          editorialStatus: 'PENDING_ANALYSIS'
         },
         {
           id: 8,
@@ -58,7 +59,8 @@ describe('DashboardPageComponent', () => {
           importance: 'CRITICAL',
           relatedNews: 1,
           updatedAt: '2026-06-13T10:00:00Z',
-          status: 'MONITORING'
+          status: 'MONITORING',
+          editorialStatus: 'PENDING_ANALYSIS'
         },
         {
           id: 9,
@@ -67,7 +69,8 @@ describe('DashboardPageComponent', () => {
           importance: 'HIGH',
           relatedNews: 7,
           updatedAt: '2026-06-13T11:00:00Z',
-          status: 'OPEN'
+          status: 'OPEN',
+          editorialStatus: 'PENDING_ANALYSIS'
         }
       ]
     }));

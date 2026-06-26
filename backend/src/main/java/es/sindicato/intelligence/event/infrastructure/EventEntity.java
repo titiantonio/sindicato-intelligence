@@ -52,6 +52,12 @@ public class EventEntity {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @Column(name = "manual_discarded", nullable = false)
+    private boolean manualDiscarded;
+
+    @Column(name = "manual_discarded_at")
+    private OffsetDateTime manualDiscardedAt;
+
     protected EventEntity() {
     }
 
@@ -65,7 +71,9 @@ public class EventEntity {
             OffsetDateTime firstDetectedAt,
             OffsetDateTime lastUpdatedAt,
             OffsetDateTime createdAt,
-            OffsetDateTime updatedAt
+            OffsetDateTime updatedAt,
+            boolean manualDiscarded,
+            OffsetDateTime manualDiscardedAt
     ) {
         this.id = id;
         this.title = title;
@@ -77,6 +85,8 @@ public class EventEntity {
         this.lastUpdatedAt = lastUpdatedAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.manualDiscarded = manualDiscarded;
+        this.manualDiscardedAt = manualDiscardedAt;
     }
 
     public Long getId() {
@@ -117,5 +127,13 @@ public class EventEntity {
 
     public OffsetDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public boolean isManualDiscarded() {
+        return manualDiscarded;
+    }
+
+    public OffsetDateTime getManualDiscardedAt() {
+        return manualDiscardedAt;
     }
 }

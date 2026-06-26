@@ -61,7 +61,7 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.POST, "/api/v1/automation/settings/*/run").hasAnyRole("ADMIN", "EDITOR")
                             .requestMatchers("/api/v1/automation/**").hasAnyRole("ADMIN", "EDITOR")
                             .requestMatchers("/api/v1/classifications/**").hasRole("ADMIN")
-                            .requestMatchers("/api/v1/analysis/**").hasRole("ADMIN")
+                            .requestMatchers("/api/v1/analysis/**").hasAnyRole("ADMIN", "EDITOR")
                             .requestMatchers("/api/v1/events/detect").hasRole("ADMIN")
                             .requestMatchers("/api/v1/news/**", "/api/v1/events/**").hasAnyRole("ADMIN", "EDITOR")
                             .requestMatchers("/api/v1/content/**", "/api/v1/publications/**").hasAnyRole("ADMIN", "EDITOR")

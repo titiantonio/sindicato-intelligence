@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend/frontend eventos: anadido estado editorial derivado `PENDING_ANALYSIS`, `ANALYZED`, `PUBLISHED` y `DISCARDED` en listados, detalle y dashboard.
+- Backend eventos: anadido descarte manual reversible con `POST /api/v1/events/{id}/restore`, persistencia Flyway y auditoria `EVENT_RESTORED`.
+- Frontend eventos: el listado muestra y filtra estado editorial, permite deshacer descartes manuales y el detalle permite generar analisis IA del evento.
 - Backend/Frontend ADMIN: anadido detalle funcional de operaciones por workflow en `/settings`, combinando metricas IA `WF-02` a `WF-05` con operaciones Telegram `WF-06`, incluyendo snapshots sanitizados de clasificacion, eventos, analisis, contenido y publicacion.
 - Backend eventos: anadido descarte manual de eventos mediante `POST /api/v1/events/{id}/discard`, archivado operativo y auditoria `EVENT_DISCARDED`.
 - Frontend eventos: anadida accion `Descartar` en la tabla de eventos activos y mas contexto de impacto, volumen y descripcion en la fusion de eventos.
@@ -94,6 +97,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado del backend actualizado a `0.0.75-SNAPSHOT`.
+- Backend dashboard: los eventos prioritarios excluyen eventos analizados, publicados o descartados manualmente.
 - Versionado del backend actualizado a `0.0.74-SNAPSHOT`.
 - Frontend ADMIN: el resultado de automatizaciones en `/settings` muestra etiquetas completas de procesadas, completadas, fallidas y omitidas en lugar de la abreviatura `P/C/F/O`.
 - Versionado del backend actualizado a `0.0.73-SNAPSHOT`.

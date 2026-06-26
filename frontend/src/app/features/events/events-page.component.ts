@@ -6,11 +6,12 @@ import { EventListItem } from '../../core/models/event.models';
 import { EventService } from '../../core/services/event.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
-type EventSortColumn = 'id' | 'title' | 'category' | 'importance' | 'newsCount' | 'status' | 'updatedAt';
+type EventSortColumn = 'id' | 'title' | 'category' | 'importance' | 'newsCount' | 'status' | 'editorialStatus' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
 type PendingConfirmation =
   | { type: 'merge'; title: string; message: string; confirmLabel: string }
-  | { type: 'discard'; event: EventListItem; title: string; message: string; confirmLabel: string };
+  | { type: 'discard'; event: EventListItem; title: string; message: string; confirmLabel: string }
+  | { type: 'restore'; event: EventListItem; title: string; message: string; confirmLabel: string };
 
 @Component({
   selector: 'app-events-page',
@@ -27,7 +28,7 @@ export class EventsPageComponent implements OnInit {
   protected readonly successMessage = signal<string | null>(null);
   protected readonly targetEventId = signal<number | null>(null);
   protected readonly sourceEventIds = signal<number[]>([]);
-  protected readonly activeEvents = computed(() => this.events().filter((event) => event.status === 'OPEN' || event.status === 'MONITORING'));
+  protected readonly activeEvents = computed(() => this.events().filter((event) => this.canUseInMerge(event)));
   protected readonly targetEvent = computed(() => this.activeEvents().find((event) => event.id === this.targetEventId()) ?? null);
   protected readonly selectedSourceEvents = computed(() => this.activeEvents().filter((event) => this.sourceEventIds().includes(event.id)));
   protected readonly selectedSourceNewsCount = computed(() => this.selectedSourceEvents().reduce((total, event) => total + event.newsCount, 0));
@@ -39,6 +40,7 @@ export class EventsPageComponent implements OnInit {
   protected readonly importanceFilter = signal('');
   protected readonly newsCountFilter = signal('');
   protected readonly statusFilter = signal('');
+  protected readonly editorialStatusFilter = signal('');
   protected readonly updatedAtFilter = signal('');
   protected readonly sortColumn = signal<EventSortColumn>('importance');
   protected readonly sortDirection = signal<SortDirection>('asc');
@@ -48,6 +50,7 @@ export class EventsPageComponent implements OnInit {
   protected readonly categoryOptions = computed(() => this.uniqueOptions((event) => event.category));
   protected readonly importanceOptions = computed(() => this.uniqueOptions((event) => event.importance));
   protected readonly statusOptions = computed(() => this.uniqueOptions((event) => event.status));
+  protected readonly editorialStatusOptions = computed(() => this.uniqueOptions((event) => event.editorialStatus));
   protected readonly displayedEvents = computed(() => this.sortEvents(this.filterEvents(this.events())));
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.displayedEvents().length / this.pageSize())));
   protected readonly paginatedEvents = computed(() => {
@@ -122,6 +125,11 @@ export class EventsPageComponent implements OnInit {
     this.resetPagination();
   }
 
+  protected setEditorialStatusFilter(value: string): void {
+    this.editorialStatusFilter.set(value);
+    this.resetPagination();
+  }
+
   protected setUpdatedAtFilter(value: string): void {
     this.updatedAtFilter.set(value);
     this.resetPagination();
@@ -189,6 +197,16 @@ export class EventsPageComponent implements OnInit {
     });
   }
 
+  protected restoreEvent(event: EventListItem): void {
+    this.pendingConfirmation.set({
+      type: 'restore',
+      event,
+      title: 'Deshacer descarte',
+      message: `El evento #${event.id} volvera a la operativa editorial y podra analizarse o generar contenido si procede.`,
+      confirmLabel: 'Deshacer descarte'
+    });
+  }
+
   protected closeConfirmation(): void {
     this.pendingConfirmation.set(null);
   }
@@ -205,7 +223,12 @@ export class EventsPageComponent implements OnInit {
       return;
     }
 
-    this.executeDiscardEvent(confirmation.event);
+    if (confirmation.type === 'discard') {
+      this.executeDiscardEvent(confirmation.event);
+      return;
+    }
+
+    this.executeRestoreEvent(confirmation.event);
   }
 
   private mergeEvents(): void {
@@ -250,6 +273,20 @@ export class EventsPageComponent implements OnInit {
     });
   }
 
+  private executeRestoreEvent(event: EventListItem): void {
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.eventService.restoreEvent(event.id).subscribe({
+      next: () => {
+        this.successMessage.set(`Descarte del evento #${event.id} deshecho correctamente.`);
+        this.loadEvents();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo deshacer el descarte del evento.');
+      }
+    });
+  }
+
   protected setPageSize(value: string): void {
     this.pageSize.set(Number(value));
     this.resetPagination();
@@ -271,6 +308,7 @@ export class EventsPageComponent implements OnInit {
       .filter((event) => this.matchesSelect(event.importance, this.importanceFilter()))
       .filter((event) => this.matchesText(event.newsCount.toString(), this.newsCountFilter()))
       .filter((event) => this.matchesSelect(event.status, this.statusFilter()))
+      .filter((event) => this.matchesSelect(event.editorialStatus, this.editorialStatusFilter()))
       .filter((event) => this.matchesText(this.formatDate(event.updatedAt), this.updatedAtFilter()));
   }
 
@@ -288,6 +326,7 @@ export class EventsPageComponent implements OnInit {
       event.importance,
       event.newsCount.toString(),
       event.status,
+      event.editorialStatus,
       event.updatedAt,
       this.formatDate(event.updatedAt)
     ].some((value) => this.normalize(value).includes(filter));
@@ -338,6 +377,20 @@ export class EventsPageComponent implements OnInit {
       LOW: 3
     };
     return scores[importance] ?? 4;
+  }
+
+  protected canDiscard(event: EventListItem): boolean {
+    return this.canUseInMerge(event);
+  }
+
+  protected canRestore(event: EventListItem): boolean {
+    return event.editorialStatus === 'DISCARDED';
+  }
+
+  private canUseInMerge(event: EventListItem): boolean {
+    return (event.status === 'OPEN' || event.status === 'MONITORING')
+      && event.editorialStatus !== 'DISCARDED'
+      && event.editorialStatus !== 'PUBLISHED';
   }
 
   private normalize(value: string): string {

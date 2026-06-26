@@ -12,7 +12,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,46 +20,46 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class DiscardEventUseCaseTest {
+class RestoreDiscardedEventUseCaseTest {
 
     @Test
-    void marksActiveEventAsManuallyDiscardedAndRecordsAudit() {
+    void restoresManuallyDiscardedEventAndRecordsAudit() {
         EventRepository eventRepository = mock(EventRepository.class);
         RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
-        DiscardEventUseCase useCase = new DiscardEventUseCase(eventRepository, audit);
-        Event event = event(EventStatus.OPEN);
+        RestoreDiscardedEventUseCase useCase = new RestoreDiscardedEventUseCase(eventRepository, audit);
+        Event event = event();
+        event.markManuallyDiscarded(OffsetDateTime.parse("2026-06-25T11:00:00Z"));
 
         when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
         when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Event result = useCase.execute(1L);
 
-        assertEquals(EventStatus.OPEN, result.getStatus());
-        assertEquals(true, result.isManualDiscarded());
+        assertFalse(result.isManualDiscarded());
         verify(eventRepository).save(event);
-        verify(audit).record(eq("EVENT_DISCARDED"), eq("EVENT"), eq(1L), any(), any());
+        verify(audit).record(eq("EVENT_RESTORED"), eq("EVENT"), eq(1L), any(), any());
     }
 
     @Test
-    void rejectsClosedEvents() {
+    void rejectsEventsThatAreNotManuallyDiscarded() {
         EventRepository eventRepository = mock(EventRepository.class);
         RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
-        DiscardEventUseCase useCase = new DiscardEventUseCase(eventRepository, audit);
+        RestoreDiscardedEventUseCase useCase = new RestoreDiscardedEventUseCase(eventRepository, audit);
 
-        when(eventRepository.findById(1L)).thenReturn(Optional.of(event(EventStatus.CLOSED)));
+        when(eventRepository.findById(1L)).thenReturn(Optional.of(event()));
 
         assertThrows(IllegalStateException.class, () -> useCase.execute(1L));
     }
 
-    private Event event(EventStatus status) {
+    private Event event() {
         OffsetDateTime now = OffsetDateTime.parse("2026-06-25T10:00:00Z");
         return new Event(
                 1L,
-                "Evento a descartar",
+                "Evento descartado",
                 "Descripcion",
                 EventCategory.SIPRI,
                 Importance.HIGH,
-                status,
+                EventStatus.OPEN,
                 Set.of(10L),
                 now,
                 now,

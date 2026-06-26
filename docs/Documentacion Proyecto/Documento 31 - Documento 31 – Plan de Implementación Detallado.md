@@ -2521,6 +2521,33 @@ Estado:
 
 ---
 
+## 16.47 Estado editorial de eventos y descarte reversible - 2026-06-26
+
+Tarea de mejora correctiva sobre Fases 7, 8, 9, 10 y 11, posterior a Sprint 12.
+
+Completado en esta iteracion:
+- [x] Backend eventos: anadido estado editorial derivado `PENDING_ANALYSIS`, `ANALYZED`, `PUBLISHED` y `DISCARDED`.
+- [x] Backend datos: creada migracion `V15__event_manual_discard_status.sql` para persistir descarte manual reversible en `events`.
+- [x] Backend eventos: el descarte manual deja de archivar el evento y queda visible en `/events` como `DISCARDED`.
+- [x] Backend eventos: anadido `POST /api/v1/events/{id}/restore` con auditoria `EVENT_RESTORED`.
+- [x] Backend dashboard: los eventos prioritarios excluyen eventos analizados, publicados o descartados manualmente.
+- [x] Frontend eventos: `/events` muestra/filtro por estado editorial y permite descartar o deshacer descarte.
+- [x] Frontend detalle evento: `/events/:id` permite generar analisis IA y recargar el detalle.
+- [x] Versionado/documentacion: backend actualizado a `0.0.75-SNAPSHOT`, `CHANGELOG.md` y registro del asistente actualizados.
+
+Verificacion:
+- Backend compile: `mvn -DskipTests compile`: OK.
+- Backend unitario focal: `mvn "-Dtest=EventTest,DiscardEventUseCaseTest,RestoreDiscardedEventUseCaseTest" test`: 16 tests, 0 fallos.
+- Backend API eventos: `mvn "-Dtest=EventControllerTest" test`: 7 tests, 0 fallos.
+- Backend dashboard focal: `mvn "-Dtest=DashboardControllerTest#excludesAnalyzedPublishedAndManuallyDiscardedEventsFromPriorityEvents" test`: 1 test, 0 fallos.
+- Frontend focal: `npx ng test --watch=false --browsers=ChromeHeadless --include=src/app/features/events/events-page.component.spec.ts --include=src/app/features/events/event-detail-page.component.spec.ts --include=src/app/features/dashboard/dashboard-page.component.spec.ts --include=src/app/core/services/event.service.spec.ts --include=src/app/core/services/analysis.service.spec.ts`: 20 tests, 0 fallos.
+
+Estado:
+- Mejora correctiva completada sin cambiar la arquitectura: la logica permanece en Spring Boot y Angular consume contrato API derivado.
+- La ejecucion completa de `DashboardControllerTest` supero el limite operativo de 240 segundos en esta sesion; se verifico el escenario nuevo de exclusion y `EventControllerTest` completo.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:
