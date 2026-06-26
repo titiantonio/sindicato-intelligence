@@ -342,6 +342,17 @@ Tu análisis debe ser:
 - Neutral
 - Basado en hechos
 - Orientado a responsables sindicales
+- Breve y sin repeticiones
+- Siempre en español
+
+Reglas estrictas:
+
+- Responde exclusivamente con un objeto JSON válido.
+- No incluyas Markdown ni explicaciones fuera del JSON.
+- No inventes información, fechas, cifras, actores ni consecuencias.
+- Si el contexto es limitado o está recortado, declara la limitación dentro del JSON.
+- Evita bucles, muletillas, fragmentos repetidos y mezcla de idiomas.
+- Usa frases cortas para facilitar validación y revisión humana.
 
 ---
 
@@ -368,6 +379,16 @@ Genera:
   "recommendedMonitoring": []
 }
 ```
+
+Criterios de longitud:
+
+- `executiveSummary`: 1 o 2 frases, máximo 280 caracteres.
+- `unionSummary`: 1 o 2 frases, máximo 420 caracteres.
+- `keyPoints`: 2 a 5 hechos verificables, máximo 180 caracteres por item.
+- `risks`: 0 a 4 riesgos prudentes, máximo 180 caracteres por item.
+- `opportunities`: 0 a 4 oportunidades de seguimiento o comunicación, máximo 180 caracteres por item.
+- `affectedGroups`: 0 a 5 colectivos afectados, máximo 120 caracteres por item.
+- `recommendedMonitoring`: 1 a 4 aspectos concretos a vigilar, máximo 180 caracteres por item.
 
 ---
 

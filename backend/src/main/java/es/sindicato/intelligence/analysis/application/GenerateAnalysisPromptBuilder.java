@@ -7,6 +7,11 @@ import java.util.List;
 @Component
 public class GenerateAnalysisPromptBuilder {
 
+    private static final int MAX_TITLE_LENGTH = 300;
+    private static final int MAX_SUMMARY_LENGTH = 900;
+    private static final int MAX_CONTENT_LENGTH = 1_500;
+    private static final int MAX_NEWS_CONTEXT_LENGTH = 12_000;
+
     private static final String SYSTEM_PROMPT = """
             Eres un analista senior especializado en educacion publica andaluza.
 
@@ -24,6 +29,9 @@ public class GenerateAnalysisPromptBuilder {
             3. No inventes informacion, fechas, cifras, actores, intenciones ni consecuencias no presentes en el evento o las noticias.
             4. Si un dato no esta disponible, indicalo como limitacion dentro del resumen o del seguimiento recomendado.
             5. Manten tono profesional, prudente e informativo.
+            6. Escribe frases cortas y evita repeticiones.
+            7. No mezcles idiomas: responde siempre en espanol.
+            8. Si el contexto esta recortado, trabaja solo con el texto disponible y declara la limitacion.
             """;
 
     public GenerateAnalysisPrompt build(AnalysisAIRequest request) {
@@ -50,15 +58,16 @@ public class GenerateAnalysisPromptBuilder {
                 }
 
                 Criterios:
-                - executiveSummary: maximo dos frases, orientadas a comprension rapida del evento.
-                - unionSummary: lectura sindical prudente, sin llamar a acciones no justificadas por los datos.
-                - keyPoints: hechos verificables deducidos solo de las noticias.
-                - risks: riesgos potenciales para seguimiento sindical, indicando incertidumbre si faltan datos.
-                - opportunities: oportunidades de seguimiento, comunicacion o analisis sindical.
-                - affectedGroups: colectivos afectados si se mencionan o se deducen claramente.
-                - recommendedMonitoring: aspectos concretos a vigilar en proximas noticias o fuentes oficiales.
+                - executiveSummary: 1 o 2 frases, maximo 280 caracteres en total.
+                - unionSummary: 1 o 2 frases, maximo 420 caracteres, lectura sindical prudente, sin llamar a acciones no justificadas por los datos.
+                - keyPoints: 2 a 5 items, maximo 180 caracteres por item, solo hechos verificables deducidos de las noticias.
+                - risks: 0 a 4 items, maximo 180 caracteres por item, indicando incertidumbre si faltan datos.
+                - opportunities: 0 a 4 items, maximo 180 caracteres por item, oportunidades de seguimiento, comunicacion o analisis sindical.
+                - affectedGroups: 0 a 5 items, maximo 120 caracteres por item, colectivos afectados si se mencionan o se deducen claramente.
+                - recommendedMonitoring: 1 a 4 items, maximo 180 caracteres por item, aspectos concretos a vigilar en proximas noticias o fuentes oficiales.
 
                 Si la informacion es limitada, no rellenes con suposiciones: explica la limitacion de forma breve dentro del JSON.
+                No repitas palabras o fragmentos. No uses ingles salvo nombres propios o siglas presentes en las noticias.
                 """.formatted(
                 request.eventId(),
                 safe(request.eventTitle()),
@@ -79,16 +88,29 @@ public class GenerateAnalysisPromptBuilder {
         StringBuilder builder = new StringBuilder();
         for (AnalysisNewsItem item : news) {
             builder.append("- id: ").append(item.id()).append('\n')
-                    .append("  titulo: ").append(safe(item.title())).append('\n')
-                    .append("  resumen: ").append(safe(item.summary())).append('\n')
-                    .append("  contenido: ").append(safe(item.content())).append('\n')
+                    .append("  titulo: ").append(limit(item.title(), MAX_TITLE_LENGTH)).append('\n')
+                    .append("  resumen: ").append(limit(item.summary(), MAX_SUMMARY_LENGTH)).append('\n')
+                    .append("  contenido: ").append(limit(item.content(), MAX_CONTENT_LENGTH)).append('\n')
                     .append("  publicado: ").append(item.publishedAt()).append("\n\n");
+            if (builder.length() >= MAX_NEWS_CONTEXT_LENGTH) {
+                builder.append("Contexto adicional omitido por limite operativo del prompt.");
+                break;
+            }
         }
 
-        return builder.toString().trim();
+        return limit(builder.toString().trim(), MAX_NEWS_CONTEXT_LENGTH);
     }
 
     private String safe(String value) {
         return value == null ? "" : value;
+    }
+
+    private String limit(String value, int maxLength) {
+        String safeValue = safe(value).replaceAll("\\s+", " ").trim();
+        if (safeValue.length() <= maxLength) {
+            return safeValue;
+        }
+
+        return safeValue.substring(0, maxLength - 15).trim() + " [recortado]";
     }
 }

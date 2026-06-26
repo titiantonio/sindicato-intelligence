@@ -34,7 +34,13 @@ class GeminiAnalysisAIProviderTest {
                 .andExpect(header("x-goog-api-key", "test-key"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("systemInstruction")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("responseSchema")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"temperature\":0.1")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"topP\":0.2")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"topK\":1")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"candidateCount\":1")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"maxOutputTokens\":2048")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Tu salida debe ser el objeto JSON final de analisis")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Responde en espanol y no repitas palabras o fragmentos")))
                 .andRespond(withSuccess(geminiResponse("""
                         {
                           "executiveSummary": "Resumen ejecutivo",

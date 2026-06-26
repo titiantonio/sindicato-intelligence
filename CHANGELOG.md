@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Backend IA WF-04: endurecida la generacion de analisis con contexto de noticias acotado, prompt JSON mas estricto y parametros Gemini conservadores para reducir respuestas repetitivas, mixtas o sin cierre JSON.
+
 ### Security
 
 - Backend IA: las claves API de proveedores IA configurables se guardan cifradas en reposo y no se exponen en respuestas API, logs ni URLs de llamadas a Gemini.

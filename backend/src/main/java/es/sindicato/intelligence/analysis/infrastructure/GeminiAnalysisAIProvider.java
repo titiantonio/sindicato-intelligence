@@ -28,6 +28,8 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
     private static final Logger log = LoggerFactory.getLogger(GeminiAnalysisAIProvider.class);
     private static final String BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
     private static final int MAX_ANALYSIS_ATTEMPTS = 2;
+    private static final double MAX_EFFECTIVE_ANALYSIS_TEMPERATURE = 0.1;
+    private static final int MIN_EFFECTIVE_ANALYSIS_OUTPUT_TOKENS = 2_048;
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
@@ -73,7 +75,13 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
         AnalysisAIProviderException lastException = null;
         for (int attempt = 1; attempt <= MAX_ANALYSIS_ATTEMPTS; attempt++) {
             try {
-                JsonNode response = callGemini(request, resolvedApiKey, resolvedModel, resolvedTemperature, resolvedMaxOutputTokens);
+                JsonNode response = callGemini(
+                        request,
+                        resolvedApiKey,
+                        resolvedModel,
+                        effectiveTemperature(resolvedTemperature),
+                        effectiveMaxOutputTokens(resolvedMaxOutputTokens)
+                );
                 String responseText = extractResponseText(response);
                 return parseAnalysisResponse(responseText, resolvedModel);
             } catch (AnalysisAIProviderException exception) {
@@ -110,6 +118,9 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                 )),
                 "generationConfig", Map.of(
                         "temperature", resolvedTemperature,
+                        "topP", 0.2,
+                        "topK", 1,
+                        "candidateCount", 1,
                         "maxOutputTokens", resolvedMaxOutputTokens,
                         "responseMimeType", "application/json",
                         "responseSchema", analysisResponseSchema()
@@ -143,6 +154,8 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                 - Tu salida debe ser el objeto JSON final de analisis, no un resumen de estas instrucciones.
                 - Empieza directamente por { y termina directamente por }.
                 - Devuelve solo JSON valido, sin markdown.
+                - Responde en espanol y no repitas palabras o fragmentos.
+                - Prioriza brevedad: cada string debe ser una frase corta.
                 - executiveSummary y unionSummary deben ser strings.
                 - keyPoints, risks, opportunities, affectedGroups y recommendedMonitoring deben ser arrays de strings.
                 """;
@@ -286,6 +299,18 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
 
     private String normalizeModel(String model) {
         return model.startsWith("/") ? model.substring(1) : model;
+    }
+
+    private double effectiveTemperature(double configuredTemperature) {
+        if (configuredTemperature < 0) {
+            return 0;
+        }
+
+        return Math.min(configuredTemperature, MAX_EFFECTIVE_ANALYSIS_TEMPERATURE);
+    }
+
+    private int effectiveMaxOutputTokens(int configuredMaxOutputTokens) {
+        return Math.max(configuredMaxOutputTokens, MIN_EFFECTIVE_ANALYSIS_OUTPUT_TOKENS);
     }
 
     private String textOrMissing(JsonNode node) {

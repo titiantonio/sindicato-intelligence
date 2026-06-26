@@ -2548,6 +2548,25 @@ Estado:
 
 ---
 
+## 16.48 Estabilizacion de analisis IA WF-04 - 2026-06-26
+
+Tarea de mantenimiento correctivo sobre Fase 8 Analisis IA, Sprint 7/T7.3-T7.4 y Sprint 12 Observabilidad IA.
+
+Completado en esta iteracion:
+- [x] Documento 23: reforzado el prompt oficial `WF-04` con reglas de JSON estricto, brevedad, idioma espanol, no repeticion y criterios de longitud por campo.
+- [x] Backend analisis: `GenerateAnalysisPromptBuilder` limita el contexto enviado por noticia y el tamano total del prompt para evitar entradas largas o ruidosas.
+- [x] Backend Gemini: `GeminiAnalysisAIProvider` aplica parametros efectivos conservadores para analisis (`temperature` maxima `0.1`, `topP=0.2`, `topK=1`, `candidateCount=1` y minimo `2048` tokens de salida).
+- [x] Tests: anadida cobertura focal para recorte del contexto y payload Gemini estable.
+- [x] Versionado: incrementado `backend/pom.xml` a `0.0.76-SNAPSHOT` y actualizado `CHANGELOG.md`.
+
+Verificacion:
+- `mvn "-Dtest=GenerateAnalysisPromptBuilderTest,GeminiAnalysisAIProviderTest,GenerateAnalysisUseCaseTest" test` ejecutado desde `backend`: 8 tests, 0 fallos, 0 errores.
+
+Estado:
+- Mantenimiento correctivo posterior al Sprint 12. `WF-04` sigue residiendo en Spring Boot y no se reintroduce logica IA en n8n.
+
+---
+
 # 17. Regla Operativa
 
 Nunca avanzar al siguiente Sprint sin:
