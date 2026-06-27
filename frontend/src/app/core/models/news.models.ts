@@ -16,3 +16,5 @@ export interface NewsDetail {
   eventId: number | null;
   classification: EventNewsClassification | null;
 }
+
+export type NewsListItem = NewsDetail;

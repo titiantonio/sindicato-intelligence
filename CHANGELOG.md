@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend noticias: anadida pagina `/news` con tabla de noticias capturadas, busqueda global, filtros por columna, ordenacion, paginacion y enlaces a detalle/evento.
 - Backend/frontend trazabilidad: anadido detalle navegable de publicaciones, contenidos y noticias con enlaces entre `Publication`, `Content`, `Event`, `Analysis` y `News`.
 - Backend contenido: anadido `analysis_id` nullable en `generated_content` mediante Flyway para conservar el analisis usado en nuevos contenidos.
 - Backend/frontend eventos: anadido estado editorial derivado `PENDING_ANALYSIS`, `ANALYZED`, `PUBLISHED` y `DISCARDED` en listados, detalle y dashboard.

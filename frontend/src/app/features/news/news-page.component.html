@@ -1,0 +1,161 @@
+<section class="news-page">
+  <header class="news-page__header">
+    <div>
+      <span class="page-header__eyebrow">Noticias</span>
+      <h1>Noticias capturadas</h1>
+      <p>Listado operativo de noticias recibidas desde WF-01 y procesadas por el backend.</p>
+    </div>
+
+    <label class="news-page__search">
+      Busqueda global
+      <input
+        type="search"
+        placeholder="Buscar por ID, titulo, fuente, estado, evento, categoria o fecha"
+        [ngModel]="globalFilter()"
+        (ngModelChange)="setGlobalFilter($event)"
+      />
+    </label>
+  </header>
+
+  @if (errorMessage()) {
+    <p class="news-page__alert news-page__alert--error">{{ errorMessage() }}</p>
+  }
+
+  @if (isLoading() && news().length > 0) {
+    <p class="news-page__alert">Actualizando noticias...</p>
+  }
+
+  <section class="news-page__card">
+    @if (isLoading() && news().length === 0) {
+      <p class="news-page__loading">Cargando noticias...</p>
+    }
+
+    <div class="news-page__table-wrapper">
+      <table class="news-page__table">
+        <colgroup>
+          <col style="width: 4.5rem" />
+          <col />
+          <col style="width: 8rem" />
+          <col style="width: 8rem" />
+          <col style="width: 7rem" />
+          <col style="width: 10rem" />
+          <col style="width: 9rem" />
+          <col style="width: 9rem" />
+          <col style="width: 7rem" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th><button class="news-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
+            <th><button class="news-page__sort" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
+            <th><button class="news-page__sort" type="button" (click)="changeSort('sourceId')">Fuente {{ sortLabel('sourceId') }}</button></th>
+            <th><button class="news-page__sort" type="button" (click)="changeSort('processingStatus')">Estado {{ sortLabel('processingStatus') }}</button></th>
+            <th><button class="news-page__sort" type="button" (click)="changeSort('eventId')">Evento {{ sortLabel('eventId') }}</button></th>
+            <th><button class="news-page__sort" type="button" (click)="changeSort('category')">Categoria IA {{ sortLabel('category') }}</button></th>
+            <th><button class="news-page__sort" type="button" (click)="changeSort('publishedAt')">Publicada {{ sortLabel('publishedAt') }}</button></th>
+            <th><button class="news-page__sort" type="button" (click)="changeSort('capturedAt')">Capturada {{ sortLabel('capturedAt') }}</button></th>
+            <th>Acciones</th>
+          </tr>
+          <tr class="news-page__filters">
+            <th>
+              <input type="search" aria-label="Filtrar por ID" [ngModel]="idFilter()" (ngModelChange)="setIdFilter($event)" />
+            </th>
+            <th>
+              <input type="search" aria-label="Filtrar por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" />
+            </th>
+            <th>
+              <input type="search" aria-label="Filtrar por fuente" [ngModel]="sourceFilter()" (ngModelChange)="setSourceFilter($event)" />
+            </th>
+            <th>
+              <select aria-label="Filtrar por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
+                <option value="">Todos</option>
+                @for (status of statusOptions(); track status) {
+                  <option [value]="status">{{ status }}</option>
+                }
+              </select>
+            </th>
+            <th>
+              <input type="search" aria-label="Filtrar por evento" [ngModel]="eventFilter()" (ngModelChange)="setEventFilter($event)" />
+            </th>
+            <th>
+              <select aria-label="Filtrar por categoria IA" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)">
+                <option value="">Todas</option>
+                @for (category of categoryOptions(); track category) {
+                  <option [value]="category">{{ category }}</option>
+                }
+              </select>
+            </th>
+            <th>
+              <input type="search" aria-label="Filtrar por fecha de publicacion" [ngModel]="publishedAtFilter()" (ngModelChange)="setPublishedAtFilter($event)" />
+            </th>
+            <th>
+              <input type="search" aria-label="Filtrar por fecha de captura" [ngModel]="capturedAtFilter()" (ngModelChange)="setCapturedAtFilter($event)" />
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading() && news().length === 0) {
+            @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
+              <tr class="news-page__skeleton" aria-hidden="true">
+                <td><span></span></td>
+                <td><span></span></td>
+                <td><span></span></td>
+                <td><span></span></td>
+                <td><span></span></td>
+                <td><span></span></td>
+                <td><span></span></td>
+                <td><span></span></td>
+                <td><span></span></td>
+              </tr>
+            }
+          } @else {
+            @for (item of paginatedNews(); track item.id) {
+              <tr>
+                <td class="table-cell-nowrap">#{{ item.id }}</td>
+                <td class="news-page__title-cell">{{ item.title }}</td>
+                <td class="table-cell-nowrap">{{ sourceLabel(item.sourceId) }}</td>
+                <td class="table-cell-nowrap"><app-status-badge [value]="item.processingStatus" /></td>
+                <td class="table-cell-nowrap">
+                  @if (item.eventId) {
+                    <a [routerLink]="['/events', item.eventId]">#{{ item.eventId }}</a>
+                  } @else {
+                    <span>Sin evento</span>
+                  }
+                </td>
+                <td class="table-cell-nowrap">{{ categoryLabel(item) }}</td>
+                <td class="table-cell-nowrap">{{ formatDate(item.publishedAt) }}</td>
+                <td class="table-cell-nowrap">{{ formatDate(item.capturedAt) }}</td>
+                <td class="table-cell-nowrap">
+                  <a class="news-page__action" [routerLink]="['/news', item.id]">Ver</a>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="9">No hay noticias que coincidan con los filtros.</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="news-page__pagination">
+      <span>{{ displayedNews().length }} noticias filtradas</span>
+
+      <label>
+        Filas por pagina
+        <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
+          @for (option of pageSizeOptions; track option) {
+            <option [value]="option">{{ option }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="news-page__pager">
+        <button type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">Anterior</button>
+        <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
+        <button type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">Siguiente</button>
+      </div>
+    </footer>
+  </section>
+</section>

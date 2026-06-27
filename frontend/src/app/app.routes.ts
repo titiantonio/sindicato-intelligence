@@ -13,6 +13,7 @@ import { EventsPageComponent } from './features/events/events-page.component';
 import { ForgotPasswordPageComponent } from './features/auth/forgot-password/forgot-password-page.component';
 import { LoginPageComponent } from './features/auth/login/login-page.component';
 import { NewsDetailPageComponent } from './features/news/news-detail-page.component';
+import { NewsPageComponent } from './features/news/news-page.component';
 import { PublicationDetailPageComponent } from './features/publications/publication-detail-page.component';
 import { PublicationsPageComponent } from './features/publications/publications-page.component';
 import { ResetPasswordPageComponent } from './features/auth/reset-password/reset-password-page.component';
@@ -80,6 +81,10 @@ export const routes: Routes = [
       {
         path: 'news/:id',
         component: NewsDetailPageComponent
+      },
+      {
+        path: 'news',
+        component: NewsPageComponent
       },
       {
         path: 'sources',

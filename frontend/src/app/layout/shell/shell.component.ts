@@ -29,6 +29,7 @@ export class ShellComponent {
   protected readonly navigationItems = computed(() => {
     const items: NavigationItem[] = [
       { label: 'Dashboard', route: '/dashboard', icon: 'D', roles: ['ADMIN', 'EDITOR'] },
+      { label: 'Noticias', route: '/news', icon: 'N', roles: ['ADMIN', 'EDITOR'] },
       { label: 'Eventos', route: '/events', icon: 'E', roles: ['ADMIN', 'EDITOR'] },
       { label: 'Contenido', route: '/content', icon: 'C', roles: ['ADMIN', 'EDITOR'] },
       { label: 'Publicaciones', route: '/publications', icon: 'P', roles: ['ADMIN', 'EDITOR'] },

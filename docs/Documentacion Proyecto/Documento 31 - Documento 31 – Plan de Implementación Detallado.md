@@ -2673,3 +2673,21 @@ Rol:
 ```text
 n8n-workflow-architect / spring-backend-architect / frontend-angular-backoffice / testing-quality
 ```
+
+---
+
+## 19.1 Nueva pagina de noticias en backoffice - 2026-06-27
+
+Tarea de mejora sobre Sprint 11 Frontend Angular y consulta operativa de noticias.
+
+Completado en esta iteracion:
+- Frontend: anadida ruta `/news` visible para `ADMIN` y `EDITOR`.
+- Frontend: anadida entrada `Noticias` al sidebar.
+- Frontend: creada tabla de noticias con busqueda global, filtros por columna, ordenacion y paginacion local.
+- Frontend: la tabla muestra ID, titulo, `Fuente #id`, estado, evento asociado, categoria IA, fecha de publicacion, fecha de captura y enlace al detalle.
+- Frontend: el detalle de noticia vuelve a `/news`.
+- Contrato: se reutiliza `GET /api/v1/news` sin ampliar backend ni exponer nombres de fuente.
+
+Verificacion:
+- `npm run build` ejecutado en `frontend/` con resultado OK. Persisten warnings de budgets existentes en bundle inicial y SCSS.
+- `npm test -- --watch=false --browsers=ChromeHeadless` ejecutado en `frontend/` con resultado OK: 144 tests, 0 fallos.
