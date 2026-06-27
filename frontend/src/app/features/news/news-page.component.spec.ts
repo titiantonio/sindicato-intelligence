@@ -18,8 +18,8 @@ describe('NewsPageComponent', () => {
   ];
 
   beforeEach(async () => {
-    newsService = jasmine.createSpyObj<NewsService>('NewsService', ['listNews', 'getNews']);
-    newsService.listNews.and.returnValue(of(news));
+    newsService = jasmine.createSpyObj<NewsService>('NewsService', ['listNews', 'listNewsPage', 'getNews']);
+    newsService.listNewsPage.and.returnValue(of({ items: news, page: 1, pageSize: 10, totalItems: 30, totalPages: 3 }));
 
     await TestBed.configureTestingModule({
       imports: [NewsPageComponent],
@@ -32,46 +32,75 @@ describe('NewsPageComponent', () => {
   });
 
   it('loads news on init', () => {
-    expect(newsService.listNews).toHaveBeenCalled();
+    expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({
+      page: 1,
+      pageSize: 10,
+      sortColumn: 'capturedAt',
+      sortDirection: 'desc'
+    }));
     expect((component as any).news()).toEqual(news);
+    expect((component as any).totalItems()).toBe(30);
+    expect((component as any).totalPages()).toBe(3);
   });
 
-  it('filters news by global search across visible fields', () => {
+  it('reloads from backend when global filter changes', () => {
     (component as any).setGlobalFilter('oposiciones');
 
-    expect((component as any).displayedNews().map((item: NewsListItem) => item.id)).toEqual([3]);
+    expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({
+      page: 1,
+      global: 'oposiciones'
+    }));
   });
 
-  it('combines status, category and source filters', () => {
+  it('reloads from backend when filters are combined', () => {
     (component as any).setStatusFilter('CLASSIFIED');
     (component as any).setCategoryFilter('SIPRI');
     (component as any).setSourceFilter('Fuente #2');
 
-    expect((component as any).displayedNews().map((item: NewsListItem) => item.id)).toEqual([1]);
+    expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({
+      page: 1,
+      status: 'CLASSIFIED',
+      category: 'SIPRI',
+      source: 'Fuente #2'
+    }));
   });
 
-  it('sorts by date, status, title and id', () => {
-    expect((component as any).displayedNews().map((item: NewsListItem) => item.id)).toEqual([3, 1, 2]);
+  it('reloads from backend when sorting changes', () => {
+    (component as any).changeSort('processingStatus');
+
+    expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({
+      page: 1,
+      sortColumn: 'processingStatus',
+      sortDirection: 'asc'
+    }));
 
     (component as any).changeSort('processingStatus');
-    expect((component as any).displayedNews().map((item: NewsListItem) => item.id)).toEqual([2, 1, 3]);
 
-    (component as any).changeSort('title');
-    expect((component as any).displayedNews().map((item: NewsListItem) => item.id)).toEqual([1, 2, 3]);
-
-    (component as any).changeSort('id');
-    (component as any).changeSort('id');
-    expect((component as any).displayedNews().map((item: NewsListItem) => item.id)).toEqual([3, 2, 1]);
+    expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({
+      page: 1,
+      sortColumn: 'processingStatus',
+      sortDirection: 'desc'
+    }));
   });
 
-  it('paginates filtered news locally', () => {
+  it('reloads from backend when page size changes', () => {
     (component as any).setPageSize('1');
 
-    expect((component as any).paginatedNews().map((item: NewsListItem) => item.id)).toEqual([3]);
+    expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({
+      page: 1,
+      pageSize: 1
+    }));
+  });
 
+  it('loads selected pages directly', () => {
     (component as any).goToNextPage();
 
-    expect((component as any).paginatedNews().map((item: NewsListItem) => item.id)).toEqual([1]);
+    expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({ page: 2 }));
+
+    (component as any).setPageInput('3');
+    (component as any).goToPage();
+
+    expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({ page: 3 }));
   });
 
   it('renders links to news detail and associated event', () => {
@@ -95,30 +124,11 @@ describe('NewsPageComponent', () => {
       id,
       sourceId,
       title,
-      url: `https://example.test/news/${id}`,
-      summary: null,
-      content: null,
-      hash: `hash-${id}`,
-      publishedAt,
-      capturedAt,
       processingStatus,
-      createdAt: capturedAt,
-      updatedAt: capturedAt,
       eventId,
-      classification: category === null
-        ? null
-        : {
-          id,
-          newsId: id,
-          category,
-          subcategory: null,
-          impactLevel: 'MEDIUM',
-          urgencyLevel: 'LOW',
-          relevanceScore: 60,
-          keywords: [],
-          entities: [],
-          classifiedAt: capturedAt
-        }
+      category,
+      publishedAt,
+      capturedAt
     };
   }
 });

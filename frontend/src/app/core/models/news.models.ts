@@ -17,4 +17,39 @@ export interface NewsDetail {
   classification: EventNewsClassification | null;
 }
 
-export type NewsListItem = NewsDetail;
+export interface NewsPageItem {
+  id: number;
+  sourceId: number;
+  title: string;
+  processingStatus: string;
+  eventId: number | null;
+  category: string | null;
+  publishedAt: string | null;
+  capturedAt: string;
+}
+
+export interface NewsPageResponse {
+  items: NewsPageItem[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface NewsPageParams {
+  page: number;
+  pageSize: number;
+  global?: string;
+  id?: string;
+  title?: string;
+  source?: string;
+  status?: string;
+  event?: string;
+  category?: string;
+  publishedAt?: string;
+  capturedAt?: string;
+  sortColumn: string;
+  sortDirection: string;
+}
+
+export type NewsListItem = NewsPageItem;

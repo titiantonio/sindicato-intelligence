@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend/backend noticias: la tabla `/news` usa paginacion, filtros y ordenacion en backend mediante `GET /api/v1/news/page`, reduciendo la carga inicial y permitiendo ir directamente a un numero de pagina.
 - Frontend publicaciones: el resultado tecnico de Telegram se muestra como mensaje operativo legible, incluyendo el identificador de mensaje cuando el payload contiene `messageId` o `message_id`.
 
 ### Fixed

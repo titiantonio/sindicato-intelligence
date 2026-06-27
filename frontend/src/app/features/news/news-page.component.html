@@ -68,7 +68,7 @@
             <th>
               <select aria-label="Filtrar por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
                 <option value="">Todos</option>
-                @for (status of statusOptions(); track status) {
+                @for (status of statusOptions; track status) {
                   <option [value]="status">{{ status }}</option>
                 }
               </select>
@@ -79,7 +79,7 @@
             <th>
               <select aria-label="Filtrar por categoria IA" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)">
                 <option value="">Todas</option>
-                @for (category of categoryOptions(); track category) {
+                @for (category of categoryOptions; track category) {
                   <option [value]="category">{{ category }}</option>
                 }
               </select>
@@ -109,7 +109,7 @@
               </tr>
             }
           } @else {
-            @for (item of paginatedNews(); track item.id) {
+          @for (item of news(); track item.id) {
               <tr>
                 <td class="table-cell-nowrap">#{{ item.id }}</td>
                 <td class="news-page__title-cell">{{ item.title }}</td>
@@ -140,7 +140,7 @@
     </div>
 
     <footer class="news-page__pagination">
-      <span>{{ displayedNews().length }} noticias filtradas</span>
+      <span>{{ totalItems() }} noticias filtradas</span>
 
       <label>
         Filas por pagina
@@ -154,6 +154,18 @@
       <div class="news-page__pager">
         <button type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">Anterior</button>
         <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
+        <label class="news-page__page-jump">
+          Ir a pagina
+          <input
+            type="number"
+            min="1"
+            [max]="totalPages()"
+            [ngModel]="pageInput()"
+            (ngModelChange)="setPageInput($event)"
+            (keyup.enter)="goToPage()"
+          />
+        </label>
+        <button type="button" (click)="goToPage()">Ir</button>
         <button type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">Siguiente</button>
       </div>
     </footer>

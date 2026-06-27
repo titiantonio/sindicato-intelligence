@@ -180,6 +180,16 @@
   width: 5rem;
 }
 
+.news-page__page-jump {
+  align-items: center;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.news-page__page-jump input {
+  width: 5rem;
+}
+
 .news-page__skeleton span {
   animation: skeleton-pulse 1.2s ease-in-out infinite;
   background: linear-gradient(90deg, var(--color-neutral-soft), var(--color-muted-surface), var(--color-neutral-soft));

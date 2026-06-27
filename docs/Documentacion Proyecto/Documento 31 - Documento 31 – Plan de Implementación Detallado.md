@@ -2691,3 +2691,25 @@ Completado en esta iteracion:
 Verificacion:
 - `npm run build` ejecutado en `frontend/` con resultado OK. Persisten warnings de budgets existentes en bundle inicial y SCSS.
 - `npm test -- --watch=false --browsers=ChromeHeadless` ejecutado en `frontend/` con resultado OK: 144 tests, 0 fallos.
+
+---
+
+## 19.2 Optimizacion de pagina de noticias - 2026-06-27
+
+Tarea de mejora sobre Sprint 11 Frontend Angular y API backend de noticias.
+
+Completado en esta iteracion:
+- Backend: anadido `GET /api/v1/news/page` con paginacion 1-based, filtros, ordenacion y limite maximo de 100 filas por pagina.
+- Backend: la consulta paginada devuelve solo columnas de tabla, `eventId` y categoria IA mediante joins controlados.
+- Frontend: `/news` deja de cargar todas las noticias y consume el endpoint paginado.
+- Frontend: la pagina inicial es la 1 y muestra las noticias mas recientes.
+- Frontend: anadido control para ir directamente a un numero de pagina.
+- Compatibilidad: `GET /api/v1/news` se mantiene sin cambios para consumidores existentes.
+- Base de datos: no se anade migracion Flyway porque se reutilizan indices existentes.
+
+Verificacion:
+- `mvn -q -DskipTests compile` ejecutado en `backend/` con resultado OK.
+- `mvn -q -Dtest=NewsControllerTest test` ejecutado en `backend/` con resultado OK.
+- `npm run build` ejecutado en `frontend/` con resultado OK. Persisten warnings de budgets existentes.
+- `npm test -- --watch=false --browsers=ChromeHeadless` ejecutado en `frontend/` con resultado OK: 146 tests, 0 fallos.
+- `mvn test` completo en `backend/` ejecutado con fallos no relacionados con `/news`: `AnalysisControllerTest` usa proveedor IA real en lugar de deterministico, `ClassificationControllerTest` devuelve `OTROS` en lugar de `SIPRI`, `ContentControllerTest` recibe `502` y `SecurityConfigTest` no carga contexto por dependencia de `GetGeneratedContentDetailUseCase`.

@@ -1,5 +1,15 @@
 package es.sindicato.intelligence.news.api;
 
+import es.sindicato.intelligence.classification.domain.ClassificationCategory;
+import es.sindicato.intelligence.classification.domain.ImpactLevel;
+import es.sindicato.intelligence.classification.domain.NewsClassification;
+import es.sindicato.intelligence.classification.domain.NewsClassificationRepository;
+import es.sindicato.intelligence.classification.domain.UrgencyLevel;
+import es.sindicato.intelligence.event.domain.Event;
+import es.sindicato.intelligence.event.domain.EventCategory;
+import es.sindicato.intelligence.event.domain.EventRepository;
+import es.sindicato.intelligence.event.domain.EventStatus;
+import es.sindicato.intelligence.event.domain.Importance;
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import es.sindicato.intelligence.news.domain.NewsRepository;
 import es.sindicato.intelligence.news.domain.NewsStatus;
@@ -15,6 +25,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.math.BigDecimal;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasItem;
@@ -39,6 +51,12 @@ class NewsControllerTest {
 
     @Autowired
     private NewsRepository newsRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private NewsClassificationRepository classificationRepository;
 
     @Test
     void createsNews() throws Exception {
@@ -80,6 +98,87 @@ class NewsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].id", hasItem(newsArticle.getId().intValue())))
                 .andExpect(jsonPath("$[*].title", hasItem("Convocatoria docente")));
+    }
+
+    @Test
+    void listsNewsPageWithNewestNewsFirstByDefault() throws Exception {
+        Source source = sourceRepository.save(source(uniqueUrl("sources")));
+        String marker = "PAGE_DEFAULT_" + UUID.randomUUID();
+        NewsArticle oldNews = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-old"), hash('d'), OffsetDateTime.parse("2026-06-10T10:00:00Z"), NewsStatus.CAPTURED, marker + " antigua"));
+        NewsArticle newNews = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-new"), hash('e'), OffsetDateTime.parse("2026-06-12T10:00:00Z"), NewsStatus.CAPTURED, marker + " nueva"));
+
+        mockMvc.perform(get("/api/v1/news/page")
+                        .param("global", marker)
+                        .with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.pageSize").value(10))
+                .andExpect(jsonPath("$.totalItems").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.items[0].id").value(newNews.getId()))
+                .andExpect(jsonPath("$.items[1].id").value(oldNews.getId()));
+    }
+
+    @Test
+    void listsNewsPageWithRequestedPageAndSize() throws Exception {
+        Source source = sourceRepository.save(source(uniqueUrl("sources")));
+        String marker = "PAGE_SIZE_" + UUID.randomUUID();
+        NewsArticle oldest = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-1"), hash('f'), OffsetDateTime.parse("2026-06-10T10:00:00Z"), NewsStatus.CAPTURED, marker + " 1"));
+        newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-2"), hash('g'), OffsetDateTime.parse("2026-06-11T10:00:00Z"), NewsStatus.CAPTURED, marker + " 2"));
+        newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-3"), hash('h'), OffsetDateTime.parse("2026-06-12T10:00:00Z"), NewsStatus.CAPTURED, marker + " 3"));
+
+        mockMvc.perform(get("/api/v1/news/page")
+                        .param("page", "2")
+                        .param("pageSize", "2")
+                        .param("global", marker)
+                        .with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(2))
+                .andExpect(jsonPath("$.pageSize").value(2))
+                .andExpect(jsonPath("$.totalItems").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.items[0].id").value(oldest.getId()));
+    }
+
+    @Test
+    void filtersNewsPageByStatusSourceEventCategoryAndGlobalSearch() throws Exception {
+        Source source = sourceRepository.save(source(uniqueUrl("sources")));
+        NewsArticle matching = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-match"), hash('i'), OffsetDateTime.parse("2026-06-12T10:00:00Z"), NewsStatus.EVENT_MATCHED, "Oposiciones Andalucia"));
+        NewsArticle other = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-other"), hash('j'), OffsetDateTime.parse("2026-06-11T10:00:00Z"), NewsStatus.CAPTURED, "Formacion"));
+        Event event = eventRepository.save(event(matching.getId()));
+        classificationRepository.save(classification(matching.getId(), ClassificationCategory.OPOSICIONES));
+        classificationRepository.save(classification(other.getId(), ClassificationCategory.FORMACION));
+
+        mockMvc.perform(get("/api/v1/news/page")
+                        .param("status", "EVENT_MATCHED")
+                        .param("source", "Fuente #" + source.getId())
+                        .param("event", "#" + event.getId())
+                        .param("category", "OPOSICIONES")
+                        .param("global", "Andalucia")
+                        .with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalItems").value(1))
+                .andExpect(jsonPath("$.items[0].id").value(matching.getId()))
+                .andExpect(jsonPath("$.items[0].eventId").value(event.getId()))
+                .andExpect(jsonPath("$.items[0].category").value("OPOSICIONES"));
+    }
+
+    @Test
+    void fallsBackToDefaultSortForInvalidSortValues() throws Exception {
+        Source source = sourceRepository.save(source(uniqueUrl("sources")));
+        String marker = "INVALID_SORT_" + UUID.randomUUID();
+        NewsArticle oldNews = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-invalid-sort-old"), hash('k'), OffsetDateTime.parse("2026-06-10T10:00:00Z"), NewsStatus.CAPTURED, marker + " antigua"));
+        NewsArticle newNews = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-invalid-sort-new"), hash('l'), OffsetDateTime.parse("2026-06-12T10:00:00Z"), NewsStatus.CAPTURED, marker + " nueva"));
+
+        mockMvc.perform(get("/api/v1/news/page")
+                        .param("sortColumn", "unsupported")
+                        .param("sortDirection", "unsupported")
+                        .param("global", marker)
+                        .with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id").value(newNews.getId()))
+                .andExpect(jsonPath("$.items[1].id").value(oldNews.getId()));
     }
 
     @Test
@@ -220,20 +319,59 @@ class NewsControllerTest {
 
     private NewsArticle newsArticle(Long sourceId, String url, String hash) {
         OffsetDateTime now = OffsetDateTime.now().minusDays(1);
+        return newsArticle(sourceId, url, hash, now);
+    }
 
+    private NewsArticle newsArticle(Long sourceId, String url, String hash, OffsetDateTime capturedAt) {
+        return newsArticle(sourceId, url, hash, capturedAt, NewsStatus.CAPTURED, "Convocatoria docente");
+    }
+
+    private NewsArticle newsArticle(Long sourceId, String url, String hash, OffsetDateTime capturedAt, NewsStatus status, String title) {
         return new NewsArticle(
                 null,
                 sourceId,
-                "Convocatoria docente",
+                title,
                 url,
                 "Resumen",
                 "Contenido",
                 hash,
-                now.minusHours(1),
+                capturedAt.minusHours(1),
+                capturedAt,
+                status,
+                capturedAt,
+                capturedAt
+        );
+    }
+
+    private Event event(Long newsId) {
+        OffsetDateTime now = OffsetDateTime.parse("2026-06-12T12:00:00Z");
+        return new Event(
+                null,
+                "Evento oposiciones",
+                "Descripcion",
+                EventCategory.OPOSICIONES,
+                Importance.HIGH,
+                EventStatus.OPEN,
+                Set.of(newsId),
                 now,
-                NewsStatus.CAPTURED,
+                now,
                 now,
                 now
+        );
+    }
+
+    private NewsClassification classification(Long newsId, ClassificationCategory category) {
+        return new NewsClassification(
+                null,
+                newsId,
+                category,
+                null,
+                BigDecimal.valueOf(80),
+                ImpactLevel.HIGH,
+                UrgencyLevel.MEDIUM,
+                java.util.List.of("docentes"),
+                java.util.List.of("Andalucia"),
+                OffsetDateTime.parse("2026-06-12T12:30:00Z")
         );
     }
 

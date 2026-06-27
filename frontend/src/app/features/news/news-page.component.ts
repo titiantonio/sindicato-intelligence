@@ -1,5 +1,5 @@
 import { FormsModule } from '@angular/forms';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { NewsListItem } from '../../core/models/news.models';
@@ -21,6 +21,9 @@ export class NewsPageComponent implements OnInit {
   protected readonly news = signal<NewsListItem[]>([]);
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly totalItems = signal(0);
+  protected readonly totalPages = signal(1);
+  protected readonly pageInput = signal(1);
   protected readonly globalFilter = signal('');
   protected readonly idFilter = signal('');
   protected readonly titleFilter = signal('');
@@ -35,28 +38,62 @@ export class NewsPageComponent implements OnInit {
   protected readonly pageSize = signal(10);
   protected readonly currentPage = signal(1);
   protected readonly pageSizeOptions = [5, 10, 25, 50];
-  protected readonly statusOptions = computed(() => this.uniqueOptions((item) => item.processingStatus));
-  protected readonly categoryOptions = computed(() => this.uniqueOptions((item) => this.categoryLabel(item)));
-  protected readonly displayedNews = computed(() => this.sortNews(this.filterNews(this.news())));
-  protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.displayedNews().length / this.pageSize())));
-  protected readonly paginatedNews = computed(() => {
-    const page = Math.min(this.currentPage(), this.totalPages());
-    const start = (page - 1) * this.pageSize();
-    return this.displayedNews().slice(start, start + this.pageSize());
-  });
+  protected readonly statusOptions = ['CAPTURED', 'CLASSIFIED', 'DISCARDED', 'EVENT_MATCHED', 'ARCHIVED'];
+  protected readonly categoryOptions = [
+    'Sin clasificar',
+    'OPOSICIONES',
+    'INTERINOS',
+    'SIPRI',
+    'PLANTILLAS',
+    'RETRIBUCIONES',
+    'FORMACION',
+    'INSPECCION',
+    'LEGISLACION',
+    'CURRICULO',
+    'UNIVERSIDAD',
+    'FP',
+    'DIGITALIZACION',
+    'INCLUSION',
+    'INFRAESTRUCTURAS',
+    'CONFLICTO_LABORAL',
+    'SINDICAL',
+    'OTROS'
+  ];
 
   ngOnInit(): void {
     this.loadNews();
   }
 
   protected loadNews(): void {
+    this.loadNewsPage(this.currentPage());
+  }
+
+  protected loadNewsPage(page: number): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.newsService.listNews().subscribe({
-      next: (news) => {
-        this.news.set(news);
-        this.currentPage.set(Math.min(this.currentPage(), this.totalPages()));
+    this.newsService.listNewsPage({
+      page,
+      pageSize: this.pageSize(),
+      global: this.globalFilter(),
+      id: this.idFilter(),
+      title: this.titleFilter(),
+      source: this.sourceFilter(),
+      status: this.statusFilter(),
+      event: this.eventFilter(),
+      category: this.categoryFilter(),
+      publishedAt: this.publishedAtFilter(),
+      capturedAt: this.capturedAtFilter(),
+      sortColumn: this.sortColumn(),
+      sortDirection: this.sortDirection()
+    }).subscribe({
+      next: (response) => {
+        this.news.set(response.items);
+        this.currentPage.set(response.page);
+        this.pageInput.set(response.page);
+        this.pageSize.set(response.pageSize);
+        this.totalItems.set(response.totalItems);
+        this.totalPages.set(response.totalPages);
         this.isLoading.set(false);
       },
       error: (error: { error?: { error?: string } }) => {
@@ -86,62 +123,64 @@ export class NewsPageComponent implements OnInit {
   }
 
   protected categoryLabel(item: NewsListItem): string {
-    return item.classification?.category ?? 'Sin clasificar';
+    return item.category ?? 'Sin clasificar';
   }
 
   protected setGlobalFilter(value: string): void {
     this.globalFilter.set(value);
-    this.resetPagination();
+    this.resetPaginationAndLoad();
   }
 
   protected setIdFilter(value: string): void {
     this.idFilter.set(value);
-    this.resetPagination();
+    this.resetPaginationAndLoad();
   }
 
   protected setTitleFilter(value: string): void {
     this.titleFilter.set(value);
-    this.resetPagination();
+    this.resetPaginationAndLoad();
   }
 
   protected setSourceFilter(value: string): void {
     this.sourceFilter.set(value);
-    this.resetPagination();
+    this.resetPaginationAndLoad();
   }
 
   protected setStatusFilter(value: string): void {
     this.statusFilter.set(value);
-    this.resetPagination();
+    this.resetPaginationAndLoad();
   }
 
   protected setEventFilter(value: string): void {
     this.eventFilter.set(value);
-    this.resetPagination();
+    this.resetPaginationAndLoad();
   }
 
   protected setCategoryFilter(value: string): void {
     this.categoryFilter.set(value);
-    this.resetPagination();
+    this.resetPaginationAndLoad();
   }
 
   protected setPublishedAtFilter(value: string): void {
     this.publishedAtFilter.set(value);
-    this.resetPagination();
+    this.resetPaginationAndLoad();
   }
 
   protected setCapturedAtFilter(value: string): void {
     this.capturedAtFilter.set(value);
-    this.resetPagination();
+    this.resetPaginationAndLoad();
   }
 
   protected changeSort(column: NewsSortColumn): void {
     if (this.sortColumn() === column) {
       this.sortDirection.update((direction) => direction === 'asc' ? 'desc' : 'asc');
+      this.loadNewsPage(1);
       return;
     }
 
     this.sortColumn.set(column);
     this.sortDirection.set(column === 'publishedAt' || column === 'capturedAt' ? 'desc' : 'asc');
+    this.loadNewsPage(1);
   }
 
   protected sortLabel(column: NewsSortColumn): string {
@@ -154,99 +193,30 @@ export class NewsPageComponent implements OnInit {
 
   protected setPageSize(value: string): void {
     this.pageSize.set(Number(value));
-    this.resetPagination();
+    this.loadNewsPage(1);
   }
 
   protected goToPreviousPage(): void {
-    this.currentPage.update((page) => Math.max(1, page - 1));
+    this.loadNewsPage(Math.max(1, this.currentPage() - 1));
   }
 
   protected goToNextPage(): void {
-    this.currentPage.update((page) => Math.min(this.totalPages(), page + 1));
+    this.loadNewsPage(Math.min(this.totalPages(), this.currentPage() + 1));
   }
 
-  private filterNews(news: NewsListItem[]): NewsListItem[] {
-    return news.filter((item) => this.matchesGlobalFilter(item))
-      .filter((item) => this.matchesText(item.id.toString(), this.idFilter()))
-      .filter((item) => this.matchesText(item.title, this.titleFilter()))
-      .filter((item) => this.matchesText(this.sourceLabel(item.sourceId), this.sourceFilter()))
-      .filter((item) => this.matchesSelect(item.processingStatus, this.statusFilter()))
-      .filter((item) => this.matchesText(this.eventLabel(item.eventId), this.eventFilter()))
-      .filter((item) => this.matchesSelect(this.categoryLabel(item), this.categoryFilter()))
-      .filter((item) => this.matchesText(this.formatDate(item.publishedAt), this.publishedAtFilter()))
-      .filter((item) => this.matchesText(this.formatDate(item.capturedAt), this.capturedAtFilter()));
+  protected setPageInput(value: string): void {
+    const requestedPage = Number(value);
+    this.pageInput.set(Number.isFinite(requestedPage) ? requestedPage : this.currentPage());
   }
 
-  private matchesGlobalFilter(item: NewsListItem): boolean {
-    const filter = this.normalize(this.globalFilter());
-    if (!filter) {
-      return true;
-    }
-
-    return [
-      item.id.toString(),
-      `#${item.id}`,
-      item.title,
-      this.sourceLabel(item.sourceId),
-      item.processingStatus,
-      this.eventLabel(item.eventId),
-      this.categoryLabel(item),
-      item.publishedAt ?? '',
-      item.capturedAt,
-      this.formatDate(item.publishedAt),
-      this.formatDate(item.capturedAt)
-    ].some((value) => this.normalize(value).includes(filter));
+  protected goToPage(): void {
+    const targetPage = Math.min(this.totalPages(), Math.max(1, Math.trunc(this.pageInput())));
+    this.loadNewsPage(targetPage);
   }
 
-  private sortNews(news: NewsListItem[]): NewsListItem[] {
-    const direction = this.sortDirection() === 'asc' ? 1 : -1;
-    const column = this.sortColumn();
-
-    return [...news].sort((left, right) => direction * this.compareNews(left, right, column));
-  }
-
-  private compareNews(left: NewsListItem, right: NewsListItem, column: NewsSortColumn): number {
-    if (column === 'id' || column === 'sourceId') {
-      return left[column] - right[column];
-    }
-
-    if (column === 'eventId') {
-      return (left.eventId ?? Number.MAX_SAFE_INTEGER) - (right.eventId ?? Number.MAX_SAFE_INTEGER);
-    }
-
-    if (column === 'publishedAt' || column === 'capturedAt') {
-      return this.dateValue(left[column]) - this.dateValue(right[column]);
-    }
-
-    if (column === 'category') {
-      return this.categoryLabel(left).localeCompare(this.categoryLabel(right), 'es', { sensitivity: 'base' });
-    }
-
-    return left[column].localeCompare(right[column], 'es', { sensitivity: 'base' });
-  }
-
-  private matchesText(value: string, filter: string): boolean {
-    const normalizedFilter = this.normalize(filter);
-    return !normalizedFilter || this.normalize(value).includes(normalizedFilter);
-  }
-
-  private matchesSelect(value: string, filter: string): boolean {
-    return !filter || value === filter;
-  }
-
-  private uniqueOptions(selector: (item: NewsListItem) => string): string[] {
-    return [...new Set(this.news().map(selector))].sort((left, right) => left.localeCompare(right, 'es'));
-  }
-
-  private dateValue(value: string | null): number {
-    return value ? new Date(value).getTime() : 0;
-  }
-
-  private normalize(value: string): string {
-    return value.trim().toLocaleLowerCase('es');
-  }
-
-  private resetPagination(): void {
+  private resetPaginationAndLoad(): void {
     this.currentPage.set(1);
+    this.pageInput.set(1);
+    this.loadNewsPage(1);
   }
 }
