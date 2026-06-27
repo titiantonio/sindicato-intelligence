@@ -35,7 +35,7 @@
         <colgroup>
           <col style="width: 4.5rem" />
           <col />
-          <col style="width: 8rem" />
+          <col style="width: 12rem" />
           <col style="width: 8rem" />
           <col style="width: 7rem" />
           <col style="width: 10rem" />
@@ -113,7 +113,7 @@
               <tr>
                 <td class="table-cell-nowrap">#{{ item.id }}</td>
                 <td class="news-page__title-cell">{{ item.title }}</td>
-                <td class="table-cell-nowrap">{{ sourceLabel(item.sourceId) }}</td>
+                <td class="table-cell-nowrap">{{ sourceLabel(item) }}</td>
                 <td class="table-cell-nowrap"><app-status-badge [value]="item.processingStatus" /></td>
                 <td class="table-cell-nowrap">
                   @if (item.eventId) {

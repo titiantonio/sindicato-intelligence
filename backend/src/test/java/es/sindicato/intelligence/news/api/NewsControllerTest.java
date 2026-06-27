@@ -152,7 +152,7 @@ class NewsControllerTest {
 
         mockMvc.perform(get("/api/v1/news/page")
                         .param("status", "EVENT_MATCHED")
-                        .param("source", "Fuente #" + source.getId())
+                        .param("source", "Fuente News API")
                         .param("event", "#" + event.getId())
                         .param("category", "OPOSICIONES")
                         .param("global", "Andalucia")
@@ -160,6 +160,7 @@ class NewsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalItems").value(1))
                 .andExpect(jsonPath("$.items[0].id").value(matching.getId()))
+                .andExpect(jsonPath("$.items[0].sourceName").value("Fuente News API"))
                 .andExpect(jsonPath("$.items[0].eventId").value(event.getId()))
                 .andExpect(jsonPath("$.items[0].category").value("OPOSICIONES"));
     }
@@ -190,6 +191,7 @@ class NewsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(newsArticle.getId()))
                 .andExpect(jsonPath("$.sourceId").value(source.getId()))
+                .andExpect(jsonPath("$.sourceName").value("Fuente News API"))
                 .andExpect(jsonPath("$.title").value("Convocatoria docente"))
                 .andExpect(jsonPath("$.processingStatus").value("CAPTURED"));
     }

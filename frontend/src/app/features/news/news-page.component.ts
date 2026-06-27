@@ -114,8 +114,8 @@ export class NewsPageComponent implements OnInit {
     }).format(new Date(value));
   }
 
-  protected sourceLabel(sourceId: number): string {
-    return `Fuente #${sourceId}`;
+  protected sourceLabel(item: NewsListItem): string {
+    return item.sourceName?.trim() || `Fuente #${item.sourceId}`;
   }
 
   protected eventLabel(eventId: number | null): string {

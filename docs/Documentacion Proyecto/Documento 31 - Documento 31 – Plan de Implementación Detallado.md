@@ -2713,3 +2713,39 @@ Verificacion:
 - `npm run build` ejecutado en `frontend/` con resultado OK. Persisten warnings de budgets existentes.
 - `npm test -- --watch=false --browsers=ChromeHeadless` ejecutado en `frontend/` con resultado OK: 146 tests, 0 fallos.
 - `mvn test` completo en `backend/` ejecutado con fallos no relacionados con `/news`: `AnalysisControllerTest` usa proveedor IA real en lugar de deterministico, `ClassificationControllerTest` devuelve `OTROS` en lugar de `SIPRI`, `ContentControllerTest` recibe `502` y `SecurityConfigTest` no carga contexto por dependencia de `GetGeneratedContentDetailUseCase`.
+
+---
+
+## 19.3 Correccion de regresiones de tests backend - 2026-06-27
+
+Tarea de mantenimiento correctivo sobre Sprint 11 Frontend Angular, backend API y configuracion IA de pruebas.
+
+Completado en esta iteracion:
+- [x] Backend tests: `AnalysisControllerTest` fija `WF04_ANALYSIS` al proveedor `deterministic`.
+- [x] Backend tests: `ClassificationControllerTest` fija `WF02_CLASSIFICATION` al proveedor `deterministic`.
+- [x] Backend tests: `ContentControllerTest` fija `WF05_CONTENT` al proveedor `deterministic`.
+- [x] Backend security tests: `SecurityConfigTest` declara el mock de `GetGeneratedContentDetailUseCase` requerido por `ContentController`.
+- [x] Versionado: backend actualizado a `0.0.82-SNAPSHOT`.
+
+Verificacion:
+- `mvn -q "-Dtest=AnalysisControllerTest,ClassificationControllerTest,ContentControllerTest,SecurityConfigTest" test` ejecutado en `backend/` con resultado OK.
+- `mvn test` ejecutado en `backend/` con resultado OK: 287 tests, 0 fallos, 0 errores.
+
+---
+
+## 19.4 Fuentes descriptivas en pagina de noticias - 2026-06-27
+
+Tarea de mejora correctiva sobre Sprint 11 Frontend Angular y API backend de noticias.
+
+Completado en esta iteracion:
+- [x] Backend: `GET /api/v1/news/page` devuelve `sourceName` junto a `sourceId`.
+- [x] Backend: la busqueda global y el filtro de fuente aceptan el nombre descriptivo de `sources.name`.
+- [x] Backend: `GET /api/v1/news/{id}` devuelve `sourceName` para el detalle de noticia.
+- [x] Frontend: la tabla `/news` muestra el nombre descriptivo de la fuente en lugar de `Fuente #id`.
+- [x] Frontend: el detalle `/news/:id` muestra el nombre descriptivo de la fuente.
+- [x] Versionado: backend actualizado a `0.0.83-SNAPSHOT`.
+
+Verificacion:
+- `mvn -q "-Dtest=NewsControllerTest,NewsResponseTest" test` ejecutado en `backend/` con resultado OK.
+- `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/news/news-page.component.spec.ts --include=src/app/core/services/news.service.spec.ts` ejecutado en `frontend/` con resultado OK: 10 tests, 0 fallos.
+- `npm.cmd run build` ejecutado en `frontend/` con resultado OK. Persisten warnings preexistentes de budgets en bundle inicial y SCSS de varias pantallas.

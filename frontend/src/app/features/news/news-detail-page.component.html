@@ -17,7 +17,7 @@
     </div>
     <div class="event-status">
       <app-status-badge [value]="item.processingStatus" />
-      <span>Fuente #{{ item.sourceId }}</span>
+      <span>{{ sourceLabel(item) }}</span>
     </div>
   </section>
 

@@ -1,5 +1,9 @@
 package es.sindicato.intelligence.analysis.api;
 
+import es.sindicato.intelligence.ai.domain.AiProviderSetting;
+import es.sindicato.intelligence.ai.domain.AiProviderSettingRepository;
+import es.sindicato.intelligence.ai.domain.AiWorkflowSetting;
+import es.sindicato.intelligence.ai.domain.AiWorkflowSettingRepository;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
@@ -11,6 +15,7 @@ import es.sindicato.intelligence.news.domain.NewsRepository;
 import es.sindicato.intelligence.news.domain.NewsStatus;
 import es.sindicato.intelligence.source.domain.Source;
 import es.sindicato.intelligence.source.domain.SourceRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
@@ -50,6 +56,26 @@ class AnalysisControllerTest {
 
     @Autowired
     private EventAIAnalysisRepository analysisRepository;
+
+    @Autowired
+    private AiProviderSettingRepository providerSettingRepository;
+
+    @Autowired
+    private AiWorkflowSettingRepository workflowSettingRepository;
+
+    @BeforeEach
+    void configureDeterministicAi() {
+        OffsetDateTime now = OffsetDateTime.now();
+        AiProviderSetting provider = providerSettingRepository.findByCode("deterministic")
+                .orElse(new AiProviderSetting("deterministic", "Deterministic", true, null, now, now));
+        provider.update(true, null, false, now);
+        providerSettingRepository.save(provider);
+
+        AiWorkflowSetting workflow = workflowSettingRepository.findByWorkflowCode("WF04_ANALYSIS")
+                .orElse(new AiWorkflowSetting("WF04_ANALYSIS", "deterministic", "deterministic-analysis", BigDecimal.ZERO, 1024, now, now));
+        workflow.update("deterministic", "deterministic-analysis", BigDecimal.ZERO, 1024, now);
+        workflowSettingRepository.save(workflow);
+    }
 
     @Test
     void generatesAndPersistsAnalysis() throws Exception {

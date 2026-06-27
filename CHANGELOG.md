@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Frontend/backend noticias: la pantalla `/news` y el detalle de noticia muestran el nombre descriptivo de la fuente en lugar de `Fuente #id`, con filtro backend por nombre de fuente.
+- Backend tests: estabilizados los tests API de clasificacion, analisis y contenido con proveedor IA determinista, y actualizado el slice de seguridad con dependencias de detalle de contenido.
 - Backoffice rendimiento: optimizadas las lecturas de `GET /api/v1/dashboard` y `GET /api/v1/events` con consultas agregadas, indices Flyway y carga Angular progresiva para reducir pantallas en blanco con "Cargando...".
 - Backend IA WF-04: endurecida la generacion de analisis con contexto de noticias acotado, prompt JSON mas estricto y parametros Gemini conservadores para reducir respuestas repetitivas, mixtas o sin cierre JSON.
 

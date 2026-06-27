@@ -198,6 +198,7 @@ public class NewsController {
         return new NewsResponse(
                 newsArticle.getId(),
                 newsArticle.getSourceId(),
+                trace.sourceName(),
                 newsArticle.getTitle(),
                 newsArticle.getUrl(),
                 newsArticle.getSummary(),
@@ -217,6 +218,7 @@ public class NewsController {
         return new NewsPageItemResponse(
                 item.id(),
                 item.sourceId(),
+                item.sourceName(),
                 item.title(),
                 item.processingStatus(),
                 item.eventId(),

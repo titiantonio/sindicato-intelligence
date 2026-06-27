@@ -4,9 +4,11 @@ import es.sindicato.intelligence.content.api.ContentController;
 import es.sindicato.intelligence.content.application.ApproveContentUseCase;
 import es.sindicato.intelligence.content.application.EditGeneratedContentUseCase;
 import es.sindicato.intelligence.content.application.GenerateContentUseCase;
+import es.sindicato.intelligence.content.application.GetGeneratedContentDetailUseCase;
 import es.sindicato.intelligence.content.application.GetGeneratedContentUseCase;
 import es.sindicato.intelligence.content.application.ListGeneratedContentUseCase;
 import es.sindicato.intelligence.content.application.RejectContentUseCase;
+import es.sindicato.intelligence.event.api.EventResponseMapper;
 import es.sindicato.intelligence.health.HealthController;
 import es.sindicato.intelligence.source.api.SourceController;
 import es.sindicato.intelligence.source.application.CreateSourceUseCase;
@@ -62,7 +64,13 @@ class SecurityConfigTest {
     private GetGeneratedContentUseCase getGeneratedContentUseCase;
 
     @MockBean
+    private GetGeneratedContentDetailUseCase getGeneratedContentDetailUseCase;
+
+    @MockBean
     private EditGeneratedContentUseCase editGeneratedContentUseCase;
+
+    @MockBean
+    private EventResponseMapper eventResponseMapper;
 
     @Test
     void allowsHealthWithoutAuthentication() throws Exception {

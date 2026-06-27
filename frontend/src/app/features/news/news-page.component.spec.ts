@@ -12,9 +12,9 @@ describe('NewsPageComponent', () => {
   let newsService: jasmine.SpyObj<NewsService>;
 
   const news: NewsListItem[] = [
-    newsItem(1, 'Bolsas SIPRI abiertas', 2, 'CLASSIFIED', 20, 'SIPRI', '2026-06-13T10:00:00Z', '2026-06-13T11:00:00Z'),
-    newsItem(2, 'Formacion profesorado', 3, 'CAPTURED', null, null, null, '2026-06-12T09:00:00Z'),
-    newsItem(3, 'Oposiciones Andalucia', 2, 'EVENT_MATCHED', 10, 'OPOSICIONES', '2026-06-14T08:00:00Z', '2026-06-14T09:00:00Z')
+    newsItem(1, 'Bolsas SIPRI abiertas', 2, 'Diario Educativo', 'CLASSIFIED', 20, 'SIPRI', '2026-06-13T10:00:00Z', '2026-06-13T11:00:00Z'),
+    newsItem(2, 'Formacion profesorado', 3, 'Portal Docente', 'CAPTURED', null, null, null, '2026-06-12T09:00:00Z'),
+    newsItem(3, 'Oposiciones Andalucia', 2, 'Diario Educativo', 'EVENT_MATCHED', 10, 'OPOSICIONES', '2026-06-14T08:00:00Z', '2026-06-14T09:00:00Z')
   ];
 
   beforeEach(async () => {
@@ -55,13 +55,13 @@ describe('NewsPageComponent', () => {
   it('reloads from backend when filters are combined', () => {
     (component as any).setStatusFilter('CLASSIFIED');
     (component as any).setCategoryFilter('SIPRI');
-    (component as any).setSourceFilter('Fuente #2');
+    (component as any).setSourceFilter('Diario Educativo');
 
     expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({
       page: 1,
       status: 'CLASSIFIED',
       category: 'SIPRI',
-      source: 'Fuente #2'
+      source: 'Diario Educativo'
     }));
   });
 
@@ -108,12 +108,14 @@ describe('NewsPageComponent', () => {
 
     expect(nativeElement.querySelector('a[href="/news/3"]')?.textContent?.trim()).toBe('Ver');
     expect(nativeElement.querySelector('a[href="/events/10"]')?.textContent?.trim()).toBe('#10');
+    expect(nativeElement.textContent).toContain('Diario Educativo');
   });
 
   function newsItem(
     id: number,
     title: string,
     sourceId: number,
+    sourceName: string | null,
     processingStatus: string,
     eventId: number | null,
     category: string | null,
@@ -123,6 +125,7 @@ describe('NewsPageComponent', () => {
     return {
       id,
       sourceId,
+      sourceName,
       title,
       processingStatus,
       eventId,

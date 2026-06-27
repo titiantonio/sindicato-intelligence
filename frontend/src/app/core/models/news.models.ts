@@ -3,6 +3,7 @@ import { EventNewsClassification } from './event.models';
 export interface NewsDetail {
   id: number;
   sourceId: number;
+  sourceName: string | null;
   title: string;
   url: string;
   summary: string | null;
@@ -20,6 +21,7 @@ export interface NewsDetail {
 export interface NewsPageItem {
   id: number;
   sourceId: number;
+  sourceName: string | null;
   title: string;
   processingStatus: string;
   eventId: number | null;

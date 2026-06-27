@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 public record NewsResponse(
         Long id,
         Long sourceId,
+        String sourceName,
         String title,
         String url,
         String summary,
@@ -38,6 +39,7 @@ public record NewsResponse(
         this(
                 id,
                 sourceId,
+                null,
                 title,
                 url,
                 summary,

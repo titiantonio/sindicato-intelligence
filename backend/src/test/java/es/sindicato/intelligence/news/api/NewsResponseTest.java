@@ -33,6 +33,7 @@ class NewsResponseTest {
 
         assertEquals(1L, response.id());
         assertEquals(2L, response.sourceId());
+        assertEquals(null, response.sourceName());
         assertEquals("Convocatoria docente", response.title());
         assertEquals("https://test.example/news/1", response.url());
         assertEquals("Resumen", response.summary());

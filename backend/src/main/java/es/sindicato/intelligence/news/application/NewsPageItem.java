@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 public record NewsPageItem(
         Long id,
         Long sourceId,
+        String sourceName,
         String title,
         String processingStatus,
         Long eventId,

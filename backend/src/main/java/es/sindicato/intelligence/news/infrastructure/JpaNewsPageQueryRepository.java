@@ -22,7 +22,7 @@ public class JpaNewsPageQueryRepository implements NewsPageQueryRepository {
     private static final Map<String, String> SORT_COLUMNS = Map.of(
             "id", "news.id",
             "title", "news.title",
-            "sourceId", "news.source_id",
+            "sourceId", "sources.name",
             "processingStatus", "news.processing_status",
             "eventId", "event_news.event_id",
             "category", "classification.category",
@@ -46,6 +46,7 @@ public class JpaNewsPageQueryRepository implements NewsPageQueryRepository {
                 SELECT
                     news.id,
                     news.source_id,
+                    sources.name,
                     news.title,
                     news.processing_status,
                     event_news.event_id,
@@ -53,6 +54,7 @@ public class JpaNewsPageQueryRepository implements NewsPageQueryRepository {
                     news.published_at,
                     news.captured_at
                 FROM news_articles news
+                INNER JOIN sources sources ON sources.id = news.source_id
                 LEFT JOIN event_news event_news ON event_news.news_id = news.id
                 LEFT JOIN news_classifications classification ON classification.news_id = news.id
                 %s
@@ -66,6 +68,7 @@ public class JpaNewsPageQueryRepository implements NewsPageQueryRepository {
         Query countQuery = entityManager.createNativeQuery("""
                 SELECT COUNT(*)
                 FROM news_articles news
+                INNER JOIN sources sources ON sources.id = news.source_id
                 LEFT JOIN event_news event_news ON event_news.news_id = news.id
                 LEFT JOIN news_classifications classification ON classification.news_id = news.id
                 %s
@@ -86,6 +89,7 @@ public class JpaNewsPageQueryRepository implements NewsPageQueryRepository {
                     CAST(news.id AS TEXT) ILIKE :global
                     OR ('#' || CAST(news.id AS TEXT)) ILIKE :global
                     OR news.title ILIKE :global
+                    OR sources.name ILIKE :global
                     OR ('Fuente #' || CAST(news.source_id AS TEXT)) ILIKE :global
                     OR CAST(news.source_id AS TEXT) ILIKE :global
                     OR news.processing_status ILIKE :global
@@ -97,7 +101,7 @@ public class JpaNewsPageQueryRepository implements NewsPageQueryRepository {
                 """);
         addFilter(filters, query.id(), "(CAST(news.id AS TEXT) ILIKE :id OR ('#' || CAST(news.id AS TEXT)) ILIKE :id)");
         addFilter(filters, query.title(), "news.title ILIKE :title");
-        addFilter(filters, query.source(), "(('Fuente #' || CAST(news.source_id AS TEXT)) ILIKE :source OR CAST(news.source_id AS TEXT) ILIKE :source)");
+        addFilter(filters, query.source(), "(sources.name ILIKE :source OR ('Fuente #' || CAST(news.source_id AS TEXT)) ILIKE :source OR CAST(news.source_id AS TEXT) ILIKE :source)");
         addFilter(filters, query.status(), "news.processing_status = :statusExact");
         addFilter(filters, query.event(), "COALESCE('#' || CAST(event_news.event_id AS TEXT), 'Sin evento') ILIKE :event");
         addFilter(filters, query.category(), "COALESCE(classification.category, 'Sin clasificar') = :categoryExact");
@@ -155,10 +159,11 @@ public class JpaNewsPageQueryRepository implements NewsPageQueryRepository {
                         ((Number) row[1]).longValue(),
                         (String) row[2],
                         (String) row[3],
-                        row[4] == null ? null : ((Number) row[4]).longValue(),
-                        (String) row[5],
-                        toOffsetDateTime(row[6]),
-                        toOffsetDateTime(row[7])
+                        (String) row[4],
+                        row[5] == null ? null : ((Number) row[5]).longValue(),
+                        (String) row[6],
+                        toOffsetDateTime(row[7]),
+                        toOffsetDateTime(row[8])
                 ))
                 .toList();
     }

@@ -40,6 +40,10 @@ export class NewsDetailPageComponent implements OnInit {
     }).format(new Date(value));
   }
 
+  protected sourceLabel(item: NewsDetail): string {
+    return item.sourceName?.trim() || `Fuente #${item.sourceId}`;
+  }
+
   private loadNews(newsId: number): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
