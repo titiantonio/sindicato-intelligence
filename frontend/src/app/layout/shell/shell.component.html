@@ -1,3 +1,5 @@
+<a class="skip-link" href="#main-content">Saltar al contenido principal</a>
+
 <div class="shell" [class.shell--collapsed]="sidebarCollapsed()">
   <aside
     class="shell__sidebar"
@@ -16,7 +18,7 @@
         [title]="sidebarCollapsed() ? 'Expandir menu lateral' : 'Ocultar menu lateral'"
         (click)="toggleSidebarCollapsed()"
       >
-        <span aria-hidden="true">{{ sidebarCollapsed() ? '>' : '<' }}</span>
+        <i aria-hidden="true" [class]="sidebarCollapsed() ? 'pi pi-angle-right' : 'pi pi-angle-left'"></i>
       </button>
     </div>
 
@@ -29,7 +31,7 @@
           (click)="closeSidebar()"
           [title]="sidebarCollapsed() ? item.label : null"
         >
-          <span class="shell__nav-icon" aria-hidden="true">{{ item.icon }}</span>
+          <span class="shell__nav-icon" aria-hidden="true"><i [class]="item.icon"></i></span>
           <span class="shell__nav-text">{{ item.label }}</span>
         </a>
       }
@@ -38,8 +40,8 @@
 
   <div class="shell__content">
     <header class="shell__header">
-      <button type="button" class="shell__menu-button" (click)="toggleSidebar()">
-        Menu
+      <button type="button" class="shell__menu-button" (click)="toggleSidebar()" aria-label="Abrir menu lateral">
+        <i class="pi pi-bars" aria-hidden="true"></i>
       </button>
 
       <div class="shell__header-copy">
@@ -56,7 +58,7 @@
         [title]="themeService.theme() === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
         (click)="toggleTheme()"
       >
-        <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
+        <i aria-hidden="true" [class]="themeService.theme() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"></i>
       </button>
 
       @if (currentUser(); as user) {
@@ -66,13 +68,14 @@
             <span>{{ user.role }}</span>
           </div>
           <button type="button" class="shell__logout-button" (click)="logout()">
+            <i class="pi pi-sign-out" aria-hidden="true"></i>
             Salir
           </button>
         </div>
       }
     </header>
 
-    <main class="shell__main">
+    <main id="main-content" class="shell__main" tabindex="-1">
       <router-outlet />
     </main>
   </div>

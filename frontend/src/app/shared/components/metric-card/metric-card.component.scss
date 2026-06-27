@@ -34,19 +34,13 @@
   box-shadow: 0 0 22px var(--metric-accent-soft);
 }
 
-.metric-card svg {
-  width: 1.35rem;
-  height: 1.35rem;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2;
+.metric-card i {
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
-.metric-card__main-icon svg {
-  width: 1.65rem;
-  height: 1.65rem;
+.metric-card__main-icon i {
+  font-size: 1.55rem;
 }
 
 .metric-card__title {
@@ -128,10 +122,9 @@
   overflow-wrap: anywhere;
 }
 
-.metric-card__item-value svg {
+.metric-card__item-value i {
   flex: 0 0 auto;
-  width: clamp(1rem, 0.85rem + 0.35vw, 1.35rem);
-  height: clamp(1rem, 0.85rem + 0.35vw, 1.35rem);
+  font-size: clamp(1rem, 0.85rem + 0.35vw, 1.35rem);
 }
 
 .metric-card__item-value--primary {
@@ -175,9 +168,8 @@
   overflow-wrap: anywhere;
 }
 
-.metric-card__footer svg {
-  width: 1rem;
-  height: 1rem;
+.metric-card__footer i {
+  font-size: 1rem;
 }
 
 .metric-card--primary {

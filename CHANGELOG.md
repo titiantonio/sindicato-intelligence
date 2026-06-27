@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend modernizacion: migrada la base tecnica a Angular 21, PrimeNG, `@primeng/themes`, PrimeIcons, Tailwind CSS 4 y `tailwindcss-primeui`, manteniendo contratos API y logica de negocio existentes.
+- Frontend shell: actualizada la navegacion global con PrimeIcons, enlace de salto al contenido, landmarks y foco accesible.
+- Frontend componentes compartidos: `StatusBadge` usa `p-tag` de PrimeNG y `MetricCard` sustituye SVGs manuales por PrimeIcons.
+- Documentacion frontend: actualizados Documento 07, Documento 24 y Documento 31 para registrar la decision PrimeNG + Tailwind y el backlog de migracion por pantallas.
 - Frontend/backend noticias: la tabla `/news` usa paginacion, filtros y ordenacion en backend mediante `GET /api/v1/news/page`, reduciendo la carga inicial y permitiendo ir directamente a un numero de pagina.
 - Frontend publicaciones: el resultado tecnico de Telegram se muestra como mensaje operativo legible, incluyendo el identificador de mensaje cuando el payload contiene `messageId` o `message_id`.
 
@@ -33,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend design system: creados `docs/design-system.md`, `docs/accessibility.md` y `docs/frontend-review.md` para guiar la modernizacion PrimeNG + Tailwind.
 - Frontend noticias: anadida pagina `/news` con tabla de noticias capturadas, busqueda global, filtros por columna, ordenacion, paginacion y enlaces a detalle/evento.
 - Backend/frontend trazabilidad: anadido detalle navegable de publicaciones, contenidos y noticias con enlaces entre `Publication`, `Content`, `Event`, `Analysis` y `News`.
 - Backend contenido: anadido `analysis_id` nullable en `generated_content` mediante Flyway para conservar el analisis usado en nuevos contenidos.

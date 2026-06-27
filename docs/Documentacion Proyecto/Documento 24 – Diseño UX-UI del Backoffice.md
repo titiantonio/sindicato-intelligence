@@ -841,4 +841,21 @@ Dashboard orientado a productividad.
 
 ### UX-006
 
-Diseño preparado para App móvil futura.
+
+---
+
+# Actualizacion 2026-06-27 - Modernizacion Visual
+
+## Principio
+
+La modernizacion visual adopta PrimeNG + Tailwind como base de interfaz sin cambiar el flujo funcional ni la prioridad editorial del sistema.
+
+## Reglas UX Aplicables
+
+- `Event` permanece como centro de la navegacion y de la toma de decisiones editoriales.
+- `News` se mantiene como vista secundaria de auditoria y trazabilidad.
+- Las pantallas ADMIN (`settings`, `users`, `sources`, `audit`) deben priorizar densidad informativa, filtros claros y tablas escaneables.
+- Las pantallas editoriales (`events`, `content`, `publications`) deben priorizar accion rapida, estado visible y confirmaciones no ambiguas.
+- El modo claro/oscuro se mantiene como requisito transversal.
+- La interfaz debe ser responsive para movil, tablet, laptop, desktop y ultrawide, evitando scroll horizontal salvo tablas complejas justificadas.
+- La accesibilidad objetivo es WCAG 2.2 AA en navegacion por teclado, foco visible, contraste, formularios, tablas y dialogos.

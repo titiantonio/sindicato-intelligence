@@ -934,3 +934,35 @@ JWT + Guards.
 ### AF-008
 
 Componentes reutilizables en Shared.
+
+---
+
+# Actualizacion 2026-06-27 - Modernizacion Frontend
+
+## Decision Tecnica
+
+Se sustituye la base visual anterior `Angular Material + SCSS` por:
+
+```text
+Angular 21
+PrimeNG
+@primeng/themes
+PrimeIcons
+Tailwind CSS 4
+tailwindcss-primeui
+SCSS acotado para tokens y estilos heredados
+```
+
+## Criterios
+
+- PrimeNG queda como libreria principal de componentes UI.
+- Tailwind queda como sistema de utilidades para layout, espaciado y ajustes visuales.
+- Los tokens globales del proyecto siguen centralizados en `src/styles.scss`.
+- La logica de negocio no se mueve al frontend.
+- Se mantienen `core`, `shared`, `layout` y `features`.
+- Se mantienen JWT, guards, interceptores y consumo de `/api/v1`.
+- `Event` sigue siendo la pantalla y entidad central de la experiencia editorial.
+
+## Compatibilidad
+
+La modernizacion se ejecuta como mejora posterior al Sprint 12. No cambia contratos REST, roles, workflows ni reglas de dominio.

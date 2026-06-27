@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
+import { TagModule } from 'primeng/tag';
 
 @Component({
   selector: 'app-status-badge',
-  imports: [CommonModule],
+  imports: [CommonModule, TagModule],
   templateUrl: './status-badge.component.html',
   styleUrl: './status-badge.component.scss'
 })
@@ -25,6 +26,19 @@ export class StatusBadgeComponent {
         return 'success';
       default:
         return 'neutral';
+    }
+  });
+
+  readonly severity = computed(() => {
+    switch (this.tone()) {
+      case 'danger':
+        return 'danger';
+      case 'warning':
+        return 'warn';
+      case 'success':
+        return 'success';
+      default:
+        return 'secondary';
     }
   });
 }

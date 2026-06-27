@@ -35,7 +35,7 @@ describe('MetricCardComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders the redesigned metric card with signed difference and icon svg', () => {
+  it('renders the redesigned metric card with signed difference and PrimeIcons', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
     expect(compiled.textContent).toContain('Noticias');
@@ -47,6 +47,6 @@ describe('MetricCardComponent', () => {
     expect(compiled.textContent).toContain('Ultima actualizacion:');
     expect(compiled.textContent).toContain('+350');
     expect(compiled.textContent).toContain('32.585');
-    expect(compiled.querySelectorAll('svg').length).toBeGreaterThan(0);
+    expect(compiled.querySelectorAll('.pi').length).toBeGreaterThan(0);
   });
 });

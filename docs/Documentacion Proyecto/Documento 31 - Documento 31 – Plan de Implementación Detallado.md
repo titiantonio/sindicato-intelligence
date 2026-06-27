@@ -2749,3 +2749,43 @@ Verificacion:
 - `mvn -q "-Dtest=NewsControllerTest,NewsResponseTest" test` ejecutado en `backend/` con resultado OK.
 - `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/news/news-page.component.spec.ts --include=src/app/core/services/news.service.spec.ts` ejecutado en `frontend/` con resultado OK: 10 tests, 0 fallos.
 - `npm.cmd run build` ejecutado en `frontend/` con resultado OK. Persisten warnings preexistentes de budgets en bundle inicial y SCSS de varias pantallas.
+
+---
+
+## 19.5 Modernizacion frontend PrimeNG + Tailwind - 2026-06-27
+
+Tarea de modernizacion posterior a Sprint 12, centrada en el backoffice Angular.
+
+Completado en esta iteracion:
+- [x] Decision arquitectonica documentada: Angular 21 + PrimeNG + Tailwind sustituyen Angular Material/SCSS como base UI.
+- [x] Documento 07 actualizado con la nueva arquitectura frontend.
+- [x] Documento 24 actualizado con reglas UX para la modernizacion visual.
+- [x] Dependencias frontend migradas a Angular 21, PrimeNG, `@primeng/themes`, PrimeIcons, Tailwind 4, `@tailwindcss/postcss` y `tailwindcss-primeui`.
+- [x] Configuracion global de PrimeNG anadida en `app.config.ts` con tema Aura, ripple y selector dark mode compatible con `ThemeService`.
+- [x] Tailwind separado en `src/tailwind.css` y configurado mediante PostCSS.
+- [x] Tokens globales y utilidades compartidas ampliadas en `src/styles.scss`.
+- [x] Shell global actualizado con PrimeIcons, skip link, landmarks y foco accesible.
+- [x] Componentes compartidos `StatusBadge` y `MetricCard` adaptados a PrimeNG/PrimeIcons.
+- [x] Documentacion creada: `docs/design-system.md`, `docs/accessibility.md` y `docs/frontend-review.md`.
+
+Verificacion:
+- `npm install` ejecutado en `frontend/` con resultado OK.
+- `npm run build` ejecutado en `frontend/` con resultado OK.
+- `npm test -- --watch=false --browsers=ChromeHeadless` ejecutado en `frontend/` con resultado OK: 146 tests, 0 fallos.
+- Persisten warnings de budgets en bundle inicial y SCSS de varias pantallas; quedan documentados como deuda de optimizacion frontend.
+
+Notas:
+- No se cambian contratos API ni logica de negocio.
+- La migracion visual detallada por plantilla queda preparada sobre la nueva base PrimeNG/Tailwind y debe continuar por pantalla para reducir riesgo de regresiones.
+
+---
+
+## 19.6 Pendiente - migracion visual por pantallas
+
+Tareas pendientes verificables:
+- [ ] Migrar auth (`login`, `forgot-password`, `reset-password`, `change-password`) a componentes PrimeNG de formulario.
+- [ ] Migrar `dashboard`, `events`, `event-detail`, `news` y `news-detail` a tablas, filtros y estados PrimeNG.
+- [ ] Migrar `content`, `content-detail`, `publications` y `publication-detail`.
+- [ ] Migrar `sources`, `users`, `audit` y `settings`.
+- [ ] Reducir duplicacion SCSS por pantalla y bajar warnings de budget.
+- [ ] Ejecutar tests frontend completos tras cada bloque de pantalla.
