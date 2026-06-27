@@ -1,12 +1,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { PublicationListItem } from '../../core/models/publication.models';
 import { PublicationService } from '../../core/services/publication.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { formatPublicationResult } from './publication-result.formatter';
 
 @Component({
   selector: 'app-publications-page',
-  imports: [StatusBadgeComponent],
+  imports: [RouterLink, StatusBadgeComponent],
   templateUrl: './publications-page.component.html',
   styleUrl: './publications-page.component.scss'
 })
@@ -49,7 +51,7 @@ export class PublicationsPageComponent implements OnInit {
   }
 
   protected publicationResult(publication: PublicationListItem): string {
-    return publication.responsePayload ?? publication.externalId ?? 'Sin respuesta registrada.';
+    return formatPublicationResult(publication);
   }
 
   protected publicationDateLabel(publication: PublicationListItem): string {

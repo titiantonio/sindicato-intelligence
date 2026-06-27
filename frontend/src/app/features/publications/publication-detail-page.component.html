@@ -1,0 +1,72 @@
+<a class="back-link" routerLink="/publications">Volver a publicaciones</a>
+
+@if (errorMessage()) {
+  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+}
+
+@if (isLoading()) {
+  <p class="page-alert">Cargando detalle de publicacion...</p>
+}
+
+@if (detail(); as item) {
+  <section class="page-header">
+    <div>
+      <span class="page-header__eyebrow">Publicacion #{{ item.publication.id }}</span>
+      <h1>{{ item.content.title }}</h1>
+      <p>{{ publicationResult() }}</p>
+    </div>
+
+    <div class="event-status">
+      <app-status-badge [value]="item.publication.status" />
+      <span>{{ item.publication.channel }}</span>
+    </div>
+  </section>
+
+  <section class="summary-grid">
+    <a class="metric-tile trace-link" [routerLink]="['/publications', item.publication.id]">
+      <span>Publicacion</span>
+      <strong>#{{ item.publication.id }}</strong>
+    </a>
+    <a class="metric-tile trace-link" [routerLink]="['/content', item.content.id]">
+      <span>Contenido</span>
+      <strong>#{{ item.content.id }}</strong>
+    </a>
+    <a class="metric-tile trace-link" [routerLink]="['/events', item.event.id]">
+      <span>Evento</span>
+      <strong>#{{ item.event.id }}</strong>
+    </a>
+    <div class="metric-tile">
+      <span>Analisis</span>
+      <strong>{{ item.content.analysisId ? '#' + item.content.analysisId : 'No registrado' }}</strong>
+    </div>
+  </section>
+
+  <section class="detail-grid">
+    <article class="panel detail-section">
+      <h2>Resultado de publicacion</h2>
+      <dl class="trace-list">
+        <div><dt>Canal</dt><dd>{{ item.publication.channel }}</dd></div>
+        <div><dt>External ID</dt><dd>{{ item.publication.externalId || '-' }}</dd></div>
+        <div><dt>Publicada</dt><dd>{{ formatDate(item.publication.publishedAt) }}</dd></div>
+        <div><dt>Programada</dt><dd>{{ formatDate(item.publication.scheduledAt) }}</dd></div>
+      </dl>
+      <p class="content-preview">{{ publicationResult() }}</p>
+    </article>
+
+    <article class="panel detail-section">
+      <h2>Contenido publicado</h2>
+      <p class="content-preview">{{ item.content.content }}</p>
+    </article>
+  </section>
+
+  <section class="panel detail-section">
+    <h2>Noticias trazadas</h2>
+    <div class="link-grid">
+      @for (news of item.event.news; track news.id) {
+        <a [routerLink]="['/news', news.id]">#{{ news.id }} · {{ news.title }}</a>
+      } @empty {
+        <p class="empty-state">No hay noticias asociadas.</p>
+      }
+    </div>
+  </section>
+}

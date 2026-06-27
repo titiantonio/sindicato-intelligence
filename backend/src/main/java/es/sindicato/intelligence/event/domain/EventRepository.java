@@ -19,6 +19,8 @@ public interface EventRepository {
 
     List<Event> findByStatusIn(List<EventStatus> statuses);
 
+    Optional<Event> findByNewsId(Long newsId);
+
     void saveNewsAssociation(Long eventId, Long newsId, Integer confidenceScore);
 
     boolean existsNewsAssociation(Long newsId);

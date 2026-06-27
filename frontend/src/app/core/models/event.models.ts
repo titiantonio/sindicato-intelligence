@@ -59,6 +59,7 @@ export interface EventAnalysisItem {
 export interface EventContentItem {
   id: number;
   eventId: number;
+  analysisId: number | null;
   createdBy: number;
   channel: string;
   tone: string;

@@ -32,6 +32,16 @@
   padding: 1.25rem;
 }
 
+.publication-card--link {
+  cursor: pointer;
+}
+
+.publication-card--link:hover,
+.publication-card--link:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
 .publication-card__top {
   display: flex;
   align-items: center;

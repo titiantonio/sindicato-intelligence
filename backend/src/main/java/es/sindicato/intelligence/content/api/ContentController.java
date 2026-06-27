@@ -6,10 +6,14 @@ import es.sindicato.intelligence.content.application.EditGeneratedContentCommand
 import es.sindicato.intelligence.content.application.EditGeneratedContentUseCase;
 import es.sindicato.intelligence.content.application.GenerateContentCommand;
 import es.sindicato.intelligence.content.application.GenerateContentUseCase;
+import es.sindicato.intelligence.content.application.GetGeneratedContentDetailUseCase;
+import es.sindicato.intelligence.content.application.GetGeneratedContentDetailUseCase.GeneratedContentDetail;
 import es.sindicato.intelligence.content.application.GetGeneratedContentUseCase;
 import es.sindicato.intelligence.content.application.ListGeneratedContentUseCase;
 import es.sindicato.intelligence.content.application.RejectContentUseCase;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
+import es.sindicato.intelligence.event.api.EventDetailResponse;
+import es.sindicato.intelligence.event.api.EventResponseMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,7 +38,9 @@ public class ContentController {
     private final RejectContentUseCase rejectContentUseCase;
     private final ListGeneratedContentUseCase listGeneratedContentUseCase;
     private final GetGeneratedContentUseCase getGeneratedContentUseCase;
+    private final GetGeneratedContentDetailUseCase getGeneratedContentDetailUseCase;
     private final EditGeneratedContentUseCase editGeneratedContentUseCase;
+    private final EventResponseMapper eventResponseMapper;
 
     public ContentController(
             GenerateContentUseCase generateContentUseCase,
@@ -42,14 +48,18 @@ public class ContentController {
             RejectContentUseCase rejectContentUseCase,
             ListGeneratedContentUseCase listGeneratedContentUseCase,
             GetGeneratedContentUseCase getGeneratedContentUseCase,
-            EditGeneratedContentUseCase editGeneratedContentUseCase
+            GetGeneratedContentDetailUseCase getGeneratedContentDetailUseCase,
+            EditGeneratedContentUseCase editGeneratedContentUseCase,
+            EventResponseMapper eventResponseMapper
     ) {
         this.generateContentUseCase = generateContentUseCase;
         this.approveContentUseCase = approveContentUseCase;
         this.rejectContentUseCase = rejectContentUseCase;
         this.listGeneratedContentUseCase = listGeneratedContentUseCase;
         this.getGeneratedContentUseCase = getGeneratedContentUseCase;
+        this.getGeneratedContentDetailUseCase = getGeneratedContentDetailUseCase;
         this.editGeneratedContentUseCase = editGeneratedContentUseCase;
+        this.eventResponseMapper = eventResponseMapper;
     }
 
     @GetMapping
@@ -62,6 +72,13 @@ public class ContentController {
     @GetMapping("/{id}")
     public GeneratedContentResponse getContent(@PathVariable Long id) {
         return toResponse(getGeneratedContentUseCase.execute(id));
+    }
+
+    @GetMapping("/{id}/detail")
+    public GeneratedContentDetailResponse getContentDetail(@PathVariable Long id) {
+        GeneratedContentDetail detail = getGeneratedContentDetailUseCase.execute(id);
+        EventDetailResponse event = eventResponseMapper.toDetailResponse(detail.eventDetail());
+        return new GeneratedContentDetailResponse(toResponse(detail.content()), event);
     }
 
     @PostMapping("/generate")
@@ -114,6 +131,7 @@ public class ContentController {
         return new GeneratedContentResponse(
                 content.getId(),
                 content.getEventId(),
+                content.getAnalysisId(),
                 content.getCreatedBy(),
                 content.getChannel(),
                 content.getTone(),

@@ -1,0 +1,72 @@
+<a class="back-link" routerLink="/content">Volver a contenido</a>
+
+@if (errorMessage()) {
+  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+}
+
+@if (isLoading()) {
+  <p class="page-alert">Cargando detalle de contenido...</p>
+}
+
+@if (detail(); as item) {
+  <section class="page-header">
+    <div>
+      <span class="page-header__eyebrow">Contenido #{{ item.content.id }}</span>
+      <h1>{{ item.content.title }}</h1>
+      <p>Contenido editorial generado desde el evento #{{ item.event.id }}.</p>
+    </div>
+    <div class="event-status">
+      <app-status-badge [value]="item.content.status" />
+      <span>{{ item.content.channel }}</span>
+    </div>
+  </section>
+
+  <section class="summary-grid">
+    <a class="metric-tile trace-link" [routerLink]="['/content', item.content.id]">
+      <span>Contenido</span>
+      <strong>#{{ item.content.id }}</strong>
+    </a>
+    <a class="metric-tile trace-link" [routerLink]="['/events', item.event.id]">
+      <span>Evento</span>
+      <strong>#{{ item.event.id }}</strong>
+    </a>
+    <div class="metric-tile">
+      <span>Analisis</span>
+      <strong>{{ item.content.analysisId ? '#' + item.content.analysisId : 'No registrado' }}</strong>
+    </div>
+    <div class="metric-tile">
+      <span>Noticias</span>
+      <strong>{{ item.event.news.length }}</strong>
+    </div>
+  </section>
+
+  <section class="detail-grid">
+    <article class="panel detail-section">
+      <h2>Contenido</h2>
+      <dl class="trace-list">
+        <div><dt>Tono</dt><dd>{{ item.content.tone }}</dd></div>
+        <div><dt>Creado</dt><dd>{{ formatDate(item.content.generatedAt) }}</dd></div>
+        <div><dt>Aprobado</dt><dd>{{ formatDate(item.content.approvedAt) }}</dd></div>
+      </dl>
+      <p class="content-preview">{{ item.content.content }}</p>
+    </article>
+
+    <article class="panel detail-section">
+      <h2>Evento origen</h2>
+      <h3><a [routerLink]="['/events', item.event.id]">#{{ item.event.id }} · {{ item.event.title }}</a></h3>
+      <p>{{ item.event.description || 'Sin descripcion registrada.' }}</p>
+      <app-status-badge [value]="item.event.status" />
+    </article>
+  </section>
+
+  <section class="panel detail-section">
+    <h2>Noticias trazadas</h2>
+    <div class="link-grid">
+      @for (news of item.event.news; track news.id) {
+        <a [routerLink]="['/news', news.id]">#{{ news.id }} · {{ news.title }}</a>
+      } @empty {
+        <p class="empty-state">No hay noticias asociadas.</p>
+      }
+    </div>
+  </section>
+}

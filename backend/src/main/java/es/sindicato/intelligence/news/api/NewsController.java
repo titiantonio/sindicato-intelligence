@@ -2,6 +2,9 @@ package es.sindicato.intelligence.news.api;
 
 import es.sindicato.intelligence.news.application.CreateNewsCommand;
 import es.sindicato.intelligence.news.application.CreateNewsUseCase;
+import es.sindicato.intelligence.event.api.EventResponseMapper;
+import es.sindicato.intelligence.news.application.GetNewsTraceUseCase;
+import es.sindicato.intelligence.news.application.GetNewsTraceUseCase.NewsTrace;
 import es.sindicato.intelligence.news.application.GetNewsUseCase;
 import es.sindicato.intelligence.news.application.IngestNewsBatchCommand;
 import es.sindicato.intelligence.news.application.IngestNewsBatchResult;
@@ -32,17 +35,23 @@ public class NewsController {
     private final IngestNewsBatchUseCase ingestNewsBatchUseCase;
     private final ListNewsUseCase listNewsUseCase;
     private final GetNewsUseCase getNewsUseCase;
+    private final GetNewsTraceUseCase getNewsTraceUseCase;
+    private final EventResponseMapper eventResponseMapper;
 
     public NewsController(
             CreateNewsUseCase createNewsUseCase,
             IngestNewsBatchUseCase ingestNewsBatchUseCase,
             ListNewsUseCase listNewsUseCase,
-            GetNewsUseCase getNewsUseCase
+            GetNewsUseCase getNewsUseCase,
+            GetNewsTraceUseCase getNewsTraceUseCase,
+            EventResponseMapper eventResponseMapper
     ) {
         this.createNewsUseCase = createNewsUseCase;
         this.ingestNewsBatchUseCase = ingestNewsBatchUseCase;
         this.listNewsUseCase = listNewsUseCase;
         this.getNewsUseCase = getNewsUseCase;
+        this.getNewsTraceUseCase = getNewsTraceUseCase;
+        this.eventResponseMapper = eventResponseMapper;
     }
 
     @PostMapping
@@ -92,7 +101,7 @@ public class NewsController {
 
     @GetMapping("/{id}")
     public NewsResponse getNews(@PathVariable Long id) {
-        return toResponse(getNewsUseCase.execute(id));
+        return toResponse(getNewsTraceUseCase.execute(id));
     }
 
     @ExceptionHandler(NewsNotFoundException.class)
@@ -132,6 +141,26 @@ public class NewsController {
                 newsArticle.getProcessingStatus(),
                 newsArticle.getCreatedAt(),
                 newsArticle.getUpdatedAt()
+        );
+    }
+
+    private NewsResponse toResponse(NewsTrace trace) {
+        NewsArticle newsArticle = trace.news();
+        return new NewsResponse(
+                newsArticle.getId(),
+                newsArticle.getSourceId(),
+                newsArticle.getTitle(),
+                newsArticle.getUrl(),
+                newsArticle.getSummary(),
+                newsArticle.getContent(),
+                newsArticle.getHash(),
+                newsArticle.getPublishedAt(),
+                newsArticle.getCapturedAt(),
+                newsArticle.getProcessingStatus(),
+                newsArticle.getCreatedAt(),
+                newsArticle.getUpdatedAt(),
+                trace.event() == null ? null : trace.event().getId(),
+                trace.classification() == null ? null : eventResponseMapper.toClassificationResponse(trace.classification())
         );
     }
 }

@@ -5,12 +5,15 @@ import { passwordChangeGuard } from './core/guards/password-change.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { ChangePasswordPageComponent } from './features/auth/change-password/change-password-page.component';
 import { AuditPageComponent } from './features/audit/audit-page.component';
+import { ContentDetailPageComponent } from './features/content/content-detail-page.component';
 import { ContentPageComponent } from './features/content/content-page.component';
 import { DashboardPageComponent } from './features/dashboard/dashboard-page.component';
 import { EventDetailPageComponent } from './features/events/event-detail-page.component';
 import { EventsPageComponent } from './features/events/events-page.component';
 import { ForgotPasswordPageComponent } from './features/auth/forgot-password/forgot-password-page.component';
 import { LoginPageComponent } from './features/auth/login/login-page.component';
+import { NewsDetailPageComponent } from './features/news/news-detail-page.component';
+import { PublicationDetailPageComponent } from './features/publications/publication-detail-page.component';
 import { PublicationsPageComponent } from './features/publications/publications-page.component';
 import { ResetPasswordPageComponent } from './features/auth/reset-password/reset-password-page.component';
 import { SettingsPageComponent } from './features/settings/settings-page.component';
@@ -63,8 +66,20 @@ export const routes: Routes = [
         component: ContentPageComponent
       },
       {
+        path: 'content/:id',
+        component: ContentDetailPageComponent
+      },
+      {
         path: 'publications',
         component: PublicationsPageComponent
+      },
+      {
+        path: 'publications/:id',
+        component: PublicationDetailPageComponent
+      },
+      {
+        path: 'news/:id',
+        component: NewsDetailPageComponent
       },
       {
         path: 'sources',

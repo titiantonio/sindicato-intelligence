@@ -91,6 +91,7 @@ public class GenerateContentUseCase {
         GeneratedContent content = new GeneratedContent(
                 null,
                 event.getId(),
+                analysis.getId(),
                 createdBy,
                 channel,
                 tone,

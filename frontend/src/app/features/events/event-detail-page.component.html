@@ -79,7 +79,7 @@
         <tbody>
           @for (news of paginatedNews(); track news.id) {
             <tr>
-              <td class="table-cell-nowrap">#{{ news.id }}</td>
+              <td class="table-cell-nowrap"><a [routerLink]="['/news', news.id]">#{{ news.id }}</a></td>
               <td><a [href]="news.url" target="_blank" rel="noreferrer">{{ news.title }}</a></td>
               <td class="table-cell-nowrap"><app-status-badge [value]="news.processingStatus" /></td>
               <td class="table-cell-nowrap">{{ news.classification?.category || '-' }}</td>
@@ -122,7 +122,7 @@
       </header>
       @for (analysis of item.analyses; track analysis.id) {
         <article class="stack-item">
-          <span>{{ formatDate(analysis.generatedAt) }} · {{ analysis.modelUsed }}</span>
+          <span>#{{ analysis.id }} · {{ formatDate(analysis.generatedAt) }} · {{ analysis.modelUsed }}</span>
           <h3>{{ analysis.executiveSummary }}</h3>
           <p>{{ analysis.unionSummary }}</p>
         </article>
@@ -170,8 +170,9 @@
 
       @for (content of item.contents; track content.id) {
         <article class="stack-item">
-          <span>{{ content.channel }} · {{ content.tone }}</span>
-          <h3>{{ content.title }}</h3>
+          <span>#{{ content.id }} · {{ content.channel }} · {{ content.tone }}</span>
+          <h3><a [routerLink]="['/content', content.id]">{{ content.title }}</a></h3>
+          <p>Analisis: {{ content.analysisId ? '#' + content.analysisId : 'No registrado' }}</p>
           <p>{{ content.content }}</p>
           <app-status-badge [value]="content.status" />
         </article>

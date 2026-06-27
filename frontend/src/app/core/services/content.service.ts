@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
-import { ContentListItem } from '../models/content.models';
+import { ContentDetail, ContentListItem } from '../models/content.models';
 
 export interface GenerateContentPayload {
   eventId: number;
@@ -23,6 +23,10 @@ export class ContentService {
 
   getContent(contentId: number) {
     return this.httpClient.get<ContentListItem>(`/api/v1/content/${contentId}`);
+  }
+
+  getContentDetail(contentId: number) {
+    return this.httpClient.get<ContentDetail>(`/api/v1/content/${contentId}/detail`);
   }
 
   approveContent(contentId: number) {

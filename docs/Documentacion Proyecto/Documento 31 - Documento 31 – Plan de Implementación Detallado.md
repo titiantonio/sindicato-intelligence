@@ -973,6 +973,8 @@ Detalle Evento.
 
 Nota posterior 2026-06-13: implementado GET /api/v1/events/{id} con evento, noticias asociadas, clasificacion, analisis y contenido relacionado; creada pantalla Angular /events/:id enlazada desde el listado real.
 
+Nota posterior 2026-06-27: ampliada la trazabilidad navegable del detalle de evento enlazando noticias a `/news/:id`, contenidos a `/content/:id` y mostrando el identificador de analisis asociado cuando el contenido lo conserva.
+
 ---
 
 ## T11.7 [x]
@@ -983,6 +985,8 @@ Nota posterior 2026-06-10: creada vista editorial mock de contenido con bandeja 
 
 Estado actualizado 2026-06-13: tarea completada funcionalmente para MVP. El backend expone listado/detalle, aprobacion, rechazo y edicion manual `PUT /api/v1/content/{id}`. Angular consume datos reales para bandeja editorial, editor manual, aprobacion, rechazo y programacion de contenido aprobado.
 
+Nota posterior 2026-06-27: anadido detalle navegable `/content/:id` con traza hacia evento, analisis usado y noticias relacionadas; persistido `analysis_id` nullable en `generated_content` para nuevos contenidos mediante Flyway `V17`.
+
 ---
 
 ## T11.8 [x]
@@ -992,6 +996,10 @@ Publicaciones.
 Nota posterior 2026-06-10: creada vista mock de historico de publicaciones para avanzar la experiencia visual del backoffice. Pendiente listado real desde backend.
 
 Estado actualizado 2026-06-13: tarea completada funcionalmente para MVP. El backend expone listado/detalle/historial real, `POST /api/v1/publications/{contentId}/schedule`, estado `SCHEDULED`, `scheduled_at` y scheduler automatico configurable para publicaciones vencidas. Angular muestra `SCHEDULED` y `scheduledAt`.
+
+Nota posterior 2026-06-27: anadido detalle navegable `/publications/:id` con resultado de publicacion, contenido publicado y traza completa hacia contenido, evento, analisis y noticias enlazadas.
+
+Nota posterior 2026-06-27: mejorada la legibilidad del resultado de publicacion en Angular para traducir payloads tecnicos de Telegram como `{"ok":true,"messageId":"459"}` a mensajes operativos con el identificador de mensaje.
 
 Nota posterior 2026-06-10: validado el arranque del frontend con `npm run build` y `npm test -- --watch=false --browsers=ChromeHeadless` en `frontend`.
 

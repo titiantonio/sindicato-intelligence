@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { ContentListItem } from '../../core/models/content.models';
 import { ContentService } from '../../core/services/content.service';
@@ -12,7 +13,7 @@ type ModalMode = 'view' | 'edit';
 
 @Component({
   selector: 'app-content-page',
-  imports: [FormsModule, StatusBadgeComponent],
+  imports: [FormsModule, RouterLink, StatusBadgeComponent],
   templateUrl: './content-page.component.html',
   styleUrl: './content-page.component.scss'
 })

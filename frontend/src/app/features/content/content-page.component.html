@@ -100,7 +100,15 @@
         <div class="editor-summary">
           <div>
             <span class="editor-preview__label">Evento</span>
-            <strong>#{{ selected.eventId }}</strong>
+            <strong><a [routerLink]="['/events', selected.eventId]">#{{ selected.eventId }}</a></strong>
+          </div>
+          <div>
+            <span class="editor-preview__label">Contenido</span>
+            <strong><a [routerLink]="['/content', selected.id]">#{{ selected.id }}</a></strong>
+          </div>
+          <div>
+            <span class="editor-preview__label">Analisis</span>
+            <strong>{{ selected.analysisId ? '#' + selected.analysisId : 'No registrado' }}</strong>
           </div>
           <div>
             <span class="editor-preview__label">Canal</span>

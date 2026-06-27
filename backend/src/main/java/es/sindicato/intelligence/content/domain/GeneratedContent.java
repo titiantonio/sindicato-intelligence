@@ -7,6 +7,7 @@ public class GeneratedContent {
 
     private final Long id;
     private final Long eventId;
+    private final Long analysisId;
     private final Long createdBy;
     private final String channel;
     private String tone;
@@ -28,8 +29,37 @@ public class GeneratedContent {
             OffsetDateTime generatedAt,
             OffsetDateTime approvedAt
     ) {
+        this(
+                id,
+                eventId,
+                null,
+                createdBy,
+                channel,
+                tone,
+                title,
+                content,
+                status,
+                generatedAt,
+                approvedAt
+        );
+    }
+
+    public GeneratedContent(
+            Long id,
+            Long eventId,
+            Long analysisId,
+            Long createdBy,
+            String channel,
+            String tone,
+            String title,
+            String content,
+            ContentStatus status,
+            OffsetDateTime generatedAt,
+            OffsetDateTime approvedAt
+    ) {
         this.id = id;
         this.eventId = Objects.requireNonNull(eventId, "eventId is required");
+        this.analysisId = analysisId;
         this.createdBy = Objects.requireNonNull(createdBy, "createdBy is required");
         this.channel = requireText(channel, "channel");
         this.tone = requireText(tone, "tone");
@@ -89,6 +119,10 @@ public class GeneratedContent {
 
     public Long getEventId() {
         return eventId;
+    }
+
+    public Long getAnalysisId() {
+        return analysisId;
     }
 
     public Long getCreatedBy() {

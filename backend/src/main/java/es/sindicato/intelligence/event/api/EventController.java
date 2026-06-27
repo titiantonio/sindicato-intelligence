@@ -225,6 +225,7 @@ public class EventController {
         return new GeneratedContentResponse(
                 content.getId(),
                 content.getEventId(),
+                content.getAnalysisId(),
                 content.getCreatedBy(),
                 content.getChannel(),
                 content.getTone(),

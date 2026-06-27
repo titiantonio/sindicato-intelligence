@@ -16,14 +16,15 @@
 
 <section class="timeline-grid">
   @for (publication of publications(); track publication.id) {
-    <article class="publication-card">
+    <article class="publication-card publication-card--link" [routerLink]="['/publications', publication.id]" tabindex="0">
       <div class="publication-card__top">
-        <strong>{{ publication.channel }}</strong>
+        <strong>#{{ publication.id }} · {{ publication.channel }}</strong>
         <app-status-badge [value]="publication.status" />
       </div>
 
       <div class="publication-card__body">
         <span class="publication-card__date">{{ publicationDateLabel(publication) }}</span>
+        <span class="publication-card__date">Contenido #{{ publication.contentId }}</span>
         <p>{{ publicationResult(publication) }}</p>
       </div>
     </article>

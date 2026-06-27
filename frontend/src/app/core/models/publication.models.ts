@@ -1,3 +1,6 @@
+import { ContentListItem } from './content.models';
+import { EventDetail } from './event.models';
+
 export interface PublicationListItem {
   id: number;
   contentId: number;
@@ -7,4 +10,10 @@ export interface PublicationListItem {
   publishedAt: string | null;
   responsePayload: string | null;
   scheduledAt: string | null;
+}
+
+export interface PublicationDetail {
+  publication: PublicationListItem;
+  content: ContentListItem;
+  event: EventDetail;
 }

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Frontend publicaciones: el resultado tecnico de Telegram se muestra como mensaje operativo legible, incluyendo el identificador de mensaje cuando el payload contiene `messageId` o `message_id`.
+
 ### Fixed
 
 - Backoffice rendimiento: optimizadas las lecturas de `GET /api/v1/dashboard` y `GET /api/v1/events` con consultas agregadas, indices Flyway y carga Angular progresiva para reducir pantallas en blanco con "Cargando...".
@@ -26,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend/frontend trazabilidad: anadido detalle navegable de publicaciones, contenidos y noticias con enlaces entre `Publication`, `Content`, `Event`, `Analysis` y `News`.
+- Backend contenido: anadido `analysis_id` nullable en `generated_content` mediante Flyway para conservar el analisis usado en nuevos contenidos.
 - Backend/frontend eventos: anadido estado editorial derivado `PENDING_ANALYSIS`, `ANALYZED`, `PUBLISHED` y `DISCARDED` en listados, detalle y dashboard.
 - Backend eventos: anadido descarte manual reversible con `POST /api/v1/events/{id}/restore`, persistencia Flyway y auditoria `EVENT_RESTORED`.
 - Frontend eventos: el listado muestra y filtra estado editorial, permite deshacer descartes manuales y el detalle permite generar analisis IA del evento.

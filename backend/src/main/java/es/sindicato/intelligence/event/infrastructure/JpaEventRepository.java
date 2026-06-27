@@ -105,6 +105,24 @@ public class JpaEventRepository implements EventRepository {
     }
 
     @Override
+    public Optional<Event> findByNewsId(Long newsId) {
+        return entityManager.createQuery(
+                        """
+                        SELECT event
+                        FROM EventEntity event
+                        JOIN EventNewsEntity eventNews ON eventNews.eventId = event.id
+                        WHERE eventNews.newsId = :newsId
+                        ORDER BY event.lastUpdatedAt DESC, event.id DESC
+                        """,
+                        EventEntity.class
+                )
+                .setParameter("newsId", newsId)
+                .getResultStream()
+                .findFirst()
+                .map(this::toDomain);
+    }
+
+    @Override
     public void saveNewsAssociation(Long eventId, Long newsId, Integer confidenceScore) {
         validateConfidenceScore(confidenceScore);
 

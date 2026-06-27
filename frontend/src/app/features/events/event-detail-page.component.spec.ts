@@ -33,6 +33,7 @@ describe('EventDetailPageComponent', () => {
     contentService.generateContent.and.returnValue(of({
       id: 9,
       eventId: 7,
+      analysisId: 3,
       createdBy: 1,
       channel: 'Telegram',
       tone: 'INFORMATIVO',

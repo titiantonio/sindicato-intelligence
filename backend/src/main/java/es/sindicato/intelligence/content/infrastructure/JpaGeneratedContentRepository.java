@@ -61,6 +61,7 @@ public class JpaGeneratedContentRepository implements GeneratedContentRepository
         return new GeneratedContentEntity(
                 content.getId(),
                 content.getEventId(),
+                content.getAnalysisId(),
                 content.getCreatedBy(),
                 content.getChannel(),
                 content.getTone(),
@@ -76,6 +77,7 @@ public class JpaGeneratedContentRepository implements GeneratedContentRepository
         return new GeneratedContent(
                 entity.getId(),
                 entity.getEventId(),
+                entity.getAnalysisId(),
                 entity.getCreatedBy(),
                 entity.getChannel(),
                 entity.getTone(),

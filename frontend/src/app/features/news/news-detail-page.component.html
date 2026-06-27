@@ -1,0 +1,71 @@
+<a class="back-link" routerLink="/events">Volver a eventos</a>
+
+@if (errorMessage()) {
+  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+}
+
+@if (isLoading()) {
+  <p class="page-alert">Cargando detalle de noticia...</p>
+}
+
+@if (news(); as item) {
+  <section class="page-header">
+    <div>
+      <span class="page-header__eyebrow">Noticia #{{ item.id }}</span>
+      <h1>{{ item.title }}</h1>
+      <p>{{ item.summary || 'Sin resumen registrado.' }}</p>
+    </div>
+    <div class="event-status">
+      <app-status-badge [value]="item.processingStatus" />
+      <span>Fuente #{{ item.sourceId }}</span>
+    </div>
+  </section>
+
+  <section class="summary-grid">
+    <a class="metric-tile trace-link" [href]="item.url" target="_blank" rel="noreferrer">
+      <span>URL original</span>
+      <strong>Ver noticia</strong>
+    </a>
+    @if (item.eventId) {
+      <a class="metric-tile trace-link" [routerLink]="['/events', item.eventId]">
+        <span>Evento</span>
+        <strong>#{{ item.eventId }}</strong>
+      </a>
+    } @else {
+      <div class="metric-tile">
+        <span>Evento</span>
+        <strong>No asociado</strong>
+      </div>
+    }
+    <div class="metric-tile">
+      <span>Clasificacion</span>
+      <strong>{{ item.classification?.category || '-' }}</strong>
+    </div>
+    <div class="metric-tile">
+      <span>Capturada</span>
+      <strong>{{ formatDate(item.capturedAt) }}</strong>
+    </div>
+  </section>
+
+  <section class="detail-grid">
+    <article class="panel detail-section">
+      <h2>Contenido capturado</h2>
+      <p class="content-preview">{{ item.content || item.summary || 'Sin contenido registrado.' }}</p>
+    </article>
+
+    <article class="panel detail-section">
+      <h2>Traza IA</h2>
+      @if (item.classification; as classification) {
+        <dl class="trace-list">
+          <div><dt>Clasificacion</dt><dd>#{{ classification.id }}</dd></div>
+          <div><dt>Categoria</dt><dd>{{ classification.category }}</dd></div>
+          <div><dt>Impacto</dt><dd>{{ classification.impactLevel }}</dd></div>
+          <div><dt>Urgencia</dt><dd>{{ classification.urgencyLevel }}</dd></div>
+          <div><dt>Relevancia</dt><dd>{{ classification.relevanceScore }}</dd></div>
+        </dl>
+      } @else {
+        <p class="empty-state">No hay clasificacion asociada.</p>
+      }
+    </article>
+  </section>
+}

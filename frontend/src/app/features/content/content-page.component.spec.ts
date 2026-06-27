@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { ContentListItem } from '../../core/models/content.models';
@@ -49,6 +50,7 @@ describe('ContentPageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ContentPageComponent],
       providers: [
+        provideRouter([]),
         { provide: ContentService, useValue: contentService },
         { provide: PublicationService, useValue: publicationService }
       ]
@@ -160,6 +162,7 @@ describe('ContentPageComponent', () => {
     return {
       id,
       eventId: id + 10,
+      analysisId: id + 20,
       createdBy: 1,
       channel,
       tone: 'INFORMATIVO',

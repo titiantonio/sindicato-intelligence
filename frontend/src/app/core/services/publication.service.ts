@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
-import { PublicationListItem } from '../models/publication.models';
+import { PublicationDetail, PublicationListItem } from '../models/publication.models';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +15,10 @@ export class PublicationService {
 
   getPublication(publicationId: number) {
     return this.httpClient.get<PublicationListItem>(`/api/v1/publications/${publicationId}`);
+  }
+
+  getPublicationDetail(publicationId: number) {
+    return this.httpClient.get<PublicationDetail>(`/api/v1/publications/${publicationId}/detail`);
   }
 
   publishContent(contentId: number) {

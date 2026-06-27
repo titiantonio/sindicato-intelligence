@@ -23,6 +23,9 @@ public class GeneratedContentEntity {
     @Column(name = "event_id", nullable = false)
     private Long eventId;
 
+    @Column(name = "analysis_id")
+    private Long analysisId;
+
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
 
@@ -54,6 +57,7 @@ public class GeneratedContentEntity {
     public GeneratedContentEntity(
             Long id,
             Long eventId,
+            Long analysisId,
             Long createdBy,
             String channel,
             String tone,
@@ -65,6 +69,7 @@ public class GeneratedContentEntity {
     ) {
         this.id = id;
         this.eventId = eventId;
+        this.analysisId = analysisId;
         this.createdBy = createdBy;
         this.channel = channel;
         this.tone = tone;
@@ -81,6 +86,10 @@ public class GeneratedContentEntity {
 
     public Long getEventId() {
         return eventId;
+    }
+
+    public Long getAnalysisId() {
+        return analysisId;
     }
 
     public Long getCreatedBy() {

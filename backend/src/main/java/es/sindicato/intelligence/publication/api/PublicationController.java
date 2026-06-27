@@ -1,11 +1,17 @@
 package es.sindicato.intelligence.publication.api;
 
 import es.sindicato.intelligence.publication.application.GetPublicationUseCase;
+import es.sindicato.intelligence.publication.application.GetPublicationDetailUseCase;
+import es.sindicato.intelligence.publication.application.GetPublicationDetailUseCase.PublicationDetail;
 import es.sindicato.intelligence.publication.application.ListPublicationsUseCase;
 import es.sindicato.intelligence.publication.application.PublishContentUseCase;
 import es.sindicato.intelligence.publication.application.PublishingProviderException;
 import es.sindicato.intelligence.publication.application.SchedulePublicationCommand;
 import es.sindicato.intelligence.publication.application.SchedulePublicationUseCase;
+import es.sindicato.intelligence.content.api.GeneratedContentResponse;
+import es.sindicato.intelligence.content.domain.GeneratedContent;
+import es.sindicato.intelligence.event.api.EventDetailResponse;
+import es.sindicato.intelligence.event.api.EventResponseMapper;
 import es.sindicato.intelligence.publication.domain.Publication;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -28,18 +34,24 @@ public class PublicationController {
     private final PublishContentUseCase publishContentUseCase;
     private final ListPublicationsUseCase listPublicationsUseCase;
     private final GetPublicationUseCase getPublicationUseCase;
+    private final GetPublicationDetailUseCase getPublicationDetailUseCase;
     private final SchedulePublicationUseCase schedulePublicationUseCase;
+    private final EventResponseMapper eventResponseMapper;
 
     public PublicationController(
             PublishContentUseCase publishContentUseCase,
             ListPublicationsUseCase listPublicationsUseCase,
             GetPublicationUseCase getPublicationUseCase,
-            SchedulePublicationUseCase schedulePublicationUseCase
+            GetPublicationDetailUseCase getPublicationDetailUseCase,
+            SchedulePublicationUseCase schedulePublicationUseCase,
+            EventResponseMapper eventResponseMapper
     ) {
         this.publishContentUseCase = publishContentUseCase;
         this.listPublicationsUseCase = listPublicationsUseCase;
         this.getPublicationUseCase = getPublicationUseCase;
+        this.getPublicationDetailUseCase = getPublicationDetailUseCase;
         this.schedulePublicationUseCase = schedulePublicationUseCase;
+        this.eventResponseMapper = eventResponseMapper;
     }
 
     @GetMapping
@@ -52,6 +64,17 @@ public class PublicationController {
     @GetMapping("/{id}")
     public PublicationResponse getPublication(@PathVariable Long id) {
         return toResponse(getPublicationUseCase.execute(id));
+    }
+
+    @GetMapping("/{id}/detail")
+    public PublicationDetailResponse getPublicationDetail(@PathVariable Long id) {
+        PublicationDetail detail = getPublicationDetailUseCase.execute(id);
+        EventDetailResponse event = eventResponseMapper.toDetailResponse(detail.eventDetail());
+        return new PublicationDetailResponse(
+                toResponse(detail.publication()),
+                toContentResponse(detail.content()),
+                event
+        );
     }
 
     @PostMapping("/{id}/publish")
@@ -89,6 +112,22 @@ public class PublicationController {
                 publication.getPublishedAt(),
                 publication.getResponsePayload(),
                 publication.getScheduledAt()
+        );
+    }
+
+    private GeneratedContentResponse toContentResponse(GeneratedContent content) {
+        return new GeneratedContentResponse(
+                content.getId(),
+                content.getEventId(),
+                content.getAnalysisId(),
+                content.getCreatedBy(),
+                content.getChannel(),
+                content.getTone(),
+                content.getTitle(),
+                content.getContent(),
+                content.getStatus(),
+                content.getGeneratedAt(),
+                content.getApprovedAt()
         );
     }
 }
