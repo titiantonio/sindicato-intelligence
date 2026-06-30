@@ -1,4 +1,8 @@
 .page-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
   margin-bottom: 1.5rem;
 }
 
@@ -26,7 +30,7 @@
 
 .publication-card {
   background: var(--color-surface);
-  border-radius: 1.25rem;
+  border-radius: 8px;
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-soft);
   padding: 1.25rem;
@@ -65,8 +69,65 @@
   color: var(--color-text);
 }
 
+.manual-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.manual-form label,
+.destination-list {
+  color: var(--color-text-muted);
+  display: grid;
+  font-size: 0.9rem;
+  font-weight: 800;
+  gap: 0.4rem;
+}
+
+.manual-form input,
+.manual-form textarea {
+  border: 1px solid var(--color-input-border);
+  border-radius: 8px;
+  color: var(--color-field-text);
+  padding: 0.65rem 0.75rem;
+  width: 100%;
+}
+
+.destination-list {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.destination-option {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.destination-option input {
+  width: auto;
+}
+
+.attachment-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.manual-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
 @media (max-width: 1100px) {
   .timeline-grid {
     grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

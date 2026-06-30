@@ -9,7 +9,7 @@ import { SelectModule } from 'primeng/select';
 import { forkJoin } from 'rxjs';
 
 import { AiMetricsSnapshot, AiModelOption, AiPromptVersion, AiProviderSetting, AiWorkflowSetting } from '../../core/models/ai-observability.models';
-import { TelegramPublicationSettings } from '../../core/models/application-settings.models';
+import { TelegramPublicationDestination, TelegramPublicationSettings } from '../../core/models/application-settings.models';
 import { AutomationOverview, AutomationRunResult, AutomationWorkflowCode, AutomationWorkflowSetting, WorkflowOperation } from '../../core/models/automation.models';
 import { MetricCard } from '../../core/models/dashboard.models';
 import { AiObservabilityService } from '../../core/services/ai-observability.service';
@@ -35,6 +35,7 @@ interface TelegramSettingsForm {
   botToken: string;
   chatId: string;
   disableWebPagePreview: boolean;
+  destinations: TelegramPublicationDestination[];
 }
 
 interface AiProviderForm {
@@ -77,7 +78,8 @@ export class SettingsPageComponent implements OnInit {
     baseUrl: 'https://api.telegram.org',
     botToken: '',
     chatId: '',
-    disableWebPagePreview: true
+    disableWebPagePreview: true,
+    destinations: []
   });
   protected readonly isLoading = signal(false);
   protected readonly isTelegramLoading = signal(false);
@@ -215,7 +217,8 @@ export class SettingsPageComponent implements OnInit {
           baseUrl: settings.baseUrl,
           botToken: '',
           chatId: settings.chatId ?? '',
-          disableWebPagePreview: settings.disableWebPagePreview
+          disableWebPagePreview: settings.disableWebPagePreview,
+          destinations: settings.destinations?.length ? settings.destinations : this.legacyDestination(settings.chatId)
         });
         this.publicationLoaded.set(true);
         this.isTelegramLoading.set(false);
@@ -349,6 +352,26 @@ export class SettingsPageComponent implements OnInit {
     this.telegramForm.update((form) => ({ ...form, ...patch }));
   }
 
+  protected addTelegramDestination(): void {
+    const destinations = [
+      ...this.telegramForm().destinations,
+      { id: null, name: '', chatId: '', active: true, defaultSelected: this.telegramForm().destinations.length === 0 }
+    ];
+    this.updateTelegramForm({ destinations });
+  }
+
+  protected removeTelegramDestination(index: number): void {
+    const destinations = this.telegramForm().destinations.filter((_, itemIndex) => itemIndex !== index);
+    this.updateTelegramForm({ destinations });
+  }
+
+  protected updateTelegramDestination(index: number, patch: Partial<TelegramPublicationDestination>): void {
+    const destinations = this.telegramForm().destinations.map((destination, itemIndex) => (
+      itemIndex === index ? { ...destination, ...patch } : destination
+    ));
+    this.updateTelegramForm({ destinations });
+  }
+
   protected updateAiProviderForm(providerCode: string, patch: Partial<AiProviderForm>): void {
     this.aiProviderForms.update((forms) => ({
       ...forms,
@@ -439,12 +462,20 @@ export class SettingsPageComponent implements OnInit {
     this.errorMessage.set(null);
     this.successMessage.set(null);
 
+    const destinations = form.destinations
+      .map((destination) => ({
+        ...destination,
+        name: destination.name.trim(),
+        chatId: destination.chatId.trim()
+      }))
+      .filter((destination) => destination.name && destination.chatId);
     this.applicationSettingsService.updateTelegramSettings({
       enabled: form.enabled,
       baseUrl: form.baseUrl,
       botToken: form.botToken.trim() ? form.botToken.trim() : null,
       chatId: form.chatId.trim() ? form.chatId.trim() : null,
-      disableWebPagePreview: form.disableWebPagePreview
+      disableWebPagePreview: form.disableWebPagePreview,
+      ...(destinations.length ? { destinations } : {})
     }).subscribe({
       next: (settings) => {
         this.telegramSettings.set(settings);
@@ -453,7 +484,8 @@ export class SettingsPageComponent implements OnInit {
           baseUrl: settings.baseUrl,
           botToken: '',
           chatId: settings.chatId ?? '',
-          disableWebPagePreview: settings.disableWebPagePreview
+          disableWebPagePreview: settings.disableWebPagePreview,
+          destinations: settings.destinations?.length ? settings.destinations : this.legacyDestination(settings.chatId)
         });
         this.successMessage.set(settings.readyToPublish ? 'Configuracion de Telegram guardada y lista para publicar.' : 'Configuracion de Telegram guardada.');
         this.isTelegramSaving.set(false);
@@ -762,6 +794,10 @@ export class SettingsPageComponent implements OnInit {
       intervalMinutes: Math.max(1, Math.round(setting.intervalSeconds / 60)),
       batchSize: setting.batchSize
     };
+  }
+
+  private legacyDestination(chatId: string | null): TelegramPublicationDestination[] {
+    return chatId ? [{ id: null, name: 'Principal', chatId, active: true, defaultSelected: true }] : [];
   }
 
   private filterPrompts(prompts: AiPromptVersion[]): AiPromptVersion[] {

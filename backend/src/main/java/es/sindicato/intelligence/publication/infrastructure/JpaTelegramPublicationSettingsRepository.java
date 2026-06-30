@@ -1,11 +1,14 @@
 package es.sindicato.intelligence.publication.infrastructure;
 
 import es.sindicato.intelligence.core.security.SecretTextCipher;
+import es.sindicato.intelligence.publication.domain.TelegramPublicationDestination;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationSettings;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationSettingsRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,7 +26,30 @@ public class JpaTelegramPublicationSettingsRepository implements TelegramPublica
 
     @Override
     public TelegramPublicationSettings save(TelegramPublicationSettings settings) {
-        return toDomain(entityManager.merge(toEntity(settings)));
+        TelegramPublicationSettingsEntity saved = entityManager.merge(toEntity(settings));
+        if (!settings.getDestinations().isEmpty()) {
+            entityManager.createQuery("DELETE FROM TelegramPublicationDestinationEntity destination WHERE destination.settingsId = :settingsId")
+                    .setParameter("settingsId", settings.getId())
+                    .executeUpdate();
+
+            OffsetDateTime now = OffsetDateTime.now();
+            for (TelegramPublicationDestination destination : settings.getDestinations()) {
+                OffsetDateTime createdAt = destination.getCreatedAt() == null ? now : destination.getCreatedAt();
+                OffsetDateTime updatedAt = destination.getUpdatedAt() == null ? now : destination.getUpdatedAt();
+                entityManager.persist(new TelegramPublicationDestinationEntity(
+                        null,
+                        settings.getId(),
+                        destination.getName(),
+                        destination.getChatId(),
+                        destination.isActive(),
+                        destination.isDefaultSelected(),
+                        createdAt,
+                        updatedAt
+                ));
+            }
+            entityManager.flush();
+        }
+        return toDomain(saved);
     }
 
     @Override
@@ -46,6 +72,7 @@ public class JpaTelegramPublicationSettingsRepository implements TelegramPublica
     }
 
     private TelegramPublicationSettings toDomain(TelegramPublicationSettingsEntity entity) {
+        List<TelegramPublicationDestination> destinations = findDestinations(entity.getId());
         return new TelegramPublicationSettings(
                 entity.getId(),
                 entity.isEnabled(),
@@ -53,8 +80,32 @@ public class JpaTelegramPublicationSettingsRepository implements TelegramPublica
                 secretTextCipher.decryptIfNeeded(entity.getBotToken()),
                 entity.getChatId(),
                 entity.isDisableWebPagePreview(),
+                destinations,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
+    }
+
+    private List<TelegramPublicationDestination> findDestinations(short settingsId) {
+        try {
+            return entityManager.createQuery(
+                            "SELECT destination FROM TelegramPublicationDestinationEntity destination WHERE destination.settingsId = :settingsId ORDER BY destination.id ASC",
+                            TelegramPublicationDestinationEntity.class
+                    )
+                    .setParameter("settingsId", settingsId)
+                    .getResultStream()
+                    .map(entity -> new TelegramPublicationDestination(
+                            entity.getId(),
+                            entity.getName(),
+                            entity.getChatId(),
+                            entity.isActive(),
+                            entity.isDefaultSelected(),
+                            entity.getCreatedAt(),
+                            entity.getUpdatedAt()
+                    ))
+                    .toList();
+        } catch (NullPointerException exception) {
+            return List.of();
+        }
     }
 }

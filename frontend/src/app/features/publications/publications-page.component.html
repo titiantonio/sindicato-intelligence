@@ -4,10 +4,15 @@
     <h1>Historico operativo del canal</h1>
     <p>Publicaciones registradas por el backend para Telegram.</p>
   </div>
+  <button pButton type="button" (click)="openManualDialog()">Mensaje manual</button>
 </section>
 
 @if (errorMessage()) {
   <p-message severity="error" [text]="errorMessage() ?? ''" />
+}
+
+@if (successMessage()) {
+  <p-message severity="success" [text]="successMessage() ?? ''" />
 }
 
 @if (isLoading()) {
@@ -24,7 +29,7 @@
 
       <div class="publication-card__body">
         <span class="publication-card__date">{{ publicationDateLabel(publication) }}</span>
-        <span class="publication-card__date">Contenido #{{ publication.contentId }}</span>
+        <span class="publication-card__date">{{ publicationOrigin(publication) }}</span>
         <p>{{ publicationResult(publication) }}</p>
       </div>
     </article>
@@ -36,3 +41,57 @@
     </article>
   }
 </section>
+
+<p-dialog
+  header="Mensaje manual Telegram"
+  [modal]="true"
+  [visible]="manualDialogVisible()"
+  (visibleChange)="manualDialogVisible.set($event)"
+  [style]="{ width: 'min(42rem, 95vw)' }"
+>
+  <form class="manual-form" (submit)="$event.preventDefault(); sendManualPublication()">
+    <label>
+      Titulo
+      <input pInputText type="text" [ngModel]="manualTitle()" (ngModelChange)="manualTitle.set($event)" name="manualTitle" />
+    </label>
+
+    <label>
+      Mensaje
+      <textarea [ngModel]="manualMessage()" (ngModelChange)="manualMessage.set($event)" name="manualMessage" rows="6"></textarea>
+    </label>
+
+    <fieldset class="destination-list">
+      <legend>Destinos</legend>
+      @for (destination of destinations(); track destination.id) {
+        <label class="destination-option">
+          <input
+            type="checkbox"
+            [checked]="selectedDestinationIds().includes(destination.id ?? -1)"
+            (change)="updateDestinationSelection(destination.id ?? -1, $any($event.target).checked)"
+          />
+          <span>{{ destination.name }}</span>
+        </label>
+      } @empty {
+        <p>No hay destinos Telegram activos.</p>
+      }
+    </fieldset>
+
+    <label>
+      Adjuntos
+      <input type="file" multiple (change)="updateSelectedFiles($event)" />
+    </label>
+
+    @if (selectedFiles().length) {
+      <ul class="attachment-list">
+        @for (file of selectedFiles(); track file.name) {
+          <li>{{ fileSummary(file) }}</li>
+        }
+      </ul>
+    }
+
+    <footer class="manual-form__actions">
+      <button pButton type="button" (click)="manualDialogVisible.set(false)">Cancelar</button>
+      <button pButton type="submit" [disabled]="isSendingManual() || selectedDestinationIds().length === 0">Enviar</button>
+    </footer>
+  </form>
+</p-dialog>

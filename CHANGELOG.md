@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.85-SNAPSHOT`.
+- Backend/frontend publicaciones: la configuracion Telegram pasa de `chatId` unico operativo a destinos nombrados multiples, manteniendo compatibilidad con el `chatId` legado.
 - Frontend version: subida la version del paquete frontend a `0.0.12`.
 - Dashboard metric cards: `Errores` se muestra siempre en rojo y `Publicaciones` usa tono secundario, dejando rojo solo para el dato interno de publicaciones fallidas.
 - Versionado backend actualizado a `0.0.84-SNAPSHOT`.
@@ -58,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend publicaciones: anadidas publicaciones manuales Telegram con endpoint multipart `POST /api/v1/publications/manual`, historial comun, auditoria, targets por destino y adjuntos persistidos como metadatos.
+- Frontend publicaciones: anadido modal de mensaje manual con seleccion de destinos Telegram activos y adjuntos multiples.
 - Frontend design system: creados `docs/design-system.md`, `docs/accessibility.md` y `docs/frontend-review.md` para guiar la modernizacion PrimeNG + Tailwind.
 - Frontend noticias: anadida pagina `/news` con tabla de noticias capturadas, busqueda global, filtros por columna, ordenacion, paginacion y enlaces a detalle/evento.
 - Backend/frontend trazabilidad: anadido detalle navegable de publicaciones, contenidos y noticias con enlaces entre `Publication`, `Content`, `Event`, `Analysis` y `News`.

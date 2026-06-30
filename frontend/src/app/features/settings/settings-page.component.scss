@@ -120,6 +120,20 @@ select {
   margin: 0;
 }
 
+.destinations-editor {
+  display: grid;
+  gap: 0.75rem;
+  grid-column: 1 / -1;
+}
+
+.destinations-editor__header,
+.destination-row {
+  align-items: end;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(8rem, 1fr) minmax(10rem, 1.5fr) auto auto auto;
+}
+
 .workflow-status dd,.ai-provider-form strong,.ai-provider-form span {
   color: var(--color-text);
   font-weight: 800;

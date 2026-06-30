@@ -1,3 +1,12 @@
+export interface TelegramPublicationDestination {
+  id: number | null;
+  name: string;
+  chatId: string;
+  active: boolean;
+  defaultSelected: boolean;
+  updatedAt?: string;
+}
+
 export interface TelegramPublicationSettings {
   enabled: boolean;
   baseUrl: string;
@@ -7,6 +16,7 @@ export interface TelegramPublicationSettings {
   botTokenPreview: string | null;
   readyToPublish: boolean;
   updatedAt: string;
+  destinations?: TelegramPublicationDestination[];
 }
 
 export interface UpdateTelegramPublicationSettingsRequest {
@@ -15,4 +25,5 @@ export interface UpdateTelegramPublicationSettingsRequest {
   botToken: string | null;
   chatId: string | null;
   disableWebPagePreview: boolean;
+  destinations?: TelegramPublicationDestination[];
 }

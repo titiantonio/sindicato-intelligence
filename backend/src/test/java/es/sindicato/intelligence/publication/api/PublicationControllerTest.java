@@ -13,6 +13,11 @@ import es.sindicato.intelligence.news.domain.NewsRepository;
 import es.sindicato.intelligence.news.domain.NewsStatus;
 import es.sindicato.intelligence.publication.domain.Publication;
 import es.sindicato.intelligence.publication.domain.PublicationRepository;
+import es.sindicato.intelligence.publication.domain.TelegramPublicationDestination;
+import es.sindicato.intelligence.publication.domain.TelegramPublicationSettings;
+import es.sindicato.intelligence.publication.domain.TelegramPublicationSettingsRepository;
+import es.sindicato.intelligence.publication.application.ManualPublishingProvider;
+import es.sindicato.intelligence.publication.application.ManualPublishingRequest;
 import es.sindicato.intelligence.publication.application.PublishingProvider;
 import es.sindicato.intelligence.publication.application.PublishingRequest;
 import es.sindicato.intelligence.publication.application.PublishingResult;
@@ -27,6 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
@@ -36,6 +42,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -63,6 +70,9 @@ class PublicationControllerTest {
 
     @Autowired
     private PublicationRepository publicationRepository;
+
+    @Autowired
+    private TelegramPublicationSettingsRepository telegramSettingsRepository;
 
     @Test
     void publishesApprovedContent() throws Exception {
@@ -120,6 +130,41 @@ class PublicationControllerTest {
                 .andExpect(jsonPath("$.id").value(publication.getId()))
                 .andExpect(jsonPath("$.status").value("PENDING"));
     }
+
+    @Test
+    void publishesManualTelegramMessageWithAttachment() throws Exception {
+        Long destinationId = configureTelegramDestination();
+        MockMultipartFile file = new MockMultipartFile("files", "aviso.txt", "text/plain", "Contenido adjunto".getBytes());
+
+        mockMvc.perform(multipart("/api/v1/publications/manual")
+                        .file(file)
+                        .param("channel", "TELEGRAM")
+                        .param("title", "Aviso manual")
+                        .param("message", "Mensaje manual")
+                        .param("destinationIds", destinationId.toString())
+                        .with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.publicationType").value("MANUAL_MESSAGE"))
+                .andExpect(jsonPath("$.status").value("PUBLISHED"))
+                .andExpect(jsonPath("$.targets[0].destinationId").value(destinationId))
+                .andExpect(jsonPath("$.targets[0].status").value("PUBLISHED"))
+                .andExpect(jsonPath("$.attachments[0].originalFilename").value("aviso.txt"));
+    }
+
+    private Long configureTelegramDestination() {
+        OffsetDateTime now = OffsetDateTime.now();
+        TelegramPublicationSettings settings = telegramSettingsRepository.find().orElseThrow();
+        settings.update(
+                true,
+                "https://api.telegram.org",
+                "token",
+                "chat-manual",
+                true,
+                java.util.List.of(TelegramPublicationDestination.newDestination("Manual", "chat-manual", true, true, now)),
+                now
+        );
+        return telegramSettingsRepository.save(settings).getDestinations().getFirst().getId();
+    }
     private RequestPostProcessor adminJwt() {
         return jwt().authorities(() -> "ROLE_ADMIN");
     }
@@ -168,6 +213,23 @@ class PublicationControllerTest {
                 @Override
                 public PublishingResult publish(PublishingRequest request) {
                     return new PublishingResult("message-test", "{\"ok\":true,\"messageId\":\"message-test\"}");
+                }
+            };
+        }
+
+        @Bean
+        @Primary
+        @Order(0)
+        ManualPublishingProvider testManualPublishingProvider() {
+            return new ManualPublishingProvider() {
+                @Override
+                public boolean supports(String channel) {
+                    return "TELEGRAM".equalsIgnoreCase(channel);
+                }
+
+                @Override
+                public PublishingResult publishManual(ManualPublishingRequest request) {
+                    return new PublishingResult("manual-message-test", "{\"ok\":true,\"messageIds\":[\"manual-message-test\"]}");
                 }
             };
         }

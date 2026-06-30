@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
-import { PublicationDetail, PublicationListItem } from '../models/publication.models';
+import { ManualPublicationPayload, PublicationDetail, PublicationListItem } from '../models/publication.models';
 
 @Injectable({
   providedIn: 'root'
@@ -27,5 +27,15 @@ export class PublicationService {
 
   schedulePublication(contentId: number, scheduledAt: string) {
     return this.httpClient.post<PublicationListItem>(`/api/v1/publications/${contentId}/schedule`, { scheduledAt });
+  }
+
+  publishManual(payload: ManualPublicationPayload) {
+    const formData = new FormData();
+    formData.append('channel', payload.channel);
+    formData.append('title', payload.title);
+    formData.append('message', payload.message);
+    payload.destinationIds.forEach((destinationId) => formData.append('destinationIds', destinationId.toString()));
+    payload.files.forEach((file) => formData.append('files', file, file.name));
+    return this.httpClient.post<PublicationListItem>('/api/v1/publications/manual', formData);
   }
 }

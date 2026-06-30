@@ -1,8 +1,10 @@
 package es.sindicato.intelligence.publication.api;
 
 import es.sindicato.intelligence.publication.application.GetTelegramPublicationSettingsUseCase;
+import es.sindicato.intelligence.publication.application.TelegramPublicationDestinationCommand;
 import es.sindicato.intelligence.publication.application.UpdateTelegramPublicationSettingsCommand;
 import es.sindicato.intelligence.publication.application.UpdateTelegramPublicationSettingsUseCase;
+import es.sindicato.intelligence.publication.domain.TelegramPublicationDestination;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationSettings;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -43,7 +45,8 @@ public class TelegramPublicationSettingsController {
                 request.baseUrl(),
                 request.botToken(),
                 request.chatId(),
-                request.disableWebPagePreview()
+                request.disableWebPagePreview(),
+                toDestinationCommands(request)
         )));
     }
 
@@ -62,7 +65,36 @@ public class TelegramPublicationSettingsController {
                 settings.getBotToken() != null,
                 tokenPreview(settings.getBotToken()),
                 settings.isReadyToPublish(),
-                settings.getUpdatedAt()
+                settings.getUpdatedAt(),
+                settings.getDestinations().stream()
+                        .map(this::toDestinationResponse)
+                        .toList()
+        );
+    }
+
+    private java.util.List<TelegramPublicationDestinationCommand> toDestinationCommands(UpdateTelegramPublicationSettingsRequest request) {
+        if (request.destinations() == null) {
+            return java.util.List.of();
+        }
+        return request.destinations().stream()
+                .map(destination -> new TelegramPublicationDestinationCommand(
+                        destination.id(),
+                        destination.name(),
+                        destination.chatId(),
+                        Boolean.TRUE.equals(destination.active()),
+                        Boolean.TRUE.equals(destination.defaultSelected())
+                ))
+                .toList();
+    }
+
+    private TelegramPublicationDestinationResponse toDestinationResponse(TelegramPublicationDestination destination) {
+        return new TelegramPublicationDestinationResponse(
+                destination.getId(),
+                destination.getName(),
+                destination.getChatId(),
+                destination.isActive(),
+                destination.isDefaultSelected(),
+                destination.getUpdatedAt()
         );
     }
 

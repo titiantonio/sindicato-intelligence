@@ -7,3 +7,6 @@ docs/.obsidian/
 !.env.example
 tmp_*.ps1
 set_ai_env.ps1
+
+# Local publication attachments
+backend/data/

@@ -3012,3 +3012,29 @@ Completado en esta iteracion:
 Verificacion:
 - `npm test -- --watch=false --browsers=ChromeHeadless`: OK, 146 tests, 0 fallos. Ya no aparecen warnings 404 de PrimeIcons; persiste solo el warning de cierre lento de ChromeHeadless.
 - `npm run build`: OK sin warnings de budget. Bundle inicial: `527.50 kB`.
+
+---
+
+## 19.16 Publicaciones manuales Telegram con multimedia - 2026-06-30
+
+Tarea de mantenimiento evolutivo sobre Fase 10, Fase 11 y Fase 12.
+
+Completado en esta iteracion:
+- [x] Creada migracion `V18__telegram_destinations_manual_publications.sql`.
+- [x] Anadida configuracion de multiples destinos Telegram nombrados.
+- [x] Anadido historial comun para publicaciones generadas y publicaciones manuales.
+- [x] Anadidos targets por destino y metadatos de adjuntos sin guardar binarios en PostgreSQL.
+- [x] Anadido endpoint multipart `POST /api/v1/publications/manual`.
+- [x] Anadido almacenamiento local configurable de adjuntos en `data/publication-attachments`.
+- [x] Extendida publicacion Telegram para texto y adjuntos mediante `sendMessage`, `sendPhoto`, `sendVideo`, `sendAudio` y `sendDocument`.
+- [x] Anadido modal Angular de mensaje manual en `/publications`.
+- [x] Actualizado detalle de publicacion para mostrar publicaciones manuales, destinos y adjuntos.
+- [x] Version backend subida a `0.0.85-SNAPSHOT`.
+
+Verificacion:
+- Backend compile: `./mvnw.cmd -q -DskipTests compile` OK.
+- Backend focal publicaciones/settings: `./mvnw.cmd "-Dtest=PublicationControllerTest,TelegramPublisherTest,TelegramPublicationSettingsControllerTest,JpaTelegramPublicationSettingsRepositoryTest,JpaPublicationRepositoryTest" test` OK, 14 tests.
+- Backend focal manual: `./mvnw.cmd "-Dtest=PublicationControllerTest" test` OK, 4 tests.
+- Frontend tests: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 146 tests.
+- Frontend build: `npm.cmd run build` OK. Bundle inicial: `527.50 kB`.
+- Backend suite completa: `./mvnw.cmd test` ejecutado, 288 tests, 1 fallo no relacionado en `DashboardControllerTest.ordersPriorityEventsByImpactNewsCountAndLastUpdate` por datos reales locales en PostgreSQL que alteran el orden de prioridad esperado del fixture.

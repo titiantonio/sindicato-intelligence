@@ -46,6 +46,16 @@ export class PublicationDetailPageComponent implements OnInit {
     return formatPublicationResult(this.detail()?.publication);
   }
 
+  protected title(): string {
+    const item = this.detail();
+    return item?.content?.title ?? item?.publication.titleSnapshot ?? `Publicacion #${item?.publication.id ?? ''}`;
+  }
+
+  protected body(): string {
+    const item = this.detail();
+    return item?.content?.content ?? item?.publication.messageSnapshot ?? '';
+  }
+
   private loadPublication(publicationId: number): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);

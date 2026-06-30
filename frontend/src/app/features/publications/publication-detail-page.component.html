@@ -12,7 +12,7 @@
   <section class="page-header">
     <div>
       <span class="page-header__eyebrow">Publicacion #{{ item.publication.id }}</span>
-      <h1>{{ item.content.title }}</h1>
+      <h1>{{ title() }}</h1>
       <p>{{ publicationResult() }}</p>
     </div>
 
@@ -27,17 +27,34 @@
       <span>Publicacion</span>
       <strong>#{{ item.publication.id }}</strong>
     </a>
-    <a class="metric-tile trace-link" [routerLink]="['/content', item.content.id]">
-      <span>Contenido</span>
-      <strong>#{{ item.content.id }}</strong>
-    </a>
-    <a class="metric-tile trace-link" [routerLink]="['/events', item.event.id]">
-      <span>Evento</span>
-      <strong>#{{ item.event.id }}</strong>
-    </a>
+
+    @if (item.content) {
+      <a class="metric-tile trace-link" [routerLink]="['/content', item.content.id]">
+        <span>Contenido</span>
+        <strong>#{{ item.content.id }}</strong>
+      </a>
+    } @else {
+      <div class="metric-tile">
+        <span>Origen</span>
+        <strong>Manual</strong>
+      </div>
+    }
+
+    @if (item.event) {
+      <a class="metric-tile trace-link" [routerLink]="['/events', item.event.id]">
+        <span>Evento</span>
+        <strong>#{{ item.event.id }}</strong>
+      </a>
+    } @else {
+      <div class="metric-tile">
+        <span>Evento</span>
+        <strong>No aplica</strong>
+      </div>
+    }
+
     <div class="metric-tile">
       <span>Analisis</span>
-      <strong>{{ item.content.analysisId ? '#' + item.content.analysisId : 'No registrado' }}</strong>
+      <strong>{{ item.content?.analysisId ? '#' + item.content?.analysisId : 'No registrado' }}</strong>
     </div>
   </section>
 
@@ -54,19 +71,45 @@
     </article>
 
     <article class="panel detail-section">
-      <h2>Contenido publicado</h2>
-      <p class="content-preview">{{ item.content.content }}</p>
+      <h2>Mensaje publicado</h2>
+      <p class="content-preview">{{ body() || 'Sin texto' }}</p>
     </article>
   </section>
 
-  <section class="panel detail-section">
-    <h2>Noticias trazadas</h2>
-    <div class="link-grid">
-      @for (news of item.event.news; track news.id) {
-        <a [routerLink]="['/news', news.id]">#{{ news.id }} · {{ news.title }}</a>
-      } @empty {
-        <p class="empty-state">No hay noticias asociadas.</p>
-      }
-    </div>
+  <section class="detail-grid">
+    <article class="panel detail-section">
+      <h2>Destinos</h2>
+      <div class="link-grid">
+        @for (target of item.publication.targets ?? []; track target.id) {
+          <span>#{{ target.destinationId || '-' }} &middot; {{ target.destinationName }} &middot; {{ target.status }}</span>
+        } @empty {
+          <p class="empty-state">No hay destinos registrados.</p>
+        }
+      </div>
+    </article>
+
+    <article class="panel detail-section">
+      <h2>Adjuntos</h2>
+      <div class="link-grid">
+        @for (attachment of item.publication.attachments ?? []; track attachment.id) {
+          <span>{{ attachment.originalFilename }} &middot; {{ attachment.mediaType }} &middot; {{ attachment.mimeType }}</span>
+        } @empty {
+          <p class="empty-state">No hay adjuntos registrados.</p>
+        }
+      </div>
+    </article>
   </section>
+
+  @if (item.event) {
+    <section class="panel detail-section">
+      <h2>Noticias trazadas</h2>
+      <div class="link-grid">
+        @for (news of item.event.news; track news.id) {
+          <a [routerLink]="['/news', news.id]">#{{ news.id }} &middot; {{ news.title }}</a>
+        } @empty {
+          <p class="empty-state">No hay noticias asociadas.</p>
+        }
+      </div>
+    </section>
+  }
 }

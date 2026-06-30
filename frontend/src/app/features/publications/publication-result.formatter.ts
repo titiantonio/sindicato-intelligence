@@ -43,6 +43,11 @@ function formatPayload(payload: string): string | null {
       return `Telegram confirmo la publicacion. Mensaje #${messageId}.`;
     }
 
+    const messageIds = Array.isArray(parsed['messageIds']) ? parsed['messageIds'].map((item) => textValue(item)).filter(Boolean) : [];
+    if (ok === true && messageIds.length) {
+      return `Telegram confirmo la publicacion. Mensajes #${messageIds.join(', #')}.`;
+    }
+
     if (ok === true) {
       return 'Telegram confirmo la publicacion correctamente.';
     }

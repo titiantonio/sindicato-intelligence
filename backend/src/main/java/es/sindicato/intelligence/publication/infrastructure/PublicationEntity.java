@@ -2,6 +2,7 @@ package es.sindicato.intelligence.publication.infrastructure;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import es.sindicato.intelligence.publication.domain.PublicationStatus;
+import es.sindicato.intelligence.publication.domain.PublicationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,11 +24,24 @@ public class PublicationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "content_id", nullable = false)
+    @Column(name = "content_id")
     private Long contentId;
 
     @Column(name = "channel", nullable = false, length = 50)
     private String channel;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "publication_type", nullable = false, length = 50)
+    private PublicationType publicationType;
+
+    @Column(name = "title_snapshot", length = 500)
+    private String titleSnapshot;
+
+    @Column(name = "message_snapshot")
+    private String messageSnapshot;
+
+    @Column(name = "requested_by")
+    private Long requestedBy;
 
     @Column(name = "external_id", length = 255)
     private String externalId;
@@ -53,6 +67,10 @@ public class PublicationEntity {
             Long id,
             Long contentId,
             String channel,
+            PublicationType publicationType,
+            String titleSnapshot,
+            String messageSnapshot,
+            Long requestedBy,
             String externalId,
             PublicationStatus status,
             OffsetDateTime publishedAt,
@@ -62,6 +80,10 @@ public class PublicationEntity {
         this.id = id;
         this.contentId = contentId;
         this.channel = channel;
+        this.publicationType = publicationType;
+        this.titleSnapshot = titleSnapshot;
+        this.messageSnapshot = messageSnapshot;
+        this.requestedBy = requestedBy;
         this.externalId = externalId;
         this.status = status;
         this.publishedAt = publishedAt;
@@ -79,6 +101,22 @@ public class PublicationEntity {
 
     public String getChannel() {
         return channel;
+    }
+
+    public PublicationType getPublicationType() {
+        return publicationType;
+    }
+
+    public String getTitleSnapshot() {
+        return titleSnapshot;
+    }
+
+    public String getMessageSnapshot() {
+        return messageSnapshot;
+    }
+
+    public Long getRequestedBy() {
+        return requestedBy;
     }
 
     public String getExternalId() {

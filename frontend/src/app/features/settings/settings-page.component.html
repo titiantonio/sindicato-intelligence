@@ -240,16 +240,58 @@
               />
             </label>
 
-            <label>
-              Chat ID
-              <input
-                pInputText
-                type="text"
-                [ngModel]="telegramForm().chatId"
-                (ngModelChange)="updateTelegramForm({ chatId: $event })"
-                name="telegramChatId"
-              />
-            </label>
+            <div class="destinations-editor">
+              <div class="destinations-editor__header">
+                <strong>Destinos Telegram</strong>
+                <button pButton type="button" (click)="addTelegramDestination()">Anadir destino</button>
+              </div>
+
+              @for (destination of telegramForm().destinations; track $index) {
+                <div class="destination-row">
+                  <label>
+                    Nombre
+                    <input
+                      pInputText
+                      type="text"
+                      [ngModel]="destination.name"
+                      (ngModelChange)="updateTelegramDestination($index, { name: $event })"
+                      [name]="'telegramDestinationName' + $index"
+                    />
+                  </label>
+                  <label>
+                    Chat ID
+                    <input
+                      pInputText
+                      type="text"
+                      [ngModel]="destination.chatId"
+                      (ngModelChange)="updateTelegramDestination($index, { chatId: $event })"
+                      [name]="'telegramDestinationChat' + $index"
+                    />
+                  </label>
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      [ngModel]="destination.active"
+                      (ngModelChange)="updateTelegramDestination($index, { active: $event })"
+                      [name]="'telegramDestinationActive' + $index"
+                    />
+                    <span>Activo</span>
+                  </label>
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      [ngModel]="destination.defaultSelected"
+                      (ngModelChange)="updateTelegramDestination($index, { defaultSelected: $event })"
+                      [name]="'telegramDestinationDefault' + $index"
+                    />
+                    <span>Por defecto</span>
+                  </label>
+                  <button pButton type="button" (click)="removeTelegramDestination($index)">Quitar</button>
+                </div>
+              } @empty {
+                <p class="empty-state">No hay destinos configurados.</p>
+              }
+            </div>
 
             <label class="switch">
               <input
@@ -275,8 +317,8 @@
                 <dd>{{ telegram.readyToPublish ? 'Listo para publicar' : 'Configuracion incompleta' }}</dd>
               </div>
               <div>
-                <dt>Chat</dt>
-                <dd>{{ telegram.chatId || 'Sin configurar' }}</dd>
+                <dt>Destinos</dt>
+                <dd>{{ telegram.destinations?.length || 0 }} configurados</dd>
               </div>
               <div>
                 <dt>Actualizado</dt>

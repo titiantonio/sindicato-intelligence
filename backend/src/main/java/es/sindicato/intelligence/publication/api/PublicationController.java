@@ -1,29 +1,39 @@
 package es.sindicato.intelligence.publication.api;
 
-import es.sindicato.intelligence.publication.application.GetPublicationUseCase;
-import es.sindicato.intelligence.publication.application.GetPublicationDetailUseCase;
-import es.sindicato.intelligence.publication.application.GetPublicationDetailUseCase.PublicationDetail;
-import es.sindicato.intelligence.publication.application.ListPublicationsUseCase;
-import es.sindicato.intelligence.publication.application.PublishContentUseCase;
-import es.sindicato.intelligence.publication.application.PublishingProviderException;
-import es.sindicato.intelligence.publication.application.SchedulePublicationCommand;
-import es.sindicato.intelligence.publication.application.SchedulePublicationUseCase;
 import es.sindicato.intelligence.content.api.GeneratedContentResponse;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.event.api.EventDetailResponse;
 import es.sindicato.intelligence.event.api.EventResponseMapper;
+import es.sindicato.intelligence.publication.application.GetPublicationDetailUseCase;
+import es.sindicato.intelligence.publication.application.GetPublicationDetailUseCase.PublicationDetail;
+import es.sindicato.intelligence.publication.application.GetPublicationUseCase;
+import es.sindicato.intelligence.publication.application.ListPublicationsUseCase;
+import es.sindicato.intelligence.publication.application.ManualPublicationFile;
+import es.sindicato.intelligence.publication.application.PublishContentUseCase;
+import es.sindicato.intelligence.publication.application.PublishManualMessageCommand;
+import es.sindicato.intelligence.publication.application.PublishManualMessageUseCase;
+import es.sindicato.intelligence.publication.application.PublishingProviderException;
+import es.sindicato.intelligence.publication.application.SchedulePublicationCommand;
+import es.sindicato.intelligence.publication.application.SchedulePublicationUseCase;
 import es.sindicato.intelligence.publication.domain.Publication;
+import es.sindicato.intelligence.publication.domain.PublicationAttachment;
+import es.sindicato.intelligence.publication.domain.PublicationAttachmentRepository;
+import es.sindicato.intelligence.publication.domain.PublicationTarget;
+import es.sindicato.intelligence.publication.domain.PublicationTargetRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +46,9 @@ public class PublicationController {
     private final GetPublicationUseCase getPublicationUseCase;
     private final GetPublicationDetailUseCase getPublicationDetailUseCase;
     private final SchedulePublicationUseCase schedulePublicationUseCase;
+    private final PublishManualMessageUseCase publishManualMessageUseCase;
+    private final PublicationTargetRepository targetRepository;
+    private final PublicationAttachmentRepository attachmentRepository;
     private final EventResponseMapper eventResponseMapper;
 
     public PublicationController(
@@ -44,6 +57,9 @@ public class PublicationController {
             GetPublicationUseCase getPublicationUseCase,
             GetPublicationDetailUseCase getPublicationDetailUseCase,
             SchedulePublicationUseCase schedulePublicationUseCase,
+            PublishManualMessageUseCase publishManualMessageUseCase,
+            PublicationTargetRepository targetRepository,
+            PublicationAttachmentRepository attachmentRepository,
             EventResponseMapper eventResponseMapper
     ) {
         this.publishContentUseCase = publishContentUseCase;
@@ -51,6 +67,9 @@ public class PublicationController {
         this.getPublicationUseCase = getPublicationUseCase;
         this.getPublicationDetailUseCase = getPublicationDetailUseCase;
         this.schedulePublicationUseCase = schedulePublicationUseCase;
+        this.publishManualMessageUseCase = publishManualMessageUseCase;
+        this.targetRepository = targetRepository;
+        this.attachmentRepository = attachmentRepository;
         this.eventResponseMapper = eventResponseMapper;
     }
 
@@ -69,10 +88,10 @@ public class PublicationController {
     @GetMapping("/{id}/detail")
     public PublicationDetailResponse getPublicationDetail(@PathVariable Long id) {
         PublicationDetail detail = getPublicationDetailUseCase.execute(id);
-        EventDetailResponse event = eventResponseMapper.toDetailResponse(detail.eventDetail());
+        EventDetailResponse event = detail.eventDetail() == null ? null : eventResponseMapper.toDetailResponse(detail.eventDetail());
         return new PublicationDetailResponse(
                 toResponse(detail.publication()),
-                toContentResponse(detail.content()),
+                detail.content() == null ? null : toContentResponse(detail.content()),
                 event
         );
     }
@@ -80,6 +99,23 @@ public class PublicationController {
     @PostMapping("/{id}/publish")
     public PublicationResponse publish(@PathVariable Long id) {
         return toResponse(publishContentUseCase.execute(id));
+    }
+
+    @PostMapping(path = "/manual", consumes = "multipart/form-data")
+    public PublicationResponse publishManual(
+            @RequestParam String channel,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String message,
+            @RequestParam List<Long> destinationIds,
+            @RequestParam(required = false, name = "files") List<MultipartFile> files
+    ) {
+        return toResponse(publishManualMessageUseCase.execute(new PublishManualMessageCommand(
+                channel,
+                title,
+                message,
+                destinationIds,
+                toManualFiles(files)
+        )));
     }
 
     @PostMapping("/{id}/schedule")
@@ -107,11 +143,59 @@ public class PublicationController {
                 publication.getId(),
                 publication.getContentId(),
                 publication.getChannel(),
+                publication.getPublicationType(),
+                publication.getTitleSnapshot(),
+                publication.getMessageSnapshot(),
+                publication.getRequestedBy(),
                 publication.getExternalId(),
                 publication.getStatus(),
                 publication.getPublishedAt(),
                 publication.getResponsePayload(),
-                publication.getScheduledAt()
+                publication.getScheduledAt(),
+                targetRepository.findByPublicationId(publication.getId()).stream().map(this::toTargetResponse).toList(),
+                attachmentRepository.findByPublicationId(publication.getId()).stream().map(this::toAttachmentResponse).toList()
+        );
+    }
+
+    private List<ManualPublicationFile> toManualFiles(List<MultipartFile> files) {
+        if (files == null) {
+            return List.of();
+        }
+        return files.stream()
+                .filter(file -> file != null && !file.isEmpty())
+                .map(this::toManualFile)
+                .toList();
+    }
+
+    private ManualPublicationFile toManualFile(MultipartFile file) {
+        try {
+            return new ManualPublicationFile(file.getOriginalFilename(), file.getContentType(), file.getBytes());
+        } catch (IOException exception) {
+            throw new IllegalArgumentException("attachment cannot be read: " + file.getOriginalFilename(), exception);
+        }
+    }
+
+    private PublicationTargetResponse toTargetResponse(PublicationTarget target) {
+        return new PublicationTargetResponse(
+                target.getId(),
+                target.getDestinationId(),
+                target.getDestinationName(),
+                target.getStatus(),
+                target.getExternalId(),
+                target.getResponsePayload(),
+                target.getPublishedAt()
+        );
+    }
+
+    private PublicationAttachmentResponse toAttachmentResponse(PublicationAttachment attachment) {
+        return new PublicationAttachmentResponse(
+                attachment.getId(),
+                attachment.getOriginalFilename(),
+                attachment.getMediaType(),
+                attachment.getMimeType(),
+                attachment.getFileSizeBytes(),
+                attachment.getTelegramMethod(),
+                attachment.getPosition()
         );
     }
 
