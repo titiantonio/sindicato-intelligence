@@ -872,7 +872,7 @@ export class SettingsPageComponent implements OnInit {
         lastUpdatedAt: updatedAt,
         items: [
           { label: 'Correctas', value: snapshot.successCount, tone: 'success', icon: 'check', signed: false },
-          { label: 'Fallidas', value: snapshot.failedCount, tone: snapshot.failedCount > 0 ? 'danger' : 'success', icon: 'x', signed: false },
+          { label: 'Fallidas', value: snapshot.failedCount, tone: snapshot.failedCount > 0 ? 'danger' : 'neutral', icon: 'x', signed: false },
           { label: 'Exito %', value: snapshot.successRate, tone: 'success', icon: 'target', signed: false }
         ]
       },
@@ -880,7 +880,7 @@ export class SettingsPageComponent implements OnInit {
         label: 'Errores',
         value: `${snapshot.failureRate}%`,
         trend: this.formatSigned(snapshot.failureRateDifference),
-        tone: snapshot.failedCount > 0 ? 'danger' : 'success',
+        tone: 'danger',
         todayValue: snapshot.failedCount,
         yesterdayValue: snapshot.previousFailedCount,
         difference: snapshot.failureRateDifference,
@@ -890,9 +890,9 @@ export class SettingsPageComponent implements OnInit {
         badgeLabel: `${snapshot.failureRate}%`,
         lastUpdatedAt: updatedAt,
         items: [
-          { label: 'Fallidas', value: snapshot.failedCount, tone: snapshot.failedCount > 0 ? 'danger' : 'success', icon: 'x', signed: false },
-          { label: 'Fallo %', value: snapshot.failureRate, tone: snapshot.failureRate > 0 ? 'danger' : 'success', icon: 'alert', signed: false },
-          { label: 'Dif. tasa', value: snapshot.failureRateDifference, tone: snapshot.failureRateDifference > 0 ? 'danger' : 'success', icon: 'trend', signed: true }
+          { label: 'Fallidas', value: snapshot.failedCount, tone: snapshot.failedCount > 0 ? 'danger' : 'neutral', icon: 'x', signed: false },
+          { label: 'Fallo %', value: snapshot.failureRate, tone: snapshot.failureRate > 0 ? 'danger' : 'neutral', icon: 'alert', signed: false },
+          { label: 'Dif. tasa', value: snapshot.failureRateDifference, tone: this.rateDifferenceTone(snapshot.failureRateDifference), icon: 'trend', signed: true }
         ]
       },
       {
@@ -940,6 +940,16 @@ export class SettingsPageComponent implements OnInit {
 
   private formatSigned(value: number): string {
     return value > 0 ? `+${value}` : value.toString();
+  }
+
+  private rateDifferenceTone(value: number): 'success' | 'danger' | 'neutral' {
+    if (value < 0) {
+      return 'success';
+    }
+    if (value > 0) {
+      return 'danger';
+    }
+    return 'neutral';
   }
 
   private detailNumber(operation: WorkflowOperation, key: string): number | null {

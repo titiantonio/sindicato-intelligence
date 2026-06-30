@@ -34,10 +34,6 @@ export class MetricCardComponent {
   }
 
   protected valueTone(item: MetricCardItem): string {
-    if (item.signed && item.value < 0) {
-      return 'danger';
-    }
-
     if (item.signed && item.value === 0) {
       return 'neutral';
     }

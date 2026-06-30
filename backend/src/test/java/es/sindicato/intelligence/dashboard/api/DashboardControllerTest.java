@@ -229,6 +229,7 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$.metricCards[2].items[1].value").value(generatedContents))
                 .andExpect(jsonPath("$.metricCards[2].items[2].value").value(approvedContents))
                 .andExpect(jsonPath("$.metricCards[3].label").value("Publicaciones"))
+                .andExpect(jsonPath("$.metricCards[3].tone").value("secondary"))
                 .andExpect(jsonPath("$.metricCards[3].lastUpdatedAt").value(formatDate(latestPublicationUpdate)))
                 .andExpect(jsonPath("$.metricCards[3].todayValue").value(todayPublications))
                 .andExpect(jsonPath("$.metricCards[3].yesterdayValue").value(yesterdayPublications))

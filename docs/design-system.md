@@ -51,6 +51,7 @@ PrimeNG usa el mismo selector de modo oscuro:
 - Estados: `.loading-state`, `.empty-state`, `.error-state`, `.skeleton-line`.
 - Badges: `app-status-badge` usa `p-tag`.
 - Metricas: `app-metric-card` usa PrimeIcons y tokens globales.
+- Metric cards: todas deben tener altura homogenea dentro de su grid, colores basados en tokens (`primary`, `secondary`, `success`, `warning`, `danger`, `neutral`) y datos con wrapping sin cortes. En cada dato interno, el icono se coloca encima del valor. Las tarjetas de errores usan `danger`; las publicaciones usan `secondary` y solo sus fallos internos usan rojo.
 - Layout: shell con sidebar, header, selector de tema y skip link.
 
 ## Tabla Operativa Estandar

@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend version: subida la version del paquete frontend a `0.0.12`.
+- Dashboard metric cards: `Errores` se muestra siempre en rojo y `Publicaciones` usa tono secundario, dejando rojo solo para el dato interno de publicaciones fallidas.
+- Versionado backend actualizado a `0.0.84-SNAPSHOT`.
+- Frontend metric cards: unificado tamano, altura de filas, wrapping de datos y colores por tokens en `app-metric-card`, dashboard y settings.
+- Frontend version: subida la version del paquete frontend a `0.0.11`.
 - Frontend responsive: revisado el backoffice completo en mobile, tablet, desktop y ultrawide para evitar crecimiento horizontal de pagina; las tablas densas quedan contenidas dentro de `app-standard-table`.
 - Frontend version: subida la version del paquete frontend a `0.0.10`.
 - Frontend accesibilidad: anadidos landmarks `main` en pantallas auth, labels explicitos en formularios de password, nombre accesible en navegacion principal y `scope="col"` en cabeceras de tablas operativas.
@@ -31,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Frontend tests: Karma sirve las fuentes PrimeIcons usadas por Angular en `/base/media/*`, eliminando los 404 de `primeicons.woff2`, `primeicons.woff` y `primeicons.ttf`.
 - Frontend iconos: sustituidos PrimeIcons invalidos en navegacion de fuentes y fusion de eventos para evitar iconos invisibles.
 - Frontend/backend noticias: la pantalla `/news` y el detalle de noticia muestran el nombre descriptivo de la fuente en lugar de `Fuente #id`, con filtro backend por nombre de fuente.
 - Backend tests: estabilizados los tests API de clasificacion, analisis y contenido con proveedor IA determinista, y actualizado el slice de seguridad con dependencias de detalle de contenido.

@@ -2974,3 +2974,41 @@ Verificacion:
 - `npm test -- --watch=false --browsers=ChromeHeadless`: OK, 146 tests, 0 fallos. Persiste warning no bloqueante de Karma por fuentes PrimeIcons y cierre lento de ChromeHeadless.
 - `npm run build`: OK sin warnings de budget. Bundle inicial: `527.32 kB`.
 - Revision Chrome headless por CDP en mobile `390x844`, tablet `768x1024`, desktop `1440x900` y ultrawide `1920x1080`: 60 combinaciones ruta/viewport sin overflow horizontal de documento, sin tablas fuera del viewport y sin iconos visibles con tamano cero.
+
+---
+
+## 19.14 Revision visual de metric cards - 2026-06-30
+
+Tarea de refinamiento visual posterior a la revision responsive integral.
+
+Completado en esta iteracion:
+- [x] Unificada la altura de `app-metric-card` dentro de los grids de dashboard y settings.
+- [x] Ajustado el grid responsive de metric cards para mantener tarjetas del mismo tamano por fila.
+- [x] Reforzado wrapping de titulos, subtitulos, badges y valores para evitar datos cortados.
+- [x] Sustituido color hardcodeado de danger por tokens del design system.
+- [x] Corregida la semantica de color de la tarjeta `Errores`: `danger` siempre, evitando verde en una metrica de errores.
+- [x] Corregida la semantica de color de la tarjeta `Publicaciones`: `secondary`, dejando rojo solo para el dato interno de fallidas.
+- [x] Unificada la disposicion interna de datos: icono encima del valor en las metric cards de dashboard y settings.
+- [x] Version frontend subida a `0.0.11`.
+
+Verificacion:
+- `npm run build` ejecutado en `frontend/` con resultado OK. Bundle inicial: `527.50 kB`.
+- Tests focales frontend ejecutados con resultado OK: `MetricCardComponent`, `DashboardPageComponent` y `SettingsPageComponent`, 20 tests, 0 fallos. Persiste warning no bloqueante de Karma por fuentes PrimeIcons y cierre lento de ChromeHeadless.
+- Test focal backend `mvn -Dtest=DashboardControllerTest#returnsDashboardSnapshotWithDailyMetricsAndPriorityEvents test` ejecutado con resultado OK, validando `Publicaciones` con tono `secondary`.
+- Suite backend focal completa `mvn -Dtest=DashboardControllerTest test` no queda como verificacion de esta iteracion porque el metodo de prioridad falla por datos reales locales preexistentes en PostgreSQL que alteran el orden esperado del fixture; no esta relacionado con el cambio visual de metric cards.
+
+---
+
+## 19.15 Correccion warning PrimeIcons en Karma - 2026-06-30
+
+Tarea de mantenimiento correctivo posterior a la modernizacion Angular 21 + PrimeNG + Tailwind.
+
+Completado en esta iteracion:
+- [x] Reproducidos los 404 de Karma para `/base/media/primeicons.woff2`, `/base/media/primeicons.woff` y `/base/media/primeicons.ttf`.
+- [x] Anadir configuracion `karma.conf.cjs` para servir esas fuentes desde `node_modules/primeicons/fonts` solo durante tests.
+- [x] Enlazado el runner Angular de tests con `karmaConfig`.
+- [x] Version frontend subida a `0.0.12`.
+
+Verificacion:
+- `npm test -- --watch=false --browsers=ChromeHeadless`: OK, 146 tests, 0 fallos. Ya no aparecen warnings 404 de PrimeIcons; persiste solo el warning de cierre lento de ChromeHeadless.
+- `npm run build`: OK sin warnings de budget. Bundle inicial: `527.50 kB`.

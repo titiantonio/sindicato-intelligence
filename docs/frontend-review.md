@@ -20,6 +20,7 @@ Modernizacion tecnica iniciada y verificada:
 - Tablas operativas unificadas con `app-standard-table` sobre PrimeNG `p-table` en `dashboard`, `events`, `event-detail`, `news`, `content`, `sources`, `users`, `audit` y `settings`.
 - Filtros y paginacion de tablas migrados a `p-select` de PrimeNG; los selects restantes pertenecen a formularios existentes.
 - Revision responsive integral aplicada sobre el shell, paneles y tablas para evitar crecimiento horizontal de pagina en mobile, tablet, desktop y ultrawide.
+- Metric cards revisadas para altura homogenea, grid consistente en dashboard/settings, colores por tokens y datos sin corte. La tarjeta de errores de settings queda en `danger`; publicaciones queda en `secondary` para no comunicar fallo salvo en el dato interno de fallidas.
 - Iconos PrimeIcons invalidos sustituidos en navegacion de fuentes y fusion de eventos.
 - Accesibilidad base reforzada con landmarks en auth, labels explicitos en formularios de password, `aria-label` en navegacion principal y `scope="col"` en cabeceras de tablas.
 - Rutas de pantallas cargadas con `loadComponent`.
@@ -67,6 +68,7 @@ Modernizacion tecnica iniciada y verificada:
 - Revision Chrome headless por CDP mobile/tablet/desktop/ultrawide: OK en 60 combinaciones ruta/viewport, sin overflow horizontal de documento, sin tablas fuera del viewport y sin iconos visibles con tamano cero.
 - Build final tras revision responsive: `npm run build` OK sin warnings de budget. Bundle inicial: 527.32 KB.
 - Suite final tras revision responsive: `npm test -- --watch=false --browsers=ChromeHeadless` OK, 146 tests; persiste warning no bloqueante de fuentes PrimeIcons en Karma.
+- Ajuste metric cards: `npm run build` OK, tests focales frontend OK, 20 tests, y test focal backend de metricas de dashboard OK. `Publicaciones` queda con tono `secondary` y `Errores` con tono `danger`.
 
 ## Verificacion Pendiente
 

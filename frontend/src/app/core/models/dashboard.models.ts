@@ -10,7 +10,7 @@ export interface MetricCard {
   label: string;
   value: string;
   trend: string;
-  tone: 'primary' | 'success' | 'warning' | 'danger';
+  tone: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'neutral';
   todayValue: number;
   yesterdayValue: number;
   difference: number;

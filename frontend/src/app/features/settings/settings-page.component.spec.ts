@@ -230,6 +230,8 @@ describe('SettingsPageComponent', () => {
     expect(component.aiMetricCards()[0].items[0].value).toBe(2);
     expect(component.aiMetricCards()[1].title).toBe('Calidad');
     expect(component.aiMetricCards()[1].items[2].value).toBe(50);
+    expect(component.aiMetricCards()[2].title).toBe('Errores');
+    expect(component.aiMetricCards()[2].tone).toBe('danger');
   });
 
   it('changes daily metrics date', () => {

@@ -90,7 +90,7 @@ public class DashboardController {
                 "Publicaciones",
                 "Resumen del estado",
                 "send",
-                "danger",
+                "secondary",
                 metric,
                 snapshot.lastUpdated().publications(),
                 List.of(
