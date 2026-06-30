@@ -1,11 +1,15 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
 
 import { EventDetail, EventNewsItem } from '../../core/models/event.models';
 import { AnalysisService } from '../../core/services/analysis.service';
 import { ContentService } from '../../core/services/content.service';
 import { EventService } from '../../core/services/event.service';
+import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
 type EventNewsSortColumn = 'id' | 'title' | 'processingStatus' | 'category' | 'urgencyLevel' | 'capturedAt';
@@ -13,7 +17,7 @@ type SortDirection = 'asc' | 'desc';
 
 @Component({
   selector: 'app-event-detail-page',
-  imports: [FormsModule, RouterLink, StatusBadgeComponent],
+  imports: [ButtonModule, FormsModule, InputTextModule, MessageModule, RouterLink, StandardTableComponent, StatusBadgeComponent],
   templateUrl: './event-detail-page.component.html',
   styleUrl: './event-detail-page.component.scss'
 })

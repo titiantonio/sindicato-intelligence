@@ -1,6 +1,11 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { SelectModule } from 'primeng/select';
 import { forkJoin } from 'rxjs';
 
 import { AiMetricsSnapshot, AiModelOption, AiPromptVersion, AiProviderSetting, AiWorkflowSetting } from '../../core/models/ai-observability.models';
@@ -11,6 +16,7 @@ import { AiObservabilityService } from '../../core/services/ai-observability.ser
 import { ApplicationSettingsService } from '../../core/services/application-settings.service';
 import { AutomationService } from '../../core/services/automation.service';
 import { MetricCardComponent } from '../../shared/components/metric-card/metric-card.component';
+import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 
 type SettingsTab = 'metrics' | 'prompts' | 'automation' | 'publication';
 type SortDirection = 'asc' | 'desc';
@@ -45,7 +51,7 @@ interface AiWorkflowForm {
 
 @Component({
   selector: 'app-settings-page',
-  imports: [FormsModule, MetricCardComponent, RouterLink],
+  imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, MessageModule, MetricCardComponent, RouterLink, SelectModule, StandardTableComponent],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss'
 })

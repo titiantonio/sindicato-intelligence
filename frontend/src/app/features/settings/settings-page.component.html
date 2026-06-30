@@ -7,28 +7,28 @@
     </header>
 
     @if (errorMessage()) {
-      <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+      <p-message severity="error" [text]="errorMessage() ?? ''" />
     }
 
     @if (successMessage()) {
-      <p class="page-alert page-alert--success">{{ successMessage() }}</p>
+      <p-message severity="success" [text]="successMessage() ?? ''" />
     }
 
     @if (isLoading() || isTelegramLoading() || isAiLoading()) {
-      <p class="page-alert">Cargando configuracion...</p>
+      <p-message severity="info" text="Cargando configuracion..." />
     }
 
     <nav class="settings-tabs" aria-label="Areas de configuracion">
-      <button type="button" class="settings-tab" [class.settings-tab--active]="activeTab() === 'metrics'" (click)="setTab('metrics')">
+      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'metrics'" (click)="setTab('metrics')">
         Metricas IA
       </button>
-      <button type="button" class="settings-tab" [class.settings-tab--active]="activeTab() === 'prompts'" (click)="setTab('prompts')">
+      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'prompts'" (click)="setTab('prompts')">
         Prompts IA
       </button>
-      <button type="button" class="settings-tab" [class.settings-tab--active]="activeTab() === 'automation'" (click)="setTab('automation')">
+      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'automation'" (click)="setTab('automation')">
         Automatizaciones
       </button>
-      <button type="button" class="settings-tab" [class.settings-tab--active]="activeTab() === 'publication'" (click)="setTab('publication')">
+      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'publication'" (click)="setTab('publication')">
         Publicacion
       </button>
     </nav>
@@ -42,7 +42,7 @@
           </div>
           <label class="daily-filter">
             Dia operativo
-            <input type="date" [ngModel]="metricDate()" (ngModelChange)="setMetricDate($event)" />
+            <input pInputText type="date" [ngModel]="metricDate()" (ngModelChange)="setMetricDate($event)" />
           </label>
         </header>
 
@@ -59,54 +59,51 @@
           <h2>Operaciones del dia</h2>
         </header>
 
-        <div class="table-wrapper">
-          <table class="data-table data-table--metrics">
-            <colgroup>
-              <col style="width: 11%" />
-              <col style="width: 8%" />
-              <col style="width: 13%" />
-              <col style="width: 13%" />
-              <col style="width: 11%" />
-              <col style="width: 12%" />
-              <col style="width: 8%" />
-              <col style="width: 8%" />
-              <col style="width: 7%" />
-              <col style="width: 9%" />
-            </colgroup>
-            <thead>
+        <app-standard-table
+          [rows]="paginatedMetrics()"
+          [columnCount]="10"
+          [totalItems]="displayedMetrics().length"
+          totalLabel="metricas"
+          [pageSize]="metricPageSize()"
+          [currentPage]="metricDisplayPage()"
+          [totalPages]="metricTotalPages()"
+          [pageSizeOptions]="pageSizeOptions"
+          minWidth="104rem"
+          (pageSizeChange)="setMetricPageSize($event)"
+          (previousPage)="previousMetricPage()"
+          (nextPage)="nextMetricPage()"
+        >
+            <ng-template #tableHeader>
               <tr>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('createdAt')">Fecha {{ metricSortLabel('createdAt') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('workflowCode')">WF {{ metricSortLabel('workflowCode') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('operationType')">Operacion {{ metricSortLabel('operationType') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('promptKey')">Prompt {{ metricSortLabel('promptKey') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('provider')">Proveedor {{ metricSortLabel('provider') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('model')">Modelo {{ metricSortLabel('model') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('status')">Estado {{ metricSortLabel('status') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('relatedEntityType')">Entidad {{ metricSortLabel('relatedEntityType') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('latencyMs')">Latencia {{ metricSortLabel('latencyMs') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changeMetricSort('errorMessage')">Error {{ metricSortLabel('errorMessage') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('createdAt')">Fecha {{ metricSortLabel('createdAt') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('workflowCode')">WF {{ metricSortLabel('workflowCode') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('operationType')">Operacion {{ metricSortLabel('operationType') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('promptKey')">Prompt {{ metricSortLabel('promptKey') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('provider')">Proveedor {{ metricSortLabel('provider') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('model')">Modelo {{ metricSortLabel('model') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('status')">Estado {{ metricSortLabel('status') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('relatedEntityType')">Entidad {{ metricSortLabel('relatedEntityType') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('latencyMs')">Latencia {{ metricSortLabel('latencyMs') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('errorMessage')">Error {{ metricSortLabel('errorMessage') }}</button></th>
               </tr>
+            </ng-template>
+            <ng-template #tableFilters>
               <tr class="column-filters">
-                <th><input type="search" aria-label="Filtrar fecha de metrica" [ngModel]="metricCreatedAtFilter()" (ngModelChange)="setMetricCreatedAtFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar workflow de metrica" [ngModel]="metricOperationFilter()" (ngModelChange)="setMetricOperationFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar operacion de metrica" [ngModel]="metricOperationFilter()" (ngModelChange)="setMetricOperationFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar prompt de metrica" [ngModel]="metricPromptFilter()" (ngModelChange)="setMetricPromptFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar proveedor de metrica" [ngModel]="metricProviderFilter()" (ngModelChange)="setMetricProviderFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar modelo de metrica" [ngModel]="metricModelFilter()" (ngModelChange)="setMetricModelFilter($event)" /></th>
-                <th>
-                  <select aria-label="Filtrar estado de metrica" [ngModel]="metricStatusFilter()" (ngModelChange)="setMetricStatusFilter($event)">
-                    <option value="">Todos</option>
-                    <option value="Correcta">Correcta</option>
-                    <option value="Fallida">Fallida</option>
-                  </select>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar fecha de metrica" [ngModel]="metricCreatedAtFilter()" (ngModelChange)="setMetricCreatedAtFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar workflow de metrica" [ngModel]="metricOperationFilter()" (ngModelChange)="setMetricOperationFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar operacion de metrica" [ngModel]="metricOperationFilter()" (ngModelChange)="setMetricOperationFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar prompt de metrica" [ngModel]="metricPromptFilter()" (ngModelChange)="setMetricPromptFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar proveedor de metrica" [ngModel]="metricProviderFilter()" (ngModelChange)="setMetricProviderFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar modelo de metrica" [ngModel]="metricModelFilter()" (ngModelChange)="setMetricModelFilter($event)" /></th>
+                <th scope="col">
+                  <p-select [options]="['Correcta', 'Fallida']" [ngModel]="metricStatusFilter()" (ngModelChange)="setMetricStatusFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar estado de metrica" />
                 </th>
-                <th><input type="search" aria-label="Filtrar entidad de metrica" [ngModel]="metricRelatedEntityTypeFilter()" (ngModelChange)="setMetricRelatedEntityTypeFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar latencia de metrica" [ngModel]="metricLatencyFilter()" (ngModelChange)="setMetricLatencyFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar error de metrica" [ngModel]="metricErrorFilter()" (ngModelChange)="setMetricErrorFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar entidad de metrica" [ngModel]="metricRelatedEntityTypeFilter()" (ngModelChange)="setMetricRelatedEntityTypeFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar latencia de metrica" [ngModel]="metricLatencyFilter()" (ngModelChange)="setMetricLatencyFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar error de metrica" [ngModel]="metricErrorFilter()" (ngModelChange)="setMetricErrorFilter($event)" /></th>
               </tr>
-            </thead>
-            <tbody>
-              @for (metric of paginatedMetrics(); track metric.id) {
+            </ng-template>
+            <ng-template #tableRow let-metric>
                 <tr class="metric-row" [class.metric-row--failed]="metric.status === 'FAILED'" (click)="openMetricDetail(metric)" tabindex="0">
                   <td class="table-cell-nowrap">{{ formatDate(metric.createdAt) }}</td>
                   <td class="table-cell-nowrap">{{ workflowLabelForOperation(metric) }}</td>
@@ -125,31 +122,13 @@
                     }
                   </td>
                 </tr>
-              } @empty {
+            </ng-template>
+            <ng-template #tableEmpty>
                 <tr>
                   <td colspan="10" class="empty-cell">No hay operaciones que coincidan con los filtros.</td>
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <footer class="table-pagination">
-          <span>{{ displayedMetrics().length }} metricas</span>
-          <label>
-            Filas
-            <select [ngModel]="metricPageSize()" (ngModelChange)="setMetricPageSize($event)">
-              @for (pageSize of pageSizeOptions; track pageSize) {
-                <option [value]="pageSize">{{ pageSize }}</option>
-              }
-            </select>
-          </label>
-          <div class="table-pagination__pager">
-            <button type="button" class="secondary" (click)="previousMetricPage()" [disabled]="metricCurrentPage() === 1">Anterior</button>
-            <span>Pagina {{ metricDisplayPage() }} de {{ metricTotalPages() }}</span>
-            <button type="button" class="secondary" (click)="nextMetricPage()" [disabled]="metricCurrentPage() === metricTotalPages()">Siguiente</button>
-          </div>
-        </footer>
+            </ng-template>
+        </app-standard-table>
       </section>
     }
 
@@ -160,45 +139,45 @@
           <h2>Prompts versionados</h2>
         </header>
 
-        <div class="table-wrapper">
-          <table class="data-table data-table--prompts">
-            <colgroup>
-              <col style="width: 14rem" />
-              <col style="width: 18rem" />
-              <col style="width: 8rem" />
-              <col style="width: 8rem" />
-              <col style="width: 16rem" />
-              <col style="width: 8rem" />
-              <col style="width: 10rem" />
-            </colgroup>
-            <thead>
+        <app-standard-table
+          [rows]="paginatedPrompts()"
+          [columnCount]="7"
+          [totalItems]="displayedPrompts().length"
+          totalLabel="prompts"
+          [pageSize]="promptPageSize()"
+          [currentPage]="promptDisplayPage()"
+          [totalPages]="promptTotalPages()"
+          [pageSizeOptions]="pageSizeOptions"
+          minWidth="82rem"
+          (pageSizeChange)="setPromptPageSize($event)"
+          (previousPage)="previousPromptPage()"
+          (nextPage)="nextPromptPage()"
+        >
+            <ng-template #tableHeader>
               <tr>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('promptKey')">Clave {{ promptSortLabel('promptKey') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('promptName')">Prompt {{ promptSortLabel('promptName') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('module')">Modulo {{ promptSortLabel('module') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('version')">Version {{ promptSortLabel('version') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('checksum')">Checksum {{ promptSortLabel('checksum') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('active')">Estado {{ promptSortLabel('active') }}</button></th>
-                <th><button type="button" class="sort-button" (click)="changePromptSort('createdAt')">Creado {{ promptSortLabel('createdAt') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('promptKey')">Clave {{ promptSortLabel('promptKey') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('promptName')">Prompt {{ promptSortLabel('promptName') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('module')">Modulo {{ promptSortLabel('module') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('version')">Version {{ promptSortLabel('version') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('checksum')">Checksum {{ promptSortLabel('checksum') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('active')">Estado {{ promptSortLabel('active') }}</button></th>
+                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('createdAt')">Creado {{ promptSortLabel('createdAt') }}</button></th>
               </tr>
+            </ng-template>
+            <ng-template #tableFilters>
               <tr class="column-filters">
-                <th><input type="search" aria-label="Filtrar clave de prompt" [ngModel]="promptKeyFilter()" (ngModelChange)="setPromptKeyFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar nombre de prompt" [ngModel]="promptNameFilter()" (ngModelChange)="setPromptNameFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar modulo de prompt" [ngModel]="promptModuleFilter()" (ngModelChange)="setPromptModuleFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar version de prompt" [ngModel]="promptVersionFilter()" (ngModelChange)="setPromptVersionFilter($event)" /></th>
-                <th><input type="search" aria-label="Filtrar checksum de prompt" [ngModel]="promptChecksumFilter()" (ngModelChange)="setPromptChecksumFilter($event)" /></th>
-                <th>
-                  <select aria-label="Filtrar estado de prompt" [ngModel]="promptActiveFilter()" (ngModelChange)="setPromptActiveFilter($event)">
-                    <option value="">Todos</option>
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                  </select>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar clave de prompt" [ngModel]="promptKeyFilter()" (ngModelChange)="setPromptKeyFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar nombre de prompt" [ngModel]="promptNameFilter()" (ngModelChange)="setPromptNameFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar modulo de prompt" [ngModel]="promptModuleFilter()" (ngModelChange)="setPromptModuleFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar version de prompt" [ngModel]="promptVersionFilter()" (ngModelChange)="setPromptVersionFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar checksum de prompt" [ngModel]="promptChecksumFilter()" (ngModelChange)="setPromptChecksumFilter($event)" /></th>
+                <th scope="col">
+                  <p-select [options]="['Activo', 'Inactivo']" [ngModel]="promptActiveFilter()" (ngModelChange)="setPromptActiveFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar estado de prompt" />
                 </th>
-                <th><input type="search" aria-label="Filtrar fecha de prompt" [ngModel]="promptCreatedAtFilter()" (ngModelChange)="setPromptCreatedAtFilter($event)" /></th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar fecha de prompt" [ngModel]="promptCreatedAtFilter()" (ngModelChange)="setPromptCreatedAtFilter($event)" /></th>
               </tr>
-            </thead>
-            <tbody>
-              @for (prompt of paginatedPrompts(); track prompt.promptKey + prompt.version) {
+            </ng-template>
+            <ng-template #tableRow let-prompt>
                 <tr>
                   <td class="table-cell-nowrap"><code>{{ prompt.promptKey }}</code></td>
                   <td class="table-cell-nowrap">{{ prompt.promptName }}</td>
@@ -208,31 +187,13 @@
                   <td class="table-cell-nowrap">{{ prompt.active ? 'Activo' : 'Inactivo' }}</td>
                   <td class="table-cell-nowrap">{{ formatDate(prompt.createdAt) }}</td>
                 </tr>
-              } @empty {
+            </ng-template>
+            <ng-template #tableEmpty>
                 <tr>
                   <td colspan="7" class="empty-cell">No hay prompts que coincidan con los filtros.</td>
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <footer class="table-pagination">
-          <span>{{ displayedPrompts().length }} prompts</span>
-          <label>
-            Filas
-            <select [ngModel]="promptPageSize()" (ngModelChange)="setPromptPageSize($event)">
-              @for (pageSize of pageSizeOptions; track pageSize) {
-                <option [value]="pageSize">{{ pageSize }}</option>
-              }
-            </select>
-          </label>
-          <div class="table-pagination__pager">
-            <button type="button" class="secondary" (click)="previousPromptPage()" [disabled]="promptCurrentPage() === 1">Anterior</button>
-            <span>Pagina {{ promptDisplayPage() }} de {{ promptTotalPages() }}</span>
-            <button type="button" class="secondary" (click)="nextPromptPage()" [disabled]="promptCurrentPage() === promptTotalPages()">Siguiente</button>
-          </div>
-        </footer>
+            </ng-template>
+        </app-standard-table>
       </section>
     }
 
@@ -258,6 +219,7 @@
             <label>
               API base URL
               <input
+                pInputText
                 type="url"
                 [ngModel]="telegramForm().baseUrl"
                 (ngModelChange)="updateTelegramForm({ baseUrl: $event })"
@@ -268,6 +230,7 @@
             <label>
               Bot token
               <input
+                pInputText
                 type="password"
                 autocomplete="new-password"
                 placeholder="Mantener token actual"
@@ -280,6 +243,7 @@
             <label>
               Chat ID
               <input
+                pInputText
                 type="text"
                 [ngModel]="telegramForm().chatId"
                 (ngModelChange)="updateTelegramForm({ chatId: $event })"
@@ -297,7 +261,7 @@
               <span>Sin previsualizacion de enlaces</span>
             </label>
 
-            <button type="submit" [disabled]="isTelegramSaving()">Guardar Telegram</button>
+            <button pButton type="submit" [disabled]="isTelegramSaving()">Guardar Telegram</button>
           </form>
 
           @if (telegramSettings(); as telegram) {
@@ -392,6 +356,7 @@
                       <label>
                         Intervalo (min)
                         <input
+                          pInputText
                           type="number"
                           min="1"
                           [ngModel]="formFor(automationSetting.workflowCode).intervalMinutes"
@@ -401,6 +366,7 @@
                       <label>
                         Lote
                         <input
+                          pInputText
                           type="number"
                           min="1"
                           [ngModel]="formFor(automationSetting.workflowCode).batchSize"
@@ -481,6 +447,7 @@
                     <label>
                       Temperatura
                       <input
+                        pInputText
                         type="number"
                         min="0"
                         max="2"
@@ -494,6 +461,7 @@
                     <label>
                       Max tokens
                       <input
+                        pInputText
                         type="number"
                         min="1"
                         [ngModel]="aiWorkflowFormFor(aiSetting.workflowCode).maxOutputTokens"
@@ -507,10 +475,10 @@
 
               <footer>
                 @if (automationSettingForAiWorkflow(aiSetting.workflowCode); as automationSetting) {
-                  <button type="button" (click)="save(automationSetting)" [disabled]="busyWorkflow() === automationSetting.workflowCode">Guardar automatizacion</button>
-                  <button type="button" class="secondary" (click)="runNow(automationSetting)" [disabled]="busyWorkflow() === automationSetting.workflowCode || automationSetting.running">Ejecutar ahora</button>
+                  <button pButton type="button" (click)="save(automationSetting)" [disabled]="busyWorkflow() === automationSetting.workflowCode">Guardar automatizacion</button>
+                  <button pButton type="button" severity="secondary" (click)="runNow(automationSetting)" [disabled]="busyWorkflow() === automationSetting.workflowCode || automationSetting.running">Ejecutar ahora</button>
                 }
-                <button type="button" (click)="saveAiWorkflow(aiSetting)" [disabled]="busyAiWorkflow() === aiSetting.workflowCode">Guardar IA</button>
+                <button pButton type="button" (click)="saveAiWorkflow(aiSetting)" [disabled]="busyAiWorkflow() === aiSetting.workflowCode">Guardar IA</button>
               </footer>
             </article>
           }
@@ -545,6 +513,7 @@
               <label>
                 API key
                 <input
+                  pInputText
                   type="password"
                   autocomplete="new-password"
                   placeholder="Mantener clave actual"
@@ -555,8 +524,8 @@
               </label>
 
               <footer>
-                <button type="submit" [disabled]="busyAiProvider() === provider.providerCode">Guardar</button>
-                <button type="button" class="secondary" (click)="loadModels(provider.providerCode)" [disabled]="busyModelProvider() === provider.providerCode">
+                <button pButton type="submit" [disabled]="busyAiProvider() === provider.providerCode">Guardar</button>
+                <button pButton type="button" severity="secondary" (click)="loadModels(provider.providerCode)" [disabled]="busyModelProvider() === provider.providerCode">
                   Cargar modelos
                 </button>
               </footer>
@@ -567,15 +536,20 @@
     }
 
     @if (selectedErrorMetric(); as errorMetric) {
-      <div class="modal-backdrop" (click)="closeMetricError()">
-        <section class="metric-modal" role="dialog" aria-modal="true" aria-labelledby="metric-error-title" (click)="$event.stopPropagation()">
-          <header>
+      <p-dialog
+        [modal]="true"
+        [visible]="selectedErrorMetric() !== null"
+        (visibleChange)="!$event && closeMetricError()"
+        [style]="{ width: 'min(760px, 96vw)' }"
+        [breakpoints]="{ '768px': '96vw' }"
+        styleClass="metric-modal"
+      >
+          <ng-template pTemplate="header">
             <div>
               <span>Error IA</span>
               <h2 id="metric-error-title">Detalle del error</h2>
             </div>
-            <button type="button" class="secondary" (click)="closeMetricError()">Cerrar</button>
-          </header>
+          </ng-template>
           <dl class="workflow-status">
             <div>
               <dt>Operacion</dt>
@@ -599,20 +573,24 @@
             </div>
           </dl>
           <pre class="error-detail">{{ errorMetric.errorMessage }}</pre>
-        </section>
-      </div>
+      </p-dialog>
     }
 
     @if (selectedMetricDetail(); as detailMetric) {
-      <div class="modal-backdrop" (click)="closeMetricDetail()">
-        <section class="metric-modal" role="dialog" aria-modal="true" aria-labelledby="metric-detail-title" (click)="$event.stopPropagation()">
-          <header>
+      <p-dialog
+        [modal]="true"
+        [visible]="selectedMetricDetail() !== null"
+        (visibleChange)="!$event && closeMetricDetail()"
+        [style]="{ width: 'min(860px, 96vw)' }"
+        [breakpoints]="{ '768px': '96vw' }"
+        styleClass="metric-modal"
+      >
+          <ng-template pTemplate="header">
             <div>
               <span>Operacion IA</span>
               <h2 id="metric-detail-title">{{ metricDetailTitle(detailMetric) }}</h2>
             </div>
-            <button type="button" class="secondary" (click)="closeMetricDetail()">Cerrar</button>
-          </header>
+          </ng-template>
           <dl class="workflow-status">
             <div>
               <dt>Workflow</dt>
@@ -660,8 +638,7 @@
           @if (entityDetailLink(detailMetric); as detailLink) {
             <a class="detail-link" [routerLink]="detailLink" (click)="closeMetricDetail()">Abrir evento relacionado</a>
           }
-        </section>
-      </div>
+      </p-dialog>
     }
   </article>
 </section>

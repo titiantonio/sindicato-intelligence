@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { MessageModule } from 'primeng/message';
 
 import { ContentDetail } from '../../core/models/content.models';
 import { ContentService } from '../../core/services/content.service';
@@ -7,7 +8,7 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 
 @Component({
   selector: 'app-content-detail-page',
-  imports: [RouterLink, StatusBadgeComponent],
+  imports: [MessageModule, RouterLink, StatusBadgeComponent],
   templateUrl: './content-detail-page.component.html',
   styleUrl: './content-detail-page.component.scss'
 })

@@ -1,4 +1,4 @@
-<section class="login-page">
+<main class="login-page">
   <article class="login-page__intro">
     <span class="login-page__eyebrow">Fase 11 · Backoffice Angular</span>
     <h1>Seguimiento editorial de eventos educativos andaluces</h1>
@@ -26,14 +26,14 @@
     </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="submit()" class="login-page__form">
-      <label class="login-page__field">
+      <label class="login-page__field" for="login-email">
         <span>Email</span>
-        <input type="email" formControlName="email" placeholder="admin@sindicato.es" />
+        <input id="login-email" pInputText type="email" formControlName="email" placeholder="admin@sindicato.es" />
       </label>
 
-      <label class="login-page__field">
+      <label class="login-page__field" for="login-password">
         <span>Password</span>
-        <input type="password" formControlName="password" placeholder="Introduce tu password" />
+        <input id="login-password" pInputText type="password" formControlName="password" placeholder="Introduce tu password" />
       </label>
 
       <a class="login-page__forgot-link" routerLink="/forgot-password">
@@ -41,12 +41,19 @@
       </a>
 
       @if (errorMessage(); as error) {
-        <p class="login-page__error">{{ error }}</p>
+        <p-message severity="error" [text]="error" />
       }
 
-      <button type="submit" class="login-page__submit" [disabled]="isSubmitting()">
+      <button
+        pButton
+        type="submit"
+        class="login-page__submit"
+        icon="pi pi-sign-in"
+        [loading]="isSubmitting()"
+        [disabled]="isSubmitting()"
+      >
         {{ isSubmitting() ? 'Accediendo...' : 'Entrar' }}
       </button>
     </form>
   </article>
-</section>
+</main>

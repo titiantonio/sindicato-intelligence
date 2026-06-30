@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend accesibilidad: anadidos landmarks `main` en pantallas auth, labels explicitos en formularios de password, nombre accesible en navegacion principal y `scope="col"` en cabeceras de tablas operativas.
+- Frontend version: subida la version del paquete frontend a `0.0.9`.
+- Frontend filtros: sustituidos selects de filtros y paginacion por `p-select` de PrimeNG en tablas operativas, manteniendo los formularios existentes sin cambios.
+- Frontend estilos: retirada duplicacion SCSS heredada de tablas HTML tras la adopcion de `app-standard-table`.
+- Frontend tablas: unificadas las tablas operativas del backoffice con `app-standard-table` sobre PrimeNG `p-table`, manteniendo filtros, ordenacion, paginacion y contratos `/api/v1` existentes.
+- Frontend build: recalibrados budgets de Angular tras la migracion Angular 21 + PrimeNG + Tailwind para eliminar warnings no accionables manteniendo limites de error existentes.
+- Frontend ADMIN/detalles: `users`, `settings`, `content-detail` y `publication-detail` adoptan controles PrimeNG basicos para mensajes, filtros, botones, acciones y dialogos, conservando servicios Angular y contratos `/api/v1`.
+- Frontend editorial/admin: `content`, `publications`, `sources` y `audit` adoptan controles PrimeNG para mensajes, filtros, botones, acciones y dialogos, manteniendo contratos API y logica de filtrado existente.
+- Frontend operativo: `dashboard`, `events`, `event-detail`, `news` y `news-detail` adoptan controles PrimeNG para mensajes, filtros, botones, acciones y dialogos, conservando los contratos API y la logica de filtrado existente.
+- Frontend routing: las pantallas del backoffice pasan a cargarse con `loadComponent`, reduciendo el bundle inicial tras la migracion a PrimeNG.
+- Frontend auth: las pantallas `login`, `forgot-password`, `reset-password` y `change-password` usan componentes/directivas PrimeNG para inputs, botones y mensajes.
 - Frontend modernizacion: migrada la base tecnica a Angular 21, PrimeNG, `@primeng/themes`, PrimeIcons, Tailwind CSS 4 y `tailwindcss-primeui`, manteniendo contratos API y logica de negocio existentes.
 - Frontend shell: actualizada la navegacion global con PrimeIcons, enlace de salto al contenido, landmarks y foco accesible.
 - Frontend componentes compartidos: `StatusBadge` usa `p-tag` de PrimeNG y `MetricCard` sustituye SVGs manuales por PrimeIcons.
@@ -25,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Frontend dependencias: resueltas las 13 vulnerabilidades pendientes de `npm audit` con actualizacion no forzada del toolchain y overrides controlados para `@babel/core` y `undici`.
 - Backend IA: las claves API de proveedores IA configurables se guardan cifradas en reposo y no se exponen en respuestas API, logs ni URLs de llamadas a Gemini.
 - Auditoria seguridad: retirada clave Gemini versionada y scripts temporales con credenciales/tokens; se anade plantilla segura `set_ai_env.example.ps1` y exclusiones en `.gitignore`.
 - Backend seguridad: el perfil productivo exige `JWT_SECRET` explicito y rechaza el secreto JWT placeholder; se anade rate limiting en memoria para endpoints publicos de autenticacion.

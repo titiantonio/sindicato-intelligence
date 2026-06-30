@@ -1,0 +1,67 @@
+<div class="standard-table">
+  <p-table
+    styleClass="standard-table__prime"
+    [value]="rows()"
+    [loading]="loading() && rows().length > 0"
+    [scrollable]="true"
+    [tableStyle]="{ 'min-width': minWidth() }"
+  >
+    <ng-template pTemplate="header">
+      @if (headerTemplate(); as template) {
+        <ng-container [ngTemplateOutlet]="template" />
+      }
+      @if (filtersTemplate(); as template) {
+        <ng-container [ngTemplateOutlet]="template" />
+      }
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row>
+      @if (rowTemplate(); as template) {
+        <ng-container [ngTemplateOutlet]="template" [ngTemplateOutletContext]="{ $implicit: row }" />
+      }
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      @if (loading() && rows().length === 0) {
+        @if (loadingTemplate(); as template) {
+          <ng-container [ngTemplateOutlet]="template" />
+        } @else {
+          @for (_ of skeletonRows(); track $index) {
+            <tr class="table-skeleton" aria-hidden="true">
+              @for (_ of skeletonCells(); track $index) {
+                <td><span></span></td>
+              }
+            </tr>
+          }
+        }
+      } @else {
+        @if (emptyTemplate(); as template) {
+          <ng-container [ngTemplateOutlet]="template" />
+        } @else {
+          <tr>
+            <td [attr.colspan]="columnCount()">No hay registros que coincidan con los filtros.</td>
+          </tr>
+        }
+      }
+    </ng-template>
+  </p-table>
+</div>
+
+<footer class="standard-table-pagination">
+  <span>{{ totalItems() }} {{ totalLabel() }}</span>
+
+  <label>
+    Filas por pagina
+    <p-select [options]="pageSizeOptions()" [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" [appendTo]="'body'" aria-label="Filas por pagina" />
+  </label>
+
+  <div class="standard-table-pagination__pager">
+    <button pButton type="button" severity="secondary" size="small" icon="pi pi-angle-left" (click)="previousPage.emit()" [disabled]="currentPage() === 1">
+      Anterior
+    </button>
+    <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
+    <button pButton type="button" severity="secondary" size="small" icon="pi pi-angle-right" iconPos="right" (click)="nextPage.emit()" [disabled]="currentPage() === totalPages()">
+      Siguiente
+    </button>
+  </div>
+</footer>

@@ -3,46 +3,39 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { passwordChangeGuard } from './core/guards/password-change.guard';
 import { roleGuard } from './core/guards/role.guard';
-import { ChangePasswordPageComponent } from './features/auth/change-password/change-password-page.component';
-import { AuditPageComponent } from './features/audit/audit-page.component';
-import { ContentDetailPageComponent } from './features/content/content-detail-page.component';
-import { ContentPageComponent } from './features/content/content-page.component';
-import { DashboardPageComponent } from './features/dashboard/dashboard-page.component';
-import { EventDetailPageComponent } from './features/events/event-detail-page.component';
-import { EventsPageComponent } from './features/events/events-page.component';
-import { ForgotPasswordPageComponent } from './features/auth/forgot-password/forgot-password-page.component';
-import { LoginPageComponent } from './features/auth/login/login-page.component';
-import { NewsDetailPageComponent } from './features/news/news-detail-page.component';
-import { NewsPageComponent } from './features/news/news-page.component';
-import { PublicationDetailPageComponent } from './features/publications/publication-detail-page.component';
-import { PublicationsPageComponent } from './features/publications/publications-page.component';
-import { ResetPasswordPageComponent } from './features/auth/reset-password/reset-password-page.component';
-import { SettingsPageComponent } from './features/settings/settings-page.component';
-import { SourcesPageComponent } from './features/sources/sources-page.component';
-import { UsersPageComponent } from './features/users/users-page.component';
-import { ShellComponent } from './layout/shell/shell.component';
 
 export const routes: Routes = [
   {
     path: 'login',
-    component: LoginPageComponent
+    loadComponent: () =>
+      import('./features/auth/login/login-page.component').then((module) => module.LoginPageComponent)
   },
   {
     path: 'forgot-password',
-    component: ForgotPasswordPageComponent
+    loadComponent: () =>
+      import('./features/auth/forgot-password/forgot-password-page.component').then(
+        (module) => module.ForgotPasswordPageComponent
+      )
   },
   {
     path: 'reset-password',
-    component: ResetPasswordPageComponent
+    loadComponent: () =>
+      import('./features/auth/reset-password/reset-password-page.component').then(
+        (module) => module.ResetPasswordPageComponent
+      )
   },
   {
     path: 'change-password',
-    component: ChangePasswordPageComponent,
+    loadComponent: () =>
+      import('./features/auth/change-password/change-password-page.component').then(
+        (module) => module.ChangePasswordPageComponent
+      ),
     canActivate: [authGuard]
   },
   {
     path: '',
-    component: ShellComponent,
+    loadComponent: () =>
+      import('./layout/shell/shell.component').then((module) => module.ShellComponent),
     canActivate: [authGuard, passwordChangeGuard],
     children: [
       {
@@ -52,43 +45,67 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard',
-        component: DashboardPageComponent
+        loadComponent: () =>
+          import('./features/dashboard/dashboard-page.component').then(
+            (module) => module.DashboardPageComponent
+          )
       },
       {
         path: 'events/:id',
-        component: EventDetailPageComponent
+        loadComponent: () =>
+          import('./features/events/event-detail-page.component').then(
+            (module) => module.EventDetailPageComponent
+          )
       },
       {
         path: 'events',
-        component: EventsPageComponent
+        loadComponent: () =>
+          import('./features/events/events-page.component').then((module) => module.EventsPageComponent)
       },
       {
         path: 'content',
-        component: ContentPageComponent
+        loadComponent: () =>
+          import('./features/content/content-page.component').then((module) => module.ContentPageComponent)
       },
       {
         path: 'content/:id',
-        component: ContentDetailPageComponent
+        loadComponent: () =>
+          import('./features/content/content-detail-page.component').then(
+            (module) => module.ContentDetailPageComponent
+          )
       },
       {
         path: 'publications',
-        component: PublicationsPageComponent
+        loadComponent: () =>
+          import('./features/publications/publications-page.component').then(
+            (module) => module.PublicationsPageComponent
+          )
       },
       {
         path: 'publications/:id',
-        component: PublicationDetailPageComponent
+        loadComponent: () =>
+          import('./features/publications/publication-detail-page.component').then(
+            (module) => module.PublicationDetailPageComponent
+          )
       },
       {
         path: 'news/:id',
-        component: NewsDetailPageComponent
+        loadComponent: () =>
+          import('./features/news/news-detail-page.component').then(
+            (module) => module.NewsDetailPageComponent
+          )
       },
       {
         path: 'news',
-        component: NewsPageComponent
+        loadComponent: () =>
+          import('./features/news/news-page.component').then((module) => module.NewsPageComponent)
       },
       {
         path: 'sources',
-        component: SourcesPageComponent,
+        loadComponent: () =>
+          import('./features/sources/sources-page.component').then(
+            (module) => module.SourcesPageComponent
+          ),
         canActivate: [roleGuard],
         data: {
           roles: ['ADMIN']
@@ -96,7 +113,8 @@ export const routes: Routes = [
       },
       {
         path: 'users',
-        component: UsersPageComponent,
+        loadComponent: () =>
+          import('./features/users/users-page.component').then((module) => module.UsersPageComponent),
         canActivate: [roleGuard],
         data: {
           roles: ['ADMIN']
@@ -104,7 +122,8 @@ export const routes: Routes = [
       },
       {
         path: 'audit',
-        component: AuditPageComponent,
+        loadComponent: () =>
+          import('./features/audit/audit-page.component').then((module) => module.AuditPageComponent),
         canActivate: [roleGuard],
         data: {
           roles: ['ADMIN']
@@ -117,7 +136,10 @@ export const routes: Routes = [
       },
       {
         path: 'settings',
-        component: SettingsPageComponent,
+        loadComponent: () =>
+          import('./features/settings/settings-page.component').then(
+            (module) => module.SettingsPageComponent
+          ),
         canActivate: [roleGuard],
         data: {
           roles: ['ADMIN']

@@ -1,9 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { SelectModule } from 'primeng/select';
 
 import { SourceResponse } from '../../core/models/source.models';
 import { SourceService } from '../../core/services/source.service';
+import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 
 type SourceSortColumn = 'id' | 'name' | 'url' | 'type' | 'priority' | 'active' | 'createdAt' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
@@ -11,7 +17,7 @@ type SourceFormMode = 'create' | 'edit';
 
 @Component({
   selector: 'app-sources-page',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [ButtonModule, CommonModule, DialogModule, FormsModule, InputTextModule, MessageModule, ReactiveFormsModule, SelectModule, StandardTableComponent],
   templateUrl: './sources-page.component.html',
   styleUrl: './sources-page.component.scss'
 })

@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { MessageModule } from 'primeng/message';
 
 import { PublicationListItem } from '../../core/models/publication.models';
 import { PublicationService } from '../../core/services/publication.service';
@@ -8,7 +9,7 @@ import { formatPublicationResult } from './publication-result.formatter';
 
 @Component({
   selector: 'app-publications-page',
-  imports: [RouterLink, StatusBadgeComponent],
+  imports: [MessageModule, RouterLink, StatusBadgeComponent],
   templateUrl: './publications-page.component.html',
   styleUrl: './publications-page.component.scss'
 })

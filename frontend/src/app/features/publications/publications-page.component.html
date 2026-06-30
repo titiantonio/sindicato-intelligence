@@ -7,11 +7,11 @@
 </section>
 
 @if (errorMessage()) {
-  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+  <p-message severity="error" [text]="errorMessage() ?? ''" />
 }
 
 @if (isLoading()) {
-  <p class="page-alert">Cargando publicaciones...</p>
+  <p-message severity="info" text="Cargando publicaciones..." />
 }
 
 <section class="timeline-grid">

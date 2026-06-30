@@ -119,10 +119,10 @@ describe('DashboardPageComponent', () => {
     fixture.detectChanges();
 
     const rows = fixture.debugElement.queryAll(By.css('tr.event-row'));
-    const impactSelect = fixture.debugElement.query(By.css('select[aria-label="Filtrar eventos prioritarios por impacto"]')).nativeElement as HTMLSelectElement;
+    const impactOptions = (fixture.componentInstance as any).importanceOptions;
 
-    expect(impactSelect.textContent).toContain('CRITICAL');
-    expect(impactSelect.textContent).toContain('HIGH');
+    expect(impactOptions).toContain('CRITICAL');
+    expect(impactOptions).toContain('HIGH');
     expect(rows.length).toBe(1);
     expect(rows[0].nativeElement.textContent).toContain('Mesa sectorial con muchas noticias');
   });
@@ -132,10 +132,10 @@ describe('DashboardPageComponent', () => {
     fixture.detectChanges();
 
     const rows = fixture.debugElement.queryAll(By.css('tr.event-row'));
-    const statusSelect = fixture.debugElement.query(By.css('select[aria-label="Filtrar eventos prioritarios por estado"]')).nativeElement as HTMLSelectElement;
+    const statusOptions = (fixture.componentInstance as any).statusOptions();
 
-    expect(statusSelect.textContent).toContain('OPEN');
-    expect(statusSelect.textContent).toContain('MONITORING');
+    expect(statusOptions).toContain('OPEN');
+    expect(statusOptions).toContain('MONITORING');
     expect(rows.length).toBe(1);
     expect(rows[0].nativeElement.textContent).toContain('Convocatoria urgente reciente');
   });

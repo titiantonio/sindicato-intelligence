@@ -47,7 +47,7 @@
   margin-top: 1.5rem;
 }
 
-.section-header--with-action,.workflow-panel header,.workflow-panel footer,.workflow-form,.ai-provider-form header,.ai-provider-form footer,.table-pagination,.table-pagination label,.table-pagination__pager,.metric-modal header {
+.section-header--with-action,.workflow-panel header,.workflow-panel footer,.workflow-form,.ai-provider-form header,.ai-provider-form footer,.metric-modal header {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -130,45 +130,6 @@ select {
   color: var(--color-danger-text);
   margin: 0;
   padding: 0.75rem;
-}
-
-.table-wrapper {
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  overflow-x: auto;
-}
-
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-.data-table--prompts{min-width:78rem}
-
-th,td {
-  border-bottom: 1px solid var(--color-border);
-  padding: 0.75rem;
-  text-align: left;
-  vertical-align: top;
-}
-
-th {
-  color: var(--color-primary);
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.column-filters th {
-  background: var(--color-muted-surface);
-  padding-top: 0;
-}
-
-.column-filters input,.column-filters select{font-size:.8rem}
-
-.sort-button {
-  all: unset;
-  cursor: pointer;
 }
 
 code {

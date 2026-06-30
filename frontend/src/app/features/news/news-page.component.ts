@@ -1,9 +1,14 @@
 import { FormsModule } from '@angular/forms';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { SelectModule } from 'primeng/select';
 
 import { NewsListItem } from '../../core/models/news.models';
 import { NewsService } from '../../core/services/news.service';
+import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
 type NewsSortColumn = 'id' | 'title' | 'sourceId' | 'processingStatus' | 'eventId' | 'category' | 'publishedAt' | 'capturedAt';
@@ -11,7 +16,7 @@ type SortDirection = 'asc' | 'desc';
 
 @Component({
   selector: 'app-news-page',
-  imports: [FormsModule, RouterLink, StatusBadgeComponent],
+  imports: [ButtonModule, FormsModule, InputTextModule, MessageModule, RouterLink, SelectModule, StandardTableComponent, StatusBadgeComponent],
   templateUrl: './news-page.component.html',
   styleUrl: './news-page.component.scss'
 })

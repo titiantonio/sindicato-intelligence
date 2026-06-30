@@ -1,9 +1,15 @@
 import { FormsModule } from '@angular/forms';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { SelectModule } from 'primeng/select';
 
 import { EventListItem } from '../../core/models/event.models';
 import { EventService } from '../../core/services/event.service';
+import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
 type EventSortColumn = 'id' | 'title' | 'category' | 'importance' | 'newsCount' | 'status' | 'editorialStatus' | 'updatedAt';
@@ -15,7 +21,7 @@ type PendingConfirmation =
 
 @Component({
   selector: 'app-events-page',
-  imports: [FormsModule, RouterLink, StatusBadgeComponent],
+  imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, MessageModule, RouterLink, SelectModule, StandardTableComponent, StatusBadgeComponent],
   templateUrl: './events-page.component.html',
   styleUrl: './events-page.component.scss'
 })

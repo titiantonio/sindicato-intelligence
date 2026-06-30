@@ -1,13 +1,16 @@
 ﻿import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { PASSWORD_PATTERN } from '../password-pattern';
 
 @Component({
   selector: 'app-change-password-page',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule, MessageModule],
   templateUrl: './change-password-page.component.html',
   styleUrl: './change-password-page.component.scss'
 })

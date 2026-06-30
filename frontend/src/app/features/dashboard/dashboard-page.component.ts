@@ -1,8 +1,13 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { SelectModule } from 'primeng/select';
 
 import { MetricCardComponent } from '../../shared/components/metric-card/metric-card.component';
+import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { AutomationService } from '../../core/services/automation.service';
 import { DashboardService } from '../../core/services/dashboard.service';
@@ -15,7 +20,17 @@ type AutomationAction = 'classifications' | 'events' | 'analysis' | `analysis-${
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [FormsModule, MetricCardComponent, RouterLink, StatusBadgeComponent],
+  imports: [
+    ButtonModule,
+    FormsModule,
+    InputTextModule,
+    MessageModule,
+    MetricCardComponent,
+    RouterLink,
+    SelectModule,
+    StandardTableComponent,
+    StatusBadgeComponent
+  ],
   templateUrl: './dashboard-page.component.html',
   styleUrl: './dashboard-page.component.scss'
 })

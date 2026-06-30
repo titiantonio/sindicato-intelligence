@@ -1,8 +1,13 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
 
 import { EditorialAuditLogItem, UserAuditLogItem } from '../../core/models/audit.models';
 import { AuditService } from '../../core/services/audit.service';
+import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 
 type AuditTab = 'users' | 'editorial';
 type SortDirection = 'asc' | 'desc';
@@ -21,7 +26,7 @@ type AuditDetailSelection = {
 
 @Component({
   selector: 'app-audit-page',
-  imports: [FormsModule],
+  imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, MessageModule, StandardTableComponent],
   templateUrl: './audit-page.component.html',
   styleUrl: './audit-page.component.scss'
 })

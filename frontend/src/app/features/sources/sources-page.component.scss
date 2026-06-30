@@ -97,13 +97,6 @@
   justify-content: flex-end;
 }
 
-.sources-page__pager {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
 .sources-page button {
   border: 0;
   cursor: pointer;
@@ -158,56 +151,6 @@
   color: var(--color-success-text);
 }
 
-.sources-page__table-wrapper {
-  max-width: 100%;
-  overflow-x: auto;
-  padding: 1rem 1.5rem 1.5rem;
-}
-
-.sources-page__table {
-  border-collapse: collapse;
-  min-width: 82rem;
-  width: 100%;
-}
-
-.sources-page__table th,
-.sources-page__table td {
-  border-bottom: 1px solid var(--color-neutral-soft);
-  padding: 0.65rem 0.6rem;
-  text-align: left;
-  vertical-align: top;
-}
-
-.sources-page__table th {
-  font-size: 0.85rem;
-}
-
-.sources-page__table td {
-  overflow-wrap: anywhere;
-}
-
-.sources-page__table a {
-  color: var(--color-primary);
-}
-
-.sources-page__sort {
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-weight: 800;
-  padding: 0;
-  text-align: left;
-}
-
-.sources-page__sort:hover,
-.sources-page__sort:focus-visible {
-  color: var(--color-primary);
-}
-
-.sources-page__filters th {
-  padding-top: 0;
-}
-
 .sources-page__status {
   border-radius: 999px;
   display: inline-flex;
@@ -224,27 +167,6 @@
 .sources-page__status--inactive {
   background: var(--color-neutral-soft);
   color: var(--color-field-text);
-}
-
-.sources-page__pagination {
-  align-items: center;
-  border-top: 1px solid var(--color-neutral-soft);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: space-between;
-  padding: 1rem 1.5rem 1.25rem;
-}
-
-.sources-page__pagination label {
-  align-items: center;
-  display: flex;
-  font-weight: 700;
-  gap: 0.5rem;
-}
-
-.sources-page__pagination select {
-  width: 5rem;
 }
 
 .sources-page__modal-backdrop {
@@ -290,8 +212,4 @@
     max-width: none;
   }
 
-  .sources-page__pagination {
-    align-items: start;
-    display: grid;
-  }
 }

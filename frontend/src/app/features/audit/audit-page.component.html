@@ -8,161 +8,144 @@
   <div class="page-header__actions">
     <label>
       Dia
-      <input type="date" [ngModel]="auditDate()" (ngModelChange)="setAuditDate($event)" />
+      <input pInputText type="date" [ngModel]="auditDate()" (ngModelChange)="setAuditDate($event)" />
     </label>
-    <button type="button" (click)="loadAudit()">Actualizar</button>
+    <button pButton type="button" (click)="loadAudit()">Actualizar</button>
   </div>
 </section>
 
 @if (errorMessage()) {
-  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+  <p-message severity="error" [text]="errorMessage() ?? ''" />
 }
 
 @if (isLoading()) {
-  <p class="page-alert">Cargando auditoria...</p>
+  <p-message severity="info" text="Cargando auditoria..." />
 }
 
 <section class="panel">
   <div class="audit-tabs">
-    <button type="button" [class.audit-tabs__button--active]="activeTab() === 'users'" (click)="setTab('users')">Usuarios</button>
-    <button type="button" [class.audit-tabs__button--active]="activeTab() === 'editorial'" (click)="setTab('editorial')">Editorial</button>
+    <button pButton type="button" severity="secondary" [class.audit-tabs__button--active]="activeTab() === 'users'" (click)="setTab('users')">Usuarios</button>
+    <button pButton type="button" severity="secondary" [class.audit-tabs__button--active]="activeTab() === 'editorial'" (click)="setTab('editorial')">Editorial</button>
   </div>
 
   @if (activeTab() === 'users') {
-    <div class="table-wrap">
-      <table>
-        <colgroup>
-          <col style="width: 10rem" />
-          <col style="width: 12rem" />
-          <col style="width: 18rem" />
-          <col style="width: 18rem" />
-          <col style="width: 9rem" />
-        </colgroup>
-        <thead>
+    <app-standard-table
+      [rows]="paginatedUserAudit()"
+      [columnCount]="5"
+      [totalItems]="displayedUserAudit().length"
+      [totalLabel]="'registros filtrados del dia ' + auditDate()"
+      [pageSize]="userPageSize()"
+      [currentPage]="userCurrentPage()"
+      [totalPages]="userTotalPages()"
+      [pageSizeOptions]="pageSizeOptions"
+      minWidth="72rem"
+      (pageSizeChange)="setUserPageSize($event)"
+      (previousPage)="previousUserPage()"
+      (nextPage)="nextUserPage()"
+    >
+        <ng-template #tableHeader>
           <tr>
-            <th><button class="sort-button" type="button" (click)="setUserSort('createdAt')">Fecha {{ userSortLabel('createdAt') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="setUserSort('action')">Accion {{ userSortLabel('action') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="setUserSort('userId')">Usuario {{ userSortLabel('userId') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="setUserSort('actorEmail')">Actor {{ userSortLabel('actorEmail') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="setUserSort('details')">Detalle {{ userSortLabel('details') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="setUserSort('createdAt')">Fecha {{ userSortLabel('createdAt') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="setUserSort('action')">Accion {{ userSortLabel('action') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="setUserSort('userId')">Usuario {{ userSortLabel('userId') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="setUserSort('actorEmail')">Actor {{ userSortLabel('actorEmail') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="setUserSort('details')">Detalle {{ userSortLabel('details') }}</button></th>
           </tr>
+        </ng-template>
+        <ng-template #tableFilters>
           <tr class="column-filters">
-            <th><input type="search" aria-label="Filtrar auditoria usuarios por fecha" [ngModel]="userDateFilter()" (ngModelChange)="setUserDateFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar auditoria usuarios por accion" [ngModel]="userActionFilter()" (ngModelChange)="setUserActionFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar auditoria usuarios por usuario" [ngModel]="userIdFilter()" (ngModelChange)="setUserIdFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar auditoria usuarios por actor" [ngModel]="userActorFilter()" (ngModelChange)="setUserActorFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar auditoria usuarios por detalle" [ngModel]="userDetailsFilter()" (ngModelChange)="setUserDetailsFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar auditoria usuarios por fecha" [ngModel]="userDateFilter()" (ngModelChange)="setUserDateFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar auditoria usuarios por accion" [ngModel]="userActionFilter()" (ngModelChange)="setUserActionFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar auditoria usuarios por usuario" [ngModel]="userIdFilter()" (ngModelChange)="setUserIdFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar auditoria usuarios por actor" [ngModel]="userActorFilter()" (ngModelChange)="setUserActorFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar auditoria usuarios por detalle" [ngModel]="userDetailsFilter()" (ngModelChange)="setUserDetailsFilter($event)" /></th>
           </tr>
-        </thead>
-        <tbody>
-          @for (entry of paginatedUserAudit(); track entry.id) {
+        </ng-template>
+        <ng-template #tableRow let-entry>
             <tr [class.audit-row--error]="isUserAuditError(entry)">
               <td class="table-cell-nowrap">{{ formatDate(entry.createdAt) }}</td>
               <td class="table-cell-nowrap">{{ entry.action }}</td>
               <td class="table-cell-nowrap">{{ userLabel(entry) }}</td>
               <td class="table-cell-nowrap">{{ entry.actorEmail ?? '-' }}</td>
               <td class="table-cell-nowrap">
-                <button type="button" class="inline-action" (click)="openUserAuditDetail($event, entry)">Ver detalle</button>
+                <button pButton type="button" severity="secondary" size="small" class="inline-action" (click)="openUserAuditDetail($event, entry)">Ver detalle</button>
               </td>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="5">No hay auditoria de usuarios registrada.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    <footer class="table-pagination">
-      <span>{{ displayedUserAudit().length }} registros filtrados del dia {{ auditDate() }}</span>
-      <label>
-        Filas por pagina
-        <select [ngModel]="userPageSize()" (ngModelChange)="setUserPageSize($event)">
-          @for (option of pageSizeOptions; track option) {
-            <option [value]="option">{{ option }}</option>
-          }
-        </select>
-      </label>
-      <div class="table-pagination__pager">
-        <button type="button" (click)="previousUserPage()" [disabled]="userCurrentPage() === 1">Anterior</button>
-        <span>Pagina {{ userCurrentPage() }} de {{ userTotalPages() }}</span>
-        <button type="button" (click)="nextUserPage()" [disabled]="userCurrentPage() === userTotalPages()">Siguiente</button>
-      </div>
-    </footer>
-  } @else {
-    <div class="table-wrap">
-      <table>
-        <colgroup>
-          <col style="width: 10rem" />
-          <col style="width: 13rem" />
-          <col style="width: 11rem" />
-          <col style="width: 18rem" />
-          <col style="width: 9rem" />
-        </colgroup>
-        <thead>
+        </ng-template>
+        <ng-template #tableEmpty>
           <tr>
-            <th><button class="sort-button" type="button" (click)="setEditorialSort('createdAt')">Fecha {{ editorialSortLabel('createdAt') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="setEditorialSort('action')">Accion {{ editorialSortLabel('action') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="setEditorialSort('entityType')">Entidad {{ editorialSortLabel('entityType') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="setEditorialSort('userId')">Usuario {{ editorialSortLabel('userId') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="setEditorialSort('newValues')">Detalle {{ editorialSortLabel('newValues') }}</button></th>
+            <td colspan="5">No hay auditoria de usuarios registrada.</td>
           </tr>
+        </ng-template>
+    </app-standard-table>
+  } @else {
+    <app-standard-table
+      [rows]="paginatedEditorialAudit()"
+      [columnCount]="5"
+      [totalItems]="displayedEditorialAudit().length"
+      [totalLabel]="'registros filtrados del dia ' + auditDate()"
+      [pageSize]="editorialPageSize()"
+      [currentPage]="editorialCurrentPage()"
+      [totalPages]="editorialTotalPages()"
+      [pageSizeOptions]="pageSizeOptions"
+      minWidth="72rem"
+      (pageSizeChange)="setEditorialPageSize($event)"
+      (previousPage)="previousEditorialPage()"
+      (nextPage)="nextEditorialPage()"
+    >
+        <ng-template #tableHeader>
+          <tr>
+            <th scope="col"><button class="sort-button" type="button" (click)="setEditorialSort('createdAt')">Fecha {{ editorialSortLabel('createdAt') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="setEditorialSort('action')">Accion {{ editorialSortLabel('action') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="setEditorialSort('entityType')">Entidad {{ editorialSortLabel('entityType') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="setEditorialSort('userId')">Usuario {{ editorialSortLabel('userId') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="setEditorialSort('newValues')">Detalle {{ editorialSortLabel('newValues') }}</button></th>
+          </tr>
+        </ng-template>
+        <ng-template #tableFilters>
           <tr class="column-filters">
-            <th><input type="search" aria-label="Filtrar auditoria editorial por fecha" [ngModel]="editorialDateFilter()" (ngModelChange)="setEditorialDateFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar auditoria editorial por accion" [ngModel]="editorialActionFilter()" (ngModelChange)="setEditorialActionFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar auditoria editorial por entidad" [ngModel]="editorialEntityTypeFilter()" (ngModelChange)="setEditorialEntityTypeFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar auditoria editorial por usuario" [ngModel]="editorialUserIdFilter()" (ngModelChange)="setEditorialUserIdFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar auditoria editorial por detalle" [ngModel]="editorialChangesFilter()" (ngModelChange)="setEditorialChangesFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar auditoria editorial por fecha" [ngModel]="editorialDateFilter()" (ngModelChange)="setEditorialDateFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar auditoria editorial por accion" [ngModel]="editorialActionFilter()" (ngModelChange)="setEditorialActionFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar auditoria editorial por entidad" [ngModel]="editorialEntityTypeFilter()" (ngModelChange)="setEditorialEntityTypeFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar auditoria editorial por usuario" [ngModel]="editorialUserIdFilter()" (ngModelChange)="setEditorialUserIdFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar auditoria editorial por detalle" [ngModel]="editorialChangesFilter()" (ngModelChange)="setEditorialChangesFilter($event)" /></th>
           </tr>
-        </thead>
-        <tbody>
-          @for (entry of paginatedEditorialAudit(); track entry.id) {
+        </ng-template>
+        <ng-template #tableRow let-entry>
             <tr [class.audit-row--error]="isEditorialAuditError(entry)">
               <td class="table-cell-nowrap">{{ formatDate(entry.createdAt) }}</td>
               <td class="table-cell-nowrap">{{ entry.action }}</td>
               <td class="table-cell-nowrap">{{ entry.entityType }} #{{ entry.entityId ?? '-' }}</td>
               <td class="table-cell-nowrap">{{ userLabel(entry) }}</td>
               <td class="table-cell-nowrap">
-                <button type="button" class="inline-action" (click)="openEditorialAuditDetail($event, entry)">Ver detalle</button>
+                <button pButton type="button" severity="secondary" size="small" class="inline-action" (click)="openEditorialAuditDetail($event, entry)">Ver detalle</button>
               </td>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="5">No hay auditoria editorial registrada.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    <footer class="table-pagination">
-      <span>{{ displayedEditorialAudit().length }} registros filtrados del dia {{ auditDate() }}</span>
-      <label>
-        Filas por pagina
-        <select [ngModel]="editorialPageSize()" (ngModelChange)="setEditorialPageSize($event)">
-          @for (option of pageSizeOptions; track option) {
-            <option [value]="option">{{ option }}</option>
-          }
-        </select>
-      </label>
-      <div class="table-pagination__pager">
-        <button type="button" (click)="previousEditorialPage()" [disabled]="editorialCurrentPage() === 1">Anterior</button>
-        <span>Pagina {{ editorialCurrentPage() }} de {{ editorialTotalPages() }}</span>
-        <button type="button" (click)="nextEditorialPage()" [disabled]="editorialCurrentPage() === editorialTotalPages()">Siguiente</button>
-      </div>
-    </footer>
+        </ng-template>
+        <ng-template #tableEmpty>
+          <tr>
+            <td colspan="5">No hay auditoria editorial registrada.</td>
+          </tr>
+        </ng-template>
+    </app-standard-table>
   }
 </section>
 
 @if (selectedAuditDetail(); as detail) {
-  <div class="modal-backdrop" (click)="closeAuditDetail()">
-    <section class="audit-modal" role="dialog" aria-modal="true" aria-labelledby="audit-detail-title" (click)="$event.stopPropagation()">
-      <header>
+  <p-dialog
+    [modal]="true"
+    [visible]="selectedAuditDetail() !== null"
+    (visibleChange)="!$event && closeAuditDetail()"
+    [style]="{ width: 'min(760px, 96vw)' }"
+    [breakpoints]="{ '768px': '96vw' }"
+    styleClass="audit-modal"
+  >
+      <ng-template pTemplate="header">
         <div>
           <span>{{ detail.category }}</span>
           <h2 id="audit-detail-title">{{ detail.title }}</h2>
         </div>
-        <button type="button" class="secondary" (click)="closeAuditDetail()">Cerrar</button>
-      </header>
+      </ng-template>
       <dl class="audit-status">
         <div>
           <dt>Accion</dt>
@@ -182,6 +165,5 @@
         </div>
       </dl>
       <pre class="detail-text" [class.detail-text--error]="detail.error">{{ detail.detail }}</pre>
-    </section>
-  </div>
+  </p-dialog>
 }

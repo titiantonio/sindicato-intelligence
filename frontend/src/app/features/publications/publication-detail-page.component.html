@@ -1,11 +1,11 @@
 <a class="back-link" routerLink="/publications">Volver a publicaciones</a>
 
 @if (errorMessage()) {
-  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+  <p-message severity="error" [text]="errorMessage() ?? ''" />
 }
 
 @if (isLoading()) {
-  <p class="page-alert">Cargando detalle de publicacion...</p>
+  <p-message severity="info" text="Cargando detalle de publicacion..." />
 }
 
 @if (detail(); as item) {

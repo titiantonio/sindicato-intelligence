@@ -1,6 +1,6 @@
 # Design System Frontend
 
-Fecha: 2026-06-27
+Fecha: 2026-06-28
 
 ## Objetivo
 
@@ -47,11 +47,26 @@ PrimeNG usa el mismo selector de modo oscuro:
 
 - Botones: clases `.primary-button`, `.secondary-button`, `.danger-button`, `.ghost-button` o componentes PrimeNG cuando la pantalla se migre.
 - Formularios: `.field`, `.form-field`, `.form-grid` y componentes PrimeNG.
-- Tablas: `.data-table`, `.table-panel`, `.table-scroll`; objetivo de migracion progresiva a `p-table`.
+- Tablas: `app-standard-table` es el unico patron operativo para listados del backoffice y encapsula PrimeNG `p-table`.
 - Estados: `.loading-state`, `.empty-state`, `.error-state`, `.skeleton-line`.
 - Badges: `app-status-badge` usa `p-tag`.
 - Metricas: `app-metric-card` usa PrimeIcons y tokens globales.
 - Layout: shell con sidebar, header, selector de tema y skip link.
+
+## Tabla Operativa Estandar
+
+Todas las tablas del backoffice deben usar `app-standard-table`.
+
+- Base tecnica: PrimeNG `p-table`.
+- Entrada: filas ya preparadas por cada pantalla, para conservar contratos API y reglas existentes.
+- Proyecciones obligatorias: `#tableHeader`, `#tableRow` y `#tableEmpty`.
+- Proyeccion opcional: `#tableFilters`.
+- Paginacion: footer comun con selector de filas, pagina actual, anterior y siguiente.
+- Estados: skeleton de carga y estado vacio homogeneos.
+- Estilo: cabeceras, filtros, hover, acciones, enlaces y celdas nowrap/break definidos por el componente compartido.
+- Selectores: filtros y paginacion de tablas usan `p-select`; los selects de formularios existentes se mantienen nativos hasta una migracion especifica de formularios.
+
+Las pantallas no deben crear tablas HTML propias salvo decision tecnica documentada.
 
 ## Reglas de Uso
 

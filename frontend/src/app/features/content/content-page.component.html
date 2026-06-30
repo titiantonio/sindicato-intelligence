@@ -7,46 +7,51 @@
     </header>
 
     @if (errorMessage()) {
-      <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+      <p-message severity="error" [text]="errorMessage() ?? ''" />
     }
 
     @if (successMessage()) {
-      <p class="page-alert page-alert--success">{{ successMessage() }}</p>
+      <p-message severity="success" [text]="successMessage() ?? ''" />
     }
 
     @if (isLoading()) {
-      <p class="page-alert">Cargando contenidos...</p>
+      <p-message severity="info" text="Cargando contenidos..." />
     }
-    <div class="table-wrap">
-      <table>
-        <colgroup>
-          <col style="width: 8rem" />
-          <col style="width: 28rem" />
-          <col style="width: 11rem" />
-          <col style="width: 10rem" />
-          <col style="width: 10rem" />
-          <col style="width: 17rem" />
-        </colgroup>
-        <thead>
+    <app-standard-table
+      [rows]="paginatedItems()"
+      [columnCount]="6"
+      [totalItems]="displayedItems().length"
+      totalLabel="contenidos filtrados"
+      [pageSize]="pageSize()"
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [pageSizeOptions]="pageSizeOptions"
+      minWidth="86rem"
+      (pageSizeChange)="setPageSize($event)"
+      (previousPage)="goToPreviousPage()"
+      (nextPage)="goToNextPage()"
+    >
+        <ng-template #tableHeader>
           <tr>
-            <th><button class="sort-button" type="button" (click)="changeSort('channel')">Canal {{ sortLabel('channel') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="changeSort('generatedAt')">Creado {{ sortLabel('generatedAt') }}</button></th>
-            <th><button class="sort-button" type="button" (click)="changeSort('approvedAt')">Aprobado {{ sortLabel('approvedAt') }}</button></th>
-            <th>Acciones</th>
+            <th scope="col"><button class="sort-button" type="button" (click)="changeSort('channel')">Canal {{ sortLabel('channel') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="changeSort('generatedAt')">Creado {{ sortLabel('generatedAt') }}</button></th>
+            <th scope="col"><button class="sort-button" type="button" (click)="changeSort('approvedAt')">Aprobado {{ sortLabel('approvedAt') }}</button></th>
+            <th scope="col">Acciones</th>
           </tr>
+        </ng-template>
+        <ng-template #tableFilters>
           <tr class="column-filters">
-            <th><input type="search" aria-label="Filtrar por canal" [ngModel]="channelFilter()" (ngModelChange)="setChannelFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar por fecha de creacion" [ngModel]="generatedAtFilter()" (ngModelChange)="setGeneratedAtFilter($event)" /></th>
-            <th><input type="search" aria-label="Filtrar por fecha de aprobacion" [ngModel]="approvedAtFilter()" (ngModelChange)="setApprovedAtFilter($event)" /></th>
-            <th></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar por canal" [ngModel]="channelFilter()" (ngModelChange)="setChannelFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar por fecha de creacion" [ngModel]="generatedAtFilter()" (ngModelChange)="setGeneratedAtFilter($event)" /></th>
+            <th scope="col"><input pInputText type="search" aria-label="Filtrar por fecha de aprobacion" [ngModel]="approvedAtFilter()" (ngModelChange)="setApprovedAtFilter($event)" /></th>
+            <th scope="col"></th>
           </tr>
-        </thead>
-        <tbody>
-          @for (item of paginatedItems(); track item.id) {
+        </ng-template>
+        <ng-template #tableRow let-item>
             <tr class="content-row" tabindex="0" (click)="openView(item)" (keydown.enter)="openView(item)">
               <td class="table-cell-nowrap">{{ item.channel }}</td>
               <td>{{ item.title }}</td>
@@ -54,48 +59,38 @@
               <td class="table-cell-nowrap">{{ formatDate(item.generatedAt) }}</td>
               <td class="table-cell-nowrap">{{ formatDate(item.approvedAt) }}</td>
               <td class="content-actions">
-                <button type="button" [disabled]="!canEdit(item)" (click)="openEdit(item, $event)">Editar</button>
-                <button type="button" [disabled]="!canReview(item)" (click)="$event.stopPropagation(); approve(item)">Aprobar</button>
-                <button type="button" [disabled]="!canReview(item)" (click)="$event.stopPropagation(); reject(item)">Rechazar</button>
-                <button type="button" [disabled]="!canPublish(item)" (click)="$event.stopPropagation(); publishNow(item)">Publicar ahora</button>
+                <button pButton type="button" severity="secondary" size="small" [disabled]="!canEdit(item)" (click)="openEdit(item, $event)">Editar</button>
+                <button pButton type="button" severity="success" size="small" [disabled]="!canReview(item)" (click)="$event.stopPropagation(); approve(item)">Aprobar</button>
+                <button pButton type="button" severity="danger" size="small" [disabled]="!canReview(item)" (click)="$event.stopPropagation(); reject(item)">Rechazar</button>
+                <button pButton type="button" size="small" [disabled]="!canPublish(item)" (click)="$event.stopPropagation(); publishNow(item)">Publicar ahora</button>
               </td>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="6">No hay contenido generado.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    <footer class="table-pagination">
-      <span>{{ displayedItems().length }} contenidos filtrados</span>
-      <label>
-        Filas por pagina
-        <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
-          @for (option of pageSizeOptions; track option) {
-            <option [value]="option">{{ option }}</option>
-          }
-        </select>
-      </label>
-      <div class="table-pagination__pager">
-        <button type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">Anterior</button>
-        <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
-        <button type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">Siguiente</button>
-      </div>
-    </footer>
+        </ng-template>
+        <ng-template #tableEmpty>
+          <tr>
+            <td colspan="6">No hay contenido generado.</td>
+          </tr>
+        </ng-template>
+    </app-standard-table>
   </article>
 
   @if (modalItem(); as selected) {
-    <div class="modal-backdrop" role="presentation" (click)="closeModal()">
-      <section class="editor-modal" role="dialog" aria-modal="true" aria-labelledby="content-modal-title" (click)="$event.stopPropagation()">
+    <p-dialog
+      [modal]="true"
+      [visible]="modalItem() !== null"
+      (visibleChange)="!$event && closeModal()"
+      [style]="{ width: 'min(960px, 96vw)' }"
+      [breakpoints]="{ '768px': '96vw' }"
+      styleClass="editor-modal"
+    >
+      <ng-template pTemplate="header">
         <header class="editor-modal__header">
           <div>
             <span class="page-header__eyebrow">Contenido {{ modalMode() === 'edit' ? 'editable' : 'en lectura' }}</span>
             <h2 id="content-modal-title">{{ selected.title }}</h2>
           </div>
-          <button class="modal-close" type="button" aria-label="Cerrar panel editorial" (click)="closeModal()">Cerrar</button>
         </header>
+      </ng-template>
 
         <div class="editor-summary">
           <div>
@@ -136,17 +131,17 @@
           <form class="editor-form" (submit)="$event.preventDefault(); saveEdit(selected)">
             <label>
               Titulo
-              <input type="text" [ngModel]="editTitle()" (ngModelChange)="editTitle.set($event)" name="title" />
+              <input pInputText type="text" [ngModel]="editTitle()" (ngModelChange)="editTitle.set($event)" name="title" />
             </label>
             <label>
               Tono
-              <input type="text" [ngModel]="editTone()" (ngModelChange)="editTone.set($event)" name="tone" />
+              <input pInputText type="text" [ngModel]="editTone()" (ngModelChange)="editTone.set($event)" name="tone" />
             </label>
             <label>
               Contenido
               <textarea [ngModel]="editContent()" (ngModelChange)="editContent.set($event)" name="content" rows="9"></textarea>
             </label>
-            <button type="submit" [disabled]="!canEdit(selected)">Guardar cambios</button>
+            <button pButton type="submit" [disabled]="!canEdit(selected)">Guardar cambios</button>
           </form>
         } @else {
           <div class="editor-preview">
@@ -160,12 +155,11 @@
         <form class="schedule-form" (submit)="$event.preventDefault(); schedulePublication(selected)">
           <label>
             Programar publicacion
-            <input type="datetime-local" [ngModel]="scheduleAt()" (ngModelChange)="scheduleAt.set($event)" name="scheduleAt" [disabled]="selected.status !== 'APPROVED'" />
+            <input pInputText type="datetime-local" [ngModel]="scheduleAt()" (ngModelChange)="scheduleAt.set($event)" name="scheduleAt" [disabled]="selected.status !== 'APPROVED'" />
           </label>
-          <button type="submit" [disabled]="selected.status !== 'APPROVED'">Programar</button>
-          <button type="button" [disabled]="selected.status !== 'APPROVED'" (click)="publishNow(selected)">Publicar ahora</button>
+          <button pButton type="submit" [disabled]="selected.status !== 'APPROVED'">Programar</button>
+          <button pButton type="button" severity="secondary" [disabled]="selected.status !== 'APPROVED'" (click)="publishNow(selected)">Publicar ahora</button>
         </form>
-      </section>
-    </div>
+    </p-dialog>
   }
 </section>

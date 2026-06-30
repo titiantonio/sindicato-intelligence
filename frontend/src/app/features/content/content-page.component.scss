@@ -55,8 +55,7 @@
 
 .editor-form button,
 .schedule-form button,
-.modal-close,
-.table-pagination button {
+.modal-close {
   border: 0;
   border-radius: 0.5rem;
   cursor: pointer;
@@ -84,53 +83,6 @@
   border: 1px solid var(--color-neutral-soft);
   border-radius: 0.5rem;
   padding: 0.85rem;
-}
-
-.table-wrap {
-  overflow-x: auto;
-  padding: 1rem 1.5rem 1.5rem;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 72rem;
-}
-
-th,
-td {
-  padding: 0.9rem 0.75rem;
-  border-bottom: 1px solid var(--color-neutral-soft);
-  text-align: left;
-}
-
-th {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-}
-
-.sort-button {
-  background: transparent;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 800;
-  padding: 0;
-  text-align: left;
-}
-
-.column-filters input {
-  border: 1px solid var(--color-input-border);
-  border-radius: 0.5rem;
-  color: var(--color-field-text);
-  min-width: 7rem;
-  padding: 0.55rem 0.65rem;
-  width: 100%;
-}
-
-.column-filters th {
-  padding-top: 0;
 }
 
 .content-actions {
@@ -172,43 +124,6 @@ th {
 .content-row:hover {
   background: var(--color-muted-surface);
   outline: none;
-}
-
-.table-pagination {
-  align-items: center;
-  border-top: 1px solid var(--color-neutral-soft);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: space-between;
-  padding: 1rem 1.5rem 1.25rem;
-}
-
-.table-pagination label,
-.table-pagination__pager {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  font-weight: 700;
-  gap: 0.5rem;
-}
-
-.table-pagination select {
-  border: 1px solid var(--color-input-border);
-  border-radius: 0.5rem;
-  padding: 0.45rem 0.55rem;
-  width: 5rem;
-}
-
-.table-pagination button {
-  background: var(--color-neutral-soft);
-  color: var(--color-text);
-  padding: 0.5rem 0.7rem;
-}
-
-.table-pagination button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .modal-backdrop {

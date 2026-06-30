@@ -7,15 +7,15 @@
 </section>
 
 @if (errorMessage()) {
-  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+  <p-message severity="error" [text]="errorMessage() ?? ''" />
 }
 
 @if (automationMessage()) {
-  <p class="page-alert page-alert--success">{{ automationMessage() }}</p>
+  <p-message severity="success" [text]="automationMessage() ?? ''" />
 }
 
 @if (automationError()) {
-  <p class="page-alert page-alert--error">{{ automationError() }}</p>
+  <p-message severity="error" [text]="automationError() ?? ''" />
 }
 
 @if (isLoading() && metricCards().length > 0) {
@@ -43,13 +43,13 @@
     <h2>Procesos internos</h2>
   </div>
   <div class="automation-actions">
-    <button type="button" (click)="runClassifications()" [disabled]="runningAutomation() !== null">
+    <button pButton type="button" icon="pi pi-tags" (click)="runClassifications()" [loading]="isRunningAutomation('classifications')" [disabled]="runningAutomation() !== null">
       {{ isRunningAutomation('classifications') ? 'Procesando...' : 'Clasificar pendientes' }}
     </button>
-    <button type="button" (click)="runEventDetection()" [disabled]="runningAutomation() !== null">
+    <button pButton type="button" icon="pi pi-sitemap" (click)="runEventDetection()" [loading]="isRunningAutomation('events')" [disabled]="runningAutomation() !== null">
       {{ isRunningAutomation('events') ? 'Procesando...' : 'Detectar eventos' }}
     </button>
-    <button type="button" (click)="runPendingAnalysis()" [disabled]="runningAutomation() !== null">
+    <button pButton type="button" icon="pi pi-sparkles" (click)="runPendingAnalysis()" [loading]="isRunningAutomation('analysis')" [disabled]="runningAutomation() !== null">
       {{ isRunningAutomation('analysis') ? 'Procesando...' : 'Analizar pendientes' }}
     </button>
   </div>
@@ -63,66 +63,48 @@
     </div>
   </div>
 
-  <div class="table-wrap">
-    <table>
-      <colgroup>
-        <col style="width: 28rem" />
-        <col style="width: 13rem" />
-        <col style="width: 8rem" />
-        <col style="width: 6.5rem" />
-        <col style="width: 10rem" />
-        <col style="width: 8rem" />
-        <col style="width: 6.5rem" />
-      </colgroup>
-      <thead>
+  <app-standard-table
+    [rows]="paginatedPriorityEvents()"
+    [columnCount]="7"
+    [totalItems]="displayedPriorityEvents().length"
+    totalLabel="eventos filtrados"
+    [pageSize]="pageSize()"
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    [pageSizeOptions]="pageSizeOptions"
+    [loading]="isLoading() && priorityEvents().length === 0"
+    minWidth="82rem"
+    (pageSizeChange)="setPageSize($event)"
+    (previousPage)="goToPreviousPage()"
+    (nextPage)="goToNextPage()"
+  >
+      <ng-template #tableHeader>
         <tr>
-          <th><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
-          <th><button class="sort-button" type="button" (click)="changeSort('category')">Categoria {{ sortLabel('category') }}</button></th>
-          <th><button class="sort-button" type="button" (click)="changeSort('importance')">Impacto {{ sortLabel('importance') }}</button></th>
-          <th><button class="sort-button" type="button" (click)="changeSort('relatedNews')">Noticias {{ sortLabel('relatedNews') }}</button></th>
-          <th><button class="sort-button" type="button" (click)="changeSort('updatedAt')">Actualizacion {{ sortLabel('updatedAt') }}</button></th>
-          <th><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
-          <th>Accion</th>
+          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
+          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('category')">Categoria {{ sortLabel('category') }}</button></th>
+          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('importance')">Impacto {{ sortLabel('importance') }}</button></th>
+          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('relatedNews')">Noticias {{ sortLabel('relatedNews') }}</button></th>
+          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('updatedAt')">Actualizacion {{ sortLabel('updatedAt') }}</button></th>
+          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+          <th scope="col">Accion</th>
         </tr>
+      </ng-template>
+      <ng-template #tableFilters>
         <tr class="column-filters">
-          <th><input type="search" aria-label="Filtrar eventos prioritarios por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" /></th>
-          <th><input type="search" aria-label="Filtrar eventos prioritarios por categoria" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)" /></th>
-          <th>
-            <select aria-label="Filtrar eventos prioritarios por impacto" [ngModel]="importanceFilter()" (ngModelChange)="setImportanceFilter($event)">
-              <option value="">Todos</option>
-              @for (importance of importanceOptions; track importance) {
-                <option [value]="importance">{{ importance }}</option>
-              }
-            </select>
+          <th scope="col"><input pInputText type="search" aria-label="Filtrar eventos prioritarios por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" /></th>
+          <th scope="col"><input pInputText type="search" aria-label="Filtrar eventos prioritarios por categoria" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)" /></th>
+          <th scope="col">
+            <p-select [options]="importanceOptions" [ngModel]="importanceFilter()" (ngModelChange)="setImportanceFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar eventos prioritarios por impacto" />
           </th>
-          <th><input type="search" aria-label="Filtrar eventos prioritarios por noticias" [ngModel]="relatedNewsFilter()" (ngModelChange)="setRelatedNewsFilter($event)" /></th>
-          <th><input type="search" aria-label="Filtrar eventos prioritarios por actualizacion" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" /></th>
-          <th>
-            <select aria-label="Filtrar eventos prioritarios por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
-              <option value="">Todos</option>
-              @for (status of statusOptions(); track status) {
-                <option [value]="status">{{ status }}</option>
-              }
-            </select>
+          <th scope="col"><input pInputText type="search" aria-label="Filtrar eventos prioritarios por noticias" [ngModel]="relatedNewsFilter()" (ngModelChange)="setRelatedNewsFilter($event)" /></th>
+          <th scope="col"><input pInputText type="search" aria-label="Filtrar eventos prioritarios por actualizacion" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" /></th>
+          <th scope="col">
+            <p-select [options]="statusOptions()" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar eventos prioritarios por estado" />
           </th>
-          <th></th>
+          <th scope="col"></th>
         </tr>
-      </thead>
-      <tbody>
-        @if (isLoading() && priorityEvents().length === 0) {
-          @for (placeholder of [1, 2, 3, 4, 5]; track placeholder) {
-            <tr class="table-skeleton" aria-hidden="true">
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-            </tr>
-          }
-        } @else {
-          @for (event of paginatedPriorityEvents(); track event.id) {
+      </ng-template>
+      <ng-template #tableRow let-event>
           <tr class="event-row" [routerLink]="['/events', event.id]" tabindex="0">
             <td>{{ event.title }}</td>
             <td class="table-cell-nowrap">{{ event.category }}</td>
@@ -131,34 +113,16 @@
             <td class="table-cell-nowrap">{{ formatDate(event.updatedAt) }}</td>
             <td class="table-cell-nowrap"><app-status-badge [value]="event.status" /></td>
             <td class="table-cell-nowrap">
-              <button class="row-action" type="button" (click)="runEventAnalysis($event, event.id)" [disabled]="runningAutomation() !== null">
+              <button pButton class="row-action" type="button" icon="pi pi-sparkles" (click)="runEventAnalysis($event, event.id)" [loading]="isRunningEventAnalysis(event.id)" [disabled]="runningAutomation() !== null">
                 {{ isRunningEventAnalysis(event.id) ? 'Analizando...' : 'Analizar' }}
               </button>
             </td>
           </tr>
-          } @empty {
-            <tr>
-              <td colspan="7">No hay eventos prioritarios que requieran atencion inmediata.</td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
-  </div>
-  <footer class="table-pagination">
-    <span>{{ displayedPriorityEvents().length }} eventos filtrados</span>
-    <label>
-      Filas por pagina
-      <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
-        @for (option of pageSizeOptions; track option) {
-          <option [value]="option">{{ option }}</option>
-        }
-      </select>
-    </label>
-    <div class="table-pagination__pager">
-      <button type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">Anterior</button>
-      <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
-      <button type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">Siguiente</button>
-    </div>
-  </footer>
+      </ng-template>
+      <ng-template #tableEmpty>
+        <tr>
+          <td colspan="7">No hay eventos prioritarios que requieran atencion inmediata.</td>
+        </tr>
+      </ng-template>
+  </app-standard-table>
 </section>

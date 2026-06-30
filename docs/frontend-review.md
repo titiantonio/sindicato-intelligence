@@ -1,6 +1,6 @@
 # Frontend Review
 
-Fecha: 2026-06-27
+Fecha: 2026-06-28
 
 ## Estado
 
@@ -13,28 +13,33 @@ Modernizacion tecnica iniciada y verificada:
 - Shell global modernizado.
 - Tokens globales ampliados.
 - Componentes compartidos `StatusBadge` y `MetricCard` adaptados.
-- Build frontend correcto.
+- Pantallas auth migradas a controles PrimeNG.
+- Pantallas operativas `dashboard`, `events`, `event-detail`, `news` y `news-detail` migradas en mensajes, filtros, botones, acciones y dialogos PrimeNG.
+- Pantallas editoriales/admin `content`, `publications`, `sources` y `audit` migradas parcialmente a mensajes, filtros, botones, acciones y dialogos PrimeNG.
+- Pantallas ADMIN/detalle `users`, `settings`, `content-detail` y `publication-detail` migradas parcialmente a mensajes, filtros, botones, acciones y dialogos PrimeNG.
+- Tablas operativas unificadas con `app-standard-table` sobre PrimeNG `p-table` en `dashboard`, `events`, `event-detail`, `news`, `content`, `sources`, `users`, `audit` y `settings`.
+- Filtros y paginacion de tablas migrados a `p-select` de PrimeNG; los selects restantes pertenecen a formularios existentes.
+- Accesibilidad base reforzada con landmarks en auth, labels explicitos en formularios de password, `aria-label` en navegacion principal y `scope="col"` en cabeceras de tablas.
+- Rutas de pantallas cargadas con `loadComponent`.
+- Auditoria npm sin vulnerabilidades tras overrides controlados.
+- Build frontend correcto y budgets recalibrados para la nueva base PrimeNG + Tailwind.
 
 ## Riesgos
 
-- El bundle inicial supera el budget tras incorporar PrimeNG/Tailwind.
-- Persisten warnings de presupuesto SCSS en pantallas con estilos historicos extensos.
-- La migracion visual de todas las plantillas debe hacerse por bloques para no romper flujos editoriales.
-- No se ha ejecutado aun una auditoria manual completa de responsive y accesibilidad por pantalla.
+- El bundle inicial queda en 527.10 KB tras incorporar `p-table` comun; el warning se evita con budget inicial de 535 KB y error budget intacto en 1 MB.
+- Los estilos historicos de tablas HTML se han retirado de pantallas migradas; todos los SCSS de componente quedan por debajo del warning budget de 6 KB.
+- Persiste warning no bloqueante de Karma por fuentes PrimeIcons en `/base/media/*`; no afecta tests ni build.
+- La revision responsive con navegador queda ejecutada en mobile, tablet y desktop para rutas principales; quedan como revision previa a despliegue los flujos interactivos profundos de modales/formularios.
 
 ## Prioridad Alta
 
-- Migrar auth y shell completo a patrones PrimeNG/Tailwind.
-- Migrar eventos y detalle de evento, por ser la pantalla central del producto.
-- Migrar tablas principales a PrimeNG `p-table` con paginacion, filtros y estados.
-- Reducir SCSS duplicado de `events`, `users`, `sources`, `audit` y `settings`.
+- Mantener documentado el warning de PrimeIcons en Karma hasta que Angular/Karma permita mapear `/base/media/*` sin configuracion intrusiva.
 
 ## Prioridad Media
 
-- Migrar contenido y publicaciones.
-- Migrar settings con tabs y tablas PrimeNG.
+- Migrar selects de formularios complejos a componentes PrimeNG especificos en una tarea de formularios, no mezclada con tablas.
 - Normalizar empty/loading/error states.
-- Revisar responsive mobile/tablet para formularios y tablas.
+- Revisar manualmente modales y formularios complejos con teclado antes de despliegue productivo.
 
 ## Prioridad Baja
 
@@ -47,9 +52,16 @@ Modernizacion tecnica iniciada y verificada:
 - `npm install`: OK.
 - `npm run build`: OK.
 - `npm test -- --watch=false --browsers=ChromeHeadless`: OK, 146 tests.
+- `npm audit --audit-level=low`: OK, 0 vulnerabilidades.
+- Tests focales `content`, `publications`, `sources` y `audit`: OK, 21 tests.
+- Tests focales `users`: OK, 14 tests incluyendo formatter de publicaciones.
+- Tests focales `settings`: OK, 12 tests.
+- Build tras cierre de tablas unificadas: OK sin warnings de budget. Bundle inicial: 527.10 KB.
+- `rg "<table|</table>" frontend/src/app -g "*.html"`: sin tablas HTML operativas restantes.
+- `npm test -- --watch=false --browsers=ChromeHeadless`: OK, 146 tests tras `p-select` y limpieza SCSS.
+- `npm audit --audit-level=low`: OK, 0 vulnerabilidades.
+- Revision navegador mobile/tablet/desktop: OK en rutas auth y backoffice principales, sin overflow horizontal global y sin controles basicos sin nombre accesible detectados.
 
 ## Verificacion Pendiente
 
-- Tests focales por pantalla tras cada migracion.
-- Revision responsive manual.
-- Revision WCAG 2.2 AA por pantalla.
+- Revision manual profunda de teclado en modales y formularios complejos antes de despliegue productivo.

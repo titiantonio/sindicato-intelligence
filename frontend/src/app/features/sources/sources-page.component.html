@@ -6,17 +6,17 @@
       <p>Alta y mantenimiento de fuentes activas para los workflows de captura.</p>
     </div>
 
-    <button class="sources-page__button sources-page__button--primary" type="button" (click)="startCreate()">
+    <button pButton type="button" (click)="startCreate()">
       Añadir fuente
     </button>
   </header>
 
   @if (errorMessage()) {
-    <p class="sources-page__alert sources-page__alert--error">{{ errorMessage() }}</p>
+    <p-message severity="error" [text]="errorMessage() ?? ''" />
   }
 
   @if (successMessage()) {
-    <p class="sources-page__alert sources-page__alert--success">{{ successMessage() }}</p>
+    <p-message severity="success" [text]="successMessage() ?? ''" />
   }
 
   <section class="sources-page__card sources-page__card--table">
@@ -26,6 +26,7 @@
       <label class="sources-page__search">
         Busqueda global
         <input
+          pInputText
           type="search"
           placeholder="Buscar por cualquier campo"
           [ngModel]="globalFilter()"
@@ -34,74 +35,64 @@
       </label>
     </div>
 
-    @if (isLoading()) {
-      <p>Cargando fuentes...</p>
-    }
-
-    <div class="sources-page__table-wrapper">
-      <table class="sources-page__table">
-        <colgroup>
-          <col style="width: 4.5rem" />
-          <col style="width: 18rem" />
-          <col style="width: 24rem" />
-          <col style="width: 7rem" />
-          <col style="width: 7rem" />
-          <col style="width: 7rem" />
-          <col style="width: 10rem" />
-          <col style="width: 10rem" />
-          <col style="width: 7rem" />
-        </colgroup>
-        <thead>
+    <app-standard-table
+      [rows]="paginatedSources()"
+      [columnCount]="9"
+      [totalItems]="displayedSources().length"
+      totalLabel="fuentes filtradas"
+      [pageSize]="pageSize()"
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [pageSizeOptions]="pageSizeOptions"
+      [loading]="isLoading()"
+      minWidth="96rem"
+      (pageSizeChange)="setPageSize($event)"
+      (previousPage)="goToPreviousPage()"
+      (nextPage)="goToNextPage()"
+    >
+        <ng-template #tableHeader>
           <tr>
-            <th><button class="sources-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
-            <th><button class="sources-page__sort" type="button" (click)="changeSort('name')">Nombre {{ sortLabel('name') }}</button></th>
-            <th><button class="sources-page__sort" type="button" (click)="changeSort('url')">URL {{ sortLabel('url') }}</button></th>
-            <th><button class="sources-page__sort" type="button" (click)="changeSort('type')">Tipo {{ sortLabel('type') }}</button></th>
-            <th><button class="sources-page__sort" type="button" (click)="changeSort('priority')">Prioridad {{ sortLabel('priority') }}</button></th>
-            <th><button class="sources-page__sort" type="button" (click)="changeSort('active')">Estado {{ sortLabel('active') }}</button></th>
-            <th><button class="sources-page__sort" type="button" (click)="changeSort('createdAt')">Creada {{ sortLabel('createdAt') }}</button></th>
-            <th><button class="sources-page__sort" type="button" (click)="changeSort('updatedAt')">Actualizada {{ sortLabel('updatedAt') }}</button></th>
-            <th>Acciones</th>
+            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
+            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('name')">Nombre {{ sortLabel('name') }}</button></th>
+            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('url')">URL {{ sortLabel('url') }}</button></th>
+            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('type')">Tipo {{ sortLabel('type') }}</button></th>
+            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('priority')">Prioridad {{ sortLabel('priority') }}</button></th>
+            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('active')">Estado {{ sortLabel('active') }}</button></th>
+            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('createdAt')">Creada {{ sortLabel('createdAt') }}</button></th>
+            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('updatedAt')">Actualizada {{ sortLabel('updatedAt') }}</button></th>
+            <th scope="col">Acciones</th>
           </tr>
+        </ng-template>
+        <ng-template #tableFilters>
           <tr class="sources-page__filters">
-            <th>
-              <input type="search" aria-label="Filtrar por ID" [ngModel]="idFilter()" (ngModelChange)="setIdFilter($event)" />
+            <th scope="col">
+              <input pInputText type="search" aria-label="Filtrar por ID" [ngModel]="idFilter()" (ngModelChange)="setIdFilter($event)" />
             </th>
-            <th>
-              <input type="search" aria-label="Filtrar por nombre" [ngModel]="nameFilter()" (ngModelChange)="setNameFilter($event)" />
+            <th scope="col">
+              <input pInputText type="search" aria-label="Filtrar por nombre" [ngModel]="nameFilter()" (ngModelChange)="setNameFilter($event)" />
             </th>
-            <th>
-              <input type="search" aria-label="Filtrar por URL" [ngModel]="urlFilter()" (ngModelChange)="setUrlFilter($event)" />
+            <th scope="col">
+              <input pInputText type="search" aria-label="Filtrar por URL" [ngModel]="urlFilter()" (ngModelChange)="setUrlFilter($event)" />
             </th>
-            <th>
-              <select aria-label="Filtrar por tipo" [ngModel]="typeFilter()" (ngModelChange)="setTypeFilter($event)">
-                <option value="">Todos</option>
-                @for (type of typeOptions(); track type) {
-                  <option [value]="type">{{ type }}</option>
-                }
-              </select>
+            <th scope="col">
+              <p-select [options]="typeOptions()" [ngModel]="typeFilter()" (ngModelChange)="setTypeFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar por tipo" />
             </th>
-            <th>
-              <input type="search" aria-label="Filtrar por prioridad" [ngModel]="priorityFilter()" (ngModelChange)="setPriorityFilter($event)" />
+            <th scope="col">
+              <input pInputText type="search" aria-label="Filtrar por prioridad" [ngModel]="priorityFilter()" (ngModelChange)="setPriorityFilter($event)" />
             </th>
-            <th>
-              <select aria-label="Filtrar por estado" [ngModel]="activeFilter()" (ngModelChange)="setActiveFilter($event)">
-                <option value="">Todos</option>
-                <option value="Activa">Activa</option>
-                <option value="Inactiva">Inactiva</option>
-              </select>
+            <th scope="col">
+              <p-select [options]="['Activa', 'Inactiva']" [ngModel]="activeFilter()" (ngModelChange)="setActiveFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar por estado" />
             </th>
-            <th>
-              <input type="search" aria-label="Filtrar por fecha de creacion" [ngModel]="createdAtFilter()" (ngModelChange)="setCreatedAtFilter($event)" />
+            <th scope="col">
+              <input pInputText type="search" aria-label="Filtrar por fecha de creacion" [ngModel]="createdAtFilter()" (ngModelChange)="setCreatedAtFilter($event)" />
             </th>
-            <th>
-              <input type="search" aria-label="Filtrar por fecha de actualizacion" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" />
+            <th scope="col">
+              <input pInputText type="search" aria-label="Filtrar por fecha de actualizacion" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" />
             </th>
-            <th></th>
+            <th scope="col"></th>
           </tr>
-        </thead>
-        <tbody>
-          @for (source of paginatedSources(); track source.id) {
+        </ng-template>
+        <ng-template #tableRow let-source>
             <tr>
               <td class="table-cell-nowrap">#{{ source.id }}</td>
               <td class="table-cell-nowrap"><strong>{{ source.name }}</strong></td>
@@ -116,67 +107,44 @@
               <td class="table-cell-nowrap">{{ formatDate(source.createdAt) }}</td>
               <td class="table-cell-nowrap">{{ formatDate(source.updatedAt) }}</td>
               <td class="table-cell-nowrap">
-                <button class="sources-page__button sources-page__button--secondary" type="button" (click)="startEdit(source)">
+                <button pButton severity="secondary" size="small" type="button" (click)="startEdit(source)">
                   Editar
                 </button>
               </td>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="9">No hay fuentes que coincidan con los filtros.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <footer class="sources-page__pagination">
-      <span>{{ displayedSources().length }} fuentes filtradas</span>
-
-      <label>
-        Filas por pagina
-        <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
-          @for (option of pageSizeOptions; track option) {
-            <option [value]="option">{{ option }}</option>
-          }
-        </select>
-      </label>
-
-      <div class="sources-page__pager">
-        <button class="sources-page__button sources-page__button--secondary" type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">
-          Anterior
-        </button>
-        <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
-        <button class="sources-page__button sources-page__button--secondary" type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">
-          Siguiente
-        </button>
-      </div>
-    </footer>
+        </ng-template>
+        <ng-template #tableEmpty>
+          <tr>
+            <td colspan="9">No hay fuentes que coincidan con los filtros.</td>
+          </tr>
+        </ng-template>
+    </app-standard-table>
   </section>
 
   @if (isModalOpen()) {
-    <div class="sources-page__modal-backdrop" (click)="closeModal()">
-      <section
-        class="sources-page__modal"
-        role="dialog"
-        aria-modal="true"
-        [attr.aria-label]="formMode() === 'create' ? 'Crear fuente' : 'Editar fuente'"
-        (click)="$event.stopPropagation()"
-      >
-        <header class="sources-page__modal-header">
+    <p-dialog
+      [modal]="true"
+      [visible]="isModalOpen()"
+      (visibleChange)="!$event && closeModal()"
+      [header]="formMode() === 'create' ? 'Anadir fuente' : 'Editar fuente'"
+      [style]="{ width: 'min(680px, 96vw)' }"
+      [breakpoints]="{ '768px': '96vw' }"
+      styleClass="sources-page__modal"
+    >
+        <ng-container>
           <h2>{{ formMode() === 'create' ? 'Añadir fuente' : 'Editar fuente' }}</h2>
           <button class="sources-page__icon-button" type="button" aria-label="Cerrar modal" (click)="closeModal()">×</button>
-        </header>
+        </ng-container>
 
         <form class="sources-page__form" [formGroup]="sourceForm" (ngSubmit)="submit()">
           <label>
             Nombre
-            <input type="text" formControlName="name" />
+            <input pInputText type="text" formControlName="name" />
           </label>
 
           <label>
             URL
-            <input type="url" formControlName="url" />
+            <input pInputText type="url" formControlName="url" />
           </label>
 
           <label>
@@ -189,7 +157,7 @@
 
           <label>
             Prioridad
-            <input type="number" formControlName="priority" min="0" />
+            <input pInputText type="number" formControlName="priority" min="0" />
           </label>
 
           <label class="sources-page__checkbox">
@@ -198,15 +166,14 @@
           </label>
 
           <div class="sources-page__actions">
-            <button class="sources-page__button sources-page__button--primary" type="submit" [disabled]="isSubmitting()">
+            <button pButton type="submit" [disabled]="isSubmitting()">
               {{ formMode() === 'create' ? 'Crear fuente' : 'Guardar cambios' }}
             </button>
-            <button class="sources-page__button sources-page__button--secondary" type="button" (click)="closeModal()">
+            <button pButton severity="secondary" type="button" (click)="closeModal()">
               Cancelar
             </button>
           </div>
         </form>
-      </section>
-    </div>
+    </p-dialog>
   }
 </section>

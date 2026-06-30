@@ -1,10 +1,15 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
 
 import { ContentListItem } from '../../core/models/content.models';
 import { ContentService } from '../../core/services/content.service';
 import { PublicationService } from '../../core/services/publication.service';
+import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
 type ContentSortColumn = 'channel' | 'title' | 'status' | 'generatedAt' | 'approvedAt';
@@ -13,7 +18,7 @@ type ModalMode = 'view' | 'edit';
 
 @Component({
   selector: 'app-content-page',
-  imports: [FormsModule, RouterLink, StatusBadgeComponent],
+  imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, MessageModule, RouterLink, StandardTableComponent, StatusBadgeComponent],
   templateUrl: './content-page.component.html',
   styleUrl: './content-page.component.scss'
 })

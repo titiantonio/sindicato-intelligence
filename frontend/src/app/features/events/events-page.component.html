@@ -8,6 +8,7 @@
   <label class="search-box">
     Busqueda global
     <input
+      pInputText
       type="search"
       placeholder="Buscar por ID, titulo, categoria, impacto, noticias, estado o fecha"
       [ngModel]="globalFilter()"
@@ -17,11 +18,11 @@
 </section>
 
 @if (errorMessage()) {
-  <p class="page-alert page-alert--error">{{ errorMessage() }}</p>
+  <p-message severity="error" [text]="errorMessage() ?? ''" />
 }
 
 @if (successMessage()) {
-  <p class="page-alert page-alert--success">{{ successMessage() }}</p>
+  <p-message severity="success" [text]="successMessage() ?? ''" />
 }
 
 @if (isLoading() && events().length > 0) {
@@ -94,102 +95,70 @@
         <span>Sin destino seleccionado</span>
         <strong>Selecciona un evento activo</strong>
       }
-      <button type="button" class="merge-panel__button" (click)="requestMergeEvents()">Fusionar</button>
+      <button pButton type="button" class="merge-panel__button" icon="pi pi-object-group" (click)="requestMergeEvents()">Fusionar</button>
     </div>
   </div>
 </section>
 
 <section class="panel">
-  <div class="table-wrap">
-    <table>
-      <colgroup>
-        <col style="width: 4.5rem" />
-        <col />
-        <col style="width: 10rem" />
-        <col style="width: 7.5rem" />
-        <col style="width: 5.5rem" />
-        <col style="width: 7.5rem" />
-        <col style="width: 9rem" />
-        <col style="width: 9rem" />
-        <col style="width: 8rem" />
-      </colgroup>
-      <thead>
+  <app-standard-table
+    [rows]="paginatedEvents()"
+    [columnCount]="9"
+    [totalItems]="displayedEvents().length"
+    totalLabel="eventos filtrados"
+    [pageSize]="pageSize()"
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    [pageSizeOptions]="pageSizeOptions"
+    [loading]="isLoading() && events().length === 0"
+    minWidth="92rem"
+    (pageSizeChange)="setPageSize($event)"
+    (previousPage)="goToPreviousPage()"
+    (nextPage)="goToNextPage()"
+  >
+      <ng-template #tableHeader>
         <tr>
-          <th><button type="button" class="sort-button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
-          <th><button type="button" class="sort-button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
-          <th><button type="button" class="sort-button" (click)="changeSort('category')">Categoria {{ sortLabel('category') }}</button></th>
-          <th><button type="button" class="sort-button" (click)="changeSort('importance')">Impacto {{ sortLabel('importance') }}</button></th>
-          <th><button type="button" class="sort-button" (click)="changeSort('newsCount')">Noticias {{ sortLabel('newsCount') }}</button></th>
-          <th><button type="button" class="sort-button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
-          <th><button type="button" class="sort-button" (click)="changeSort('editorialStatus')">Editorial {{ sortLabel('editorialStatus') }}</button></th>
-          <th><button type="button" class="sort-button" (click)="changeSort('updatedAt')">Actualizado {{ sortLabel('updatedAt') }}</button></th>
-          <th>Acciones</th>
+          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
+          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
+          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('category')">Categoria {{ sortLabel('category') }}</button></th>
+          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('importance')">Impacto {{ sortLabel('importance') }}</button></th>
+          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('newsCount')">Noticias {{ sortLabel('newsCount') }}</button></th>
+          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('editorialStatus')">Editorial {{ sortLabel('editorialStatus') }}</button></th>
+          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('updatedAt')">Actualizado {{ sortLabel('updatedAt') }}</button></th>
+          <th scope="col">Acciones</th>
         </tr>
+      </ng-template>
+      <ng-template #tableFilters>
         <tr class="column-filters">
-          <th>
-            <input type="search" aria-label="Filtrar por ID" [ngModel]="idFilter()" (ngModelChange)="setIdFilter($event)" />
+          <th scope="col">
+            <input pInputText type="search" aria-label="Filtrar por ID" [ngModel]="idFilter()" (ngModelChange)="setIdFilter($event)" />
           </th>
-          <th>
-            <input type="search" aria-label="Filtrar por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" />
+          <th scope="col">
+            <input pInputText type="search" aria-label="Filtrar por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" />
           </th>
-          <th>
-            <select aria-label="Filtrar por categoria" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event)">
-              <option value="">Todas</option>
-              @for (category of categoryOptions(); track category) {
-                <option [value]="category">{{ category }}</option>
-              }
-            </select>
+          <th scope="col">
+            <p-select [options]="categoryOptions()" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event ?? '')" placeholder="Todas" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar por categoria" />
           </th>
-          <th>
-            <select aria-label="Filtrar por impacto" [ngModel]="importanceFilter()" (ngModelChange)="setImportanceFilter($event)">
-              <option value="">Todos</option>
-              @for (importance of importanceOptions(); track importance) {
-                <option [value]="importance">{{ importance }}</option>
-              }
-            </select>
+          <th scope="col">
+            <p-select [options]="importanceOptions()" [ngModel]="importanceFilter()" (ngModelChange)="setImportanceFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar por impacto" />
           </th>
-          <th>
-            <input type="search" aria-label="Filtrar por noticias" [ngModel]="newsCountFilter()" (ngModelChange)="setNewsCountFilter($event)" />
+          <th scope="col">
+            <input pInputText type="search" aria-label="Filtrar por noticias" [ngModel]="newsCountFilter()" (ngModelChange)="setNewsCountFilter($event)" />
           </th>
-          <th>
-            <select aria-label="Filtrar por estado" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
-              <option value="">Todos</option>
-              @for (status of statusOptions(); track status) {
-                <option [value]="status">{{ status }}</option>
-              }
-            </select>
+          <th scope="col">
+            <p-select [options]="statusOptions()" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar por estado" />
           </th>
-          <th>
-            <select aria-label="Filtrar por estado editorial" [ngModel]="editorialStatusFilter()" (ngModelChange)="setEditorialStatusFilter($event)">
-              <option value="">Todos</option>
-              @for (status of editorialStatusOptions(); track status) {
-                <option [value]="status">{{ status }}</option>
-              }
-            </select>
+          <th scope="col">
+            <p-select [options]="editorialStatusOptions()" [ngModel]="editorialStatusFilter()" (ngModelChange)="setEditorialStatusFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar por estado editorial" />
           </th>
-          <th>
-            <input type="search" aria-label="Filtrar por actualizado" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" />
+          <th scope="col">
+            <input pInputText type="search" aria-label="Filtrar por actualizado" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" />
           </th>
-          <th></th>
+          <th scope="col"></th>
         </tr>
-      </thead>
-      <tbody>
-        @if (isLoading() && events().length === 0) {
-          @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
-            <tr class="table-skeleton" aria-hidden="true">
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-              <td><span></span></td>
-            </tr>
-          }
-        } @else {
-          @for (event of paginatedEvents(); track event.id) {
+      </ng-template>
+      <ng-template #tableRow let-event>
           <tr>
             <td class="table-cell-nowrap">#{{ event.id }}</td>
             <td class="event-title-cell">{{ event.title }}</td>
@@ -203,65 +172,48 @@
               <div class="table-actions">
               <a class="table-action" [routerLink]="['/events', event.id]">Ver</a>
               @if (canDiscard(event)) {
-                <button type="button" class="table-action table-action--danger" (click)="discardEvent(event)">Descartar</button>
+                <button pButton type="button" severity="danger" class="table-action table-action--danger" icon="pi pi-trash" (click)="discardEvent(event)">Descartar</button>
               }
               @if (canRestore(event)) {
-                <button type="button" class="table-action" (click)="restoreEvent(event)">Deshacer descarte</button>
+                <button pButton type="button" severity="secondary" class="table-action" icon="pi pi-undo" (click)="restoreEvent(event)">Deshacer descarte</button>
               }
               </div>
             </td>
           </tr>
-          } @empty {
-            <tr>
-              <td colspan="9">No hay eventos que coincidan con los filtros.</td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
-  </div>
-
-  <footer class="table-pagination">
-    <span>{{ displayedEvents().length }} eventos filtrados</span>
-
-    <label>
-      Filas por pagina
-      <select [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)">
-        @for (option of pageSizeOptions; track option) {
-          <option [value]="option">{{ option }}</option>
-        }
-      </select>
-    </label>
-
-    <div class="table-pagination__pager">
-      <button type="button" (click)="goToPreviousPage()" [disabled]="currentPage() === 1">Anterior</button>
-      <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
-      <button type="button" (click)="goToNextPage()" [disabled]="currentPage() === totalPages()">Siguiente</button>
-    </div>
-  </footer>
+      </ng-template>
+      <ng-template #tableEmpty>
+        <tr>
+          <td colspan="9">No hay eventos que coincidan con los filtros.</td>
+        </tr>
+      </ng-template>
+  </app-standard-table>
 </section>
 
-@if (pendingConfirmation(); as confirmation) {
-  <div class="modal-backdrop" role="presentation" (click)="closeConfirmation()">
-    <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="events-confirm-title" (click)="$event.stopPropagation()">
-      <header class="confirm-modal__header">
-        <div>
-          <span class="page-header__eyebrow">Confirmacion</span>
-          <h2 id="events-confirm-title">{{ confirmation.title }}</h2>
-        </div>
-        <button class="modal-close" type="button" aria-label="Cerrar confirmacion" (click)="closeConfirmation()">Cerrar</button>
-      </header>
-
-      <p>{{ confirmation.message }}</p>
-
-      <div class="confirm-modal__actions">
-        <button type="button" class="confirm-modal__button confirm-modal__button--danger" (click)="confirmPendingAction()">
-          {{ confirmation.confirmLabel }}
-        </button>
-        <button type="button" class="confirm-modal__button confirm-modal__button--secondary" (click)="closeConfirmation()">
-          Cancelar
-        </button>
+<p-dialog
+  [visible]="pendingConfirmation() !== null"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(100vw - 2rem, 34rem)' }"
+  (visibleChange)="!$event && closeConfirmation()"
+>
+  @if (pendingConfirmation(); as confirmation) {
+    <ng-template pTemplate="header">
+      <div>
+        <span class="page-header__eyebrow">Confirmacion</span>
+        <h2 id="events-confirm-title">{{ confirmation.title }}</h2>
       </div>
-    </section>
-  </div>
-}
+    </ng-template>
+
+    <p>{{ confirmation.message }}</p>
+
+    <ng-template pTemplate="footer">
+      <button pButton type="button" severity="danger" icon="pi pi-check" (click)="confirmPendingAction()">
+        {{ confirmation.confirmLabel }}
+      </button>
+      <button pButton type="button" severity="secondary" icon="pi pi-times" (click)="closeConfirmation()">
+        Cancelar
+      </button>
+    </ng-template>
+  }
+</p-dialog>
