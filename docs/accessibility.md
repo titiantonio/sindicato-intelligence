@@ -21,6 +21,7 @@ Registrar el estado de accesibilidad de la modernizacion frontend PrimeNG + Tail
 - Pantallas de autenticacion con landmark `main` y labels explicitos asociados por `for/id`.
 - Pantallas operativas, editoriales y ADMIN migradas parcialmente a `p-message`, `pInputText`, `pButton` y `p-dialog`.
 - Tablas operativas migradas a `app-standard-table` sobre PrimeNG `p-table`, con cabeceras, filtros, estados vacios/carga y paginacion homogeneos.
+- `app-standard-table` contiene el scroll horizontal de tablas densas para mantener foco, lectura y navegacion dentro del componente sin desplazar toda la pagina.
 - Cabeceras de tablas operativas con `scope="col"`.
 - Filtros y paginacion de tablas migrados a `p-select` de PrimeNG.
 - PrimeNG configurado con selector de dark mode coherente con `ThemeService`.
@@ -46,6 +47,8 @@ Registrar el estado de accesibilidad de la modernizacion frontend PrimeNG + Tail
 - Build frontend verificado con `npm run build`.
 - Suite frontend verificada con `npm test -- --watch=false --browsers=ChromeHeadless`: 146 tests OK.
 - Revision responsive con navegador en mobile `390x844`, tablet `768x1024` y desktop `1440x900` para rutas auth y backoffice principales: sin overflow horizontal global, con `main`, navegacion nombrada y controles basicos accesibles.
+- Revision Chrome headless por CDP en mobile `390x844`, tablet `768x1024`, desktop `1440x900` y ultrawide `1920x1080`: sin overflow horizontal de documento, sin tablas fuera del viewport y sin iconos visibles con tamano cero.
+- Suite final tras revision responsive: 146 tests OK; persiste warning no bloqueante de fuentes PrimeIcons en Karma.
 - Tablas HTML operativas sustituidas por `app-standard-table` en plantillas Angular.
 - Sin mojibake visible detectado en plantillas Angular tras la pasada final.
 - Warning residual de Karma por fuentes PrimeIcons queda documentado como no bloqueante.

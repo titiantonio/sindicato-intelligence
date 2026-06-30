@@ -2951,3 +2951,26 @@ Verificacion:
 - `npm audit --audit-level=low`: 0 vulnerabilidades.
 - `npm test -- --watch=false --browsers=ChromeHeadless`: OK, 146 tests, 0 fallos. Persiste warning no bloqueante de Karma por fuentes PrimeIcons y cierre lento de ChromeHeadless.
 - Revision con navegador en mobile `390x844`, tablet `768x1024` y desktop `1440x900`: rutas auth y backoffice principales con `main`, sin overflow horizontal global, nav nombrada, cabeceras con `scope` y sin controles basicos sin nombre accesible.
+
+---
+
+## 19.13 Revision visual responsive integral del frontend - 2026-06-30
+
+Tarea de cierre posterior al roadmap frontend PrimeNG + Tailwind.
+
+Completado en esta iteracion:
+- [x] Corregido el layout global para evitar crecimiento horizontal de `shell`, contenido principal, paneles, headers, tabs y secciones.
+- [x] Ajustado `app-standard-table` para contener el scroll horizontal dentro del componente compartido sin ensanchar la pagina completa.
+- [x] Reducidos `minWidth` excesivos en tablas de `dashboard`, `news`, `events`, `event-detail`, `content`, `sources`, `users`, `audit` y `settings`.
+- [x] Sustituido `pi-rss` por `pi-database` en la navegacion de fuentes.
+- [x] Sustituido `pi-object-group` por `pi-sitemap` en la accion de fusion de eventos.
+- [x] Revisadas rutas auth y backoffice en mobile, tablet, desktop y ultrawide.
+- [x] Version frontend subida a `0.0.10`.
+
+Verificacion:
+- `rg "pi-rss|pi-object-group" frontend/src/app`: sin iconos PrimeIcons invalidos detectados.
+- `rg "<table|</table>" frontend/src/app -g "*.html"`: sin tablas HTML operativas restantes.
+- `npm audit --audit-level=low`: 0 vulnerabilidades.
+- `npm test -- --watch=false --browsers=ChromeHeadless`: OK, 146 tests, 0 fallos. Persiste warning no bloqueante de Karma por fuentes PrimeIcons y cierre lento de ChromeHeadless.
+- `npm run build`: OK sin warnings de budget. Bundle inicial: `527.32 kB`.
+- Revision Chrome headless por CDP en mobile `390x844`, tablet `768x1024`, desktop `1440x900` y ultrawide `1920x1080`: 60 combinaciones ruta/viewport sin overflow horizontal de documento, sin tablas fuera del viewport y sin iconos visibles con tamano cero.

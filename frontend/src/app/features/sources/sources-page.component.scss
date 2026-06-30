@@ -7,8 +7,10 @@
 .sources-page__header {
   align-items: start;
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   justify-content: space-between;
+  min-width: 0;
 }
 
 .sources-page__header h1 {
@@ -22,6 +24,7 @@
 }
 
 .sources-page__card {
+  max-width: 100%;
   min-width: 0;
 }
 

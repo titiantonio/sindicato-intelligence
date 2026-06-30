@@ -1,11 +1,23 @@
 :host {
   display: block;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .standard-table {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+}
+
+:host ::ng-deep .standard-table__prime,
+:host ::ng-deep .standard-table__prime .p-datatable-wrapper {
+  max-width: 100%;
+  min-width: 0;
 }
 
 :host ::ng-deep .standard-table__prime .p-datatable-table {

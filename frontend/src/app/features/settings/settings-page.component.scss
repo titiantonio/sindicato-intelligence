@@ -1,3 +1,4 @@
+.settings-page,.panel,.workflow-panel{max-width:100%;min-width:0}
 .panel,.workflow-panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:8px;box-shadow:var(--shadow-soft)}
 .panel,.workflow-panel,.telegram-panel,.summary-card,.workflow-subpanel,.ai-provider-form,.metric-modal{padding:1rem}
 
@@ -26,6 +27,8 @@
   display: flex;
   flex-wrap: wrap;
   margin-bottom: 1rem;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .settings-tab {
@@ -41,7 +44,7 @@
   border-bottom-color: var(--color-primary);
 }
 
-.settings-section,.workflow-stack,.workflow-panel,.telegram-panel,.ai-provider-form,.metric-modal{display:grid;gap:1rem}
+.settings-section,.workflow-stack,.workflow-panel,.telegram-panel,.ai-provider-form,.metric-modal{display:grid;gap:1rem;max-width:100%;min-width:0}
 
 .settings-section {
   margin-top: 1.5rem;

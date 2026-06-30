@@ -95,7 +95,7 @@
         <span>Sin destino seleccionado</span>
         <strong>Selecciona un evento activo</strong>
       }
-      <button pButton type="button" class="merge-panel__button" icon="pi pi-object-group" (click)="requestMergeEvents()">Fusionar</button>
+      <button pButton type="button" class="merge-panel__button" icon="pi pi-sitemap" (click)="requestMergeEvents()">Fusionar</button>
     </div>
   </div>
 </section>
@@ -111,7 +111,7 @@
     [totalPages]="totalPages()"
     [pageSizeOptions]="pageSizeOptions"
     [loading]="isLoading() && events().length === 0"
-    minWidth="92rem"
+    minWidth="78rem"
     (pageSizeChange)="setPageSize($event)"
     (previousPage)="goToPreviousPage()"
     (nextPage)="goToNextPage()"

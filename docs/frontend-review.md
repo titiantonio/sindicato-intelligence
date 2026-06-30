@@ -19,6 +19,8 @@ Modernizacion tecnica iniciada y verificada:
 - Pantallas ADMIN/detalle `users`, `settings`, `content-detail` y `publication-detail` migradas parcialmente a mensajes, filtros, botones, acciones y dialogos PrimeNG.
 - Tablas operativas unificadas con `app-standard-table` sobre PrimeNG `p-table` en `dashboard`, `events`, `event-detail`, `news`, `content`, `sources`, `users`, `audit` y `settings`.
 - Filtros y paginacion de tablas migrados a `p-select` de PrimeNG; los selects restantes pertenecen a formularios existentes.
+- Revision responsive integral aplicada sobre el shell, paneles y tablas para evitar crecimiento horizontal de pagina en mobile, tablet, desktop y ultrawide.
+- Iconos PrimeIcons invalidos sustituidos en navegacion de fuentes y fusion de eventos.
 - Accesibilidad base reforzada con landmarks en auth, labels explicitos en formularios de password, `aria-label` en navegacion principal y `scope="col"` en cabeceras de tablas.
 - Rutas de pantallas cargadas con `loadComponent`.
 - Auditoria npm sin vulnerabilidades tras overrides controlados.
@@ -30,6 +32,7 @@ Modernizacion tecnica iniciada y verificada:
 - Los estilos historicos de tablas HTML se han retirado de pantallas migradas; todos los SCSS de componente quedan por debajo del warning budget de 6 KB.
 - Persiste warning no bloqueante de Karma por fuentes PrimeIcons en `/base/media/*`; no afecta tests ni build.
 - La revision responsive con navegador queda ejecutada en mobile, tablet y desktop para rutas principales; quedan como revision previa a despliegue los flujos interactivos profundos de modales/formularios.
+- La revision responsive integral de 2026-06-30 valida tambien ultrawide y detalles reales disponibles; las tablas densas mantienen scroll interno controlado por `app-standard-table`.
 
 ## Prioridad Alta
 
@@ -61,6 +64,9 @@ Modernizacion tecnica iniciada y verificada:
 - `npm test -- --watch=false --browsers=ChromeHeadless`: OK, 146 tests tras `p-select` y limpieza SCSS.
 - `npm audit --audit-level=low`: OK, 0 vulnerabilidades.
 - Revision navegador mobile/tablet/desktop: OK en rutas auth y backoffice principales, sin overflow horizontal global y sin controles basicos sin nombre accesible detectados.
+- Revision Chrome headless por CDP mobile/tablet/desktop/ultrawide: OK en 60 combinaciones ruta/viewport, sin overflow horizontal de documento, sin tablas fuera del viewport y sin iconos visibles con tamano cero.
+- Build final tras revision responsive: `npm run build` OK sin warnings de budget. Bundle inicial: 527.32 KB.
+- Suite final tras revision responsive: `npm test -- --watch=false --browsers=ChromeHeadless` OK, 146 tests; persiste warning no bloqueante de fuentes PrimeIcons en Karma.
 
 ## Verificacion Pendiente
 

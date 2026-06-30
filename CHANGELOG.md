@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend responsive: revisado el backoffice completo en mobile, tablet, desktop y ultrawide para evitar crecimiento horizontal de pagina; las tablas densas quedan contenidas dentro de `app-standard-table`.
+- Frontend version: subida la version del paquete frontend a `0.0.10`.
 - Frontend accesibilidad: anadidos landmarks `main` en pantallas auth, labels explicitos en formularios de password, nombre accesible en navegacion principal y `scope="col"` en cabeceras de tablas operativas.
 - Frontend version: subida la version del paquete frontend a `0.0.9`.
 - Frontend filtros: sustituidos selects de filtros y paginacion por `p-select` de PrimeNG en tablas operativas, manteniendo los formularios existentes sin cambios.
@@ -29,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Frontend iconos: sustituidos PrimeIcons invalidos en navegacion de fuentes y fusion de eventos para evitar iconos invisibles.
 - Frontend/backend noticias: la pantalla `/news` y el detalle de noticia muestran el nombre descriptivo de la fuente en lugar de `Fuente #id`, con filtro backend por nombre de fuente.
 - Backend tests: estabilizados los tests API de clasificacion, analisis y contenido con proveedor IA determinista, y actualizado el slice de seguridad con dependencias de detalle de contenido.
 - Backoffice rendimiento: optimizadas las lecturas de `GET /api/v1/dashboard` y `GET /api/v1/events` con consultas agregadas, indices Flyway y carga Angular progresiva para reducir pantallas en blanco con "Cargando...".

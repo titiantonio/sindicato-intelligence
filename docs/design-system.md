@@ -65,6 +65,7 @@ Todas las tablas del backoffice deben usar `app-standard-table`.
 - Estados: skeleton de carga y estado vacio homogeneos.
 - Estilo: cabeceras, filtros, hover, acciones, enlaces y celdas nowrap/break definidos por el componente compartido.
 - Selectores: filtros y paginacion de tablas usan `p-select`; los selects de formularios existentes se mantienen nativos hasta una migracion especifica de formularios.
+- Responsive: el scroll horizontal de datos densos pertenece siempre a `app-standard-table`; ninguna pantalla debe permitir que una tabla ensanche el documento, el `shell` o un panel padre.
 
 Las pantallas no deben crear tablas HTML propias salvo decision tecnica documentada.
 

@@ -34,7 +34,7 @@ export class ShellComponent {
       { label: 'Contenido', route: '/content', icon: 'pi pi-pen-to-square', roles: ['ADMIN', 'EDITOR'] },
       { label: 'Publicaciones', route: '/publications', icon: 'pi pi-send', roles: ['ADMIN', 'EDITOR'] },
       { label: 'Configuracion', route: '/settings', icon: 'pi pi-cog', roles: ['ADMIN'] },
-      { label: 'Fuentes', route: '/sources', icon: 'pi pi-rss', roles: ['ADMIN'] },
+      { label: 'Fuentes', route: '/sources', icon: 'pi pi-database', roles: ['ADMIN'] },
       { label: 'Usuarios', route: '/users', icon: 'pi pi-users', roles: ['ADMIN'] },
       { label: 'Auditoria', route: '/audit', icon: 'pi pi-shield', roles: ['ADMIN'] }
     ];
