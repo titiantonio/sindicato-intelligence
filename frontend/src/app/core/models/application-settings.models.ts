@@ -15,6 +15,9 @@ export interface TelegramPublicationSettings {
   botTokenConfigured: boolean;
   botTokenPreview: string | null;
   readyToPublish: boolean;
+  maxAttachmentCount: number;
+  maxAttachmentFileBytes: number;
+  maxAttachmentTotalBytes: number;
   updatedAt: string;
   destinations?: TelegramPublicationDestination[];
 }
@@ -25,5 +28,8 @@ export interface UpdateTelegramPublicationSettingsRequest {
   botToken: string | null;
   chatId: string | null;
   disableWebPagePreview: boolean;
+  maxAttachmentCount: number;
+  maxAttachmentFileBytes: number;
+  maxAttachmentTotalBytes: number;
   destinations?: TelegramPublicationDestination[];
 }

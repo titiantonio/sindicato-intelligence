@@ -30,6 +30,15 @@ public class TelegramPublicationSettingsEntity {
     @Column(name = "disable_web_page_preview", nullable = false)
     private boolean disableWebPagePreview;
 
+    @Column(name = "max_attachment_count", nullable = false)
+    private int maxAttachmentCount;
+
+    @Column(name = "max_attachment_file_bytes", nullable = false)
+    private long maxAttachmentFileBytes;
+
+    @Column(name = "max_attachment_total_bytes", nullable = false)
+    private long maxAttachmentTotalBytes;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -49,12 +58,43 @@ public class TelegramPublicationSettingsEntity {
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt
     ) {
+        this(
+                id,
+                enabled,
+                baseUrl,
+                botToken,
+                chatId,
+                disableWebPagePreview,
+                es.sindicato.intelligence.publication.domain.TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_COUNT,
+                es.sindicato.intelligence.publication.domain.TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_FILE_BYTES,
+                es.sindicato.intelligence.publication.domain.TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_TOTAL_BYTES,
+                createdAt,
+                updatedAt
+        );
+    }
+
+    public TelegramPublicationSettingsEntity(
+            short id,
+            boolean enabled,
+            String baseUrl,
+            String botToken,
+            String chatId,
+            boolean disableWebPagePreview,
+            int maxAttachmentCount,
+            long maxAttachmentFileBytes,
+            long maxAttachmentTotalBytes,
+            OffsetDateTime createdAt,
+            OffsetDateTime updatedAt
+    ) {
         this.id = id;
         this.enabled = enabled;
         this.baseUrl = baseUrl;
         this.botToken = botToken;
         this.chatId = chatId;
         this.disableWebPagePreview = disableWebPagePreview;
+        this.maxAttachmentCount = maxAttachmentCount;
+        this.maxAttachmentFileBytes = maxAttachmentFileBytes;
+        this.maxAttachmentTotalBytes = maxAttachmentTotalBytes;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -81,6 +121,18 @@ public class TelegramPublicationSettingsEntity {
 
     public boolean isDisableWebPagePreview() {
         return disableWebPagePreview;
+    }
+
+    public int getMaxAttachmentCount() {
+        return maxAttachmentCount;
+    }
+
+    public long getMaxAttachmentFileBytes() {
+        return maxAttachmentFileBytes;
+    }
+
+    public long getMaxAttachmentTotalBytes() {
+        return maxAttachmentTotalBytes;
     }
 
     public OffsetDateTime getCreatedAt() {

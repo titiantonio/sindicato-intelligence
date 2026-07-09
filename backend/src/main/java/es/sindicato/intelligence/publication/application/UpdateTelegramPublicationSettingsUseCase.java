@@ -30,6 +30,9 @@ public class UpdateTelegramPublicationSettingsUseCase {
                 command.botToken(),
                 primaryChatId(command.chatId(), destinations),
                 command.disableWebPagePreview(),
+                command.maxAttachmentCount(),
+                command.maxAttachmentFileBytes(),
+                command.maxAttachmentTotalBytes(),
                 destinations,
                 now
         );

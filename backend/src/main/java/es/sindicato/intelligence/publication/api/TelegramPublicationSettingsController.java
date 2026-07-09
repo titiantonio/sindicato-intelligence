@@ -46,6 +46,9 @@ public class TelegramPublicationSettingsController {
                 request.botToken(),
                 request.chatId(),
                 request.disableWebPagePreview(),
+                valueOrDefault(request.maxAttachmentCount(), TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_COUNT),
+                valueOrDefault(request.maxAttachmentFileBytes(), TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_FILE_BYTES),
+                valueOrDefault(request.maxAttachmentTotalBytes(), TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_TOTAL_BYTES),
                 toDestinationCommands(request)
         )));
     }
@@ -65,6 +68,9 @@ public class TelegramPublicationSettingsController {
                 settings.getBotToken() != null,
                 tokenPreview(settings.getBotToken()),
                 settings.isReadyToPublish(),
+                settings.getMaxAttachmentCount(),
+                settings.getMaxAttachmentFileBytes(),
+                settings.getMaxAttachmentTotalBytes(),
                 settings.getUpdatedAt(),
                 settings.getDestinations().stream()
                         .map(this::toDestinationResponse)
@@ -107,5 +113,13 @@ public class TelegramPublicationSettingsController {
             return "********";
         }
         return trimmed.substring(0, 4) + "..." + trimmed.substring(trimmed.length() - 4);
+    }
+
+    private int valueOrDefault(Integer value, int defaultValue) {
+        return value == null ? defaultValue : value;
+    }
+
+    private long valueOrDefault(Long value, long defaultValue) {
+        return value == null ? defaultValue : value;
     }
 }

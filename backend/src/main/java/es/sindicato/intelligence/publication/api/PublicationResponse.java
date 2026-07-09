@@ -14,6 +14,8 @@ public record PublicationResponse(
         String titleSnapshot,
         String messageSnapshot,
         Long requestedBy,
+        String requestedByName,
+        String requestedByEmail,
         String externalId,
         PublicationStatus status,
         OffsetDateTime publishedAt,
@@ -32,6 +34,6 @@ public record PublicationResponse(
             String responsePayload,
             OffsetDateTime scheduledAt
     ) {
-        this(id, contentId, channel, PublicationType.GENERATED_CONTENT, null, null, null, externalId, status, publishedAt, responsePayload, scheduledAt, List.of(), List.of());
+        this(id, contentId, channel, PublicationType.GENERATED_CONTENT, null, null, null, null, null, externalId, status, publishedAt, responsePayload, scheduledAt, List.of(), List.of());
     }
 }

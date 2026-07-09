@@ -29,4 +29,12 @@ describe('PublicationService', () => {
     expect(request.request.body).toEqual({ scheduledAt: '2026-06-14T10:00:00.000Z' });
     request.flush({ id: 9, contentId: 7, status: 'SCHEDULED' });
   });
+
+  it('reads operational telegram destinations', () => {
+    service.listTelegramDestinations().subscribe();
+
+    const request = httpTestingController.expectOne('/api/v1/publications/telegram-destinations');
+    expect(request.request.method).toBe('GET');
+    request.flush([{ id: 1, name: 'Principal', defaultSelected: true }]);
+  });
 });

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -6,9 +6,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 
-import { TelegramPublicationDestination } from '../../core/models/application-settings.models';
-import { PublicationListItem } from '../../core/models/publication.models';
-import { ApplicationSettingsService } from '../../core/services/application-settings.service';
+import { OperationalTelegramDestination, PublicationListItem } from '../../core/models/publication.models';
 import { PublicationService } from '../../core/services/publication.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { formatPublicationResult } from './publication-result.formatter';
@@ -21,10 +19,15 @@ import { formatPublicationResult } from './publication-result.formatter';
 })
 export class PublicationsPageComponent implements OnInit {
   private readonly publicationService = inject(PublicationService);
-  private readonly settingsService = inject(ApplicationSettingsService);
+
+  @ViewChild('manualMessageInput')
+  private manualMessageInput?: ElementRef<HTMLTextAreaElement>;
+
+  @ViewChild('manualFileInput')
+  private manualFileInput?: ElementRef<HTMLInputElement>;
 
   protected readonly publications = signal<PublicationListItem[]>([]);
-  protected readonly destinations = signal<TelegramPublicationDestination[]>([]);
+  protected readonly destinations = signal<OperationalTelegramDestination[]>([]);
   protected readonly manualDialogVisible = signal(false);
   protected readonly manualTitle = signal('');
   protected readonly manualMessage = signal('');
@@ -34,6 +37,7 @@ export class PublicationsPageComponent implements OnInit {
   protected readonly isSendingManual = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly successMessage = signal<string | null>(null);
+  protected readonly quickEmotes = ['✅', '📌', 'ℹ️', '⚠️', '📣', '🗓️'];
 
   ngOnInit(): void {
     this.loadPublications();
@@ -82,20 +86,34 @@ export class PublicationsPageComponent implements OnInit {
     return publication.publicationType === 'MANUAL_MESSAGE' ? 'Manual' : `Contenido #${publication.contentId}`;
   }
 
+  protected publicationAuthor(publication: PublicationListItem): string {
+    return publication.requestedByName
+      ? `Autor: ${publication.requestedByName}`
+      : publication.requestedBy
+        ? `Autor #${publication.requestedBy}`
+        : 'Autor no registrado';
+  }
+
   protected openManualDialog(): void {
     this.manualDialogVisible.set(true);
     this.errorMessage.set(null);
     this.successMessage.set(null);
-    this.settingsService.getTelegramSettings().subscribe({
-      next: (settings) => {
-        const activeDestinations = (settings.destinations ?? []).filter((destination) => destination.active && destination.id !== null);
-        this.destinations.set(activeDestinations);
-        this.selectedDestinationIds.set(activeDestinations.filter((destination) => destination.defaultSelected).map((destination) => destination.id as number));
+    this.publicationService.listTelegramDestinations().subscribe({
+      next: (destinations) => {
+        this.destinations.set(destinations);
+        this.selectedDestinationIds.set(destinations.filter((destination) => destination.defaultSelected).map((destination) => destination.id));
       },
       error: (error: { error?: { error?: string } }) => {
         this.errorMessage.set(error.error?.error ?? 'No se pudieron cargar los destinos Telegram.');
       }
     });
+  }
+
+  protected setManualDialogVisible(visible: boolean): void {
+    this.manualDialogVisible.set(visible);
+    if (!visible) {
+      this.resetManualForm();
+    }
   }
 
   protected updateDestinationSelection(destinationId: number, checked: boolean): void {
@@ -113,6 +131,22 @@ export class PublicationsPageComponent implements OnInit {
     this.selectedFiles.set(input.files ? Array.from(input.files) : []);
   }
 
+  protected applyFormat(tag: 'b' | 'i' | 'u'): void {
+    this.wrapSelection(`<${tag}>`, `</${tag}>`);
+  }
+
+  protected applyLink(): void {
+    const url = window.prompt('URL del enlace');
+    if (!url || !/^https?:\/\//i.test(url.trim())) {
+      return;
+    }
+    this.wrapSelection(`<a href="${this.escapeAttribute(url.trim())}">`, '</a>', 'enlace');
+  }
+
+  protected insertEmote(emote: string): void {
+    this.wrapSelection('', '', emote);
+  }
+
   protected sendManualPublication(): void {
     this.isSendingManual.set(true);
     this.errorMessage.set(null);
@@ -127,10 +161,7 @@ export class PublicationsPageComponent implements OnInit {
       next: () => {
         this.successMessage.set('Mensaje manual enviado.');
         this.isSendingManual.set(false);
-        this.manualDialogVisible.set(false);
-        this.manualTitle.set('');
-        this.manualMessage.set('');
-        this.selectedFiles.set([]);
+        this.setManualDialogVisible(false);
         this.loadPublications();
       },
       error: (error: { error?: { error?: string } }) => {
@@ -142,5 +173,39 @@ export class PublicationsPageComponent implements OnInit {
 
   protected fileSummary(file: File): string {
     return `${file.name} (${Math.ceil(file.size / 1024)} KB)`;
+  }
+
+  private resetManualForm(): void {
+    this.manualTitle.set('');
+    this.manualMessage.set('');
+    this.selectedDestinationIds.set([]);
+    this.selectedFiles.set([]);
+    this.destinations.set([]);
+    if (this.manualFileInput?.nativeElement) {
+      this.manualFileInput.nativeElement.value = '';
+    }
+  }
+
+  private wrapSelection(prefix: string, suffix: string, fallbackText = ''): void {
+    const input = this.manualMessageInput?.nativeElement;
+    const current = this.manualMessage();
+    if (!input) {
+      this.manualMessage.set(`${current}${prefix}${fallbackText}${suffix}`);
+      return;
+    }
+    const start = input.selectionStart ?? current.length;
+    const end = input.selectionEnd ?? current.length;
+    const selected = current.slice(start, end) || fallbackText;
+    const next = `${current.slice(0, start)}${prefix}${selected}${suffix}${current.slice(end)}`;
+    this.manualMessage.set(next);
+    window.setTimeout(() => {
+      input.focus();
+      const cursor = start + prefix.length + selected.length + suffix.length;
+      input.setSelectionRange(cursor, cursor);
+    });
+  }
+
+  private escapeAttribute(value: string): string {
+    return value.replace(/"/g, '&quot;');
   }
 }

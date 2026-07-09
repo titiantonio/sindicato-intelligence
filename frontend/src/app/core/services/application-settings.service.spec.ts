@@ -35,7 +35,10 @@ describe('ApplicationSettingsService', () => {
       baseUrl: 'https://api.telegram.org',
       botToken: 'token',
       chatId: 'chat-id',
-      disableWebPagePreview: true
+      disableWebPagePreview: true,
+      maxAttachmentCount: 10,
+      maxAttachmentFileBytes: 20971520,
+      maxAttachmentTotalBytes: 52428800
     };
 
     service.updateTelegramSettings(payload).subscribe();

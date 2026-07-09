@@ -19,32 +19,15 @@ import java.util.UUID;
 public class LocalPublicationAttachmentStorage implements PublicationAttachmentStorage {
 
     private final Path rootDirectory;
-    private final int maxFiles;
-    private final long maxFileBytes;
-    private final long maxTotalBytes;
 
     public LocalPublicationAttachmentStorage(
-            @Value("${app.publication.attachments.path:data/publication-attachments}") String rootDirectory,
-            @Value("${app.publication.attachments.max-files:10}") int maxFiles,
-            @Value("${app.publication.attachments.max-file-bytes:20971520}") long maxFileBytes,
-            @Value("${app.publication.attachments.max-total-bytes:52428800}") long maxTotalBytes
+            @Value("${app.publication.attachments.path:data/publication-attachments}") String rootDirectory
     ) {
         this.rootDirectory = Path.of(rootDirectory).toAbsolutePath().normalize();
-        this.maxFiles = maxFiles;
-        this.maxFileBytes = maxFileBytes;
-        this.maxTotalBytes = maxTotalBytes;
     }
 
     @Override
     public List<PublicationAttachment> store(Long publicationId, List<ManualPublicationFile> files) {
-        if (files.size() > maxFiles) {
-            throw new IllegalArgumentException("too many attachments");
-        }
-        long totalBytes = files.stream().mapToLong(ManualPublicationFile::size).sum();
-        if (totalBytes > maxTotalBytes) {
-            throw new IllegalArgumentException("attachments total size is too large");
-        }
-
         try {
             Path publicationDirectory = rootDirectory.resolve(publicationId.toString()).normalize();
             if (!publicationDirectory.startsWith(rootDirectory)) {
@@ -55,9 +38,6 @@ public class LocalPublicationAttachmentStorage implements PublicationAttachmentS
             java.util.ArrayList<PublicationAttachment> attachments = new java.util.ArrayList<>();
             for (int index = 0; index < files.size(); index++) {
                 ManualPublicationFile file = files.get(index);
-                if (file.size() > maxFileBytes) {
-                    throw new IllegalArgumentException("attachment is too large: " + safeFilename(file.originalFilename()));
-                }
                 PublicationMediaType mediaType = mediaType(file.contentType());
                 String extension = extension(safeFilename(file.originalFilename()));
                 String storedFilename = UUID.randomUUID() + extension;

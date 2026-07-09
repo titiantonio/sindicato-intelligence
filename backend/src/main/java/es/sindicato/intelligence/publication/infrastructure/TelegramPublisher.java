@@ -29,6 +29,7 @@ import org.springframework.web.client.RestClientResponseException;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -142,11 +143,7 @@ public class TelegramPublisher implements PublishingProvider, ManualPublishingPr
             JsonNode response = restClient.post()
                     .uri("/bot{token}/sendMessage", botToken)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of(
-                            "chat_id", chatId,
-                            "text", text,
-                            "disable_web_page_preview", disableWebPagePreview
-                    ))
+                    .body(textMessagePayload(chatId, text, disableWebPagePreview))
                     .retrieve()
                     .body(JsonNode.class);
             return parseResponse(logEntityId, response);
@@ -167,6 +164,7 @@ public class TelegramPublisher implements PublishingProvider, ManualPublishingPr
             body.add(telegramFileField(attachment), new FileSystemResource(Path.of(attachment.getStoragePath())));
             if (hasText(caption)) {
                 body.add("caption", caption);
+                body.add("parse_mode", "HTML");
             }
             JsonNode response = restClient.post()
                     .uri("/bot{token}/{method}", botToken, attachment.getTelegramMethod())
@@ -199,6 +197,7 @@ public class TelegramPublisher implements PublishingProvider, ManualPublishingPr
                 item.put("media", "attach://" + fieldName);
                 if (index == 0 && hasText(caption)) {
                     item.put("caption", caption);
+                    item.put("parse_mode", "HTML");
                 }
                 media.add(item);
             }
@@ -259,24 +258,24 @@ public class TelegramPublisher implements PublishingProvider, ManualPublishingPr
     }
 
     private String buildTelegramMessage(PublishingRequest request) {
-        return request.title() + "\n\n" + request.message();
+        return sanitizeTelegramHtml(request.title()) + "\n\n" + sanitizeTelegramHtml(request.message());
     }
 
     private String buildManualText(ManualPublishingRequest request) {
         if (hasText(request.title())) {
-            return request.title().trim() + "\n\n" + request.message().trim();
+            return sanitizeTelegramHtml(request.title()) + "\n\n" + sanitizeTelegramHtml(request.message());
         }
-        return request.message().trim();
+        return sanitizeTelegramHtml(request.message());
     }
 
     private String attachmentCaption(ManualPublishingRequest request) {
         if (hasText(request.title()) && hasText(request.message())) {
-            return request.title().trim() + "\n\n" + request.message().trim();
+            return sanitizeTelegramHtml(request.title()) + "\n\n" + sanitizeTelegramHtml(request.message());
         }
         if (hasText(request.message())) {
-            return request.message().trim();
+            return sanitizeTelegramHtml(request.message());
         }
-        return hasText(request.title()) ? request.title().trim() : null;
+        return hasText(request.title()) ? sanitizeTelegramHtml(request.title()) : null;
     }
 
     private List<TelegramPublicationDestination> defaultDestinations(TelegramPublicationSettings settings) {
@@ -342,5 +341,22 @@ public class TelegramPublisher implements PublishingProvider, ManualPublishingPr
 
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private Map<String, Object> textMessagePayload(String chatId, String text, boolean disableWebPagePreview) {
+        LinkedHashMap<String, Object> payload = new LinkedHashMap<>();
+        payload.put("chat_id", chatId);
+        payload.put("text", text);
+        payload.put("disable_web_page_preview", disableWebPagePreview);
+        payload.put("parse_mode", "HTML");
+        return payload;
+    }
+
+    private String sanitizeTelegramHtml(String value) {
+        if (!hasText(value)) {
+            return "";
+        }
+        String trimmed = value.trim();
+        return trimmed.replaceAll("(?is)<(?!/?(?:b|strong|i|em|u|ins|s|strike|del|code|pre)>|a\\s+href=\"https?://[^\"]+\">|/a>)[^>]*>", "");
     }
 }

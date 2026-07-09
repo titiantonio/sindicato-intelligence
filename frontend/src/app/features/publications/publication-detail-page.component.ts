@@ -56,6 +56,18 @@ export class PublicationDetailPageComponent implements OnInit {
     return item?.content?.content ?? item?.publication.messageSnapshot ?? '';
   }
 
+  protected author(): string {
+    const publication = this.detail()?.publication;
+    if (!publication) {
+      return '-';
+    }
+    return publication.requestedByName
+      ? `${publication.requestedByName}${publication.requestedByEmail ? ' · ' + publication.requestedByEmail : ''}`
+      : publication.requestedBy
+        ? `Usuario #${publication.requestedBy}`
+        : 'No registrado';
+  }
+
   private loadPublication(publicationId: number): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);

@@ -66,6 +66,9 @@ public class JpaTelegramPublicationSettingsRepository implements TelegramPublica
                 secretTextCipher.encrypt(settings.getBotToken()),
                 settings.getChatId(),
                 settings.isDisableWebPagePreview(),
+                settings.getMaxAttachmentCount(),
+                settings.getMaxAttachmentFileBytes(),
+                settings.getMaxAttachmentTotalBytes(),
                 settings.getCreatedAt(),
                 settings.getUpdatedAt()
         );
@@ -80,6 +83,9 @@ public class JpaTelegramPublicationSettingsRepository implements TelegramPublica
                 secretTextCipher.decryptIfNeeded(entity.getBotToken()),
                 entity.getChatId(),
                 entity.isDisableWebPagePreview(),
+                entity.getMaxAttachmentCount(),
+                entity.getMaxAttachmentFileBytes(),
+                entity.getMaxAttachmentTotalBytes(),
                 destinations,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()

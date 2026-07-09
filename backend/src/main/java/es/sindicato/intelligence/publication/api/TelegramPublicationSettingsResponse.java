@@ -11,6 +11,9 @@ public record TelegramPublicationSettingsResponse(
         boolean botTokenConfigured,
         String botTokenPreview,
         boolean readyToPublish,
+        int maxAttachmentCount,
+        long maxAttachmentFileBytes,
+        long maxAttachmentTotalBytes,
         OffsetDateTime updatedAt,
         List<TelegramPublicationDestinationResponse> destinations
 ) {
@@ -24,6 +27,19 @@ public record TelegramPublicationSettingsResponse(
             boolean readyToPublish,
             OffsetDateTime updatedAt
     ) {
-        this(enabled, baseUrl, chatId, disableWebPagePreview, botTokenConfigured, botTokenPreview, readyToPublish, updatedAt, List.of());
+        this(
+                enabled,
+                baseUrl,
+                chatId,
+                disableWebPagePreview,
+                botTokenConfigured,
+                botTokenPreview,
+                readyToPublish,
+                es.sindicato.intelligence.publication.domain.TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_COUNT,
+                es.sindicato.intelligence.publication.domain.TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_FILE_BYTES,
+                es.sindicato.intelligence.publication.domain.TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_TOTAL_BYTES,
+                updatedAt,
+                List.of()
+        );
     }
 }

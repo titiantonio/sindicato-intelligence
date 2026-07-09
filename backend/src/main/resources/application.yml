@@ -26,6 +26,11 @@ spring:
           starttls:
             enable: ${MAIL_SMTP_STARTTLS:false}
 
+  servlet:
+    multipart:
+      max-file-size: ${HTTP_MULTIPART_MAX_FILE_SIZE:100MB}
+      max-request-size: ${HTTP_MULTIPART_MAX_REQUEST_SIZE:120MB}
+
 server:
   port: 8080
 

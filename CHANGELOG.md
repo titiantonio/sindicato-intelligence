@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.86-SNAPSHOT`.
+- Frontend version: subida la version del paquete frontend a `0.0.13`.
+- Backend/frontend publicaciones: el mensaje manual Telegram usa destinos operativos accesibles para EDITOR, errores funcionales descriptivos, autor visible y limites de adjuntos configurables por ADMIN.
+- Backend dashboard: la metrica de publicaciones realizadas incluye publicaciones manuales Telegram.
 - Versionado backend actualizado a `0.0.85-SNAPSHOT`.
 - Backend/frontend publicaciones: la configuracion Telegram pasa de `chatId` unico operativo a destinos nombrados multiples, manteniendo compatibilidad con el `chatId` legado.
 - Frontend version: subida la version del paquete frontend a `0.0.12`.
@@ -38,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend publicaciones: los fallos de publicaciones manuales por validacion de adjuntos o rechazo Telegram quedan registrados como publicaciones `FAILED`, targets fallidos y auditoria editorial legible.
+- Frontend publicaciones: el dialogo de mensaje manual limpia titulo, mensaje, destinos y adjuntos al cerrar o enviar.
 - Frontend tests: Karma sirve las fuentes PrimeIcons usadas por Angular en `/base/media/*`, eliminando los 404 de `primeicons.woff2`, `primeicons.woff` y `primeicons.ttf`.
 - Frontend iconos: sustituidos PrimeIcons invalidos en navegacion de fuentes y fusion de eventos para evitar iconos invisibles.
 - Frontend/backend noticias: la pantalla `/news` y el detalle de noticia muestran el nombre descriptivo de la fuente en lugar de `Fuente #id`, con filtro backend por nombre de fuente.
@@ -60,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend publicaciones: anadido endpoint operativo `GET /api/v1/publications/telegram-destinations` para destinos activos sin exponer `chatId`.
+- Frontend publicaciones: anadido editor ligero HTML para negrita, cursiva, subrayado, enlaces y emotes en mensajes manuales Telegram.
 - Backend publicaciones: anadidas publicaciones manuales Telegram con endpoint multipart `POST /api/v1/publications/manual`, historial comun, auditoria, targets por destino y adjuntos persistidos como metadatos.
 - Frontend publicaciones: anadido modal de mensaje manual con seleccion de destinos Telegram activos y adjuntos multiples.
 - Frontend design system: creados `docs/design-system.md`, `docs/accessibility.md` y `docs/frontend-review.md` para guiar la modernizacion PrimeNG + Tailwind.

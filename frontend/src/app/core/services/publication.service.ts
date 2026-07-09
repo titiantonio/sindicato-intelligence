@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
-import { ManualPublicationPayload, PublicationDetail, PublicationListItem } from '../models/publication.models';
+import { ManualPublicationPayload, OperationalTelegramDestination, PublicationDetail, PublicationListItem } from '../models/publication.models';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +19,10 @@ export class PublicationService {
 
   getPublicationDetail(publicationId: number) {
     return this.httpClient.get<PublicationDetail>(`/api/v1/publications/${publicationId}/detail`);
+  }
+
+  listTelegramDestinations() {
+    return this.httpClient.get<OperationalTelegramDestination[]>('/api/v1/publications/telegram-destinations');
   }
 
   publishContent(contentId: number) {

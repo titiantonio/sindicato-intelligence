@@ -3038,3 +3038,26 @@ Verificacion:
 - Frontend tests: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 146 tests.
 - Frontend build: `npm.cmd run build` OK. Bundle inicial: `527.50 kB`.
 - Backend suite completa: `./mvnw.cmd test` ejecutado, 288 tests, 1 fallo no relacionado en `DashboardControllerTest.ordersPriorityEventsByImpactNewsCountAndLastUpdate` por datos reales locales en PostgreSQL que alteran el orden de prioridad esperado del fixture.
+
+## 19.17 Correccion publicaciones manuales Telegram - 2026-07-09
+
+Tarea de mantenimiento correctivo sobre Fase 10, Fase 11 y Fase 12, derivada de 19.16.
+
+Completado en esta iteracion:
+- [x] Anadido endpoint operativo `GET /api/v1/publications/telegram-destinations` para que `EDITOR` cargue destinos activos sin acceder a `/settings`.
+- [x] Anadidos limites ADMIN configurables de adjuntos Telegram mediante migracion `V19__telegram_manual_publication_limits.sql`.
+- [x] Corregida la FK historica de destinos Telegram mediante `V20__telegram_destination_history_fk.sql` para preservar publicaciones ya registradas.
+- [x] Registradas publicaciones manuales `FAILED`, targets y auditoria cuando falla la validacion funcional de adjuntos.
+- [x] Anadido autor visible en listado y detalle de publicaciones.
+- [x] Anadido editor ligero HTML para mensajes manuales y envio Telegram con `parse_mode=HTML`.
+- [x] Corregida limpieza del dialogo manual al cerrar o enviar.
+- [x] Ajustada la metrica de publicaciones del dashboard para incluir publicaciones manuales.
+- [x] Version backend subida a `0.0.86-SNAPSHOT`.
+- [x] Version frontend subida a `0.0.13`.
+
+Verificacion:
+- Backend focal publicaciones: `./mvnw.cmd "-Dtest=PublicationControllerTest" test` OK, 6 tests.
+- Backend focal Telegram/settings: `./mvnw.cmd "-Dtest=TelegramPublicationSettingsControllerTest,TelegramPublisherTest,JpaTelegramPublicationSettingsRepositoryTest" test` OK, 10 tests.
+- Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
+- Frontend Karma/build: intentados, agotaron timeout del entorno sin dejar proceso de test/build colgado.
+- Backend dashboard focal: `DashboardControllerTest` ejecutado con 1 fallo preexistente/no relacionado por datos reales locales en PostgreSQL que alteran el orden de eventos prioritarios.

@@ -151,7 +151,50 @@ class PublicationControllerTest {
                 .andExpect(jsonPath("$.attachments[0].originalFilename").value("aviso.txt"));
     }
 
+    @Test
+    void editorListsOperationalTelegramDestinations() throws Exception {
+        Long destinationId = configureTelegramDestination();
+
+        mockMvc.perform(get("/api/v1/publications/telegram-destinations").with(editorJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(destinationId))
+                .andExpect(jsonPath("$[0].name").value("Manual"))
+                .andExpect(jsonPath("$[0].chatId").doesNotExist());
+    }
+
+    @Test
+    void rejectsOversizedManualAttachmentAndKeepsFailedTrace() throws Exception {
+        Long destinationId = configureTelegramDestination(1L);
+        MockMultipartFile file = new MockMultipartFile("files", "grande.txt", "text/plain", "AB".getBytes());
+
+        mockMvc.perform(multipart("/api/v1/publications/manual")
+                        .file(file)
+                        .param("channel", "TELEGRAM")
+                        .param("title", "Aviso manual")
+                        .param("message", "Mensaje manual")
+                        .param("destinationIds", destinationId.toString())
+                        .with(adminJwt()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("Maximo permitido por archivo")));
+
+        mockMvc.perform(get("/api/v1/publications").with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].publicationType").value("MANUAL_MESSAGE"))
+                .andExpect(jsonPath("$[0].status").value("FAILED"))
+                .andExpect(jsonPath("$[0].targets[0].status").value("FAILED"))
+                .andExpect(jsonPath("$[0].responsePayload").value(org.hamcrest.Matchers.containsString("Maximo permitido por archivo")));
+
+        mockMvc.perform(get("/api/v1/audit/editorial").with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].action").value("MANUAL_PUBLICATION_FAILED"))
+                .andExpect(jsonPath("$[0].newValues").value(org.hamcrest.Matchers.containsString("Maximo permitido por archivo")));
+    }
+
     private Long configureTelegramDestination() {
+        return configureTelegramDestination(20_971_520L);
+    }
+
+    private Long configureTelegramDestination(long maxAttachmentFileBytes) {
         OffsetDateTime now = OffsetDateTime.now();
         TelegramPublicationSettings settings = telegramSettingsRepository.find().orElseThrow();
         settings.update(
@@ -160,6 +203,9 @@ class PublicationControllerTest {
                 "token",
                 "chat-manual",
                 true,
+                10,
+                maxAttachmentFileBytes,
+                52_428_800L,
                 java.util.List.of(TelegramPublicationDestination.newDestination("Manual", "chat-manual", true, true, now)),
                 now
         );
@@ -167,6 +213,10 @@ class PublicationControllerTest {
     }
     private RequestPostProcessor adminJwt() {
         return jwt().authorities(() -> "ROLE_ADMIN");
+    }
+
+    private RequestPostProcessor editorJwt() {
+        return jwt().authorities(() -> "ROLE_EDITOR");
     }
     private GeneratedContent content(Long eventId, ContentStatus status, OffsetDateTime approvedAt) {
         OffsetDateTime generatedAt = approvedAt == null ? OffsetDateTime.now() : approvedAt.minusMinutes(1);

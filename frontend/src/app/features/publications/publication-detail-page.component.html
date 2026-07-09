@@ -64,6 +64,7 @@
       <dl class="trace-list">
         <div><dt>Canal</dt><dd>{{ item.publication.channel }}</dd></div>
         <div><dt>External ID</dt><dd>{{ item.publication.externalId || '-' }}</dd></div>
+        <div><dt>Autor</dt><dd>{{ author() }}</dd></div>
         <div><dt>Publicada</dt><dd>{{ formatDate(item.publication.publishedAt) }}</dd></div>
         <div><dt>Programada</dt><dd>{{ formatDate(item.publication.scheduledAt) }}</dd></div>
       </dl>

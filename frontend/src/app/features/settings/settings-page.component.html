@@ -303,6 +303,42 @@
               <span>Sin previsualizacion de enlaces</span>
             </label>
 
+            <div class="limits-grid">
+              <label>
+                Maximo de adjuntos
+                <input
+                  pInputText
+                  type="number"
+                  min="1"
+                  [ngModel]="telegramForm().maxAttachmentCount"
+                  (ngModelChange)="updateTelegramForm({ maxAttachmentCount: $event })"
+                  name="maxAttachmentCount"
+                />
+              </label>
+              <label>
+                Maximo por archivo (bytes)
+                <input
+                  pInputText
+                  type="number"
+                  min="1"
+                  [ngModel]="telegramForm().maxAttachmentFileBytes"
+                  (ngModelChange)="updateTelegramForm({ maxAttachmentFileBytes: $event })"
+                  name="maxAttachmentFileBytes"
+                />
+              </label>
+              <label>
+                Maximo total (bytes)
+                <input
+                  pInputText
+                  type="number"
+                  min="1"
+                  [ngModel]="telegramForm().maxAttachmentTotalBytes"
+                  (ngModelChange)="updateTelegramForm({ maxAttachmentTotalBytes: $event })"
+                  name="maxAttachmentTotalBytes"
+                />
+              </label>
+            </div>
+
             <button pButton type="submit" [disabled]="isTelegramSaving()">Guardar Telegram</button>
           </form>
 
@@ -319,6 +355,10 @@
               <div>
                 <dt>Destinos</dt>
                 <dd>{{ telegram.destinations?.length || 0 }} configurados</dd>
+              </div>
+              <div>
+                <dt>Adjuntos</dt>
+                <dd>{{ telegram.maxAttachmentCount }} archivos · {{ telegram.maxAttachmentFileBytes }} bytes por archivo · {{ telegram.maxAttachmentTotalBytes }} bytes total</dd>
               </div>
               <div>
                 <dt>Actualizado</dt>

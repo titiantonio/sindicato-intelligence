@@ -30,6 +30,7 @@
       <div class="publication-card__body">
         <span class="publication-card__date">{{ publicationDateLabel(publication) }}</span>
         <span class="publication-card__date">{{ publicationOrigin(publication) }}</span>
+        <span class="publication-card__date">{{ publicationAuthor(publication) }}</span>
         <p>{{ publicationResult(publication) }}</p>
       </div>
     </article>
@@ -46,7 +47,7 @@
   header="Mensaje manual Telegram"
   [modal]="true"
   [visible]="manualDialogVisible()"
-  (visibleChange)="manualDialogVisible.set($event)"
+  (visibleChange)="setManualDialogVisible($event)"
   [style]="{ width: 'min(42rem, 95vw)' }"
 >
   <form class="manual-form" (submit)="$event.preventDefault(); sendManualPublication()">
@@ -57,7 +58,16 @@
 
     <label>
       Mensaje
-      <textarea [ngModel]="manualMessage()" (ngModelChange)="manualMessage.set($event)" name="manualMessage" rows="6"></textarea>
+      <div class="editor-toolbar" aria-label="Formato del mensaje">
+        <button pButton type="button" icon="pi pi-bold" (click)="applyFormat('b')" aria-label="Negrita"></button>
+        <button pButton type="button" icon="pi pi-italic" (click)="applyFormat('i')" aria-label="Cursiva"></button>
+        <button pButton type="button" icon="pi pi-underline" (click)="applyFormat('u')" aria-label="Subrayado"></button>
+        <button pButton type="button" icon="pi pi-link" (click)="applyLink()" aria-label="Enlace"></button>
+        @for (emote of quickEmotes; track emote) {
+          <button pButton type="button" class="emote-button" (click)="insertEmote(emote)" [attr.aria-label]="'Insertar ' + emote">{{ emote }}</button>
+        }
+      </div>
+      <textarea #manualMessageInput [ngModel]="manualMessage()" (ngModelChange)="manualMessage.set($event)" name="manualMessage" rows="6"></textarea>
     </label>
 
     <fieldset class="destination-list">
@@ -66,8 +76,8 @@
         <label class="destination-option">
           <input
             type="checkbox"
-            [checked]="selectedDestinationIds().includes(destination.id ?? -1)"
-            (change)="updateDestinationSelection(destination.id ?? -1, $any($event.target).checked)"
+            [checked]="selectedDestinationIds().includes(destination.id)"
+            (change)="updateDestinationSelection(destination.id, $any($event.target).checked)"
           />
           <span>{{ destination.name }}</span>
         </label>
@@ -78,7 +88,7 @@
 
     <label>
       Adjuntos
-      <input type="file" multiple (change)="updateSelectedFiles($event)" />
+      <input #manualFileInput type="file" multiple (change)="updateSelectedFiles($event)" />
     </label>
 
     @if (selectedFiles().length) {
@@ -90,7 +100,7 @@
     }
 
     <footer class="manual-form__actions">
-      <button pButton type="button" (click)="manualDialogVisible.set(false)">Cancelar</button>
+      <button pButton type="button" (click)="setManualDialogVisible(false)">Cancelar</button>
       <button pButton type="submit" [disabled]="isSendingManual() || selectedDestinationIds().length === 0">Enviar</button>
     </footer>
   </form>

@@ -77,6 +77,25 @@ public final class AuditDetailFormatter {
                 + ". Motivo: " + truncate(error) + ".";
     }
 
+    public static String manualPublicationPublished(Long publicationId, Long requestedBy, String destinations, int attachmentCount, long totalBytes, String status) {
+        return "Publicacion manual " + idText(publicationId)
+                + " enviada correctamente por usuario " + idText(requestedBy)
+                + ". Destinos: " + safe(destinations)
+                + ". Adjuntos: " + attachmentCount
+                + ". Tamano total: " + totalBytes + " bytes"
+                + ". Estado: " + safe(status) + ".";
+    }
+
+    public static String manualPublicationFailed(Long publicationId, Long requestedBy, String destinations, int attachmentCount, long totalBytes, String status, String error) {
+        return "Publicacion manual " + idText(publicationId)
+                + " fallida por usuario " + idText(requestedBy)
+                + ". Destinos: " + safe(destinations)
+                + ". Adjuntos: " + attachmentCount
+                + ". Tamano total: " + totalBytes + " bytes"
+                + ". Estado: " + safe(status)
+                + ". Motivo: " + truncate(error) + ".";
+    }
+
     public static String userCreated(Object role) {
         return "Usuario creado con rol " + role + " y pendiente de activacion.";
     }

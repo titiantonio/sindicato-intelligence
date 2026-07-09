@@ -143,7 +143,10 @@ describe('SettingsPageComponent', () => {
       baseUrl: 'https://api.telegram.org',
       botToken: 'token',
       chatId: 'chat-id',
-      disableWebPagePreview: true
+      disableWebPagePreview: true,
+      maxAttachmentCount: 10,
+      maxAttachmentFileBytes: 20971520,
+      maxAttachmentTotalBytes: 52428800
     });
   });
 
@@ -287,6 +290,9 @@ describe('SettingsPageComponent', () => {
       botTokenConfigured: false,
       botTokenPreview: null,
       readyToPublish: false,
+      maxAttachmentCount: 10,
+      maxAttachmentFileBytes: 20971520,
+      maxAttachmentTotalBytes: 52428800,
       updatedAt: '2026-06-16T10:00:00Z'
     };
   }

@@ -9,6 +9,7 @@ import es.sindicato.intelligence.publication.application.GetPublicationDetailUse
 import es.sindicato.intelligence.publication.application.GetPublicationUseCase;
 import es.sindicato.intelligence.publication.application.ListPublicationsUseCase;
 import es.sindicato.intelligence.publication.application.ManualPublicationFile;
+import es.sindicato.intelligence.publication.application.ManualPublicationValidationException;
 import es.sindicato.intelligence.publication.application.PublishContentUseCase;
 import es.sindicato.intelligence.publication.application.PublishManualMessageCommand;
 import es.sindicato.intelligence.publication.application.PublishManualMessageUseCase;
@@ -20,6 +21,9 @@ import es.sindicato.intelligence.publication.domain.PublicationAttachment;
 import es.sindicato.intelligence.publication.domain.PublicationAttachmentRepository;
 import es.sindicato.intelligence.publication.domain.PublicationTarget;
 import es.sindicato.intelligence.publication.domain.PublicationTargetRepository;
+import es.sindicato.intelligence.publication.domain.TelegramPublicationSettingsRepository;
+import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -49,6 +53,8 @@ public class PublicationController {
     private final PublishManualMessageUseCase publishManualMessageUseCase;
     private final PublicationTargetRepository targetRepository;
     private final PublicationAttachmentRepository attachmentRepository;
+    private final TelegramPublicationSettingsRepository telegramSettingsRepository;
+    private final UserRepository userRepository;
     private final EventResponseMapper eventResponseMapper;
 
     public PublicationController(
@@ -60,6 +66,8 @@ public class PublicationController {
             PublishManualMessageUseCase publishManualMessageUseCase,
             PublicationTargetRepository targetRepository,
             PublicationAttachmentRepository attachmentRepository,
+            TelegramPublicationSettingsRepository telegramSettingsRepository,
+            UserRepository userRepository,
             EventResponseMapper eventResponseMapper
     ) {
         this.publishContentUseCase = publishContentUseCase;
@@ -70,6 +78,8 @@ public class PublicationController {
         this.publishManualMessageUseCase = publishManualMessageUseCase;
         this.targetRepository = targetRepository;
         this.attachmentRepository = attachmentRepository;
+        this.telegramSettingsRepository = telegramSettingsRepository;
+        this.userRepository = userRepository;
         this.eventResponseMapper = eventResponseMapper;
     }
 
@@ -94,6 +104,21 @@ public class PublicationController {
                 detail.content() == null ? null : toContentResponse(detail.content()),
                 event
         );
+    }
+
+    @GetMapping("/telegram-destinations")
+    public List<OperationalTelegramDestinationResponse> listTelegramDestinations() {
+        return telegramSettingsRepository.find()
+                .orElseThrow(() -> new IllegalStateException("telegram publication settings not found"))
+                .activeDestinations()
+                .stream()
+                .filter(destination -> destination.getId() != null)
+                .map(destination -> new OperationalTelegramDestinationResponse(
+                        destination.getId(),
+                        destination.getName(),
+                        destination.isDefaultSelected()
+                ))
+                .toList();
     }
 
     @PostMapping("/{id}/publish")
@@ -132,6 +157,12 @@ public class PublicationController {
         return Map.of("error", exception.getMessage());
     }
 
+    @ExceptionHandler(ManualPublicationValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleManualPublicationValidationException(ManualPublicationValidationException exception) {
+        return Map.of("error", exception.getMessage());
+    }
+
     @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleBadRequest(RuntimeException exception) {
@@ -139,6 +170,9 @@ public class PublicationController {
     }
 
     private PublicationResponse toResponse(Publication publication) {
+        UserAccount requestedBy = publication.getRequestedBy() == null
+                ? null
+                : userRepository.findById(publication.getRequestedBy()).orElse(null);
         return new PublicationResponse(
                 publication.getId(),
                 publication.getContentId(),
@@ -147,6 +181,8 @@ public class PublicationController {
                 publication.getTitleSnapshot(),
                 publication.getMessageSnapshot(),
                 publication.getRequestedBy(),
+                requestedBy == null ? null : requestedBy.getName(),
+                requestedBy == null ? null : requestedBy.getEmail(),
                 publication.getExternalId(),
                 publication.getStatus(),
                 publication.getPublishedAt(),

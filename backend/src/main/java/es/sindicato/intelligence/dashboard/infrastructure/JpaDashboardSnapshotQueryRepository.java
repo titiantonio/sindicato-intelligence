@@ -63,12 +63,15 @@ public class JpaDashboardSnapshotQueryRepository implements DashboardSnapshotQue
             """.formatted(VISIBLE_EVENT);
 
     private static final String VISIBLE_PUBLICATION = """
-            EXISTS (
-                SELECT 1
-                FROM generated_content content
-                JOIN events event ON event.id = content.event_id
-                WHERE content.id = publication.content_id
-                  AND %s
+            (
+                publication.publication_type = 'MANUAL_MESSAGE'
+                OR EXISTS (
+                    SELECT 1
+                    FROM generated_content content
+                    JOIN events event ON event.id = content.event_id
+                    WHERE content.id = publication.content_id
+                      AND %s
+                )
             )
             """.formatted(VISIBLE_EVENT);
 

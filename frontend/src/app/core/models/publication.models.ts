@@ -9,6 +9,8 @@ export interface PublicationListItem {
   titleSnapshot?: string | null;
   messageSnapshot?: string | null;
   requestedBy?: number | null;
+  requestedByName?: string | null;
+  requestedByEmail?: string | null;
   externalId: string | null;
   status: string;
   publishedAt: string | null;
@@ -50,4 +52,10 @@ export interface ManualPublicationPayload {
   message: string;
   destinationIds: number[];
   files: File[];
+}
+
+export interface OperationalTelegramDestination {
+  id: number;
+  name: string;
+  defaultSelected: boolean;
 }

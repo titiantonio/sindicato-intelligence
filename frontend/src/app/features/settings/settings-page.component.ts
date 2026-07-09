@@ -35,6 +35,9 @@ interface TelegramSettingsForm {
   botToken: string;
   chatId: string;
   disableWebPagePreview: boolean;
+  maxAttachmentCount: number;
+  maxAttachmentFileBytes: number;
+  maxAttachmentTotalBytes: number;
   destinations: TelegramPublicationDestination[];
 }
 
@@ -79,6 +82,9 @@ export class SettingsPageComponent implements OnInit {
     botToken: '',
     chatId: '',
     disableWebPagePreview: true,
+    maxAttachmentCount: 10,
+    maxAttachmentFileBytes: 20971520,
+    maxAttachmentTotalBytes: 52428800,
     destinations: []
   });
   protected readonly isLoading = signal(false);
@@ -218,6 +224,9 @@ export class SettingsPageComponent implements OnInit {
           botToken: '',
           chatId: settings.chatId ?? '',
           disableWebPagePreview: settings.disableWebPagePreview,
+          maxAttachmentCount: settings.maxAttachmentCount,
+          maxAttachmentFileBytes: settings.maxAttachmentFileBytes,
+          maxAttachmentTotalBytes: settings.maxAttachmentTotalBytes,
           destinations: settings.destinations?.length ? settings.destinations : this.legacyDestination(settings.chatId)
         });
         this.publicationLoaded.set(true);
@@ -475,6 +484,9 @@ export class SettingsPageComponent implements OnInit {
       botToken: form.botToken.trim() ? form.botToken.trim() : null,
       chatId: form.chatId.trim() ? form.chatId.trim() : null,
       disableWebPagePreview: form.disableWebPagePreview,
+      maxAttachmentCount: Math.max(1, Math.round(Number(form.maxAttachmentCount))),
+      maxAttachmentFileBytes: Math.max(1, Math.round(Number(form.maxAttachmentFileBytes))),
+      maxAttachmentTotalBytes: Math.max(1, Math.round(Number(form.maxAttachmentTotalBytes))),
       ...(destinations.length ? { destinations } : {})
     }).subscribe({
       next: (settings) => {
@@ -485,6 +497,9 @@ export class SettingsPageComponent implements OnInit {
           botToken: '',
           chatId: settings.chatId ?? '',
           disableWebPagePreview: settings.disableWebPagePreview,
+          maxAttachmentCount: settings.maxAttachmentCount,
+          maxAttachmentFileBytes: settings.maxAttachmentFileBytes,
+          maxAttachmentTotalBytes: settings.maxAttachmentTotalBytes,
           destinations: settings.destinations?.length ? settings.destinations : this.legacyDestination(settings.chatId)
         });
         this.successMessage.set(settings.readyToPublish ? 'Configuracion de Telegram guardada y lista para publicar.' : 'Configuracion de Telegram guardada.');
