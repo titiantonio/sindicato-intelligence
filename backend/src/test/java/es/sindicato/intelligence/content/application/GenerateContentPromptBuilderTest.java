@@ -25,6 +25,7 @@ class GenerateContentPromptBuilderTest {
                 "TELEGRAM",
                 "INFORMATIVO",
                 "STANDARD",
+                List.of(new RelevantContentLink(2L, "Consulta oficial", "https://www.juntadeandalucia.es/educacion/consulta")),
                 "",
                 ""
         ));
@@ -33,6 +34,9 @@ class GenerateContentPromptBuilderTest {
         assertTrue(prompt.systemPrompt().contains("No exageres"));
         assertTrue(prompt.userPrompt().contains("EVENTO"));
         assertTrue(prompt.userPrompt().contains("ANALISIS"));
+        assertTrue(prompt.userPrompt().contains("ENLACES RELEVANTES PERMITIDOS"));
+        assertTrue(prompt.userPrompt().contains("Consulta oficial"));
+        assertTrue(prompt.userPrompt().contains("https://www.juntadeandalucia.es/educacion/consulta"));
         assertTrue(prompt.userPrompt().contains("title"));
         assertTrue(prompt.userPrompt().contains("hashtags"));
         assertTrue(prompt.userPrompt().contains("Longitud STANDARD"));

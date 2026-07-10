@@ -192,6 +192,7 @@ class GeminiAIProviderTest {
     private ClassificationAIRequest request() {
         return new ClassificationAIRequest(
                 "SIPRI publica adjudicaciones",
+                "https://www.juntadeandalucia.es/educacion/sipri",
                 "Resumen",
                 "Contenido",
                 "system",

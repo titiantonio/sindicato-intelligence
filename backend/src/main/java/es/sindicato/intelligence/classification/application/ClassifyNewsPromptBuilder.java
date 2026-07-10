@@ -8,7 +8,7 @@ public class ClassifyNewsPromptBuilder {
     private static final String SYSTEM_PROMPT = """
             Actuas como analista politico y laboral experto en educacion publica de Andalucia para un sindicato de docentes.
 
-            Tu tarea es evaluar noticias de prensa, comunicados y boletines oficiales, clasificando solo con la informacion proporcionada.
+            Tu tarea es evaluar noticias de prensa, comunicados y boletines oficiales, clasificando solo con la informacion proporcionada y con la URL indicada cuando se haya podido aportar contexto complementario desde ella.
 
             Prioriza el impacto directo sobre profesorado andaluz, bolsas de trabajo, SIPRI, oposiciones, plantillas, ratios, retribuciones, horarios, normativa de la Junta de Andalucia, mesas sectoriales, conflictos laborales y actividad sindical docente.
 
@@ -19,16 +19,19 @@ public class ClassifyNewsPromptBuilder {
             4. Usa exactamente las claves solicitadas y valores compatibles con el contrato.
             5. Si hay comillas internas en textos, deben quedar correctamente escapadas.
 
-            Si la noticia no contiene informacion suficiente para clasificarla, devuelve solo JSON minimo valido con category OTROS, subcategory INFORMACION_INSUFICIENTE, relevance 0, impact LOW y urgency LOW. No generes keywords, entities ni summary.
+            Si la noticia no contiene informacion suficiente para clasificarla, revisa la URL y el contexto enriquecido aportado desde esa URL si existe. Si aun asi no hay datos suficientes, devuelve solo JSON minimo valido con category OTROS, subcategory INFORMACION_INSUFICIENTE, relevance 0, impact LOW y urgency LOW. No generes keywords, entities ni summary.
 
             Si la noticia esta fuera del ambito del sistema, devuelve solo JSON minimo valido con category OTROS, subcategory FUERA_DE_AMBITO, relevance 0, impact LOW y urgency LOW. No generes keywords, entities ni summary.
             """;
 
-    public ClassifyNewsPrompt build(String title, String summary, String content) {
+    public ClassifyNewsPrompt build(String title, String url, String summary, String content) {
         String userPrompt = """
                 Analiza la siguiente noticia:
 
-                TÍTULO:
+                TITULO:
+                %s
+
+                URL:
                 %s
 
                 RESUMEN:
@@ -59,7 +62,7 @@ public class ClassifyNewsPromptBuilder {
 
                 Reglas de descarte:
                 - Si la noticia no trata sobre educacion, profesorado, sindicatos docentes, normativa educativa, empleo docente, centros educativos, Junta de Andalucia, universidad, FP o condiciones laborales docentes, clasificala como category OTROS, subcategory FUERA_DE_AMBITO, relevance 0, impact LOW, urgency LOW.
-                - Si la noticia podria estar relacionada pero el titulo, resumen y contenido no aportan datos suficientes para decidirlo, clasificala como category OTROS, subcategory INFORMACION_INSUFICIENTE, relevance 0, impact LOW, urgency LOW.
+                - Si la noticia podria estar relacionada pero el titulo, resumen y contenido no aportan datos suficientes para decidirlo, usa la URL y el contexto enriquecido desde la URL si se ha incluido en CONTENIDO. Si tampoco aporta datos verificables, clasificala como category OTROS, subcategory INFORMACION_INSUFICIENTE, relevance 0, impact LOW, urgency LOW.
                 - Para FUERA_DE_AMBITO o INFORMACION_INSUFICIENTE devuelve solo category, subcategory, relevance, impact y urgency. No incluyas keywords, entities ni summary.
                 - No uses FUERA_DE_AMBITO para noticias educativas de baja relevancia; en ese caso usa la categoria mas cercana, relevance 10-39, impact LOW y urgency LOW.
 
@@ -76,8 +79,8 @@ public class ClassifyNewsPromptBuilder {
 
                 Para noticias clasificables, rellena subcategory con una etiqueta corta y concreta. Solo en noticias clasificables puedes anadir summary con maximo dos frases, keywords y entities con terminos y actores relevantes detectados.
 
-                Si el titulo, resumen o contenido no permiten inferir una tematica educativa concreta, no rechaces la tarea y no expliques fuera del JSON: usa category OTROS y subcategory INFORMACION_INSUFICIENTE.
-                """.formatted(safe(title), safe(summary), safe(content));
+                Si el titulo, resumen, contenido y contexto enriquecido desde la URL no permiten inferir una tematica educativa concreta, no rechaces la tarea y no expliques fuera del JSON: usa category OTROS y subcategory INFORMACION_INSUFICIENTE.
+                """.formatted(safe(title), safe(url), safe(summary), safe(content));
 
         return new ClassifyNewsPrompt(SYSTEM_PROMPT, userPrompt);
     }

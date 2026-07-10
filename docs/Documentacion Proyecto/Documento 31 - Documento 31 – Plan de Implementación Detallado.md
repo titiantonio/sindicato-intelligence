@@ -3136,6 +3136,21 @@ Completado en esta iteracion:
 Verificacion:
 - Backend focal auditoria: `mvn "-Dtest=CreateSourceUseCaseTest,UpdateSourceUseCaseTest,GenerateAnalysisUseCaseTest,GenerateContentUseCaseTest,ApproveContentUseCaseTest,RejectContentUseCaseTest,RunAutomationWorkflowUseCaseTest,UpdateAutomationSettingUseCaseTest,UpdateTelegramPublicationSettingsUseCaseTest,DeleteUserUseCaseTest" test` OK, 22 tests.
 
+## 19.25 Enriquecimiento URL WF-02 y enlaces relevantes WF-05 - 2026-07-10
+
+Tarea de mejora correctiva posterior al Sprint 12 sobre Fase 6 Clasificacion IA y Fase 9 Contenido.
+
+Completado en esta iteracion:
+- [x] WF-02: anadida URL al prompt y al contrato interno de clasificacion.
+- [x] WF-02: anadido enriquecimiento controlado desde URL cuando titulo, resumen y contenido tienen contexto insuficiente, con limites de timeout/tamano y bloqueo de URLs locales o privadas.
+- [x] WF-05: la generacion de contenido carga noticias fuente del evento y pasa enlaces relevantes permitidos al prompt.
+- [x] WF-05: anadido extractor de enlaces para documentos, consultas, listados, anexos y resoluciones oficiales, excluyendo dominios de otros sindicatos configurados.
+- [x] Documento 23 actualizado con reglas de URL en WF-02 y enlaces permitidos en WF-05.
+- [x] Version backend subida a `0.0.89-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvn "-Dtest=ClassifyNewsPromptBuilderTest,ClassifyNewsUseCaseTest,GenerateContentPromptBuilderTest,GenerateContentUseCaseTest,*RelevantLink*Test,RestClientNewsContentEnrichmentAdapterTest" test` OK, 15 tests.
+
 ## 19.19 Color del error de adjuntos en modal - 2026-07-09
 
 Tarea de mantenimiento correctivo sobre Fase 11, derivada de 19.18.

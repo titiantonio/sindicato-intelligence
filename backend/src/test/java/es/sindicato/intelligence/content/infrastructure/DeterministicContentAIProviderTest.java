@@ -22,7 +22,7 @@ class DeterministicContentAIProviderTest {
     void generatesDeterministicContent() {
         DeterministicContentAIProvider provider = new DeterministicContentAIProvider();
 
-        ContentAIResponse response = provider.generate(new ContentAIRequest(event(), analysis(), "TELEGRAM", "INFORMATIVO", "STANDARD", "system", "user"));
+        ContentAIResponse response = provider.generate(new ContentAIRequest(event(), analysis(), "TELEGRAM", "INFORMATIVO", "STANDARD", List.of(), "system", "user"));
 
         assertEquals("Evento sindical", response.title());
         assertFalse(response.message().isBlank());

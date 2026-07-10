@@ -62,6 +62,17 @@ app:
 
   content:
     default-created-by: ${CONTENT_DEFAULT_CREATED_BY:1}
+    relevant-links:
+      connect-timeout-ms: ${CONTENT_RELEVANT_LINKS_CONNECT_TIMEOUT_MS:2000}
+      read-timeout-ms: ${CONTENT_RELEVANT_LINKS_READ_TIMEOUT_MS:3000}
+      blocked-domains: ${CONTENT_RELEVANT_LINKS_BLOCKED_DOMAINS:ccoo.es,fe.ccoo.es,anpeandalucia.es,anpe.es,csif.es,ustealdia.org,ustea.es,ugt.es,fespugt.es,ugt-sp.es}
+      allowed-official-domains: ${CONTENT_RELEVANT_LINKS_ALLOWED_OFFICIAL_DOMAINS:juntadeandalucia.es,boja.es,boe.es,gob.es,educacion.gob.es,educacionyfp.gob.es,universidades.gob.es}
+
+  classification:
+    url-enrichment:
+      connect-timeout-ms: ${CLASSIFICATION_URL_ENRICHMENT_CONNECT_TIMEOUT_MS:2000}
+      read-timeout-ms: ${CLASSIFICATION_URL_ENRICHMENT_READ_TIMEOUT_MS:3000}
+      max-characters: ${CLASSIFICATION_URL_ENRICHMENT_MAX_CHARACTERS:12000}
 
   ai:
     provider: ${AI_PROVIDER:deterministic}

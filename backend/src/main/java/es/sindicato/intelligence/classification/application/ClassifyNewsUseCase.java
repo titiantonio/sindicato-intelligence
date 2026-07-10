@@ -25,19 +25,22 @@ public class ClassifyNewsUseCase {
     private final ClassifyNewsPromptBuilder promptBuilder;
     private final AIProvider aiProvider;
     private final AiOperationMetricsRecorder metricsRecorder;
+    private final NewsContentEnrichmentPort newsContentEnrichmentPort;
 
     public ClassifyNewsUseCase(
             NewsRepository newsRepository,
             NewsClassificationRepository classificationRepository,
             ClassifyNewsPromptBuilder promptBuilder,
             AIProvider aiProvider,
-            AiOperationMetricsRecorder metricsRecorder
+            AiOperationMetricsRecorder metricsRecorder,
+            NewsContentEnrichmentPort newsContentEnrichmentPort
     ) {
         this.newsRepository = newsRepository;
         this.classificationRepository = classificationRepository;
         this.promptBuilder = promptBuilder;
         this.aiProvider = aiProvider;
         this.metricsRecorder = metricsRecorder;
+        this.newsContentEnrichmentPort = newsContentEnrichmentPort;
     }
 
     @Transactional
@@ -55,18 +58,21 @@ public class ClassifyNewsUseCase {
 
         log.info("classification started: newsId={}, title='{}'", newsArticle.getId(), abbreviate(newsArticle.getTitle()));
 
+        String effectiveContent = enrichContentIfNeeded(newsArticle);
         ClassifyNewsPrompt prompt = promptBuilder.build(
                 newsArticle.getTitle(),
+                newsArticle.getUrl(),
                 newsArticle.getSummary(),
-                newsArticle.getContent()
+                effectiveContent
         );
         ClassificationAIResponse aiResponse;
         OffsetDateTime startedAt = metricsRecorder.start();
         try {
             aiResponse = aiProvider.classify(new ClassificationAIRequest(
                     newsArticle.getTitle(),
+                    newsArticle.getUrl(),
                     newsArticle.getSummary(),
-                    newsArticle.getContent(),
+                    effectiveContent,
                     prompt.systemPrompt(),
                     prompt.userPrompt()
             ));
@@ -127,6 +133,46 @@ public class ClassifyNewsUseCase {
         );
 
         return savedClassification;
+    }
+
+    private String enrichContentIfNeeded(NewsArticle newsArticle) {
+        String content = newsArticle.getContent();
+        if (!hasInsufficientLocalContext(newsArticle)) {
+            return content;
+        }
+
+        try {
+            return newsContentEnrichmentPort.enrich(newsArticle.getUrl())
+                    .filter(enriched -> !enriched.isBlank())
+                    .map(enriched -> mergeContent(content, enriched))
+                    .orElse(content);
+        } catch (RuntimeException exception) {
+            log.warn("classification url enrichment skipped: newsId={}, reason={}", newsArticle.getId(), exception.getMessage());
+            return content;
+        }
+    }
+
+    private boolean hasInsufficientLocalContext(NewsArticle newsArticle) {
+        String text = String.join(" ",
+                safe(newsArticle.getTitle()),
+                safe(newsArticle.getSummary()),
+                safe(newsArticle.getContent())
+        ).replaceAll("\\s+", " ").trim();
+        return text.length() < 350;
+    }
+
+    private String mergeContent(String originalContent, String enrichedContent) {
+        String original = safe(originalContent).trim();
+        String enriched = safe(enrichedContent).trim();
+        if (original.isBlank()) {
+            return "Contexto enriquecido desde la URL:\n" + enriched;
+        }
+
+        return original + "\n\nContexto enriquecido desde la URL:\n" + enriched;
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 
     private Map<String, Object> classificationDetails(NewsArticle newsArticle, NewsClassification classification, String aiSummary) {

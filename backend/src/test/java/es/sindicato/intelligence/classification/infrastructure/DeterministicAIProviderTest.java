@@ -17,6 +17,7 @@ class DeterministicAIProviderTest {
 
         ClassificationAIResponse response = provider.classify(new ClassificationAIRequest(
                 "SIPRI publica nuevas adjudicaciones",
+                "https://test.example/sipri",
                 "Resumen",
                 "Contenido",
                 "system",
@@ -34,6 +35,7 @@ class DeterministicAIProviderTest {
 
         ClassificationAIResponse response = provider.classify(new ClassificationAIRequest(
                 "Convocatoria de oposiciones docentes",
+                "https://test.example/oposiciones",
                 "Resumen",
                 "Contenido",
                 "system",
@@ -48,7 +50,8 @@ class DeterministicAIProviderTest {
         DeterministicAIProvider provider = new DeterministicAIProvider();
 
         ClassificationAIResponse response = provider.classify(new ClassificationAIRequest(
-                "Actualizacion de nóminas docentes",
+                "Actualizacion de nominas docentes",
+                "https://test.example/nominas",
                 "Resumen",
                 "Contenido",
                 "system",
@@ -64,6 +67,7 @@ class DeterministicAIProviderTest {
 
         ClassificationAIResponse response = provider.classify(new ClassificationAIRequest(
                 "Nueva noticia educativa",
+                "https://test.example/noticia",
                 "Resumen",
                 "Contenido",
                 "system",

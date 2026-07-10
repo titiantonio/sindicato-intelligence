@@ -88,7 +88,7 @@ class GeminiContentAIProviderTest {
     }
 
     private ContentAIRequest request() {
-        return new ContentAIRequest(event(), analysis(), "TELEGRAM", "INFORMATIVO", "STANDARD", "system", "EVENTO: Evento sindical");
+        return new ContentAIRequest(event(), analysis(), "TELEGRAM", "INFORMATIVO", "STANDARD", List.of(), "system", "EVENTO: Evento sindical");
     }
 
     private Event event() {

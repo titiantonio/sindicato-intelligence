@@ -12,6 +12,9 @@ import es.sindicato.intelligence.event.domain.EventCategory;
 import es.sindicato.intelligence.event.domain.EventRepository;
 import es.sindicato.intelligence.event.domain.EventStatus;
 import es.sindicato.intelligence.event.domain.Importance;
+import es.sindicato.intelligence.news.domain.NewsArticle;
+import es.sindicato.intelligence.news.domain.NewsRepository;
+import es.sindicato.intelligence.news.domain.NewsStatus;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -38,19 +41,25 @@ class GenerateContentUseCaseTest {
     @Test
     void generatesAndPersistsContentUsingLatestAnalysis() {
         EventRepository eventRepository = mock(EventRepository.class);
+        NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         ContentAIProvider aiProvider = mock(ContentAIProvider.class);
         AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
         RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        RelevantContentLinkExtractor linkExtractor = mock(RelevantContentLinkExtractor.class);
         CurrentContentAuthorProvider authorProvider = () -> 1L;
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, authorProvider, metricsRecorder, audit);
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, authorProvider, metricsRecorder, audit, linkExtractor);
         Event event = event();
+        NewsArticle newsArticle = newsArticle(2L);
         EventAIAnalysis analysis = analysis(20L, event.getId());
         GeneratedContent savedContent = content(30L, event.getId(), 1L);
+        List<RelevantContentLink> relevantLinks = List.of(new RelevantContentLink(2L, "Documento oficial", "https://www.juntadeandalucia.es/educacion/documento.pdf"));
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(newsRepository.findById(2L)).thenReturn(Optional.of(newsArticle));
         when(analysisRepository.findByEventId(event.getId())).thenReturn(List.of(analysis));
+        when(linkExtractor.extract(List.of(newsArticle))).thenReturn(relevantLinks);
         when(aiProvider.generate(any(ContentAIRequest.class))).thenReturn(aiResponse());
         when(aiProvider.providerName()).thenReturn("test-content-provider");
         when(aiProvider.modelName()).thenReturn("test-content-model");
@@ -70,8 +79,11 @@ class GenerateContentUseCaseTest {
         assertEquals(analysis.getId(), requestCaptor.getValue().analysis().getId());
         assertEquals("TELEGRAM", requestCaptor.getValue().channel());
         assertEquals("INFORMATIVO", requestCaptor.getValue().tone());
+        assertEquals(relevantLinks, requestCaptor.getValue().relevantLinks());
         assertEquals(true, requestCaptor.getValue().systemPrompt().contains("redactor de comunicacion institucional"));
         assertEquals(true, requestCaptor.getValue().userPrompt().contains("ANALISIS"));
+        assertEquals(true, requestCaptor.getValue().userPrompt().contains("Documento oficial"));
+        assertEquals(true, requestCaptor.getValue().userPrompt().contains("https://www.juntadeandalucia.es/educacion/documento.pdf"));
         assertEquals(event.getId(), contentToSave.getEventId());
         assertEquals(1L, contentToSave.getCreatedBy());
         assertEquals(ContentStatus.PENDING_REVIEW, contentToSave.getStatus());
@@ -93,15 +105,20 @@ class GenerateContentUseCaseTest {
     @Test
     void usesExplicitAnalysisWhenProvided() {
         EventRepository eventRepository = mock(EventRepository.class);
+        NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         ContentAIProvider aiProvider = mock(ContentAIProvider.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class));
+        RelevantContentLinkExtractor linkExtractor = mock(RelevantContentLinkExtractor.class);
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), linkExtractor);
         Event event = event();
+        NewsArticle newsArticle = newsArticle(2L);
         EventAIAnalysis analysis = analysis(20L, event.getId());
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(newsRepository.findById(2L)).thenReturn(Optional.of(newsArticle));
         when(analysisRepository.findById(analysis.getId())).thenReturn(Optional.of(analysis));
+        when(linkExtractor.extract(List.of(newsArticle))).thenReturn(List.of());
         when(aiProvider.generate(any(ContentAIRequest.class))).thenReturn(aiResponse());
         when(contentRepository.save(any(GeneratedContent.class))).thenReturn(content(30L, event.getId(), 1L));
 
@@ -114,9 +131,10 @@ class GenerateContentUseCaseTest {
     @Test
     void rejectsEventWithoutAnalysis() {
         EventRepository eventRepository = mock(EventRepository.class);
+        NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class));
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class));
         Event event = event();
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
@@ -130,9 +148,10 @@ class GenerateContentUseCaseTest {
     @Test
     void rejectsAnalysisFromAnotherEvent() {
         EventRepository eventRepository = mock(EventRepository.class);
+        NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class));
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class));
         Event event = event();
         EventAIAnalysis analysis = analysis(20L, 999L);
 
@@ -180,5 +199,10 @@ class GenerateContentUseCaseTest {
     private Event event() {
         OffsetDateTime now = OffsetDateTime.parse("2026-06-08T10:00:00Z");
         return new Event(10L, "Evento sindical", "Descripcion", EventCategory.SINDICAL, Importance.MEDIUM, EventStatus.OPEN, Set.of(2L), now, now, now, now);
+    }
+
+    private NewsArticle newsArticle(Long id) {
+        OffsetDateTime now = OffsetDateTime.parse("2026-06-08T10:00:00Z");
+        return new NewsArticle(id, 1L, "SIPRI publica adjudicaciones", "https://test.example/news", "Resumen", "Contenido", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", now.minusHours(1), now, NewsStatus.EVENT_MATCHED, now, now);
     }
 }

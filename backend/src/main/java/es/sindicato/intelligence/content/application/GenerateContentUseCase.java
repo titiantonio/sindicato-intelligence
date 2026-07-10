@@ -10,6 +10,8 @@ import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventRepository;
+import es.sindicato.intelligence.news.domain.NewsArticle;
+import es.sindicato.intelligence.news.domain.NewsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class GenerateContentUseCase {
     private static final String DEFAULT_LENGTH = "STANDARD";
 
     private final EventRepository eventRepository;
+    private final NewsRepository newsRepository;
     private final EventAIAnalysisRepository analysisRepository;
     private final GeneratedContentRepository contentRepository;
     private final GenerateContentPromptBuilder promptBuilder;
@@ -37,18 +40,22 @@ public class GenerateContentUseCase {
     private final CurrentContentAuthorProvider authorProvider;
     private final AiOperationMetricsRecorder metricsRecorder;
     private final RecordAuditLogUseCase recordAuditLogUseCase;
+    private final RelevantContentLinkExtractor relevantContentLinkExtractor;
 
     public GenerateContentUseCase(
             EventRepository eventRepository,
+            NewsRepository newsRepository,
             EventAIAnalysisRepository analysisRepository,
             GeneratedContentRepository contentRepository,
             GenerateContentPromptBuilder promptBuilder,
             ContentAIProvider aiProvider,
             CurrentContentAuthorProvider authorProvider,
             AiOperationMetricsRecorder metricsRecorder,
-            RecordAuditLogUseCase recordAuditLogUseCase
+            RecordAuditLogUseCase recordAuditLogUseCase,
+            RelevantContentLinkExtractor relevantContentLinkExtractor
     ) {
         this.eventRepository = eventRepository;
+        this.newsRepository = newsRepository;
         this.analysisRepository = analysisRepository;
         this.contentRepository = contentRepository;
         this.promptBuilder = promptBuilder;
@@ -56,6 +63,7 @@ public class GenerateContentUseCase {
         this.authorProvider = authorProvider;
         this.metricsRecorder = metricsRecorder;
         this.recordAuditLogUseCase = recordAuditLogUseCase;
+        this.relevantContentLinkExtractor = relevantContentLinkExtractor;
     }
 
     @Transactional
@@ -73,21 +81,24 @@ public class GenerateContentUseCase {
         Event event = eventRepository.findById(command.eventId())
                 .orElseThrow(() -> new IllegalArgumentException("event not found: " + command.eventId()));
         EventAIAnalysis analysis = resolveAnalysis(command, event.getId());
+        List<NewsArticle> newsArticles = loadNewsArticles(event);
+        List<RelevantContentLink> relevantLinks = relevantContentLinkExtractor.extract(newsArticles);
         GenerateContentPrompt prompt = promptBuilder.build(new ContentAIRequest(
                 event,
                 analysis,
                 channel,
                 tone,
                 length,
+                relevantLinks,
                 "",
                 ""
         ));
-        log.info("content generation context loaded: eventId={}, analysisId={}", event.getId(), analysis.getId());
+        log.info("content generation context loaded: eventId={}, analysisId={}, relevantLinks={}", event.getId(), analysis.getId(), relevantLinks.size());
 
         ContentAIResponse aiResponse;
         OffsetDateTime startedAt = metricsRecorder.start();
         try {
-            aiResponse = aiProvider.generate(new ContentAIRequest(event, analysis, channel, tone, length, prompt.systemPrompt(), prompt.userPrompt()));
+            aiResponse = aiProvider.generate(new ContentAIRequest(event, analysis, channel, tone, length, relevantLinks, prompt.systemPrompt(), prompt.userPrompt()));
         } catch (RuntimeException exception) {
             metricsRecorder.recordFailure("CONTENT_GENERATION", "WF05_CONTENT", aiProvider.providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt, exception);
             log.error("content generation failed during AI generation: eventId={}, analysisId={}, reason={}", event.getId(), analysis.getId(), exception.getMessage(), exception);
@@ -130,7 +141,7 @@ public class GenerateContentUseCase {
                 "EVENT",
                 event.getId(),
                 startedAt,
-                contentDetails(event, analysis, savedContent, length, aiResponse.hashtags())
+                contentDetails(event, analysis, savedContent, length, aiResponse.hashtags(), relevantLinks)
         );
 
         log.info("content generation completed: eventId={}, analysisId={}, contentId={}, status={}, channel={}, tone={}", event.getId(), analysis.getId(), savedContent.getId(), savedContent.getStatus(), savedContent.getChannel(), savedContent.getTone());
@@ -143,7 +154,8 @@ public class GenerateContentUseCase {
             EventAIAnalysis analysis,
             GeneratedContent content,
             String length,
-            List<String> hashtags
+            List<String> hashtags,
+            List<RelevantContentLink> relevantLinks
     ) {
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("workflowCode", "WF05_CONTENT");
@@ -157,6 +169,7 @@ public class GenerateContentUseCase {
         details.put("title", abbreviate(content.getTitle()));
         details.put("excerpt", abbreviate(content.getContent()));
         details.put("hashtags", hashtags == null ? List.of() : hashtags);
+        details.put("relevantLinks", relevantLinks == null ? List.of() : relevantLinks.stream().map(RelevantContentLink::url).limit(5).toList());
         details.put("editorialStatus", content.getStatus().name());
         details.put("createdBy", content.getCreatedBy());
         return details;
@@ -193,6 +206,16 @@ public class GenerateContentUseCase {
         }
 
         return analyses.getFirst();
+    }
+
+    private List<NewsArticle> loadNewsArticles(Event event) {
+        return event.getNewsIds().stream()
+                .map(newsId -> newsRepository.findById(newsId)
+                        .orElseThrow(() -> {
+                            log.warn("content generation skipped because event news does not exist: eventId={}, newsId={}", event.getId(), newsId);
+                            return new IllegalArgumentException("event news not found: " + newsId);
+                        }))
+                .toList();
     }
 
     private String buildContent(ContentAIResponse response) {
