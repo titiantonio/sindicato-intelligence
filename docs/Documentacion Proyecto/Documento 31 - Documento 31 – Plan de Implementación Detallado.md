@@ -3194,3 +3194,17 @@ Verificacion:
 - Backend focal clasificacion/automatizaciones: `mvn "-Dtest=ClassifyNewsUseCaseTest,RunAutomationWorkflowUseCaseTest" test` OK, 10 tests.
 - Backend compile limpio: `mvn clean compile` OK.
 - Backend contexto Spring: `mvn "-Dtest=IntelligenceApplicationTests" test` OK, 1 test.
+
+## 19.27 Correccion ResultSet cerrado en automatizaciones - 2026-07-10
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 12, automatizaciones internas WF-02, WF-03 y WF-04.
+
+Completado en esta iteracion:
+- [x] WF-02: materializadas las consultas de noticias capturadas antes de mapearlas a dominio.
+- [x] WF-03: materializadas las consultas de noticias clasificadas antes de mapearlas a dominio.
+- [x] WF-04: materializadas las consultas de eventos y asociaciones de noticias antes de mapearlas a dominio.
+- [x] Revisado impacto en WF-05 y WF-06; no comparten el arranque fuera de transaccion que provocaba el fallo.
+- [x] Version backend subida a `0.0.91-SNAPSHOT`.
+
+Verificacion:
+- Backend focal automatizaciones/repositorios: `mvn "-Dtest=JpaNewsRepositoryTest,RunAutomationWorkflowUseCaseTest,ProcessPendingEventAnalysisUseCaseTest" test` OK, 10 tests.

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.91-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.90-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.89-SNAPSHOT`.
 - Backend IA WF-02: la clasificacion incorpora la URL de la noticia y enriquecimiento controlado desde URL cuando el contexto capturado es insuficiente.
@@ -60,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend automatizaciones WF-02/WF-03/WF-04: materializadas las consultas JPA de noticias y eventos antes de mapearlas para evitar `This ResultSet is closed` en ejecuciones programadas.
 - Backend automatizaciones WF-02: corregido el rollback global del lote cuando falla una clasificacion IA, permitiendo persistir las noticias clasificadas correctamente y avanzar `next_run_at` aunque haya fallos parciales.
 - Frontend publicaciones: los emotes del editor manual dejan de heredar el fondo verde de los botones PrimeNG y usan estilo neutral propio.
 - Frontend publicaciones: el texto del error de adjuntos usa el token rojo de error en lugar de heredar el gris del formulario.

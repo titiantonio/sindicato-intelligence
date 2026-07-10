@@ -43,7 +43,8 @@ public class JpaNewsRepository implements NewsRepository {
                         NewsArticleEntity.class
                 )
                 .setParameter("url", url)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .findFirst()
                 .map(this::toDomain);
     }
@@ -55,7 +56,8 @@ public class JpaNewsRepository implements NewsRepository {
                         NewsArticleEntity.class
                 )
                 .setParameter("hash", hash)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .findFirst()
                 .map(this::toDomain);
     }
@@ -66,7 +68,8 @@ public class JpaNewsRepository implements NewsRepository {
                         "SELECT news FROM NewsArticleEntity news ORDER BY news.capturedAt DESC, news.id DESC",
                         NewsArticleEntity.class
                 )
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -79,7 +82,8 @@ public class JpaNewsRepository implements NewsRepository {
                 )
                 .setParameter("status", status)
                 .setMaxResults(limit)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .map(this::toDomain)
                 .toList();
     }

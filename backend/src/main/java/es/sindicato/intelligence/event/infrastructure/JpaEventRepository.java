@@ -51,7 +51,8 @@ public class JpaEventRepository implements EventRepository {
                         "SELECT event FROM EventEntity event ORDER BY event.lastUpdatedAt DESC, event.id DESC",
                         EventEntity.class
                 )
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -63,7 +64,8 @@ public class JpaEventRepository implements EventRepository {
                         EventEntity.class
                 )
                 .setParameter("status", status)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -75,7 +77,8 @@ public class JpaEventRepository implements EventRepository {
                         EventEntity.class
                 )
                 .setParameter("category", category)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -87,7 +90,8 @@ public class JpaEventRepository implements EventRepository {
                         EventEntity.class
                 )
                 .setParameter("importance", importance)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -99,7 +103,8 @@ public class JpaEventRepository implements EventRepository {
                         EventEntity.class
                 )
                 .setParameter("statuses", statuses)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -117,7 +122,8 @@ public class JpaEventRepository implements EventRepository {
                         EventEntity.class
                 )
                 .setParameter("newsId", newsId)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .findFirst()
                 .map(this::toDomain);
     }
@@ -171,7 +177,8 @@ public class JpaEventRepository implements EventRepository {
                 )
                 .setParameter("eventId", eventId)
                 .setParameter("newsId", newsId)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .findFirst();
     }
 
@@ -181,7 +188,8 @@ public class JpaEventRepository implements EventRepository {
                         Long.class
                 )
                 .setParameter("eventId", eventId)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .collect(Collectors.toSet());
     }
 
