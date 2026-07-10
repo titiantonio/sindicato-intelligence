@@ -1,5 +1,7 @@
 package es.sindicato.intelligence.content.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
@@ -34,6 +36,7 @@ public class GenerateContentUseCase {
     private final ContentAIProvider aiProvider;
     private final CurrentContentAuthorProvider authorProvider;
     private final AiOperationMetricsRecorder metricsRecorder;
+    private final RecordAuditLogUseCase recordAuditLogUseCase;
 
     public GenerateContentUseCase(
             EventRepository eventRepository,
@@ -42,7 +45,8 @@ public class GenerateContentUseCase {
             GenerateContentPromptBuilder promptBuilder,
             ContentAIProvider aiProvider,
             CurrentContentAuthorProvider authorProvider,
-            AiOperationMetricsRecorder metricsRecorder
+            AiOperationMetricsRecorder metricsRecorder,
+            RecordAuditLogUseCase recordAuditLogUseCase
     ) {
         this.eventRepository = eventRepository;
         this.analysisRepository = analysisRepository;
@@ -51,6 +55,7 @@ public class GenerateContentUseCase {
         this.aiProvider = aiProvider;
         this.authorProvider = authorProvider;
         this.metricsRecorder = metricsRecorder;
+        this.recordAuditLogUseCase = recordAuditLogUseCase;
     }
 
     @Transactional
@@ -102,6 +107,20 @@ public class GenerateContentUseCase {
                 null
         );
         GeneratedContent savedContent = contentRepository.save(content);
+        recordAuditLogUseCase.record(
+                "CONTENT_GENERATED",
+                "CONTENT",
+                savedContent.getId(),
+                null,
+                AuditDetailFormatter.contentGenerated(
+                        savedContent.getId(),
+                        savedContent.getEventId(),
+                        savedContent.getAnalysisId(),
+                        savedContent.getChannel(),
+                        savedContent.getTone(),
+                        savedContent.getStatus().name()
+                )
+        );
 
         metricsRecorder.recordSuccess(
                 "CONTENT_GENERATION",

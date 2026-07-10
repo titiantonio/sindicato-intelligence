@@ -1,5 +1,7 @@
 package es.sindicato.intelligence.publication.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationSettings;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationDestination;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationSettingsRepository;
@@ -13,9 +15,11 @@ import java.util.List;
 public class UpdateTelegramPublicationSettingsUseCase {
 
     private final TelegramPublicationSettingsRepository repository;
+    private final RecordAuditLogUseCase recordAuditLogUseCase;
 
-    public UpdateTelegramPublicationSettingsUseCase(TelegramPublicationSettingsRepository repository) {
+    public UpdateTelegramPublicationSettingsUseCase(TelegramPublicationSettingsRepository repository, RecordAuditLogUseCase recordAuditLogUseCase) {
         this.repository = repository;
+        this.recordAuditLogUseCase = recordAuditLogUseCase;
     }
 
     @Transactional
@@ -23,6 +27,7 @@ public class UpdateTelegramPublicationSettingsUseCase {
         TelegramPublicationSettings settings = repository.find()
                 .orElseThrow(() -> new IllegalStateException("telegram publication settings not found"));
         OffsetDateTime now = OffsetDateTime.now();
+        String oldValues = telegramSettings(settings);
         List<TelegramPublicationDestination> destinations = toDestinations(command, now);
         settings.update(
                 command.enabled(),
@@ -36,7 +41,25 @@ public class UpdateTelegramPublicationSettingsUseCase {
                 destinations,
                 now
         );
-        return repository.save(settings);
+        TelegramPublicationSettings savedSettings = repository.save(settings);
+        recordAuditLogUseCase.record(
+                "TELEGRAM_SETTINGS_UPDATED",
+                "TELEGRAM_SETTINGS",
+                (long) savedSettings.getId(),
+                oldValues,
+                telegramSettings(savedSettings)
+        );
+        return savedSettings;
+    }
+
+    private String telegramSettings(TelegramPublicationSettings settings) {
+        return AuditDetailFormatter.telegramSettingsUpdated(
+                settings.isEnabled(),
+                settings.getBaseUrl(),
+                settings.isDisableWebPagePreview(),
+                settings.getDestinations().size(),
+                settings.getMaxAttachmentCount()
+        );
     }
 
     private List<TelegramPublicationDestination> toDestinations(UpdateTelegramPublicationSettingsCommand command, OffsetDateTime now) {

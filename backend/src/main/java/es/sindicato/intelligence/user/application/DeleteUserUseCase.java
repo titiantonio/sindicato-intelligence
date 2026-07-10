@@ -1,6 +1,9 @@
 package es.sindicato.intelligence.user.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserAuditAction;
+import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
 import es.sindicato.intelligence.user.domain.UserDeletionDependencies;
 import es.sindicato.intelligence.user.domain.UserRepository;
 import es.sindicato.intelligence.user.domain.UserRole;
@@ -16,10 +19,16 @@ public class DeleteUserUseCase {
 
     private final UserRepository userRepository;
     private final UserAccountNotificationSender userAccountNotificationSender;
+    private final UserAuditLogRepository userAuditLogRepository;
 
-    public DeleteUserUseCase(UserRepository userRepository, UserAccountNotificationSender userAccountNotificationSender) {
+    public DeleteUserUseCase(
+            UserRepository userRepository,
+            UserAccountNotificationSender userAccountNotificationSender,
+            UserAuditLogRepository userAuditLogRepository
+    ) {
         this.userRepository = userRepository;
         this.userAccountNotificationSender = userAccountNotificationSender;
+        this.userAuditLogRepository = userAuditLogRepository;
     }
 
     @Transactional
@@ -53,6 +62,7 @@ public class DeleteUserUseCase {
         userAccountNotificationSender.sendUserDeletedEmail(user.getEmail(), user.getName());
         userRepository.deleteTechnicalDependencies(userId);
         userRepository.deleteById(userId);
+        userAuditLogRepository.record(null, actorEmail, UserAuditAction.USER_DELETED, AuditDetailFormatter.userDeleted(userId, user.getEmail(), user.getRole()));
         log.info("user deletion completed: userId={}", userId);
     }
 }

@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.source.application;
 
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.source.domain.Source;
 import es.sindicato.intelligence.source.domain.SourceRepository;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -23,7 +25,8 @@ class CreateSourceUseCaseTest {
     @Test
     void createsSourceWhenUrlDoesNotExist() {
         SourceRepository sourceRepository = mock(SourceRepository.class);
-        CreateSourceUseCase useCase = new CreateSourceUseCase(sourceRepository);
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        CreateSourceUseCase useCase = new CreateSourceUseCase(sourceRepository, audit);
         CreateSourceCommand command = new CreateSourceCommand(
                 "BOJA",
                 "https://www.juntadeandalucia.es/boja",
@@ -46,6 +49,7 @@ class CreateSourceUseCaseTest {
 
         ArgumentCaptor<Source> sourceCaptor = ArgumentCaptor.forClass(Source.class);
         verify(sourceRepository).save(sourceCaptor.capture());
+        verify(audit).record(eq("SOURCE_CREATED"), eq("SOURCE"), eq(1L), eq(null), any());
         Source sourceToSave = sourceCaptor.getValue();
 
         assertEquals(savedSource, result);
@@ -61,7 +65,7 @@ class CreateSourceUseCaseTest {
     @Test
     void rejectsDuplicatedUrl() {
         SourceRepository sourceRepository = mock(SourceRepository.class);
-        CreateSourceUseCase useCase = new CreateSourceUseCase(sourceRepository);
+        CreateSourceUseCase useCase = new CreateSourceUseCase(sourceRepository, mock(RecordAuditLogUseCase.class));
         CreateSourceCommand command = new CreateSourceCommand(
                 "BOJA",
                 "https://www.juntadeandalucia.es/boja",
@@ -86,7 +90,7 @@ class CreateSourceUseCaseTest {
     @Test
     void rejectsNullCommand() {
         SourceRepository sourceRepository = mock(SourceRepository.class);
-        CreateSourceUseCase useCase = new CreateSourceUseCase(sourceRepository);
+        CreateSourceUseCase useCase = new CreateSourceUseCase(sourceRepository, mock(RecordAuditLogUseCase.class));
 
         assertThrows(NullPointerException.class, () -> useCase.execute(null));
     }

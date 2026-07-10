@@ -1,5 +1,7 @@
 package es.sindicato.intelligence.analysis.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
@@ -29,6 +31,7 @@ public class GenerateAnalysisUseCase {
     private final GenerateAnalysisPromptBuilder promptBuilder;
     private final AnalysisAIProvider aiProvider;
     private final AiOperationMetricsRecorder metricsRecorder;
+    private final RecordAuditLogUseCase recordAuditLogUseCase;
 
     public GenerateAnalysisUseCase(
             EventRepository eventRepository,
@@ -36,7 +39,8 @@ public class GenerateAnalysisUseCase {
             EventAIAnalysisRepository analysisRepository,
             GenerateAnalysisPromptBuilder promptBuilder,
             AnalysisAIProvider aiProvider,
-            AiOperationMetricsRecorder metricsRecorder
+            AiOperationMetricsRecorder metricsRecorder,
+            RecordAuditLogUseCase recordAuditLogUseCase
     ) {
         this.eventRepository = eventRepository;
         this.newsRepository = newsRepository;
@@ -44,6 +48,7 @@ public class GenerateAnalysisUseCase {
         this.promptBuilder = promptBuilder;
         this.aiProvider = aiProvider;
         this.metricsRecorder = metricsRecorder;
+        this.recordAuditLogUseCase = recordAuditLogUseCase;
     }
 
     @Transactional
@@ -99,6 +104,20 @@ public class GenerateAnalysisUseCase {
                 OffsetDateTime.now()
         );
         EventAIAnalysis savedAnalysis = analysisRepository.save(analysis);
+        recordAuditLogUseCase.record(
+                "ANALYSIS_GENERATED",
+                "ANALYSIS",
+                savedAnalysis.getId(),
+                null,
+                AuditDetailFormatter.analysisGenerated(
+                        savedAnalysis.getId(),
+                        savedAnalysis.getEventId(),
+                        savedAnalysis.getKeyPoints().size(),
+                        savedAnalysis.getRisks().size(),
+                        savedAnalysis.getOpportunities().size(),
+                        savedAnalysis.getModelUsed()
+                )
+        );
 
         metricsRecorder.recordSuccess(
                 "ANALYSIS",

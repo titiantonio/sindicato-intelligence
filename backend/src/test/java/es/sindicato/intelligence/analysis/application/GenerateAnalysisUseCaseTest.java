@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.analysis.application;
 
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
@@ -23,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -36,7 +39,8 @@ class GenerateAnalysisUseCaseTest {
         NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         AnalysisAIProvider aiProvider = mock(AnalysisAIProvider.class);
-        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), aiProvider, mock(AiOperationMetricsRecorder.class));
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), aiProvider, mock(AiOperationMetricsRecorder.class), audit);
         Event event = event(Set.of(2L));
         NewsArticle newsArticle = newsArticle(2L);
         EventAIAnalysis savedAnalysis = analysis(20L, event.getId());
@@ -52,6 +56,7 @@ class GenerateAnalysisUseCaseTest {
         ArgumentCaptor<EventAIAnalysis> analysisCaptor = ArgumentCaptor.forClass(EventAIAnalysis.class);
         verify(aiProvider).generate(requestCaptor.capture());
         verify(analysisRepository).save(analysisCaptor.capture());
+        verify(audit).record(eq("ANALYSIS_GENERATED"), eq("ANALYSIS"), eq(20L), isNull(), any());
 
         AnalysisAIRequest request = requestCaptor.getValue();
         EventAIAnalysis analysisToSave = analysisCaptor.getValue();
@@ -73,7 +78,7 @@ class GenerateAnalysisUseCaseTest {
     void rejectsUnknownEvent() {
         EventRepository eventRepository = mock(EventRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
-        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, mock(NewsRepository.class), analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class), mock(AiOperationMetricsRecorder.class));
+        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, mock(NewsRepository.class), analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class), mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class));
 
         when(eventRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -87,7 +92,7 @@ class GenerateAnalysisUseCaseTest {
         EventRepository eventRepository = mock(EventRepository.class);
         NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
-        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class), mock(AiOperationMetricsRecorder.class));
+        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class), mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class));
         Event event = event(Set.of(2L));
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));

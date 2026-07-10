@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.88-SNAPSHOT`.
+- Backend auditoria: ampliado el registro de acciones mutables en `audit_log` y `user_audit_log` para fuentes, analisis IA directo, contenido editorial, automatizaciones, configuracion Telegram y borrado administrativo de usuarios.
 - Frontend version: subida la version del paquete frontend a `0.0.19`.
 - Frontend publicaciones: anadidos tooltips descriptivos a las funciones del editor WYSIWYG Telegram para aclarar formato, entidades, bloques y emotes.
 - Versionado backend actualizado a `0.0.87-SNAPSHOT`.

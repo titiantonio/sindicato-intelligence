@@ -1,5 +1,7 @@
 package es.sindicato.intelligence.source.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.source.domain.Source;
 import es.sindicato.intelligence.source.domain.SourceRepository;
 import org.slf4j.Logger;
@@ -16,9 +18,11 @@ public class CreateSourceUseCase {
     private static final Logger log = LoggerFactory.getLogger(CreateSourceUseCase.class);
 
     private final SourceRepository sourceRepository;
+    private final RecordAuditLogUseCase recordAuditLogUseCase;
 
-    public CreateSourceUseCase(SourceRepository sourceRepository) {
+    public CreateSourceUseCase(SourceRepository sourceRepository, RecordAuditLogUseCase recordAuditLogUseCase) {
         this.sourceRepository = sourceRepository;
+        this.recordAuditLogUseCase = recordAuditLogUseCase;
     }
 
     @Transactional
@@ -45,6 +49,13 @@ public class CreateSourceUseCase {
         );
 
         Source savedSource = sourceRepository.save(source);
+        recordAuditLogUseCase.record(
+                "SOURCE_CREATED",
+                "SOURCE",
+                savedSource.getId(),
+                null,
+                AuditDetailFormatter.sourceCreated(savedSource.getId(), savedSource.getName(), savedSource.getType(), savedSource.getPriority(), savedSource.isActive())
+        );
         log.info("source creation completed: sourceId={}, name='{}', active={}", savedSource.getId(), savedSource.getName(), savedSource.isActive());
 
         return savedSource;

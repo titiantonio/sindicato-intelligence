@@ -32,6 +32,53 @@ public final class AuditDetailFormatter {
                 + ". Noticias asociadas: " + newsCount + ".";
     }
 
+    public static String sourceCreated(Long sourceId, String name, String type, int priority, boolean active) {
+        return "Fuente " + idText(sourceId)
+                + " creada. Nombre: \"" + safe(name)
+                + "\". Tipo: " + safe(type)
+                + ". Prioridad: " + priority
+                + ". Activa: " + active + ".";
+    }
+
+    public static String sourceUpdated(Long sourceId, String name, String type, int priority, boolean active) {
+        return "Fuente " + idText(sourceId)
+                + " actualizada. Nombre: \"" + safe(name)
+                + "\". Tipo: " + safe(type)
+                + ". Prioridad: " + priority
+                + ". Activa: " + active + ".";
+    }
+
+    public static String contentGenerated(Long contentId, Long eventId, Long analysisId, String channel, String tone, String status) {
+        return "Contenido " + idText(contentId)
+                + " generado para evento " + idText(eventId)
+                + " usando analisis " + idText(analysisId)
+                + ". Canal: " + safe(channel)
+                + ". Tono: " + safe(tone)
+                + ". Estado: " + safe(status) + ".";
+    }
+
+    public static String analysisGenerated(Long analysisId, Long eventId, int keyPoints, int risks, int opportunities, String modelUsed) {
+        return "Analisis " + idText(analysisId)
+                + " generado para evento " + idText(eventId)
+                + ". Puntos clave: " + keyPoints
+                + ". Riesgos: " + risks
+                + ". Oportunidades: " + opportunities
+                + ". Modelo: " + safe(modelUsed) + ".";
+    }
+
+    public static String contentApproved(Long contentId, Long eventId, OffsetDateTime approvedAt, String status) {
+        return "Contenido " + idText(contentId)
+                + " aprobado para evento " + idText(eventId)
+                + ". Fecha de aprobacion: " + approvedAt
+                + ". Estado: " + safe(status) + ".";
+    }
+
+    public static String contentRejected(Long contentId, Long eventId, String status) {
+        return "Contenido " + idText(contentId)
+                + " rechazado para evento " + idText(eventId)
+                + ". Estado: " + safe(status) + ".";
+    }
+
     public static String contentEditedBefore(Long contentId, Long eventId, String title, String tone, String status) {
         return "Contenido " + idText(contentId)
                 + " del evento " + idText(eventId)
@@ -96,8 +143,42 @@ public final class AuditDetailFormatter {
                 + ". Motivo: " + truncate(error) + ".";
     }
 
+    public static String automationSettingUpdated(String workflowCode, boolean enabled, int intervalSeconds, int batchSize) {
+        return "Configuracion de automatizacion " + safe(workflowCode)
+                + " actualizada. Activa: " + enabled
+                + ". Intervalo: " + intervalSeconds + " segundos"
+                + ". Lote: " + batchSize + ".";
+    }
+
+    public static String automationRunCompleted(String workflowCode, int processed, int success, int failed, int skipped) {
+        return "Ejecucion de automatizacion " + safe(workflowCode)
+                + " completada. Procesadas: " + processed
+                + ". Correctas: " + success
+                + ". Fallidas: " + failed
+                + ". Omitidas: " + skipped + ".";
+    }
+
+    public static String automationRunFailed(String workflowCode, String error) {
+        return "Ejecucion de automatizacion " + safe(workflowCode)
+                + " fallida. Motivo: " + truncate(error) + ".";
+    }
+
+    public static String telegramSettingsUpdated(boolean enabled, String baseUrl, boolean disableWebPagePreview, int destinations, int maxAttachmentCount) {
+        return "Configuracion Telegram actualizada. Activa: " + enabled
+                + ". Base URL: " + safe(baseUrl)
+                + ". Vista previa web deshabilitada: " + disableWebPagePreview
+                + ". Destinos configurados: " + destinations
+                + ". Maximo adjuntos: " + maxAttachmentCount + ".";
+    }
+
     public static String userCreated(Object role) {
         return "Usuario creado con rol " + role + " y pendiente de activacion.";
+    }
+
+    public static String userDeleted(Long userId, String email, Object role) {
+        return "Usuario " + idText(userId)
+                + " eliminado. Email: " + safe(email)
+                + ". Rol: " + role + ".";
     }
 
     public static String userStatusChanged(Object previousStatus, Object newStatus) {

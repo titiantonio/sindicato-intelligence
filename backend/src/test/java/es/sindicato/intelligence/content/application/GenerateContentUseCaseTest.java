@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.content.application;
 
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
@@ -41,8 +42,9 @@ class GenerateContentUseCaseTest {
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         ContentAIProvider aiProvider = mock(ContentAIProvider.class);
         AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
         CurrentContentAuthorProvider authorProvider = () -> 1L;
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, authorProvider, metricsRecorder);
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, authorProvider, metricsRecorder, audit);
         Event event = event();
         EventAIAnalysis analysis = analysis(20L, event.getId());
         GeneratedContent savedContent = content(30L, event.getId(), 1L);
@@ -60,6 +62,7 @@ class GenerateContentUseCaseTest {
         ArgumentCaptor<GeneratedContent> contentCaptor = ArgumentCaptor.forClass(GeneratedContent.class);
         verify(aiProvider).generate(requestCaptor.capture());
         verify(contentRepository).save(contentCaptor.capture());
+        verify(audit).record(eq("CONTENT_GENERATED"), eq("CONTENT"), eq(30L), isNull(), any());
         GeneratedContent contentToSave = contentCaptor.getValue();
 
         assertEquals(savedContent, result);
@@ -93,7 +96,7 @@ class GenerateContentUseCaseTest {
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         ContentAIProvider aiProvider = mock(ContentAIProvider.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, () -> 1L, mock(AiOperationMetricsRecorder.class));
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class));
         Event event = event();
         EventAIAnalysis analysis = analysis(20L, event.getId());
 
@@ -113,7 +116,7 @@ class GenerateContentUseCaseTest {
         EventRepository eventRepository = mock(EventRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class));
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class));
         Event event = event();
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
@@ -129,7 +132,7 @@ class GenerateContentUseCaseTest {
         EventRepository eventRepository = mock(EventRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class));
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class));
         Event event = event();
         EventAIAnalysis analysis = analysis(20L, 999L);
 

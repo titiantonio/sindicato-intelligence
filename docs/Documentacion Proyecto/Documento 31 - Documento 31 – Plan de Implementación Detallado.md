@@ -3119,6 +3119,23 @@ Completado en esta iteracion:
 Verificacion:
 - Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
 
+## 19.24 Consolidacion de auditoria de acciones mutables - 2026-07-10
+
+Tarea transversal posterior a Sprint 12, dentro de seguridad, auditoria operativa y backoffice ADMIN.
+
+Completado en esta iteracion:
+- [x] Revisadas acciones mutables expuestas por API/backoffice frente a `user_audit_log` y `audit_log`.
+- [x] Anadida auditoria editorial para creacion y actualizacion de fuentes.
+- [x] Anadida auditoria editorial para generacion directa de analisis IA desde detalle de evento.
+- [x] Anadida auditoria editorial para generacion, aprobacion y rechazo de contenido.
+- [x] Anadida auditoria editorial para actualizacion de automatizaciones, ejecucion manual completada y ejecucion manual fallida.
+- [x] Anadida auditoria editorial para cambios de configuracion Telegram sin registrar tokens ni `chatId`.
+- [x] Anadida auditoria de usuarios `USER_DELETED` para borrado administrativo con `user_id=null` para conservar traza tras borrado fisico.
+- [x] Version backend subida a `0.0.88-SNAPSHOT`.
+
+Verificacion:
+- Backend focal auditoria: `mvn "-Dtest=CreateSourceUseCaseTest,UpdateSourceUseCaseTest,GenerateAnalysisUseCaseTest,GenerateContentUseCaseTest,ApproveContentUseCaseTest,RejectContentUseCaseTest,RunAutomationWorkflowUseCaseTest,UpdateAutomationSettingUseCaseTest,UpdateTelegramPublicationSettingsUseCaseTest,DeleteUserUseCaseTest" test` OK, 22 tests.
+
 ## 19.19 Color del error de adjuntos en modal - 2026-07-09
 
 Tarea de mantenimiento correctivo sobre Fase 11, derivada de 19.18.

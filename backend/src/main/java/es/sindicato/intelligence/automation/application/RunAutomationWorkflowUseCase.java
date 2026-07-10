@@ -1,5 +1,7 @@
 package es.sindicato.intelligence.automation.application;
 
+import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
+import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowCode;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowSetting;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowSettingRepository;
@@ -20,17 +22,20 @@ public class RunAutomationWorkflowUseCase {
     private final ProcessPendingClassificationsUseCase processPendingClassificationsUseCase;
     private final ProcessPendingEventDetectionUseCase processPendingEventDetectionUseCase;
     private final ProcessPendingEventAnalysisUseCase processPendingEventAnalysisUseCase;
+    private final RecordAuditLogUseCase recordAuditLogUseCase;
 
     public RunAutomationWorkflowUseCase(
             AutomationWorkflowSettingRepository repository,
             ProcessPendingClassificationsUseCase processPendingClassificationsUseCase,
             ProcessPendingEventDetectionUseCase processPendingEventDetectionUseCase,
-            ProcessPendingEventAnalysisUseCase processPendingEventAnalysisUseCase
+            ProcessPendingEventAnalysisUseCase processPendingEventAnalysisUseCase,
+            RecordAuditLogUseCase recordAuditLogUseCase
     ) {
         this.repository = repository;
         this.processPendingClassificationsUseCase = processPendingClassificationsUseCase;
         this.processPendingEventDetectionUseCase = processPendingEventDetectionUseCase;
         this.processPendingEventAnalysisUseCase = processPendingEventAnalysisUseCase;
+        this.recordAuditLogUseCase = recordAuditLogUseCase;
     }
 
     @Transactional
@@ -51,12 +56,26 @@ public class RunAutomationWorkflowUseCase {
             AutomationRunResult result = executeBatch(workflowCode, setting.getBatchSize());
             setting.markCompleted(result, OffsetDateTime.now());
             repository.save(setting);
+            recordAuditLogUseCase.record(
+                    "AUTOMATION_RUN_COMPLETED",
+                    "AUTOMATION",
+                    null,
+                    null,
+                    AuditDetailFormatter.automationRunCompleted(workflowCode.name(), result.processedCount(), result.successCount(), result.failedCount(), result.skippedCount())
+            );
             log.info("automation workflow completed: workflowCode={}, processed={}, success={}, failed={}, skipped={}",
                     workflowCode, result.processedCount(), result.successCount(), result.failedCount(), result.skippedCount());
             return result;
         } catch (RuntimeException exception) {
             setting.markFailed(exception.getMessage(), OffsetDateTime.now());
             repository.save(setting);
+            recordAuditLogUseCase.record(
+                    "AUTOMATION_RUN_FAILED",
+                    "AUTOMATION",
+                    null,
+                    null,
+                    AuditDetailFormatter.automationRunFailed(workflowCode.name(), exception.getMessage())
+            );
             log.error("automation workflow failed: workflowCode={}, reason={}", workflowCode, exception.getMessage(), exception);
             throw exception;
         }

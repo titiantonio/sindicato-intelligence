@@ -1,6 +1,8 @@
 package es.sindicato.intelligence.user.application;
 
 import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserAuditAction;
+import es.sindicato.intelligence.user.domain.UserAuditLogRepository;
 import es.sindicato.intelligence.user.domain.UserDeletionDependencies;
 import es.sindicato.intelligence.user.domain.UserRepository;
 import es.sindicato.intelligence.user.domain.UserRole;
@@ -21,7 +23,8 @@ class DeleteUserUseCaseTest {
     void deletesUserWhenNoFunctionalDependenciesExist() {
         UserRepository userRepository = mock(UserRepository.class);
         UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
-        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender);
+        UserAuditLogRepository userAuditLogRepository = mock(UserAuditLogRepository.class);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender, userAuditLogRepository);
         UserAccount user = new UserAccount(2L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, true, false);
 
         when(userRepository.findById(2L)).thenReturn(Optional.of(user));
@@ -33,13 +36,14 @@ class DeleteUserUseCaseTest {
         var ordered = inOrder(userRepository);
         ordered.verify(userRepository).deleteTechnicalDependencies(2L);
         ordered.verify(userRepository).deleteById(2L);
+        verify(userAuditLogRepository).record(org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.eq("admin@sindicato.es"), org.mockito.ArgumentMatchers.eq(UserAuditAction.USER_DELETED), org.mockito.ArgumentMatchers.any());
     }
 
     @Test
     void rejectsUnknownUsers() {
         UserRepository userRepository = mock(UserRepository.class);
         UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
-        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender, mock(UserAuditLogRepository.class));
 
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -50,7 +54,7 @@ class DeleteUserUseCaseTest {
     void rejectsSelfDeletion() {
         UserRepository userRepository = mock(UserRepository.class);
         UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
-        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender, mock(UserAuditLogRepository.class));
         UserAccount user = new UserAccount(1L, "admin@sindicato.es", "hash", "Admin", UserRole.ADMIN, true, false);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -64,7 +68,7 @@ class DeleteUserUseCaseTest {
     void rejectsDeletingLastAdmin() {
         UserRepository userRepository = mock(UserRepository.class);
         UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
-        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender, mock(UserAuditLogRepository.class));
         UserAccount user = new UserAccount(1L, "admin@sindicato.es", "hash", "Admin", UserRole.ADMIN, true, false);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -79,7 +83,7 @@ class DeleteUserUseCaseTest {
     void rejectsUsersWithFunctionalDependencies() {
         UserRepository userRepository = mock(UserRepository.class);
         UserAccountNotificationSender userAccountNotificationSender = mock(UserAccountNotificationSender.class);
-        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender);
+        DeleteUserUseCase useCase = new DeleteUserUseCase(userRepository, userAccountNotificationSender, mock(UserAuditLogRepository.class));
         UserAccount user = new UserAccount(2L, "editor@sindicato.es", "hash", "Editor", UserRole.EDITOR, true, false);
 
         when(userRepository.findById(2L)).thenReturn(Optional.of(user));
