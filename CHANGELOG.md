@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend version: subida la version del paquete frontend a `0.0.19`.
+- Frontend publicaciones: anadidos tooltips descriptivos a las funciones del editor WYSIWYG Telegram para aclarar formato, entidades, bloques y emotes.
+- Versionado backend actualizado a `0.0.87-SNAPSHOT`.
+- Frontend version: subida la version del paquete frontend a `0.0.18`.
+- Frontend publicaciones: ampliado el editor WYSIWYG Telegram para aplicar formato y emotes tanto al titulo como al mensaje, con contadores de caracteres y paneles profesionales para enlaces, menciones, entidades Telegram, bloques y emotes.
+- Backend publicaciones: ampliado el saneado HTML de Telegram para conservar las etiquetas soportadas por `parse_mode=HTML` y descartar etiquetas no permitidas.
+- Frontend version: subida la version del paquete frontend a `0.0.17`.
+- Frontend publicaciones: redisenado el selector de emotes del editor manual con mas opciones visibles, panel bajo el editor y distribucion responsive.
+- Frontend version: subida la version del paquete frontend a `0.0.16`.
+- Frontend publicaciones: sustituido el editor manual con etiquetas visibles por un editor WYSIWYG basico con toolbar, panel de enlace y selector amplio de emotes.
+- Frontend version: subida la version del paquete frontend a `0.0.15`.
+- Frontend version: subida la version del paquete frontend a `0.0.14`.
 - Versionado backend actualizado a `0.0.86-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.13`.
 - Backend/frontend publicaciones: el mensaje manual Telegram usa destinos operativos accesibles para EDITOR, errores funcionales descriptivos, autor visible y limites de adjuntos configurables por ADMIN.
@@ -42,6 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Frontend publicaciones: los emotes del editor manual dejan de heredar el fondo verde de los botones PrimeNG y usan estilo neutral propio.
+- Frontend publicaciones: el texto del error de adjuntos usa el token rojo de error en lugar de heredar el gris del formulario.
+- Frontend publicaciones: los errores de adjuntos del mensaje manual se muestran dentro del modal, resaltando el campo de adjuntos.
 - Backend publicaciones: los fallos de publicaciones manuales por validacion de adjuntos o rechazo Telegram quedan registrados como publicaciones `FAILED`, targets fallidos y auditoria editorial legible.
 - Frontend publicaciones: el dialogo de mensaje manual limpia titulo, mensaje, destinos y adjuntos al cerrar o enviar.
 - Frontend tests: Karma sirve las fuentes PrimeIcons usadas por Angular en `/base/media/*`, eliminando los 404 de `primeicons.woff2`, `primeicons.woff` y `primeicons.ttf`.

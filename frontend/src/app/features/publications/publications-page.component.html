@@ -48,26 +48,155 @@
   [modal]="true"
   [visible]="manualDialogVisible()"
   (visibleChange)="setManualDialogVisible($event)"
-  [style]="{ width: 'min(42rem, 95vw)' }"
+  [style]="{ width: 'min(56rem, 96vw)' }"
 >
   <form class="manual-form" (submit)="$event.preventDefault(); sendManualPublication()">
-    <label>
-      Titulo
-      <input pInputText type="text" [ngModel]="manualTitle()" (ngModelChange)="manualTitle.set($event)" name="manualTitle" />
-    </label>
+    @if (manualErrorMessage() && !attachmentErrorMessage()) {
+      <p-message severity="error" [text]="manualErrorMessage() ?? ''" />
+    }
 
     <label>
-      Mensaje
-      <div class="editor-toolbar" aria-label="Formato del mensaje">
-        <button pButton type="button" icon="pi pi-bold" (click)="applyFormat('b')" aria-label="Negrita"></button>
-        <button pButton type="button" icon="pi pi-italic" (click)="applyFormat('i')" aria-label="Cursiva"></button>
-        <button pButton type="button" icon="pi pi-underline" (click)="applyFormat('u')" aria-label="Subrayado"></button>
-        <button pButton type="button" icon="pi pi-link" (click)="applyLink()" aria-label="Enlace"></button>
-        @for (emote of quickEmotes; track emote) {
-          <button pButton type="button" class="emote-button" (click)="insertEmote(emote)" [attr.aria-label]="'Insertar ' + emote">{{ emote }}</button>
-        }
+      <span class="editor-label">
+        Titulo
+        <span>{{ titleCharacterCount() }} caracteres</span>
+      </span>
+      <div
+        #manualTitleEditor
+        class="manual-editor manual-editor--title"
+        contenteditable="true"
+        role="textbox"
+        aria-multiline="false"
+        (focus)="setActiveEditorTarget('title')"
+        (input)="updateManualTitleFromEditor($event)"
+      ></div>
+    </label>
+
+    <section class="editor-surface" aria-label="Editor WYSIWYG Telegram">
+      <div class="editor-tools">
+        <div class="editor-toolbar" aria-label="Formato del mensaje">
+          <span class="toolbar-section">Texto</span>
+          <button pButton type="button" class="format-button" pTooltip="Negrita: resalta el texto seleccionado" tooltipPosition="top" (click)="applyFormat('bold')" aria-label="Negrita"><strong>B</strong></button>
+          <button pButton type="button" class="format-button" pTooltip="Cursiva: aplica enfasis al texto seleccionado" tooltipPosition="top" (click)="applyFormat('italic')" aria-label="Cursiva"><em>I</em></button>
+          <button pButton type="button" class="format-button" pTooltip="Subrayado: marca el texto seleccionado" tooltipPosition="top" (click)="applyFormat('underline')" aria-label="Subrayado"><u>U</u></button>
+          <button pButton type="button" class="format-button" pTooltip="Tachado: muestra texto corregido o descartado" tooltipPosition="top" (click)="applyFormat('strikeThrough')" aria-label="Tachado"><s>S</s></button>
+          <button pButton type="button" class="format-button" pTooltip="Spoiler: oculta el texto hasta que se pulse en Telegram" tooltipPosition="top" (click)="applyInlineTag('tg-spoiler')" aria-label="Spoiler">||</button>
+          <button pButton type="button" class="format-button" pTooltip="Codigo inline: usa tipografia monoespaciada" tooltipPosition="top" (click)="applyInlineTag('code')" aria-label="Codigo">&lt;/&gt;</button>
+        </div>
+
+        <div class="editor-toolbar" aria-label="Entidades Telegram">
+          <span class="toolbar-section">Telegram</span>
+          <button pButton type="button" icon="pi pi-link" pTooltip="Enlaces y menciones: URL, email, telefono o mencion por ID de Telegram" tooltipPosition="top" (click)="toggleEditorPanel('link')" aria-label="Enlaces y menciones"></button>
+          <button pButton type="button" icon="pi pi-clock" pTooltip="Entidades Telegram: custom emoji premium y fecha/hora dinamica" tooltipPosition="top" (click)="toggleEditorPanel('telegram')" aria-label="Emoji premium y tiempo"></button>
+          <button pButton type="button" icon="pi pi-align-left" pTooltip="Bloques: codigo, citas, listas y separadores" tooltipPosition="top" (click)="toggleEditorPanel('blocks')" aria-label="Bloques"></button>
+          <button pButton type="button" icon="pi pi-face-smile" pTooltip="Emotes: inserta iconos rapidos en titulo o mensaje" tooltipPosition="top" (click)="toggleEditorPanel('emotes')" aria-label="Emotes"></button>
+        </div>
       </div>
-      <textarea #manualMessageInput [ngModel]="manualMessage()" (ngModelChange)="manualMessage.set($event)" name="manualMessage" rows="6"></textarea>
+
+      @if (isPanelVisible('link')) {
+        <div class="editor-panel editor-panel--grid">
+          <div class="panel-field">
+            <span>URL</span>
+            <input
+              pInputText
+              type="text"
+              placeholder="https://..., mailto:..., tel:..."
+              [ngModel]="linkUrl()"
+              (ngModelChange)="linkUrl.set($event)"
+              name="manualLinkUrl"
+            />
+          </div>
+          <div class="panel-field">
+            <span>Texto visible</span>
+            <input pInputText type="text" [ngModel]="linkText()" (ngModelChange)="linkText.set($event)" name="manualLinkText" />
+          </div>
+          <button pButton type="button" icon="pi pi-check" pTooltip="Inserta un enlace sobre el texto seleccionado o el texto visible indicado" tooltipPosition="top" (click)="applyLink()" [disabled]="!linkUrl().trim()">Aplicar enlace</button>
+
+          <div class="panel-field">
+            <span>ID usuario Telegram</span>
+            <input pInputText type="text" placeholder="123456789" [ngModel]="mentionUserId()" (ngModelChange)="mentionUserId.set($event)" name="manualMentionUserId" />
+          </div>
+          <div class="panel-field">
+            <span>Texto visible</span>
+            <input pInputText type="text" [ngModel]="mentionText()" (ngModelChange)="mentionText.set($event)" name="manualMentionText" />
+          </div>
+          <button pButton type="button" icon="pi pi-user" pTooltip="Inserta una mencion Telegram usando tg://user?id=..." tooltipPosition="top" (click)="applyMention()" [disabled]="!mentionUserId().trim()">Insertar mencion</button>
+        </div>
+      }
+
+      @if (isPanelVisible('telegram')) {
+        <div class="editor-panel editor-panel--grid">
+          <div class="panel-field">
+            <span>Custom emoji ID</span>
+            <input pInputText type="text" placeholder="5368324170671202286" [ngModel]="customEmojiId()" (ngModelChange)="customEmojiId.set($event)" name="manualCustomEmojiId" />
+          </div>
+          <div class="panel-field">
+            <span>Emoji alternativo</span>
+            <input pInputText type="text" [ngModel]="customEmojiAlt()" (ngModelChange)="customEmojiAlt.set($event)" name="manualCustomEmojiAlt" />
+          </div>
+          <button pButton type="button" icon="pi pi-star" pTooltip="Inserta un custom emoji de Telegram Premium con su ID y emoji alternativo" tooltipPosition="top" (click)="insertCustomEmoji()" [disabled]="!customEmojiId().trim()">Insertar custom emoji</button>
+
+          <div class="panel-field">
+            <span>Unix timestamp</span>
+            <input pInputText type="text" placeholder="1647531900" [ngModel]="timeUnix()" (ngModelChange)="timeUnix.set($event)" name="manualTimeUnix" />
+          </div>
+          <div class="panel-field">
+            <span>Texto visible</span>
+            <input pInputText type="text" placeholder="Fecha" [ngModel]="timeLabel()" (ngModelChange)="timeLabel.set($event)" name="manualTimeLabel" />
+          </div>
+          <div class="panel-field">
+            <span>Formato</span>
+            <input pInputText type="text" placeholder="wDT, t, r" [ngModel]="timeFormat()" (ngModelChange)="timeFormat.set($event)" name="manualTimeFormat" />
+          </div>
+          <button pButton type="button" icon="pi pi-clock" pTooltip="Inserta una fecha/hora Telegram a partir de un timestamp Unix" tooltipPosition="top" (click)="insertTime()" [disabled]="!timeUnix().trim()">Insertar tiempo</button>
+        </div>
+      }
+
+      @if (isPanelVisible('blocks')) {
+        <div class="editor-panel editor-panel--blocks">
+          <div class="panel-field">
+            <span>Lenguaje bloque codigo</span>
+            <input pInputText type="text" placeholder="java, html, sql..." [ngModel]="codeLanguage()" (ngModelChange)="codeLanguage.set($event)" name="manualCodeLanguage" />
+          </div>
+          <button type="button" class="template-button" pTooltip="Bloque de codigo: conserva saltos de linea y permite indicar lenguaje" tooltipPosition="top" (click)="insertBlock('pre')">Codigo bloque</button>
+          <button type="button" class="template-button" pTooltip="Cita: destaca un fragmento como bloque citado" tooltipPosition="top" (click)="insertBlock('blockquote')">Cita</button>
+          <button type="button" class="template-button" pTooltip="Cita expandible: Telegram oculta parte del bloque hasta desplegarlo" tooltipPosition="top" (click)="insertBlock('expandable-blockquote')">Cita expandible</button>
+          <button type="button" class="template-button" pTooltip="Lista: inserta una plantilla de puntos editables" tooltipPosition="top" (click)="insertPlainTemplate('\n• Punto destacado\n• Segundo punto\n')">Lista</button>
+          <button type="button" class="template-button" pTooltip="Separador visual: inserta una linea para organizar el mensaje" tooltipPosition="top" (click)="insertSeparator()">Separador</button>
+        </div>
+      }
+
+      @if (isPanelVisible('emotes')) {
+        <div class="emote-panel" aria-label="Selector de emotes">
+          @for (group of emoteGroups; track group.label) {
+            <section class="emote-group">
+              <strong>{{ group.label }}</strong>
+              <div class="emote-grid">
+                @for (emote of group.items; track emote) {
+                  <button type="button" class="emote-button" [pTooltip]="'Insertar ' + emote" tooltipPosition="top" (click)="insertEmote(emote)" [attr.aria-label]="'Insertar ' + emote">{{ emote }}</button>
+                }
+              </div>
+            </section>
+          }
+        </div>
+      }
+    </section>
+
+    <label>
+      <span class="editor-label">
+        Mensaje
+        <span>{{ messageCharacterCount() }} caracteres</span>
+      </span>
+      <div class="editor-surface">
+        <div
+          #manualEditor
+          class="manual-editor"
+          contenteditable="true"
+          role="textbox"
+          aria-multiline="true"
+          (focus)="setActiveEditorTarget('message')"
+          (input)="updateManualMessageFromEditor($event)"
+        ></div>
+      </div>
     </label>
 
     <fieldset class="destination-list">
@@ -86,9 +215,19 @@
       }
     </fieldset>
 
-    <label>
+    <label class="manual-form__field" [class.manual-form__field--invalid]="attachmentErrorMessage()">
       Adjuntos
-      <input #manualFileInput type="file" multiple (change)="updateSelectedFiles($event)" />
+      <input
+        #manualFileInput
+        type="file"
+        multiple
+        (change)="updateSelectedFiles($event)"
+        [attr.aria-invalid]="attachmentErrorMessage() ? 'true' : null"
+        aria-describedby="manualAttachmentError"
+      />
+      @if (attachmentErrorMessage()) {
+        <span id="manualAttachmentError" class="field-error">{{ attachmentErrorMessage() }}</span>
+      }
     </label>
 
     @if (selectedFiles().length) {

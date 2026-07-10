@@ -3059,5 +3059,89 @@ Verificacion:
 - Backend focal publicaciones: `./mvnw.cmd "-Dtest=PublicationControllerTest" test` OK, 6 tests.
 - Backend focal Telegram/settings: `./mvnw.cmd "-Dtest=TelegramPublicationSettingsControllerTest,TelegramPublisherTest,JpaTelegramPublicationSettingsRepositoryTest" test` OK, 10 tests.
 - Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
+
+## 19.20 Mejora del editor manual Telegram - 2026-07-09
+
+Tarea de mejora correctiva sobre Fase 11, derivada de 19.17.
+
+Completado en esta iteracion:
+- [x] Sustituido el editor basado en etiquetas HTML visibles por un editor WYSIWYG basico.
+- [x] Anadida toolbar con negrita, cursiva, subrayado, enlace y panel de emotes.
+- [x] Ampliado el selector de emotes por grupos: frecuentes, tono, educacion y tiempo.
+- [x] El contenido se sigue enviando como HTML compatible con Telegram.
+- [x] Version frontend subida a `0.0.16`.
+
+Verificacion:
+- Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
+
+## 19.21 Redisenio del selector de emotes del editor manual - 2026-07-09
+
+Tarea de mejora correctiva sobre Fase 11, derivada de 19.20.
+
+Completado en esta iteracion:
+- [x] Ampliado el catalogo de emotes del editor manual con mas grupos y opciones.
+- [x] Reubicado el panel de emotes bajo el cuadro de texto para no ocultar el area de escritura.
+- [x] Sustituidos los botones PrimeNG de emotes por botones neutrales propios sin fondo verde heredado.
+- [x] Ajustada la anchura del dialogo y la distribucion responsive del selector.
+- [x] Version frontend subida a `0.0.17`.
+
+Verificacion:
+- Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
+
+## 19.22 Ampliacion profesional del editor WYSIWYG Telegram - 2026-07-09
+
+Tarea de mejora correctiva sobre Fase 10 y Fase 11, derivada de 19.20 y 19.21.
+
+Completado en esta iteracion:
+- [x] Convertido el titulo del mensaje manual en campo WYSIWYG con soporte de formato y emotes.
+- [x] Anadidos contadores de caracteres para titulo y mensaje.
+- [x] Reorganizada la toolbar en grupos profesionales: texto, entidades Telegram, bloques y emotes.
+- [x] Anadido soporte frontend para negrita, cursiva, subrayado, tachado, spoiler, codigo inline, bloque de codigo, cita, cita expandible, enlaces, menciones, custom emoji, entidad tiempo, listas textuales, separador y emotes.
+- [x] Ampliado el saneado backend para conservar etiquetas HTML soportadas por `parse_mode=HTML` de Telegram y retirar etiquetas no permitidas.
+- [x] Version backend subida a `0.0.87-SNAPSHOT`.
+- [x] Version frontend subida a `0.0.18`.
+
+Verificacion:
+- Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
+- Backend focal Telegram: `./mvnw.cmd "-Dtest=TelegramPublisherTest" test` OK, 6 tests.
+
+## 19.23 Tooltips del editor WYSIWYG Telegram - 2026-07-09
+
+Tarea de mejora correctiva sobre Fase 11, derivada de 19.22.
+
+Completado en esta iteracion:
+- [x] Anadido `TooltipModule` al componente de publicaciones.
+- [x] Anadidos tooltips a botones de formato del editor: negrita, cursiva, subrayado, tachado, spoiler y codigo inline.
+- [x] Anadidos tooltips a paneles de entidades Telegram, bloques y emotes.
+- [x] Anadidos tooltips a acciones internas: enlace, mencion, custom emoji, tiempo, bloque de codigo, cita, cita expandible, lista, separador y emotes.
+- [x] Version frontend subida a `0.0.19`.
+
+Verificacion:
+- Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
+
+## 19.19 Color del error de adjuntos en modal - 2026-07-09
+
+Tarea de mantenimiento correctivo sobre Fase 11, derivada de 19.18.
+
+Completado en esta iteracion:
+- [x] El texto del error de adjuntos usa `--color-danger-text`.
+- [x] El borde del campo usa `--color-danger-strong`.
+- [x] Version frontend subida a `0.0.15`.
+
+Verificacion:
+- Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
 - Frontend Karma/build: intentados, agotaron timeout del entorno sin dejar proceso de test/build colgado.
 - Backend dashboard focal: `DashboardControllerTest` ejecutado con 1 fallo preexistente/no relacionado por datos reales locales en PostgreSQL que alteran el orden de eventos prioritarios.
+
+## 19.18 Error visible de adjuntos en mensaje manual - 2026-07-09
+
+Tarea de mantenimiento correctivo sobre Fase 11, derivada de 19.17.
+
+Completado en esta iteracion:
+- [x] El error de adjuntos del mensaje manual se muestra dentro del modal.
+- [x] El campo de adjuntos queda resaltado cuando el backend rechaza el archivo por tamano o limite funcional.
+- [x] Los errores no relacionados con adjuntos tambien se muestran dentro del modal durante el envio manual.
+- [x] Version frontend subida a `0.0.14`.
+
+Verificacion:
+- Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.

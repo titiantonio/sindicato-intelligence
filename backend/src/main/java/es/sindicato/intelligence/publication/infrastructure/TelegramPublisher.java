@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 @Order(100)
@@ -39,6 +41,11 @@ public class TelegramPublisher implements PublishingProvider, ManualPublishingPr
 
     private static final Logger log = LoggerFactory.getLogger(TelegramPublisher.class);
     private static final String CHANNEL = "TELEGRAM";
+    private static final Pattern HTML_TAG = Pattern.compile("(?is)<[^>]+>");
+    private static final Pattern LINK_TAG = Pattern.compile("(?is)<a\\s+href=\"(?:https?://[^\"]+|mailto:[^\"]+|tel:[+0-9() .-]+|tg://user\\?id=\\d+)\">");
+    private static final Pattern CUSTOM_EMOJI_TAG = Pattern.compile("(?is)<tg-emoji\\s+emoji-id=\"\\d+\">");
+    private static final Pattern TIME_TAG = Pattern.compile("(?is)<tg-time\\s+unix=\"\\d+\"(?:\\s+format=\"(?:r|w?[dD]?[tT]?)\")?>");
+    private static final Pattern CODE_LANGUAGE_TAG = Pattern.compile("(?is)<code\\s+class=\"language-[a-z0-9_+#-]+\">");
 
     private final RestClient.Builder restClientBuilder;
     private final ObjectMapper objectMapper;
@@ -357,6 +364,30 @@ public class TelegramPublisher implements PublishingProvider, ManualPublishingPr
             return "";
         }
         String trimmed = value.trim();
-        return trimmed.replaceAll("(?is)<(?!/?(?:b|strong|i|em|u|ins|s|strike|del|code|pre)>|a\\s+href=\"https?://[^\"]+\">|/a>)[^>]*>", "");
+        Matcher matcher = HTML_TAG.matcher(trimmed);
+        StringBuilder sanitized = new StringBuilder();
+        while (matcher.find()) {
+            String tag = matcher.group();
+            matcher.appendReplacement(sanitized, Matcher.quoteReplacement(isAllowedTelegramHtmlTag(tag) ? tag : ""));
+        }
+        matcher.appendTail(sanitized);
+        return sanitized.toString();
+    }
+
+    private boolean isAllowedTelegramHtmlTag(String tag) {
+        String normalized = tag.toLowerCase();
+        if (normalized.matches("</?(?:b|strong|i|em|u|ins|s|strike|del|code|pre|tg-spoiler)>")) {
+            return true;
+        }
+        if (normalized.equals("<blockquote>") || normalized.equals("<blockquote expandable>") || normalized.equals("</blockquote>")) {
+            return true;
+        }
+        return LINK_TAG.matcher(tag).matches()
+                || normalized.equals("</a>")
+                || CUSTOM_EMOJI_TAG.matcher(tag).matches()
+                || normalized.equals("</tg-emoji>")
+                || TIME_TAG.matcher(tag).matches()
+                || normalized.equals("</tg-time>")
+                || CODE_LANGUAGE_TAG.matcher(tag).matches();
     }
 }

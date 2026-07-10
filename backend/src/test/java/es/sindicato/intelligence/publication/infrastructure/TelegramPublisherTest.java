@@ -63,6 +63,41 @@ class TelegramPublisherTest {
     }
 
     @Test
+    void preservesSupportedTelegramHtmlAndRemovesUnsupportedTags() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        TelegramPublisher publisher = publisher(builder, settings(true, "test-token", "chat-id"));
+        server.expect(requestTo("https://api.telegram.org/bottest-token/sendMessage"))
+                .andExpect(method(POST))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<tg-spoiler>reservado</tg-spoiler>")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("tg://user?id=123456789")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<tg-emoji emoji-id=\\\"5368324170671202286\\\">")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("</tg-emoji>")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<tg-time unix=\\\"1647531900\\\" format=\\\"wDT\\\">fecha</tg-time>")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<pre><code class=\\\"language-java\\\">codigo</code></pre>")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("<blockquote expandable>cita</blockquote>")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("<script>"))))
+                .andRespond(withSuccess("""
+                        {
+                          "ok": true,
+                          "result": {
+                            "message_id": 124
+                          }
+                        }
+                        """, MediaType.APPLICATION_JSON));
+
+        PublishingResult result = publisher.publish(new PublishingRequest(
+                10L,
+                "TELEGRAM",
+                "Titulo",
+                "<tg-spoiler>reservado</tg-spoiler> <a href=\"tg://user?id=123456789\">usuario</a> <tg-emoji emoji-id=\"5368324170671202286\">🙂</tg-emoji> <tg-time unix=\"1647531900\" format=\"wDT\">fecha</tg-time> <pre><code class=\"language-java\">codigo</code></pre> <blockquote expandable>cita</blockquote> <script>alert(1)</script>"
+        ));
+
+        assertEquals("124", result.externalId());
+        server.verify();
+    }
+
+    @Test
     void rejectsMissingChatId() {
         TelegramPublisher publisher = publisher(RestClient.builder(), settings(true, "token", ""));
 
