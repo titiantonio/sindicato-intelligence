@@ -3177,3 +3177,20 @@ Completado en esta iteracion:
 
 Verificacion:
 - Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
+
+## 19.26 Correccion rollback parcial WF-02 - 2026-07-10
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 12, automatizaciones internas y observabilidad IA.
+
+Completado en esta iteracion:
+- [x] Eliminada la transaccion global de `RunAutomationWorkflowUseCase` para evitar rollback completo cuando falla una noticia en WF-02.
+- [x] Conservadas transacciones cortas para marcar `running`, completar/fallar el workflow y registrar auditoria.
+- [x] Mantenido el reintento normal: las noticias con fallo IA permanecen `CAPTURED` para la siguiente ejecucion programada.
+- [x] Anadido test unitario de resultado parcial con noticias correctas y fallidas en el mismo lote.
+- [x] Version backend subida a `0.0.90-SNAPSHOT`.
+
+Verificacion:
+- Backend focal automatizaciones: `mvn -Dtest=RunAutomationWorkflowUseCaseTest test` OK, 3 tests.
+- Backend focal clasificacion/automatizaciones: `mvn "-Dtest=ClassifyNewsUseCaseTest,RunAutomationWorkflowUseCaseTest" test` OK, 10 tests.
+- Backend compile limpio: `mvn clean compile` OK.
+- Backend contexto Spring: `mvn "-Dtest=IntelligenceApplicationTests" test` OK, 1 test.

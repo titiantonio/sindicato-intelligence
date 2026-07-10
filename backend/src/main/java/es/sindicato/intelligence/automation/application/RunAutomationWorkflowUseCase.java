@@ -8,7 +8,7 @@ import es.sindicato.intelligence.automation.domain.AutomationWorkflowSettingRepo
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionOperations;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -23,22 +23,24 @@ public class RunAutomationWorkflowUseCase {
     private final ProcessPendingEventDetectionUseCase processPendingEventDetectionUseCase;
     private final ProcessPendingEventAnalysisUseCase processPendingEventAnalysisUseCase;
     private final RecordAuditLogUseCase recordAuditLogUseCase;
+    private final TransactionOperations transactionOperations;
 
     public RunAutomationWorkflowUseCase(
             AutomationWorkflowSettingRepository repository,
             ProcessPendingClassificationsUseCase processPendingClassificationsUseCase,
             ProcessPendingEventDetectionUseCase processPendingEventDetectionUseCase,
             ProcessPendingEventAnalysisUseCase processPendingEventAnalysisUseCase,
-            RecordAuditLogUseCase recordAuditLogUseCase
+            RecordAuditLogUseCase recordAuditLogUseCase,
+            TransactionOperations transactionOperations
     ) {
         this.repository = repository;
         this.processPendingClassificationsUseCase = processPendingClassificationsUseCase;
         this.processPendingEventDetectionUseCase = processPendingEventDetectionUseCase;
         this.processPendingEventAnalysisUseCase = processPendingEventAnalysisUseCase;
         this.recordAuditLogUseCase = recordAuditLogUseCase;
+        this.transactionOperations = transactionOperations;
     }
 
-    @Transactional
     public synchronized AutomationRunResult execute(AutomationWorkflowCode workflowCode) {
         AutomationWorkflowSetting setting = repository.findByCode(workflowCode)
                 .orElseThrow(() -> new IllegalArgumentException("automation workflow setting not found: " + workflowCode));
@@ -49,33 +51,16 @@ public class RunAutomationWorkflowUseCase {
         }
 
         OffsetDateTime startedAt = OffsetDateTime.now();
-        setting.markRunning(startedAt);
-        repository.save(setting);
+        AutomationWorkflowSetting runningSetting = markRunning(setting, startedAt);
 
         try {
-            AutomationRunResult result = executeBatch(workflowCode, setting.getBatchSize());
-            setting.markCompleted(result, OffsetDateTime.now());
-            repository.save(setting);
-            recordAuditLogUseCase.record(
-                    "AUTOMATION_RUN_COMPLETED",
-                    "AUTOMATION",
-                    null,
-                    null,
-                    AuditDetailFormatter.automationRunCompleted(workflowCode.name(), result.processedCount(), result.successCount(), result.failedCount(), result.skippedCount())
-            );
+            AutomationRunResult result = executeBatch(workflowCode, runningSetting.getBatchSize());
+            markCompleted(runningSetting, workflowCode, result, OffsetDateTime.now());
             log.info("automation workflow completed: workflowCode={}, processed={}, success={}, failed={}, skipped={}",
                     workflowCode, result.processedCount(), result.successCount(), result.failedCount(), result.skippedCount());
             return result;
         } catch (RuntimeException exception) {
-            setting.markFailed(exception.getMessage(), OffsetDateTime.now());
-            repository.save(setting);
-            recordAuditLogUseCase.record(
-                    "AUTOMATION_RUN_FAILED",
-                    "AUTOMATION",
-                    null,
-                    null,
-                    AuditDetailFormatter.automationRunFailed(workflowCode.name(), exception.getMessage())
-            );
+            markFailed(runningSetting, workflowCode, exception, OffsetDateTime.now());
             log.error("automation workflow failed: workflowCode={}, reason={}", workflowCode, exception.getMessage(), exception);
             throw exception;
         }
@@ -87,5 +72,52 @@ public class RunAutomationWorkflowUseCase {
             case WF03_EVENT_DETECTION -> processPendingEventDetectionUseCase.execute(batchSize);
             case WF04_ANALYSIS -> processPendingEventAnalysisUseCase.executePending(batchSize);
         };
+    }
+
+    private AutomationWorkflowSetting markRunning(AutomationWorkflowSetting setting, OffsetDateTime startedAt) {
+        return transactionOperations.execute(status -> {
+            setting.markRunning(startedAt);
+            return repository.save(setting);
+        });
+    }
+
+    private void markCompleted(
+            AutomationWorkflowSetting setting,
+            AutomationWorkflowCode workflowCode,
+            AutomationRunResult result,
+            OffsetDateTime completedAt
+    ) {
+        transactionOperations.execute(status -> {
+            setting.markCompleted(result, completedAt);
+            repository.save(setting);
+            recordAuditLogUseCase.record(
+                    "AUTOMATION_RUN_COMPLETED",
+                    "AUTOMATION",
+                    null,
+                    null,
+                    AuditDetailFormatter.automationRunCompleted(workflowCode.name(), result.processedCount(), result.successCount(), result.failedCount(), result.skippedCount())
+            );
+            return null;
+        });
+    }
+
+    private void markFailed(
+            AutomationWorkflowSetting setting,
+            AutomationWorkflowCode workflowCode,
+            RuntimeException exception,
+            OffsetDateTime failedAt
+    ) {
+        transactionOperations.execute(status -> {
+            setting.markFailed(exception.getMessage(), failedAt);
+            repository.save(setting);
+            recordAuditLogUseCase.record(
+                    "AUTOMATION_RUN_FAILED",
+                    "AUTOMATION",
+                    null,
+                    null,
+                    AuditDetailFormatter.automationRunFailed(workflowCode.name(), exception.getMessage())
+            );
+            return null;
+        });
     }
 }

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.90-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.89-SNAPSHOT`.
 - Backend IA WF-02: la clasificacion incorpora la URL de la noticia y enriquecimiento controlado desde URL cuando el contexto capturado es insuficiente.
 - Backend IA WF-05: la generacion de contenido recibe enlaces relevantes permitidos desde las noticias fuente e instruye al borrador Telegram a incluir documentos, consultas o listados oficiales utiles.
@@ -59,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend automatizaciones WF-02: corregido el rollback global del lote cuando falla una clasificacion IA, permitiendo persistir las noticias clasificadas correctamente y avanzar `next_run_at` aunque haya fallos parciales.
 - Frontend publicaciones: los emotes del editor manual dejan de heredar el fondo verde de los botones PrimeNG y usan estilo neutral propio.
 - Frontend publicaciones: el texto del error de adjuntos usa el token rojo de error en lugar de heredar el gris del formulario.
 - Frontend publicaciones: los errores de adjuntos del mensaje manual se muestran dentro del modal, resaltando el campo de adjuntos.
