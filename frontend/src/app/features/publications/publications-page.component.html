@@ -240,7 +240,7 @@
 
     <footer class="manual-form__actions">
       <button pButton type="button" (click)="setManualDialogVisible(false)">Cancelar</button>
-      <button pButton type="submit" [disabled]="isSendingManual() || selectedDestinationIds().length === 0">Enviar</button>
+      <button pButton type="submit" [label]="isSendingManual() ? 'Enviando...' : 'Enviar'" [loading]="isSendingManual()" [disabled]="isSendingManual() || selectedDestinationIds().length === 0"></button>
     </footer>
   </form>
 </p-dialog>

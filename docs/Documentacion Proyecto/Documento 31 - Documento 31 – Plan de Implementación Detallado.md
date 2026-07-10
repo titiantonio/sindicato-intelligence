@@ -3208,3 +3208,20 @@ Completado en esta iteracion:
 
 Verificacion:
 - Backend focal automatizaciones/repositorios: `mvn "-Dtest=JpaNewsRepositoryTest,RunAutomationWorkflowUseCaseTest,ProcessPendingEventAnalysisUseCaseTest" test` OK, 10 tests.
+
+## 19.28 Revision global de botones del backoffice - 2026-07-10
+
+Tarea de refinamiento visual posterior al Sprint 12 sobre Fase 11 Frontend Angular.
+
+Completado en esta iteracion:
+- [x] Normalizado el estilo global de botones PrimeNG para mantener altura, alineacion, iconos, spinner y texto en estados de carga o deshabilitados.
+- [x] Sustituidos textos interpolados en botones con carga por la propiedad `label` de PrimeNG en login, recuperacion/reset/cambio de password, dashboard, detalle de evento, usuarios, fuentes, settings y publicaciones.
+- [x] Anadidos estados `loading` a botones operativos que ya tenian estado ocupado pero no mostraban spinner estable.
+- [x] Limitada la regla local amplia de botones en settings para no pisar el layout interno de PrimeNG.
+- [x] Version frontend subida a `0.0.20`.
+
+Verificacion:
+- Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/auth/login/login-page.component.spec.ts --include=src/app/features/auth/forgot-password/forgot-password-page.component.spec.ts --include=src/app/features/auth/reset-password/reset-password-page.component.spec.ts --include=src/app/features/auth/change-password/change-password-page.component.spec.ts --include=src/app/features/dashboard/dashboard-page.component.spec.ts --include=src/app/features/events/event-detail-page.component.spec.ts --include=src/app/features/users/users-page.component.spec.ts --include=src/app/features/sources/sources-page.component.spec.ts --include=src/app/features/settings/settings-page.component.spec.ts` OK, 57 tests.
+- Frontend build: `npm.cmd run build` OK. Bundle inicial: `528.21 kB`.
+- Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 147 tests. Persiste warning no bloqueante de cierre lento de ChromeHeadless.

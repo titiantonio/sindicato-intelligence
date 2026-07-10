@@ -104,9 +104,7 @@
     <div class="panel detail-section">
       <header class="section-header">
         <h2>Analisis IA</h2>
-        <button pButton type="button" icon="pi pi-sparkles" (click)="generateAnalysis(item)" [loading]="isGeneratingAnalysis()" [disabled]="isGeneratingAnalysis() || item.editorialStatus === 'DISCARDED'">
-          {{ isGeneratingAnalysis() ? 'Analizando...' : 'Analizar evento' }}
-        </button>
+        <button pButton type="button" icon="pi pi-sparkles" [label]="isGeneratingAnalysis() ? 'Analizando...' : 'Analizar evento'" (click)="generateAnalysis(item)" [loading]="isGeneratingAnalysis()" [disabled]="isGeneratingAnalysis() || item.editorialStatus === 'DISCARDED'"></button>
       </header>
       @for (analysis of item.analyses; track analysis.id) {
         <article class="stack-item">
@@ -153,7 +151,7 @@
             <option value="LONG">Larga</option>
           </select>
         </label>
-        <button pButton type="submit" icon="pi pi-pen-to-square" [loading]="isGeneratingContent()" [disabled]="item.analyses.length === 0 || isGeneratingContent()">Generar contenido</button>
+        <button pButton type="submit" icon="pi pi-pen-to-square" label="Generar contenido" [loading]="isGeneratingContent()" [disabled]="item.analyses.length === 0 || isGeneratingContent()"></button>
       </form>
 
       @for (content of item.contents; track content.id) {

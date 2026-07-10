@@ -166,9 +166,7 @@
           </label>
 
           <div class="sources-page__actions">
-            <button pButton type="submit" [disabled]="isSubmitting()">
-              {{ formMode() === 'create' ? 'Crear fuente' : 'Guardar cambios' }}
-            </button>
+            <button pButton type="submit" [label]="isSubmitting() ? 'Guardando...' : (formMode() === 'create' ? 'Crear fuente' : 'Guardar cambios')" [loading]="isSubmitting()" [disabled]="isSubmitting()"></button>
             <button pButton severity="secondary" type="button" (click)="closeModal()">
               Cancelar
             </button>

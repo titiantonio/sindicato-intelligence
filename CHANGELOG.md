@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend version: subida la version del paquete frontend a `0.0.20`.
+- Frontend botones: normalizado el comportamiento visual de botones PrimeNG con icono, spinner y textos de carga para evitar cambios de tamano o alineacion en login, auth, dashboard, eventos, usuarios, fuentes, settings y publicaciones.
 - Versionado backend actualizado a `0.0.91-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.90-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.89-SNAPSHOT`.

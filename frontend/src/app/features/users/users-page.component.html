@@ -163,9 +163,7 @@
           </label>
 
           <div class="users-page__actions">
-            <button pButton type="submit" [disabled]="isSubmitting()">
-              {{ isSubmitting() ? 'Guardando...' : (formMode() === 'create' ? 'Crear usuario' : 'Guardar cambios') }}
-            </button>
+            <button pButton type="submit" [label]="isSubmitting() ? 'Guardando...' : (formMode() === 'create' ? 'Crear usuario' : 'Guardar cambios')" [loading]="isSubmitting()" [disabled]="isSubmitting()"></button>
             <button pButton type="button" severity="secondary" (click)="closeUserModal()">
               Cancelar
             </button>
@@ -190,9 +188,7 @@
         </p>
 
         <div class="users-page__actions">
-          <button pButton type="button" severity="danger" [disabled]="isDeleting()" (click)="confirmDelete()">
-            {{ isDeleting() ? 'Eliminando...' : 'Eliminar definitivamente' }}
-          </button>
+          <button pButton type="button" severity="danger" [label]="isDeleting() ? 'Eliminando...' : 'Eliminar definitivamente'" [loading]="isDeleting()" [disabled]="isDeleting()" (click)="confirmDelete()"></button>
           <button pButton type="button" severity="secondary" (click)="closeDeleteModal()">
             Cancelar
           </button>

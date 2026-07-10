@@ -43,15 +43,9 @@
     <h2>Procesos internos</h2>
   </div>
   <div class="automation-actions">
-    <button pButton type="button" icon="pi pi-tags" (click)="runClassifications()" [loading]="isRunningAutomation('classifications')" [disabled]="runningAutomation() !== null">
-      {{ isRunningAutomation('classifications') ? 'Procesando...' : 'Clasificar pendientes' }}
-    </button>
-    <button pButton type="button" icon="pi pi-sitemap" (click)="runEventDetection()" [loading]="isRunningAutomation('events')" [disabled]="runningAutomation() !== null">
-      {{ isRunningAutomation('events') ? 'Procesando...' : 'Detectar eventos' }}
-    </button>
-    <button pButton type="button" icon="pi pi-sparkles" (click)="runPendingAnalysis()" [loading]="isRunningAutomation('analysis')" [disabled]="runningAutomation() !== null">
-      {{ isRunningAutomation('analysis') ? 'Procesando...' : 'Analizar pendientes' }}
-    </button>
+    <button pButton type="button" icon="pi pi-tags" [label]="isRunningAutomation('classifications') ? 'Procesando...' : 'Clasificar pendientes'" (click)="runClassifications()" [loading]="isRunningAutomation('classifications')" [disabled]="runningAutomation() !== null"></button>
+    <button pButton type="button" icon="pi pi-sitemap" [label]="isRunningAutomation('events') ? 'Procesando...' : 'Detectar eventos'" (click)="runEventDetection()" [loading]="isRunningAutomation('events')" [disabled]="runningAutomation() !== null"></button>
+    <button pButton type="button" icon="pi pi-sparkles" [label]="isRunningAutomation('analysis') ? 'Procesando...' : 'Analizar pendientes'" (click)="runPendingAnalysis()" [loading]="isRunningAutomation('analysis')" [disabled]="runningAutomation() !== null"></button>
   </div>
 </section>
 
@@ -113,9 +107,7 @@
             <td class="table-cell-nowrap">{{ formatDate(event.updatedAt) }}</td>
             <td class="table-cell-nowrap"><app-status-badge [value]="event.status" /></td>
             <td class="table-cell-nowrap">
-              <button pButton class="row-action" type="button" icon="pi pi-sparkles" (click)="runEventAnalysis($event, event.id)" [loading]="isRunningEventAnalysis(event.id)" [disabled]="runningAutomation() !== null">
-                {{ isRunningEventAnalysis(event.id) ? 'Analizando...' : 'Analizar' }}
-              </button>
+              <button pButton class="row-action" type="button" icon="pi pi-sparkles" [label]="isRunningEventAnalysis(event.id) ? 'Analizando...' : 'Analizar'" (click)="runEventAnalysis($event, event.id)" [loading]="isRunningEventAnalysis(event.id)" [disabled]="runningAutomation() !== null"></button>
             </td>
           </tr>
       </ng-template>

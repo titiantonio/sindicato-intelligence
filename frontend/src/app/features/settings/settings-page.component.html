@@ -339,7 +339,7 @@
               </label>
             </div>
 
-            <button pButton type="submit" [disabled]="isTelegramSaving()">Guardar Telegram</button>
+            <button pButton type="submit" [label]="isTelegramSaving() ? 'Guardando...' : 'Guardar Telegram'" [loading]="isTelegramSaving()" [disabled]="isTelegramSaving()"></button>
           </form>
 
           @if (telegramSettings(); as telegram) {
@@ -557,10 +557,10 @@
 
               <footer>
                 @if (automationSettingForAiWorkflow(aiSetting.workflowCode); as automationSetting) {
-                  <button pButton type="button" (click)="save(automationSetting)" [disabled]="busyWorkflow() === automationSetting.workflowCode">Guardar automatizacion</button>
-                  <button pButton type="button" severity="secondary" (click)="runNow(automationSetting)" [disabled]="busyWorkflow() === automationSetting.workflowCode || automationSetting.running">Ejecutar ahora</button>
+                  <button pButton type="button" [label]="busyWorkflow() === automationSetting.workflowCode ? 'Guardando...' : 'Guardar automatizacion'" (click)="save(automationSetting)" [loading]="busyWorkflow() === automationSetting.workflowCode" [disabled]="busyWorkflow() === automationSetting.workflowCode"></button>
+                  <button pButton type="button" severity="secondary" [label]="busyWorkflow() === automationSetting.workflowCode ? 'Ejecutando...' : 'Ejecutar ahora'" (click)="runNow(automationSetting)" [loading]="busyWorkflow() === automationSetting.workflowCode" [disabled]="busyWorkflow() === automationSetting.workflowCode || automationSetting.running"></button>
                 }
-                <button pButton type="button" (click)="saveAiWorkflow(aiSetting)" [disabled]="busyAiWorkflow() === aiSetting.workflowCode">Guardar IA</button>
+                <button pButton type="button" [label]="busyAiWorkflow() === aiSetting.workflowCode ? 'Guardando...' : 'Guardar IA'" (click)="saveAiWorkflow(aiSetting)" [loading]="busyAiWorkflow() === aiSetting.workflowCode" [disabled]="busyAiWorkflow() === aiSetting.workflowCode"></button>
               </footer>
             </article>
           }
@@ -606,10 +606,8 @@
               </label>
 
               <footer>
-                <button pButton type="submit" [disabled]="busyAiProvider() === provider.providerCode">Guardar</button>
-                <button pButton type="button" severity="secondary" (click)="loadModels(provider.providerCode)" [disabled]="busyModelProvider() === provider.providerCode">
-                  Cargar modelos
-                </button>
+                <button pButton type="submit" [label]="busyAiProvider() === provider.providerCode ? 'Guardando...' : 'Guardar'" [loading]="busyAiProvider() === provider.providerCode" [disabled]="busyAiProvider() === provider.providerCode"></button>
+                <button pButton type="button" severity="secondary" [label]="busyModelProvider() === provider.providerCode ? 'Cargando...' : 'Cargar modelos'" (click)="loadModels(provider.providerCode)" [loading]="busyModelProvider() === provider.providerCode" [disabled]="busyModelProvider() === provider.providerCode"></button>
               </footer>
             </form>
           }

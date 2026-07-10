@@ -161,7 +161,7 @@ code {
   overflow-wrap: anywhere;
 }
 
-button {
+.settings-page button:not([pButton]) {
   background: var(--color-primary);
   border: 0;
   border-radius: 0.55rem;
@@ -171,7 +171,7 @@ button {
   padding: 0.65rem 0.9rem;
 }
 
-button.secondary{background:var(--color-neutral-soft);color:var(--color-text)}
+.settings-page button.secondary:not([pButton]){background:var(--color-neutral-soft);color:var(--color-text)}
 
 @media (max-width: 1200px) {
   .summary-grid,.workflow-panel__content,.ai-provider-grid,.telegram-form {

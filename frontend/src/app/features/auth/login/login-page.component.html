@@ -49,11 +49,10 @@
         type="submit"
         class="login-page__submit"
         icon="pi pi-sign-in"
+        [label]="isSubmitting() ? 'Accediendo...' : 'Entrar'"
         [loading]="isSubmitting()"
         [disabled]="isSubmitting()"
-      >
-        {{ isSubmitting() ? 'Accediendo...' : 'Entrar' }}
-      </button>
+      ></button>
     </form>
   </article>
 </main>
