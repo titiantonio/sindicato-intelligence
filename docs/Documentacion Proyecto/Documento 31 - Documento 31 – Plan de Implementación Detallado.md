@@ -3260,3 +3260,16 @@ Completado en esta iteracion:
 Verificacion:
 - Backend focal: `mvnw.cmd "-Dtest=ClassifyNewsUseCaseTest,NewsControllerTest" test` OK, 24 tests.
 - Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/news/news-page.component.spec.ts --include=src/app/core/services/news.service.spec.ts` OK, 14 tests.
+
+## 19.31 Ajuste fallback WF-02 con enriquecimiento URL - 2026-07-11
+
+Tarea correctiva posterior a `19.30` sobre Fase 6 Clasificacion IA.
+
+Completado en esta iteracion:
+- [x] Diagnosticado que `newsId=2927` y `3065` seguian `CAPTURED` tras WF-02 porque el fallback podia quedar bloqueado por senales educativas procedentes del contenido enriquecido desde la URL, no de la noticia capturada.
+- [x] Ajustado `ClassifyNewsUseCase` para decidir si aplica fallback fuera de ambito usando solo titulo, URL, resumen y contenido capturados por WF-01.
+- [x] Anadida prueba de regresion con enriquecimiento contaminado por navegacion `Educacion/Universidad/FP`.
+- [x] Version backend subida a `0.0.94-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=ClassifyNewsUseCaseTest" test` OK, 10 tests.

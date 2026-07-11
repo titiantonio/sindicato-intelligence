@@ -179,6 +179,33 @@ class ClassifyNewsUseCaseTest {
     }
 
     @Test
+    void ignoresUrlEnrichmentNoiseWhenApplyingOutOfScopeFallback() {
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
+        AIProvider aiProvider = mock(AIProvider.class);
+        AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
+        NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), aiProvider, metricsRecorder, coordinator(), enrichmentPort);
+        NewsArticle newsArticle = newsArticle("Noticia de sucesos", "La Audiencia dicta sentencia penal", "Contenido judicial de ambito penal");
+
+        when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
+        when(classificationRepository.existsByNewsId(newsArticle.getId())).thenReturn(false);
+        when(enrichmentPort.enrich(newsArticle.getUrl())).thenReturn(Optional.of("Menu: Educacion Universidad FP. Cuerpo: contenido de sociedad."));
+        when(aiProvider.classify(any(ClassificationAIRequest.class))).thenThrow(new AIProviderException("Gemini response does not contain candidates[0].content.parts[0].text"));
+        when(aiProvider.providerName()).thenReturn("gemini");
+        when(aiProvider.modelName()).thenReturn("models/gemma-4-31b-it");
+        when(classificationRepository.save(any(NewsClassification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(new ClassifyNewsCommand(newsArticle.getId()));
+
+        ArgumentCaptor<NewsClassification> captor = ArgumentCaptor.forClass(NewsClassification.class);
+        verify(classificationRepository).save(captor.capture());
+        assertEquals(ClassificationCategory.OTROS, captor.getValue().getCategory());
+        assertEquals("FUERA_DE_AMBITO", captor.getValue().getSubcategory());
+        assertEquals(NewsStatus.DISCARDED, newsArticle.getProcessingStatus());
+    }
+
+    @Test
     void keepsFailureWhenGeminiReturnsNoTextForNewsWithEducationSignals() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);

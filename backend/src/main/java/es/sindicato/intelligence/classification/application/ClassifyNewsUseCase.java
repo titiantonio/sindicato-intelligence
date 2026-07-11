@@ -87,7 +87,7 @@ public class ClassifyNewsUseCase {
                             prompt.userPrompt()
                     )));
         } catch (RuntimeException exception) {
-            aiResponse = fallbackForOutOfScopeResponseWithoutText(newsArticle, effectiveContent, exception);
+            aiResponse = fallbackForOutOfScopeResponseWithoutText(newsArticle, exception);
             if (aiResponse != null) {
                 log.warn("classification used out-of-scope fallback after provider response without text: newsId={}, reason={}", newsArticle.getId(), exception.getMessage());
             } else {
@@ -150,8 +150,8 @@ public class ClassifyNewsUseCase {
         return savedClassification;
     }
 
-    private ClassificationAIResponse fallbackForOutOfScopeResponseWithoutText(NewsArticle newsArticle, String effectiveContent, RuntimeException exception) {
-        if (!isProviderResponseWithoutText(exception) || containsEducationScopeSignal(newsArticle, effectiveContent)) {
+    private ClassificationAIResponse fallbackForOutOfScopeResponseWithoutText(NewsArticle newsArticle, RuntimeException exception) {
+        if (!isProviderResponseWithoutText(exception) || containsEducationScopeSignal(newsArticle)) {
             return null;
         }
 
@@ -172,12 +172,12 @@ public class ClassifyNewsUseCase {
         return message != null && message.startsWith("Gemini response does not contain candidates[0].content.parts[0].text");
     }
 
-    private boolean containsEducationScopeSignal(NewsArticle newsArticle, String effectiveContent) {
+    private boolean containsEducationScopeSignal(NewsArticle newsArticle) {
         String text = normalize(String.join(" ",
                 safe(newsArticle.getTitle()),
                 safe(newsArticle.getUrl()),
                 safe(newsArticle.getSummary()),
-                safe(effectiveContent)
+                safe(newsArticle.getContent())
         ));
 
         return containsAny(text,

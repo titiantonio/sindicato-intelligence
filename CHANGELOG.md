@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.94-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.93-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.22`.
 - Backend IA WF-02: las respuestas Gemini sin texto para noticias sin senales educativas/sindicales generan una clasificacion segura `OTROS/FUERA_DE_AMBITO` y dejan la noticia `DISCARDED`, evitando reintentos infinitos de noticias fuera de ambito.
@@ -70,6 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend IA WF-02: el fallback de respuestas Gemini sin texto decide si una noticia esta fuera de ambito usando solo el contexto capturado por WF-01, evitando que el enriquecimiento URL con navegacion generica bloquee el descarte de noticias de sucesos.
 - Backend automatizaciones WF-02/WF-03/WF-04: materializadas las consultas JPA de noticias y eventos antes de mapearlas para evitar `This ResultSet is closed` en ejecuciones programadas.
 - Backend automatizaciones WF-02: corregido el rollback global del lote cuando falla una clasificacion IA, permitiendo persistir las noticias clasificadas correctamente y avanzar `next_run_at` aunque haya fallos parciales.
 - Frontend publicaciones: los emotes del editor manual dejan de heredar el fondo verde de los botones PrimeNG y usan estilo neutral propio.
