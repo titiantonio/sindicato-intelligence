@@ -1047,3 +1047,31 @@ Metricas IA recientes
 ### N8N-011
 
 La monitorizacion de `T12.3` queda reinterpretada: `WF-01` se valida como workflow externo n8n y `WF-02` a `WF-06` se observan mediante Spring Boot, PostgreSQL y la pantalla ADMIN `/settings`.
+
+---
+
+# 21. Actualizacion Operativa 2026-07-11 - Coordinacion IA por Modelo
+
+Las acciones IA manuales y programadas de `WF-02` a `WF-05` se coordinan en Spring Boot por `modelName` efectivo configurado en `ai_workflow_settings`.
+
+Regla operativa:
+
+```text
+Si dos acciones IA usan el mismo modelo, la segunda espera a que termine la primera y respeta el cooldown configurado.
+Si usan modelos distintos, pueden ejecutarse sin bloqueo por modelo.
+```
+
+El cooldown por defecto es de 60 segundos y se configura por workflow desde `/settings` mediante el campo `cooldownSeconds`.
+
+Esta regla aplica a:
+
+```text
+WF-02 Clasificacion automatica o manual
+WF-03 Matching de eventos automatico o manual
+WF-04 Analisis automatico o manual
+WF-05 Generacion de contenido bajo demanda
+```
+
+### N8N-012
+
+n8n no participa en esta coordinacion. El bloqueo por modelo y el cooldown se resuelven exclusivamente en Spring Boot para las automatizaciones internas migradas y acciones IA bajo demanda.

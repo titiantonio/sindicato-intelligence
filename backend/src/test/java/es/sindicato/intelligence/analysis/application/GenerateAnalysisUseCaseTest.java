@@ -1,6 +1,7 @@
 package es.sindicato.intelligence.analysis.application;
 
 import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
+import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
@@ -40,7 +41,7 @@ class GenerateAnalysisUseCaseTest {
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         AnalysisAIProvider aiProvider = mock(AnalysisAIProvider.class);
         RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
-        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), aiProvider, mock(AiOperationMetricsRecorder.class), audit);
+        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), aiProvider, mock(AiOperationMetricsRecorder.class), audit, coordinator());
         Event event = event(Set.of(2L));
         NewsArticle newsArticle = newsArticle(2L);
         EventAIAnalysis savedAnalysis = analysis(20L, event.getId());
@@ -78,7 +79,7 @@ class GenerateAnalysisUseCaseTest {
     void rejectsUnknownEvent() {
         EventRepository eventRepository = mock(EventRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
-        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, mock(NewsRepository.class), analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class), mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class));
+        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, mock(NewsRepository.class), analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class), mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), coordinator());
 
         when(eventRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -92,7 +93,7 @@ class GenerateAnalysisUseCaseTest {
         EventRepository eventRepository = mock(EventRepository.class);
         NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
-        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class), mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class));
+        GenerateAnalysisUseCase useCase = new GenerateAnalysisUseCase(eventRepository, newsRepository, analysisRepository, new GenerateAnalysisPromptBuilder(), mock(AnalysisAIProvider.class), mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), coordinator());
         Event event = event(Set.of(2L));
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
@@ -161,5 +162,12 @@ class GenerateAnalysisUseCaseTest {
                 now,
                 now
         );
+    }
+
+    private AiModelExecutionCoordinator coordinator() {
+        AiModelExecutionCoordinator coordinator = mock(AiModelExecutionCoordinator.class);
+        org.mockito.Mockito.when(coordinator.execute(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(invocation -> invocation.<java.util.function.Supplier<?>>getArgument(1).get());
+        return coordinator;
     }
 }

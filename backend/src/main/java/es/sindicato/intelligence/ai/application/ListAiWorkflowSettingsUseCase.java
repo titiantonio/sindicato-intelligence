@@ -35,6 +35,7 @@ public class ListAiWorkflowSettingsUseCase {
                 setting.getModelName(),
                 setting.getTemperature(),
                 setting.getMaxOutputTokens(),
+                setting.getCooldownSeconds(),
                 setting.getCreatedAt(),
                 setting.getUpdatedAt()
         );

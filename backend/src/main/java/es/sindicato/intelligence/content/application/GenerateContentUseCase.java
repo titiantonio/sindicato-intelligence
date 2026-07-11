@@ -3,6 +3,7 @@ package es.sindicato.intelligence.content.application;
 import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
+import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import es.sindicato.intelligence.content.domain.ContentStatus;
@@ -41,6 +42,7 @@ public class GenerateContentUseCase {
     private final AiOperationMetricsRecorder metricsRecorder;
     private final RecordAuditLogUseCase recordAuditLogUseCase;
     private final RelevantContentLinkExtractor relevantContentLinkExtractor;
+    private final AiModelExecutionCoordinator aiModelExecutionCoordinator;
 
     public GenerateContentUseCase(
             EventRepository eventRepository,
@@ -52,7 +54,8 @@ public class GenerateContentUseCase {
             CurrentContentAuthorProvider authorProvider,
             AiOperationMetricsRecorder metricsRecorder,
             RecordAuditLogUseCase recordAuditLogUseCase,
-            RelevantContentLinkExtractor relevantContentLinkExtractor
+            RelevantContentLinkExtractor relevantContentLinkExtractor,
+            AiModelExecutionCoordinator aiModelExecutionCoordinator
     ) {
         this.eventRepository = eventRepository;
         this.newsRepository = newsRepository;
@@ -64,6 +67,7 @@ public class GenerateContentUseCase {
         this.metricsRecorder = metricsRecorder;
         this.recordAuditLogUseCase = recordAuditLogUseCase;
         this.relevantContentLinkExtractor = relevantContentLinkExtractor;
+        this.aiModelExecutionCoordinator = aiModelExecutionCoordinator;
     }
 
     @Transactional
@@ -98,7 +102,7 @@ public class GenerateContentUseCase {
         ContentAIResponse aiResponse;
         OffsetDateTime startedAt = metricsRecorder.start();
         try {
-            aiResponse = aiProvider.generate(new ContentAIRequest(event, analysis, channel, tone, length, relevantLinks, prompt.systemPrompt(), prompt.userPrompt()));
+            aiResponse = aiModelExecutionCoordinator.execute("WF05_CONTENT", () -> aiProvider.generate(new ContentAIRequest(event, analysis, channel, tone, length, relevantLinks, prompt.systemPrompt(), prompt.userPrompt())));
         } catch (RuntimeException exception) {
             metricsRecorder.recordFailure("CONTENT_GENERATION", "WF05_CONTENT", aiProvider.providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt, exception);
             log.error("content generation failed during AI generation: eventId={}, analysisId={}, reason={}", event.getId(), analysis.getId(), exception.getMessage(), exception);

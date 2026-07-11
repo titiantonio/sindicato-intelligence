@@ -85,7 +85,8 @@ describe('AiObservabilityService', () => {
       providerCode: 'gemini',
       modelName: 'models/gemini-2.5-flash',
       temperature: 0.3,
-      maxOutputTokens: 2048
+      maxOutputTokens: 2048,
+      cooldownSeconds: 60
     }).subscribe();
     request = httpTestingController.expectOne('/api/v1/ai/workflow-settings/WF04_ANALYSIS');
     expect(request.request.method).toBe('PUT');
@@ -93,7 +94,8 @@ describe('AiObservabilityService', () => {
       providerCode: 'gemini',
       modelName: 'models/gemini-2.5-flash',
       temperature: 0.3,
-      maxOutputTokens: 2048
+      maxOutputTokens: 2048,
+      cooldownSeconds: 60
     });
     request.flush({ workflowCode: 'WF04_ANALYSIS' });
   });

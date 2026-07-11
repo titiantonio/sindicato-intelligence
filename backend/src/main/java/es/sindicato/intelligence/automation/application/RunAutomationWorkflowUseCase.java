@@ -2,6 +2,7 @@ package es.sindicato.intelligence.automation.application;
 
 import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
+import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowCode;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowSetting;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowSettingRepository;
@@ -24,6 +25,7 @@ public class RunAutomationWorkflowUseCase {
     private final ProcessPendingEventAnalysisUseCase processPendingEventAnalysisUseCase;
     private final RecordAuditLogUseCase recordAuditLogUseCase;
     private final TransactionOperations transactionOperations;
+    private final AiModelExecutionCoordinator aiModelExecutionCoordinator;
 
     public RunAutomationWorkflowUseCase(
             AutomationWorkflowSettingRepository repository,
@@ -31,7 +33,8 @@ public class RunAutomationWorkflowUseCase {
             ProcessPendingEventDetectionUseCase processPendingEventDetectionUseCase,
             ProcessPendingEventAnalysisUseCase processPendingEventAnalysisUseCase,
             RecordAuditLogUseCase recordAuditLogUseCase,
-            TransactionOperations transactionOperations
+            TransactionOperations transactionOperations,
+            AiModelExecutionCoordinator aiModelExecutionCoordinator
     ) {
         this.repository = repository;
         this.processPendingClassificationsUseCase = processPendingClassificationsUseCase;
@@ -39,9 +42,10 @@ public class RunAutomationWorkflowUseCase {
         this.processPendingEventAnalysisUseCase = processPendingEventAnalysisUseCase;
         this.recordAuditLogUseCase = recordAuditLogUseCase;
         this.transactionOperations = transactionOperations;
+        this.aiModelExecutionCoordinator = aiModelExecutionCoordinator;
     }
 
-    public synchronized AutomationRunResult execute(AutomationWorkflowCode workflowCode) {
+    public AutomationRunResult execute(AutomationWorkflowCode workflowCode) {
         AutomationWorkflowSetting setting = repository.findByCode(workflowCode)
                 .orElseThrow(() -> new IllegalArgumentException("automation workflow setting not found: " + workflowCode));
 
@@ -54,7 +58,10 @@ public class RunAutomationWorkflowUseCase {
         AutomationWorkflowSetting runningSetting = markRunning(setting, startedAt);
 
         try {
-            AutomationRunResult result = executeBatch(workflowCode, runningSetting.getBatchSize());
+            AutomationRunResult result = aiModelExecutionCoordinator.execute(
+                    aiWorkflowCode(workflowCode),
+                    () -> executeBatch(workflowCode, runningSetting.getBatchSize())
+            );
             markCompleted(runningSetting, workflowCode, result, OffsetDateTime.now());
             log.info("automation workflow completed: workflowCode={}, processed={}, success={}, failed={}, skipped={}",
                     workflowCode, result.processedCount(), result.successCount(), result.failedCount(), result.skippedCount());
@@ -71,6 +78,14 @@ public class RunAutomationWorkflowUseCase {
             case WF02_CLASSIFICATION -> processPendingClassificationsUseCase.execute(batchSize);
             case WF03_EVENT_DETECTION -> processPendingEventDetectionUseCase.execute(batchSize);
             case WF04_ANALYSIS -> processPendingEventAnalysisUseCase.executePending(batchSize);
+        };
+    }
+
+    private String aiWorkflowCode(AutomationWorkflowCode workflowCode) {
+        return switch (workflowCode) {
+            case WF02_CLASSIFICATION -> "WF02_CLASSIFICATION";
+            case WF03_EVENT_DETECTION -> "WF03_EVENT_MATCHING";
+            case WF04_ANALYSIS -> "WF04_ANALYSIS";
         };
     }
 

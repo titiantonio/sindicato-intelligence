@@ -23,6 +23,7 @@ class AIProviderSelectionTest {
                 "deterministic-classification",
                 BigDecimal.valueOf(0.2),
                 1024,
+                60,
                 null
         ));
         DynamicClassificationAIProvider provider = new DynamicClassificationAIProvider(

@@ -3,6 +3,7 @@ package es.sindicato.intelligence.analysis.application;
 import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
+import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import es.sindicato.intelligence.event.domain.Event;
@@ -32,6 +33,7 @@ public class GenerateAnalysisUseCase {
     private final AnalysisAIProvider aiProvider;
     private final AiOperationMetricsRecorder metricsRecorder;
     private final RecordAuditLogUseCase recordAuditLogUseCase;
+    private final AiModelExecutionCoordinator aiModelExecutionCoordinator;
 
     public GenerateAnalysisUseCase(
             EventRepository eventRepository,
@@ -40,7 +42,8 @@ public class GenerateAnalysisUseCase {
             GenerateAnalysisPromptBuilder promptBuilder,
             AnalysisAIProvider aiProvider,
             AiOperationMetricsRecorder metricsRecorder,
-            RecordAuditLogUseCase recordAuditLogUseCase
+            RecordAuditLogUseCase recordAuditLogUseCase,
+            AiModelExecutionCoordinator aiModelExecutionCoordinator
     ) {
         this.eventRepository = eventRepository;
         this.newsRepository = newsRepository;
@@ -49,6 +52,7 @@ public class GenerateAnalysisUseCase {
         this.aiProvider = aiProvider;
         this.metricsRecorder = metricsRecorder;
         this.recordAuditLogUseCase = recordAuditLogUseCase;
+        this.aiModelExecutionCoordinator = aiModelExecutionCoordinator;
     }
 
     @Transactional
@@ -77,16 +81,16 @@ public class GenerateAnalysisUseCase {
         AnalysisAIResponse aiResponse;
         OffsetDateTime startedAt = metricsRecorder.start();
         try {
-            aiResponse = aiProvider.generate(new AnalysisAIRequest(
-                    event.getId(),
-                    event.getTitle(),
-                    event.getDescription(),
-                    event.getCategory(),
-                    event.getImportance(),
-                    newsItems,
-                    prompt.systemPrompt(),
-                    prompt.userPrompt()
-            ));
+            aiResponse = aiModelExecutionCoordinator.execute("WF04_ANALYSIS", () -> aiProvider.generate(new AnalysisAIRequest(
+                            event.getId(),
+                            event.getTitle(),
+                            event.getDescription(),
+                            event.getCategory(),
+                            event.getImportance(),
+                            newsItems,
+                            prompt.systemPrompt(),
+                            prompt.userPrompt()
+                    )));
         } catch (RuntimeException exception) {
             metricsRecorder.recordFailure("ANALYSIS", "WF04_ANALYSIS", aiProvider.providerName(), aiProvider.modelName(), "EVENT", event.getId(), startedAt, exception);
             log.error("analysis generation failed during AI generation: eventId={}, reason={}", event.getId(), exception.getMessage(), exception);

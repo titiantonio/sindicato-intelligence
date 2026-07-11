@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.classification.application;
 
+import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.classification.domain.ClassificationCategory;
 import es.sindicato.intelligence.classification.domain.ImpactLevel;
@@ -41,7 +42,7 @@ class ClassifyNewsUseCaseTest {
         AIProvider aiProvider = mock(AIProvider.class);
         AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
         NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, metricsRecorder, enrichmentPort);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, metricsRecorder, coordinator(), enrichmentPort);
         NewsArticle newsArticle = newsArticle();
         NewsClassification savedClassification = classification(10L, newsArticle.getId());
 
@@ -85,7 +86,7 @@ class ClassifyNewsUseCaseTest {
         AIProvider aiProvider = mock(AIProvider.class);
         AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
         NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, metricsRecorder, enrichmentPort);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, metricsRecorder, coordinator(), enrichmentPort);
         NewsArticle newsArticle = newsArticle();
         ClassificationAIResponse response = aiResponse(ClassificationCategory.OTROS, "FUERA_DE_AMBITO", BigDecimal.ZERO, ImpactLevel.LOW, UrgencyLevel.LOW);
 
@@ -132,7 +133,7 @@ class ClassifyNewsUseCaseTest {
         AIProvider aiProvider = mock(AIProvider.class);
         AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
         NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, metricsRecorder, enrichmentPort);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, promptBuilder, aiProvider, metricsRecorder, coordinator(), enrichmentPort);
         NewsArticle newsArticle = newsArticle();
 
         when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
@@ -152,7 +153,7 @@ class ClassifyNewsUseCaseTest {
     void rejectsUnknownNews() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), mock(AIProvider.class), mock(AiOperationMetricsRecorder.class), mock(NewsContentEnrichmentPort.class));
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), mock(AIProvider.class), mock(AiOperationMetricsRecorder.class), coordinator(), mock(NewsContentEnrichmentPort.class));
 
         when(newsRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -165,7 +166,7 @@ class ClassifyNewsUseCaseTest {
     void rejectsAlreadyClassifiedNews() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), mock(AIProvider.class), mock(AiOperationMetricsRecorder.class), mock(NewsContentEnrichmentPort.class));
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), mock(AIProvider.class), mock(AiOperationMetricsRecorder.class), coordinator(), mock(NewsContentEnrichmentPort.class));
         NewsArticle newsArticle = newsArticle();
 
         when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
@@ -183,7 +184,7 @@ class ClassifyNewsUseCaseTest {
         AIProvider aiProvider = mock(AIProvider.class);
         AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
         NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), aiProvider, metricsRecorder, enrichmentPort);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), aiProvider, metricsRecorder, coordinator(), enrichmentPort);
         NewsArticle newsArticle = newsArticle();
 
         when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
@@ -211,7 +212,7 @@ class ClassifyNewsUseCaseTest {
         AIProvider aiProvider = mock(AIProvider.class);
         AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
         NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
-        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), aiProvider, metricsRecorder, enrichmentPort);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), aiProvider, metricsRecorder, coordinator(), enrichmentPort);
         NewsArticle newsArticle = newsArticle();
 
         when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
@@ -284,5 +285,12 @@ class ClassifyNewsUseCaseTest {
                 now,
                 now
         );
+    }
+
+    private AiModelExecutionCoordinator coordinator() {
+        AiModelExecutionCoordinator coordinator = mock(AiModelExecutionCoordinator.class);
+        org.mockito.Mockito.when(coordinator.execute(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(invocation -> invocation.<java.util.function.Supplier<?>>getArgument(1).get());
+        return coordinator;
     }
 }

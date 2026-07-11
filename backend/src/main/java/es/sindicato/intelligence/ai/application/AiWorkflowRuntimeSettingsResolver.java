@@ -33,6 +33,7 @@ public class AiWorkflowRuntimeSettingsResolver {
                 workflow.getModelName(),
                 workflow.getTemperature(),
                 workflow.getMaxOutputTokens(),
+                workflow.getCooldownSeconds(),
                 provider.getApiKey()
         );
     }

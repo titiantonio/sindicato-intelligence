@@ -11,6 +11,7 @@ public record UpdateAiWorkflowSettingRequest(
         @NotBlank String providerCode,
         @NotBlank String modelName,
         @DecimalMin("0.0") @DecimalMax("2.0") BigDecimal temperature,
-        @Min(1) int maxOutputTokens
+        @Min(1) int maxOutputTokens,
+        @Min(0) int cooldownSeconds
 ) {
 }

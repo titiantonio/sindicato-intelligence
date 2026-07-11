@@ -54,7 +54,7 @@ public class DynamicClassificationAIProvider implements AIProvider {
         try {
             return settingsResolver.resolve(WORKFLOW_CODE);
         } catch (RuntimeException exception) {
-            return new AiWorkflowRuntimeSettings(WORKFLOW_CODE, "unresolved", "unresolved", null, 1, null);
+            return new AiWorkflowRuntimeSettings(WORKFLOW_CODE, "unresolved", "unresolved", null, 1, 60, null);
         }
     }
 }

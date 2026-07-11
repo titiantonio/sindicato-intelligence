@@ -105,6 +105,7 @@ describe('SettingsPageComponent', () => {
     expect(compiled.textContent).toContain('WF02 - Clasificacion');
     expect(compiled.textContent).toContain('Credenciales y modelos');
     expect(compiled.textContent).toContain('Guardar IA');
+    expect(compiled.textContent).toContain('Cooldown modelo (seg)');
     expect(compiled.textContent).toContain('Google Gemini');
     expect(compiled.textContent).toContain('Procesadas: 0 · Completadas: 0 · Fallidas: 0 · Omitidas: 0');
     expect(compiled.textContent).not.toContain('P/C/F/O');
@@ -171,7 +172,8 @@ describe('SettingsPageComponent', () => {
       providerCode: 'gemini',
       modelName: 'models/gemini-2.5-flash',
       temperature: 0.3,
-      maxOutputTokens: 2048
+      maxOutputTokens: 2048,
+      cooldownSeconds: 120
     });
     component.saveAiWorkflow(aiWorkflowSettings()[2]);
 
@@ -179,7 +181,8 @@ describe('SettingsPageComponent', () => {
       providerCode: 'gemini',
       modelName: 'models/gemini-2.5-flash',
       temperature: 0.3,
-      maxOutputTokens: 2048
+      maxOutputTokens: 2048,
+      cooldownSeconds: 120
     });
   });
 
@@ -329,6 +332,7 @@ describe('SettingsPageComponent', () => {
         modelName: 'deterministic-classification',
         temperature: 0.2,
         maxOutputTokens: 1024,
+        cooldownSeconds: 60,
         createdAt: '2026-06-24T10:00:00Z',
         updatedAt: '2026-06-24T10:00:00Z'
       },
@@ -339,6 +343,7 @@ describe('SettingsPageComponent', () => {
         modelName: 'deterministic-event-matching',
         temperature: 0.2,
         maxOutputTokens: 1024,
+        cooldownSeconds: 60,
         createdAt: '2026-06-24T10:00:00Z',
         updatedAt: '2026-06-24T10:00:00Z'
       },
@@ -349,6 +354,7 @@ describe('SettingsPageComponent', () => {
         modelName: 'deterministic-analysis',
         temperature: 0.2,
         maxOutputTokens: 1024,
+        cooldownSeconds: 60,
         createdAt: '2026-06-24T10:00:00Z',
         updatedAt: '2026-06-24T10:00:00Z'
       },
@@ -359,6 +365,7 @@ describe('SettingsPageComponent', () => {
         modelName: 'deterministic-content',
         temperature: 0.2,
         maxOutputTokens: 1024,
+        cooldownSeconds: 60,
         createdAt: '2026-06-24T10:00:00Z',
         updatedAt: '2026-06-24T10:00:00Z'
       }

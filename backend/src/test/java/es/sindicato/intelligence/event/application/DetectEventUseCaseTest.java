@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.event.application;
 
+import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.classification.domain.ClassificationCategory;
 import es.sindicato.intelligence.classification.domain.ImpactLevel;
@@ -40,7 +41,8 @@ class DetectEventUseCaseTest {
                 eventRepository,
                 new EventMatchPromptBuilder(),
                 aiProvider,
-                mock(AiOperationMetricsRecorder.class)
+                mock(AiOperationMetricsRecorder.class),
+                coordinator()
         );
         NewsArticle newsArticle = newsArticle(NewsStatus.DISCARDED);
 
@@ -65,7 +67,8 @@ class DetectEventUseCaseTest {
                 eventRepository,
                 new EventMatchPromptBuilder(),
                 aiProvider,
-                mock(AiOperationMetricsRecorder.class)
+                mock(AiOperationMetricsRecorder.class),
+                coordinator()
         );
         NewsArticle newsArticle = newsArticle(NewsStatus.CLASSIFIED);
 
@@ -114,5 +117,12 @@ class DetectEventUseCaseTest {
                 List.of(),
                 OffsetDateTime.parse("2026-06-15T10:00:00Z")
         );
+    }
+
+    private AiModelExecutionCoordinator coordinator() {
+        AiModelExecutionCoordinator coordinator = mock(AiModelExecutionCoordinator.class);
+        org.mockito.Mockito.when(coordinator.execute(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(invocation -> invocation.<java.util.function.Supplier<?>>getArgument(1).get());
+        return coordinator;
     }
 }

@@ -3225,3 +3225,21 @@ Verificacion:
 - Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/auth/login/login-page.component.spec.ts --include=src/app/features/auth/forgot-password/forgot-password-page.component.spec.ts --include=src/app/features/auth/reset-password/reset-password-page.component.spec.ts --include=src/app/features/auth/change-password/change-password-page.component.spec.ts --include=src/app/features/dashboard/dashboard-page.component.spec.ts --include=src/app/features/events/event-detail-page.component.spec.ts --include=src/app/features/users/users-page.component.spec.ts --include=src/app/features/sources/sources-page.component.spec.ts --include=src/app/features/settings/settings-page.component.spec.ts` OK, 57 tests.
 - Frontend build: `npm.cmd run build` OK. Bundle inicial: `528.21 kB`.
 - Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 147 tests. Persiste warning no bloqueante de cierre lento de ChromeHeadless.
+
+## 19.29 Coordinacion de acciones IA por modelo - 2026-07-11
+
+Tarea de hardening posterior al Sprint 12 sobre Fase 12, automatizaciones internas, configuracion ADMIN e integraciones IA.
+
+Completado en esta iteracion:
+- [x] Anadida migracion `V21__ai_workflow_model_cooldown.sql` con `ai_workflow_settings.cooldown_seconds` por defecto a 60 segundos.
+- [x] Ampliada la configuracion IA por workflow para exponer y actualizar `cooldownSeconds` desde API ADMIN.
+- [x] Implementado `AiModelExecutionCoordinator` para bloquear ejecuciones simultaneas que usen el mismo `modelName` efectivo.
+- [x] Permitida ejecucion paralela cuando los workflows usan modelos distintos.
+- [x] Aplicado el coordinador a `WF02_CLASSIFICATION`, `WF03_EVENT_MATCHING`, `WF04_ANALYSIS` y `WF05_CONTENT`.
+- [x] La pantalla `/settings` permite configurar el cooldown por workflow IA.
+- [x] Version backend subida a `0.0.92-SNAPSHOT`.
+- [x] Version frontend subida a `0.0.21`.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=AiModelExecutionCoordinatorTest,RunAutomationWorkflowUseCaseTest,ClassifyNewsUseCaseTest,DetectEventUseCaseTest,GenerateAnalysisUseCaseTest,GenerateContentUseCaseTest,AiSettingsControllerTest,AIProviderSelectionTest,ClassificationControllerTest,AnalysisControllerTest,ContentControllerTest" test` OK, 33 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts --include=src/app/core/services/ai-observability.service.spec.ts` OK, 17 tests.

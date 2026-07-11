@@ -118,7 +118,7 @@ class AiSettingsControllerTest {
     void allowsAdminToUpdateWorkflowSettings() throws Exception {
         when(updateAiWorkflowSettingUseCase.execute(
                 "WF04_ANALYSIS",
-                new UpdateAiWorkflowSettingCommand("gemini", "models/gemini-2.5-flash", BigDecimal.valueOf(0.3), 2048)
+                new UpdateAiWorkflowSettingCommand("gemini", "models/gemini-2.5-flash", BigDecimal.valueOf(0.3), 2048, 60)
         )).thenReturn(workflow());
 
         mockMvc.perform(put("/api/v1/ai/workflow-settings/WF04_ANALYSIS")
@@ -129,7 +129,8 @@ class AiSettingsControllerTest {
                                   "providerCode": "gemini",
                                   "modelName": "models/gemini-2.5-flash",
                                   "temperature": 0.3,
-                                  "maxOutputTokens": 2048
+                                  "maxOutputTokens": 2048,
+                                  "cooldownSeconds": 60
                                 }
                                 """))
                 .andExpect(status().isOk())
@@ -144,6 +145,6 @@ class AiSettingsControllerTest {
 
     private AiWorkflowSettingView workflow() {
         OffsetDateTime now = OffsetDateTime.parse("2026-06-24T10:00:00Z");
-        return new AiWorkflowSettingView("WF04_ANALYSIS", "gemini", "Google Gemini", "models/gemini-2.5-flash", BigDecimal.valueOf(0.3), 2048, now, now);
+        return new AiWorkflowSettingView("WF04_ANALYSIS", "gemini", "Google Gemini", "models/gemini-2.5-flash", BigDecimal.valueOf(0.3), 2048, 60, now, now);
     }
 }

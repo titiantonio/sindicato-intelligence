@@ -551,6 +551,18 @@
                         [name]="aiSetting.workflowCode + 'Tokens'"
                       />
                     </label>
+
+                    <label>
+                      Cooldown modelo (seg)
+                      <input
+                        pInputText
+                        type="number"
+                        min="0"
+                        [ngModel]="aiWorkflowFormFor(aiSetting.workflowCode).cooldownSeconds"
+                        (ngModelChange)="updateAiWorkflowForm(aiSetting.workflowCode, { cooldownSeconds: $event })"
+                        [name]="aiSetting.workflowCode + 'Cooldown'"
+                      />
+                    </label>
                   </div>
                 </section>
               </div>

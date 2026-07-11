@@ -6,6 +6,7 @@ public record UpdateAiWorkflowSettingCommand(
         String providerCode,
         String modelName,
         BigDecimal temperature,
-        int maxOutputTokens
+        int maxOutputTokens,
+        int cooldownSeconds
 ) {
 }

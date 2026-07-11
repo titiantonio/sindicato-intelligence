@@ -1,6 +1,7 @@
 package es.sindicato.intelligence.classification.application;
 
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
+import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
 import es.sindicato.intelligence.classification.domain.NewsClassification;
 import es.sindicato.intelligence.classification.domain.NewsClassificationRepository;
 import es.sindicato.intelligence.news.domain.NewsArticle;
@@ -25,6 +26,7 @@ public class ClassifyNewsUseCase {
     private final ClassifyNewsPromptBuilder promptBuilder;
     private final AIProvider aiProvider;
     private final AiOperationMetricsRecorder metricsRecorder;
+    private final AiModelExecutionCoordinator aiModelExecutionCoordinator;
     private final NewsContentEnrichmentPort newsContentEnrichmentPort;
 
     public ClassifyNewsUseCase(
@@ -33,6 +35,7 @@ public class ClassifyNewsUseCase {
             ClassifyNewsPromptBuilder promptBuilder,
             AIProvider aiProvider,
             AiOperationMetricsRecorder metricsRecorder,
+            AiModelExecutionCoordinator aiModelExecutionCoordinator,
             NewsContentEnrichmentPort newsContentEnrichmentPort
     ) {
         this.newsRepository = newsRepository;
@@ -40,6 +43,7 @@ public class ClassifyNewsUseCase {
         this.promptBuilder = promptBuilder;
         this.aiProvider = aiProvider;
         this.metricsRecorder = metricsRecorder;
+        this.aiModelExecutionCoordinator = aiModelExecutionCoordinator;
         this.newsContentEnrichmentPort = newsContentEnrichmentPort;
     }
 
@@ -68,14 +72,14 @@ public class ClassifyNewsUseCase {
         ClassificationAIResponse aiResponse;
         OffsetDateTime startedAt = metricsRecorder.start();
         try {
-            aiResponse = aiProvider.classify(new ClassificationAIRequest(
-                    newsArticle.getTitle(),
-                    newsArticle.getUrl(),
-                    newsArticle.getSummary(),
-                    effectiveContent,
-                    prompt.systemPrompt(),
-                    prompt.userPrompt()
-            ));
+            aiResponse = aiModelExecutionCoordinator.execute("WF02_CLASSIFICATION", () -> aiProvider.classify(new ClassificationAIRequest(
+                            newsArticle.getTitle(),
+                            newsArticle.getUrl(),
+                            newsArticle.getSummary(),
+                            effectiveContent,
+                            prompt.systemPrompt(),
+                            prompt.userPrompt()
+                    )));
         } catch (RuntimeException exception) {
             metricsRecorder.recordFailure("CLASSIFICATION", "WF02_CLASSIFICATION", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
             log.error("classification failed: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);

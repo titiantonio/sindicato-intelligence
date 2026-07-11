@@ -1,6 +1,7 @@
 package es.sindicato.intelligence.automation.application;
 
 import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
+import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowCode;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowSetting;
 import es.sindicato.intelligence.automation.domain.AutomationWorkflowSettingRepository;
@@ -30,6 +31,7 @@ class RunAutomationWorkflowUseCaseTest {
         ProcessPendingEventDetectionUseCase eventDetection = mock(ProcessPendingEventDetectionUseCase.class);
         ProcessPendingEventAnalysisUseCase analysis = mock(ProcessPendingEventAnalysisUseCase.class);
         RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        AiModelExecutionCoordinator coordinator = coordinator();
         TransactionOperations transactionOperations = transactionOperations();
         AutomationWorkflowSetting setting = setting(AutomationWorkflowCode.WF02_CLASSIFICATION, 1);
 
@@ -37,7 +39,7 @@ class RunAutomationWorkflowUseCaseTest {
         when(repository.save(setting)).thenReturn(setting);
         when(classifications.execute(1)).thenReturn(new AutomationRunResult(1, 1, 0, 0, List.of()));
 
-        AutomationRunResult result = new RunAutomationWorkflowUseCase(repository, classifications, eventDetection, analysis, audit, transactionOperations)
+        AutomationRunResult result = new RunAutomationWorkflowUseCase(repository, classifications, eventDetection, analysis, audit, transactionOperations, coordinator)
                 .execute(AutomationWorkflowCode.WF02_CLASSIFICATION);
 
         assertEquals(1, result.processedCount());
@@ -56,6 +58,7 @@ class RunAutomationWorkflowUseCaseTest {
         ProcessPendingEventDetectionUseCase eventDetection = mock(ProcessPendingEventDetectionUseCase.class);
         ProcessPendingEventAnalysisUseCase analysis = mock(ProcessPendingEventAnalysisUseCase.class);
         RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        AiModelExecutionCoordinator coordinator = coordinator();
         TransactionOperations transactionOperations = transactionOperations();
         AutomationWorkflowSetting setting = setting(AutomationWorkflowCode.WF02_CLASSIFICATION, 10);
 
@@ -72,7 +75,7 @@ class RunAutomationWorkflowUseCaseTest {
                 )
         ));
 
-        AutomationRunResult result = new RunAutomationWorkflowUseCase(repository, classifications, eventDetection, analysis, audit, transactionOperations)
+        AutomationRunResult result = new RunAutomationWorkflowUseCase(repository, classifications, eventDetection, analysis, audit, transactionOperations, coordinator)
                 .execute(AutomationWorkflowCode.WF02_CLASSIFICATION);
 
         assertEquals(10, result.processedCount());
@@ -95,13 +98,14 @@ class RunAutomationWorkflowUseCaseTest {
         ProcessPendingEventDetectionUseCase eventDetection = mock(ProcessPendingEventDetectionUseCase.class);
         ProcessPendingEventAnalysisUseCase analysis = mock(ProcessPendingEventAnalysisUseCase.class);
         RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        AiModelExecutionCoordinator coordinator = coordinator();
         TransactionOperations transactionOperations = transactionOperations();
         AutomationWorkflowSetting setting = setting(AutomationWorkflowCode.WF02_CLASSIFICATION, 1);
         setting.markRunning(OffsetDateTime.parse("2026-06-16T10:00:00Z"));
 
         when(repository.findByCode(AutomationWorkflowCode.WF02_CLASSIFICATION)).thenReturn(Optional.of(setting));
 
-        AutomationRunResult result = new RunAutomationWorkflowUseCase(repository, classifications, eventDetection, analysis, audit, transactionOperations)
+        AutomationRunResult result = new RunAutomationWorkflowUseCase(repository, classifications, eventDetection, analysis, audit, transactionOperations, coordinator)
                 .execute(AutomationWorkflowCode.WF02_CLASSIFICATION);
 
         assertEquals(1, result.skippedCount());
@@ -137,5 +141,11 @@ class RunAutomationWorkflowUseCaseTest {
             return callback.doInTransaction(null);
         });
         return transactionOperations;
+    }
+
+    private AiModelExecutionCoordinator coordinator() {
+        AiModelExecutionCoordinator coordinator = mock(AiModelExecutionCoordinator.class);
+        when(coordinator.execute(any(), any())).thenAnswer(invocation -> invocation.<java.util.function.Supplier<?>>getArgument(1).get());
+        return coordinator;
     }
 }

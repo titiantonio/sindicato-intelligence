@@ -72,8 +72,8 @@ class AnalysisControllerTest {
         providerSettingRepository.save(provider);
 
         AiWorkflowSetting workflow = workflowSettingRepository.findByWorkflowCode("WF04_ANALYSIS")
-                .orElse(new AiWorkflowSetting("WF04_ANALYSIS", "deterministic", "deterministic-analysis", BigDecimal.ZERO, 1024, now, now));
-        workflow.update("deterministic", "deterministic-analysis", BigDecimal.ZERO, 1024, now);
+                .orElse(new AiWorkflowSetting("WF04_ANALYSIS", "deterministic", "deterministic-analysis", BigDecimal.ZERO, 1024, 60, now, now));
+        workflow.update("deterministic", "deterministic-analysis", BigDecimal.ZERO, 1024, 60, now);
         workflowSettingRepository.save(workflow);
     }
 

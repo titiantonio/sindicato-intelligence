@@ -28,6 +28,9 @@ public class AiWorkflowSettingEntity {
     @Column(name = "max_output_tokens", nullable = false)
     private int maxOutputTokens;
 
+    @Column(name = "cooldown_seconds", nullable = false)
+    private int cooldownSeconds;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -37,12 +40,13 @@ public class AiWorkflowSettingEntity {
     protected AiWorkflowSettingEntity() {
     }
 
-    public AiWorkflowSettingEntity(String workflowCode, String providerCode, String modelName, BigDecimal temperature, int maxOutputTokens, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    public AiWorkflowSettingEntity(String workflowCode, String providerCode, String modelName, BigDecimal temperature, int maxOutputTokens, int cooldownSeconds, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         this.workflowCode = workflowCode;
         this.providerCode = providerCode;
         this.modelName = modelName;
         this.temperature = temperature;
         this.maxOutputTokens = maxOutputTokens;
+        this.cooldownSeconds = cooldownSeconds;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -65,6 +69,10 @@ public class AiWorkflowSettingEntity {
 
     public int getMaxOutputTokens() {
         return maxOutputTokens;
+    }
+
+    public int getCooldownSeconds() {
+        return cooldownSeconds;
     }
 
     public OffsetDateTime getCreatedAt() {

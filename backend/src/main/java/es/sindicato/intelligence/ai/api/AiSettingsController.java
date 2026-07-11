@@ -88,7 +88,8 @@ public class AiSettingsController {
                         request.providerCode(),
                         request.modelName(),
                         request.temperature(),
-                        request.maxOutputTokens()
+                        request.maxOutputTokens(),
+                        request.cooldownSeconds()
                 )
         ));
     }
@@ -113,6 +114,7 @@ public class AiSettingsController {
                 view.modelName(),
                 view.temperature(),
                 view.maxOutputTokens(),
+                view.cooldownSeconds(),
                 view.createdAt(),
                 view.updatedAt()
         );

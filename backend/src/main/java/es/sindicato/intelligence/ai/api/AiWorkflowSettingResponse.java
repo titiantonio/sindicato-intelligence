@@ -10,6 +10,7 @@ public record AiWorkflowSettingResponse(
         String modelName,
         BigDecimal temperature,
         int maxOutputTokens,
+        int cooldownSeconds,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {

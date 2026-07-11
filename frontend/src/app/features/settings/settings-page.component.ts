@@ -51,6 +51,7 @@ interface AiWorkflowForm {
   modelName: string;
   temperature: number;
   maxOutputTokens: number;
+  cooldownSeconds: number;
 }
 
 @Component({
@@ -184,7 +185,8 @@ export class SettingsPageComponent implements OnInit {
             providerCode: setting.providerCode,
             modelName: setting.modelName,
             temperature: setting.temperature,
-            maxOutputTokens: setting.maxOutputTokens
+            maxOutputTokens: setting.maxOutputTokens,
+            cooldownSeconds: setting.cooldownSeconds
           }
         ])));
         this.automationLoaded.set(true);
@@ -300,7 +302,8 @@ export class SettingsPageComponent implements OnInit {
             providerCode: setting.providerCode,
             modelName: setting.modelName,
             temperature: setting.temperature,
-            maxOutputTokens: setting.maxOutputTokens
+            maxOutputTokens: setting.maxOutputTokens,
+            cooldownSeconds: setting.cooldownSeconds
           }
         ])));
       },
@@ -400,7 +403,7 @@ export class SettingsPageComponent implements OnInit {
   }
 
   protected aiWorkflowFormFor(workflowCode: string): AiWorkflowForm {
-    return this.aiWorkflowForms()[workflowCode] ?? { providerCode: 'deterministic', modelName: '', temperature: 0.2, maxOutputTokens: 1024 };
+    return this.aiWorkflowForms()[workflowCode] ?? { providerCode: 'deterministic', modelName: '', temperature: 0.2, maxOutputTokens: 1024, cooldownSeconds: 60 };
   }
 
   protected saveAiProvider(provider: AiProviderSetting): void {
@@ -450,7 +453,8 @@ export class SettingsPageComponent implements OnInit {
       providerCode: form.providerCode,
       modelName: form.modelName,
       temperature: Number(form.temperature),
-      maxOutputTokens: Math.max(1, Math.round(Number(form.maxOutputTokens)))
+      maxOutputTokens: Math.max(1, Math.round(Number(form.maxOutputTokens))),
+      cooldownSeconds: Math.max(0, Math.round(Number(form.cooldownSeconds)))
     }).subscribe({
       next: () => {
         this.successMessage.set('Configuracion IA del workflow guardada.');

@@ -37,10 +37,10 @@ public class UpdateAiWorkflowSettingUseCase {
         if (providerRepository.findByCode(command.providerCode()).isEmpty()) {
             throw new IllegalArgumentException("ai provider setting not found: " + command.providerCode());
         }
-        String oldValues = "provider=" + setting.getProviderCode() + ";model=" + setting.getModelName();
-        setting.update(command.providerCode(), command.modelName(), command.temperature(), command.maxOutputTokens(), OffsetDateTime.now());
+        String oldValues = "provider=" + setting.getProviderCode() + ";model=" + setting.getModelName() + ";cooldownSeconds=" + setting.getCooldownSeconds();
+        setting.update(command.providerCode(), command.modelName(), command.temperature(), command.maxOutputTokens(), command.cooldownSeconds(), OffsetDateTime.now());
         AiWorkflowSetting saved = workflowRepository.save(setting);
-        String newValues = "provider=" + saved.getProviderCode() + ";model=" + saved.getModelName();
+        String newValues = "provider=" + saved.getProviderCode() + ";model=" + saved.getModelName() + ";cooldownSeconds=" + saved.getCooldownSeconds();
         auditLogRepository.record(currentAuditUserProvider.currentUserId().orElse(null), "AI_WORKFLOW_SETTING_UPDATED", "AI_WORKFLOW", null, oldValues, newValues);
         return toView(saved);
     }
@@ -56,6 +56,7 @@ public class UpdateAiWorkflowSettingUseCase {
                 setting.getModelName(),
                 setting.getTemperature(),
                 setting.getMaxOutputTokens(),
+                setting.getCooldownSeconds(),
                 setting.getCreatedAt(),
                 setting.getUpdatedAt()
         );

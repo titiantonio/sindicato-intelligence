@@ -1,6 +1,7 @@
 package es.sindicato.intelligence.content.application;
 
 import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
+import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
@@ -49,7 +50,7 @@ class GenerateContentUseCaseTest {
         RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
         RelevantContentLinkExtractor linkExtractor = mock(RelevantContentLinkExtractor.class);
         CurrentContentAuthorProvider authorProvider = () -> 1L;
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, authorProvider, metricsRecorder, audit, linkExtractor);
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, authorProvider, metricsRecorder, audit, linkExtractor, coordinator());
         Event event = event();
         NewsArticle newsArticle = newsArticle(2L);
         EventAIAnalysis analysis = analysis(20L, event.getId());
@@ -110,7 +111,7 @@ class GenerateContentUseCaseTest {
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         ContentAIProvider aiProvider = mock(ContentAIProvider.class);
         RelevantContentLinkExtractor linkExtractor = mock(RelevantContentLinkExtractor.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), linkExtractor);
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), linkExtractor, coordinator());
         Event event = event();
         NewsArticle newsArticle = newsArticle(2L);
         EventAIAnalysis analysis = analysis(20L, event.getId());
@@ -134,7 +135,7 @@ class GenerateContentUseCaseTest {
         NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class));
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class), coordinator());
         Event event = event();
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
@@ -151,7 +152,7 @@ class GenerateContentUseCaseTest {
         NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class));
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class), coordinator());
         Event event = event();
         EventAIAnalysis analysis = analysis(20L, 999L);
 
@@ -204,5 +205,12 @@ class GenerateContentUseCaseTest {
     private NewsArticle newsArticle(Long id) {
         OffsetDateTime now = OffsetDateTime.parse("2026-06-08T10:00:00Z");
         return new NewsArticle(id, 1L, "SIPRI publica adjudicaciones", "https://test.example/news", "Resumen", "Contenido", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", now.minusHours(1), now, NewsStatus.EVENT_MATCHED, now, now);
+    }
+
+    private AiModelExecutionCoordinator coordinator() {
+        AiModelExecutionCoordinator coordinator = mock(AiModelExecutionCoordinator.class);
+        org.mockito.Mockito.when(coordinator.execute(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(invocation -> invocation.<java.util.function.Supplier<?>>getArgument(1).get());
+        return coordinator;
     }
 }

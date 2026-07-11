@@ -80,8 +80,8 @@ class ContentControllerTest {
         providerSettingRepository.save(provider);
 
         AiWorkflowSetting workflow = workflowSettingRepository.findByWorkflowCode("WF05_CONTENT")
-                .orElse(new AiWorkflowSetting("WF05_CONTENT", "deterministic", "deterministic-content", BigDecimal.ZERO, 1024, now, now));
-        workflow.update("deterministic", "deterministic-content", BigDecimal.ZERO, 1024, now);
+                .orElse(new AiWorkflowSetting("WF05_CONTENT", "deterministic", "deterministic-content", BigDecimal.ZERO, 1024, 60, now, now));
+        workflow.update("deterministic", "deterministic-content", BigDecimal.ZERO, 1024, 60, now);
         workflowSettingRepository.save(workflow);
     }
 

@@ -8,6 +8,7 @@ public record AiWorkflowRuntimeSettings(
         String modelName,
         BigDecimal temperature,
         int maxOutputTokens,
+        int cooldownSeconds,
         String apiKey
 ) {
 }

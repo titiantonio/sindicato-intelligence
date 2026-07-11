@@ -64,8 +64,8 @@ class ClassificationControllerTest {
         providerSettingRepository.save(provider);
 
         AiWorkflowSetting workflow = workflowSettingRepository.findByWorkflowCode("WF02_CLASSIFICATION")
-                .orElse(new AiWorkflowSetting("WF02_CLASSIFICATION", "deterministic", "deterministic-classification", BigDecimal.ZERO, 1024, now, now));
-        workflow.update("deterministic", "deterministic-classification", BigDecimal.ZERO, 1024, now);
+                .orElse(new AiWorkflowSetting("WF02_CLASSIFICATION", "deterministic", "deterministic-classification", BigDecimal.ZERO, 1024, 60, now, now));
+        workflow.update("deterministic", "deterministic-classification", BigDecimal.ZERO, 1024, 60, now);
         workflowSettingRepository.save(workflow);
     }
 

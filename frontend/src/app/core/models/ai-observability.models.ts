@@ -68,6 +68,7 @@ export interface AiWorkflowSetting {
   modelName: string;
   temperature: number;
   maxOutputTokens: number;
+  cooldownSeconds: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -77,4 +78,5 @@ export interface UpdateAiWorkflowSettingRequest {
   modelName: string;
   temperature: number;
   maxOutputTokens: number;
+  cooldownSeconds: number;
 }

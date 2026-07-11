@@ -47,6 +47,7 @@ public class JpaAiWorkflowSettingRepository implements AiWorkflowSettingReposito
                 setting.getModelName(),
                 setting.getTemperature(),
                 setting.getMaxOutputTokens(),
+                setting.getCooldownSeconds(),
                 setting.getCreatedAt(),
                 setting.getUpdatedAt()
         );
@@ -59,6 +60,7 @@ public class JpaAiWorkflowSettingRepository implements AiWorkflowSettingReposito
                 entity.getModelName(),
                 entity.getTemperature(),
                 entity.getMaxOutputTokens(),
+                entity.getCooldownSeconds(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

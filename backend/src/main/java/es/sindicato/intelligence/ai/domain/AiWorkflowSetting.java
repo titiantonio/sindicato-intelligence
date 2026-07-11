@@ -11,24 +11,27 @@ public class AiWorkflowSetting {
     private String modelName;
     private BigDecimal temperature;
     private int maxOutputTokens;
+    private int cooldownSeconds;
     private final OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 
-    public AiWorkflowSetting(String workflowCode, String providerCode, String modelName, BigDecimal temperature, int maxOutputTokens, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    public AiWorkflowSetting(String workflowCode, String providerCode, String modelName, BigDecimal temperature, int maxOutputTokens, int cooldownSeconds, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         this.workflowCode = requireText(workflowCode, "workflowCode is required");
         this.providerCode = requireText(providerCode, "providerCode is required");
         this.modelName = requireText(modelName, "modelName is required");
         this.temperature = validateTemperature(temperature);
         this.maxOutputTokens = validateMaxOutputTokens(maxOutputTokens);
+        this.cooldownSeconds = validateCooldownSeconds(cooldownSeconds);
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt is required");
         this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt is required");
     }
 
-    public void update(String providerCode, String modelName, BigDecimal temperature, int maxOutputTokens, OffsetDateTime now) {
+    public void update(String providerCode, String modelName, BigDecimal temperature, int maxOutputTokens, int cooldownSeconds, OffsetDateTime now) {
         this.providerCode = requireText(providerCode, "providerCode is required");
         this.modelName = requireText(modelName, "modelName is required");
         this.temperature = validateTemperature(temperature);
         this.maxOutputTokens = validateMaxOutputTokens(maxOutputTokens);
+        this.cooldownSeconds = validateCooldownSeconds(cooldownSeconds);
         this.updatedAt = Objects.requireNonNull(now, "now is required");
     }
 
@@ -50,6 +53,10 @@ public class AiWorkflowSetting {
 
     public int getMaxOutputTokens() {
         return maxOutputTokens;
+    }
+
+    public int getCooldownSeconds() {
+        return cooldownSeconds;
     }
 
     public OffsetDateTime getCreatedAt() {
@@ -78,6 +85,13 @@ public class AiWorkflowSetting {
     private int validateMaxOutputTokens(int value) {
         if (value < 1) {
             throw new IllegalArgumentException("maxOutputTokens must be at least 1");
+        }
+        return value;
+    }
+
+    private int validateCooldownSeconds(int value) {
+        if (value < 0) {
+            throw new IllegalArgumentException("cooldownSeconds cannot be negative");
         }
         return value;
     }
