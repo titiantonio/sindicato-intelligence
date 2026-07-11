@@ -48,6 +48,7 @@ public class JpaNewsPageQueryRepository implements NewsPageQueryRepository {
                     news.source_id,
                     sources.name,
                     news.title,
+                    news.url,
                     news.processing_status,
                     event_news.event_id,
                     classification.category,
@@ -160,10 +161,11 @@ public class JpaNewsPageQueryRepository implements NewsPageQueryRepository {
                         (String) row[2],
                         (String) row[3],
                         (String) row[4],
-                        row[5] == null ? null : ((Number) row[5]).longValue(),
-                        (String) row[6],
-                        toOffsetDateTime(row[7]),
-                        toOffsetDateTime(row[8])
+                        (String) row[5],
+                        row[6] == null ? null : ((Number) row[6]).longValue(),
+                        (String) row[7],
+                        toOffsetDateTime(row[8]),
+                        toOffsetDateTime(row[9])
                 ))
                 .toList();
     }

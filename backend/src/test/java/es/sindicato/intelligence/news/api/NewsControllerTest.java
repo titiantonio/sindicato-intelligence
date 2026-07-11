@@ -197,6 +197,54 @@ class NewsControllerTest {
     }
 
     @Test
+    void discardsNewsManually() throws Exception {
+        Source source = sourceRepository.save(source(uniqueUrl("sources")));
+        NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId(), uniqueUrl("news-discard"), hash('m')));
+
+        mockMvc.perform(post("/api/v1/news/{id}/discard", newsArticle.getId()).with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(newsArticle.getId()))
+                .andExpect(jsonPath("$.processingStatus").value("DISCARDED"));
+    }
+
+    @Test
+    void restoresDiscardedNewsToCapturedWhenItHasNoClassificationOrEvent() throws Exception {
+        Source source = sourceRepository.save(source(uniqueUrl("sources")));
+        NewsArticle newsArticle = newsRepository.save(newsArticle(
+                source.getId(),
+                uniqueUrl("news-restore-captured"),
+                hash('n'),
+                OffsetDateTime.now().minusDays(1),
+                NewsStatus.DISCARDED,
+                "Noticia descartada"
+        ));
+
+        mockMvc.perform(post("/api/v1/news/{id}/restore", newsArticle.getId()).with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(newsArticle.getId()))
+                .andExpect(jsonPath("$.processingStatus").value("CAPTURED"));
+    }
+
+    @Test
+    void restoresDiscardedNewsToEventMatchedWhenItHasEventAssociation() throws Exception {
+        Source source = sourceRepository.save(source(uniqueUrl("sources")));
+        NewsArticle newsArticle = newsRepository.save(newsArticle(
+                source.getId(),
+                uniqueUrl("news-restore-event"),
+                hash('o'),
+                OffsetDateTime.now().minusDays(1),
+                NewsStatus.DISCARDED,
+                "Noticia con evento"
+        ));
+        eventRepository.save(event(newsArticle.getId()));
+
+        mockMvc.perform(post("/api/v1/news/{id}/restore", newsArticle.getId()).with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(newsArticle.getId()))
+                .andExpect(jsonPath("$.processingStatus").value("EVENT_MATCHED"));
+    }
+
+    @Test
     void rejectsInvalidCreateRequest() throws Exception {
         mockMvc.perform(post("/api/v1/news").with(adminJwt())
                         .contentType(MediaType.APPLICATION_JSON)

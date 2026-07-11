@@ -150,6 +150,58 @@ class ClassifyNewsUseCaseTest {
     }
 
     @Test
+    void fallsBackToOutOfScopeDiscardWhenGeminiReturnsNoTextForNewsWithoutEducationSignals() {
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
+        AIProvider aiProvider = mock(AIProvider.class);
+        AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
+        NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), aiProvider, metricsRecorder, coordinator(), enrichmentPort);
+        NewsArticle newsArticle = newsArticle("Noticia de sucesos", "La Audiencia dicta sentencia penal", "Contenido judicial de ambito penal");
+
+        when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
+        when(classificationRepository.existsByNewsId(newsArticle.getId())).thenReturn(false);
+        when(aiProvider.classify(any(ClassificationAIRequest.class))).thenThrow(new AIProviderException("Gemini response does not contain candidates[0].content.parts[0].text"));
+        when(aiProvider.providerName()).thenReturn("gemini");
+        when(aiProvider.modelName()).thenReturn("models/gemma-4-31b-it");
+        when(classificationRepository.save(any(NewsClassification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(new ClassifyNewsCommand(newsArticle.getId()));
+
+        ArgumentCaptor<NewsClassification> captor = ArgumentCaptor.forClass(NewsClassification.class);
+        verify(classificationRepository).save(captor.capture());
+        verify(newsRepository).save(newsArticle);
+        verify(metricsRecorder, never()).recordFailure(anyString(), anyString(), anyString(), anyString(), anyString(), any(), any(), any());
+        assertEquals(ClassificationCategory.OTROS, captor.getValue().getCategory());
+        assertEquals("FUERA_DE_AMBITO", captor.getValue().getSubcategory());
+        assertEquals(BigDecimal.ZERO, captor.getValue().getRelevanceScore());
+        assertEquals(NewsStatus.DISCARDED, newsArticle.getProcessingStatus());
+    }
+
+    @Test
+    void keepsFailureWhenGeminiReturnsNoTextForNewsWithEducationSignals() {
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
+        AIProvider aiProvider = mock(AIProvider.class);
+        AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
+        NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), aiProvider, metricsRecorder, coordinator(), enrichmentPort);
+        NewsArticle newsArticle = newsArticle("Conflicto en centros educativos", "Docentes reclaman medidas", "Profesorado de Andalucia afectado");
+
+        when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
+        when(classificationRepository.existsByNewsId(newsArticle.getId())).thenReturn(false);
+        when(aiProvider.classify(any(ClassificationAIRequest.class))).thenThrow(new AIProviderException("Gemini response does not contain candidates[0].content.parts[0].text"));
+        when(aiProvider.providerName()).thenReturn("gemini");
+        when(aiProvider.modelName()).thenReturn("models/gemma-4-31b-it");
+
+        assertThrows(AIProviderException.class, () -> useCase.execute(new ClassifyNewsCommand(newsArticle.getId())));
+
+        verify(classificationRepository, never()).save(any(NewsClassification.class));
+        verify(newsRepository, never()).save(newsArticle);
+        verify(metricsRecorder).recordFailure(eq("CLASSIFICATION"), eq("WF02_CLASSIFICATION"), eq("gemini"), eq("models/gemma-4-31b-it"), eq("NEWS"), eq(newsArticle.getId()), isNull(), any(AIProviderException.class));
+    }
+
+    @Test
     void rejectsUnknownNews() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
@@ -269,15 +321,19 @@ class ClassifyNewsUseCaseTest {
     }
 
     private NewsArticle newsArticle() {
+        return newsArticle("SIPRI publica adjudicaciones", "Resumen", "Contenido");
+    }
+
+    private NewsArticle newsArticle(String title, String summary, String content) {
         OffsetDateTime now = OffsetDateTime.parse("2026-06-06T10:00:00Z");
 
         return new NewsArticle(
                 2L,
                 1L,
-                "SIPRI publica adjudicaciones",
-                "https://test.example/news/sipri",
-                "Resumen",
-                "Contenido",
+                title,
+                "https://test.example/news/item",
+                summary,
+                content,
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                 now.minusHours(1),
                 now,

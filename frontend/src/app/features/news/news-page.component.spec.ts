@@ -18,8 +18,10 @@ describe('NewsPageComponent', () => {
   ];
 
   beforeEach(async () => {
-    newsService = jasmine.createSpyObj<NewsService>('NewsService', ['listNews', 'listNewsPage', 'getNews']);
+    newsService = jasmine.createSpyObj<NewsService>('NewsService', ['listNews', 'listNewsPage', 'getNews', 'discardNews', 'restoreNews']);
     newsService.listNewsPage.and.returnValue(of({ items: news, page: 1, pageSize: 10, totalItems: 30, totalPages: 3 }));
+    newsService.discardNews.and.returnValue(of({ id: 2 } as any));
+    newsService.restoreNews.and.returnValue(of({ id: 4 } as any));
 
     await TestBed.configureTestingModule({
       imports: [NewsPageComponent],
@@ -107,8 +109,25 @@ describe('NewsPageComponent', () => {
     const nativeElement: HTMLElement = fixture.nativeElement;
 
     expect(nativeElement.querySelector('a[href="/news/3"]')?.textContent?.trim()).toBe('Ver');
+    expect(nativeElement.querySelector('a[href="https://test.example/news/3"]')?.textContent?.trim()).toBe('Original');
     expect(nativeElement.querySelector('a[href="/events/10"]')?.textContent?.trim()).toBe('#10');
     expect(nativeElement.textContent).toContain('Diario Educativo');
+  });
+
+  it('discards news and reloads current page', () => {
+    (component as any).discardNews(news[1]);
+
+    expect(newsService.discardNews).toHaveBeenCalledWith(2);
+    expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({ page: 1 }));
+  });
+
+  it('restores discarded news and reloads current page', () => {
+    const discarded = newsItem(4, 'Noticia descartada', 4, 'Fuente', 'DISCARDED', null, null, null, '2026-06-11T09:00:00Z');
+
+    (component as any).restoreNews(discarded);
+
+    expect(newsService.restoreNews).toHaveBeenCalledWith(4);
+    expect(newsService.listNewsPage).toHaveBeenCalledWith(jasmine.objectContaining({ page: 1 }));
   });
 
   function newsItem(
@@ -127,6 +146,7 @@ describe('NewsPageComponent', () => {
       sourceId,
       sourceName,
       title,
+      url: `https://test.example/news/${id}`,
       processingStatus,
       eventId,
       category,

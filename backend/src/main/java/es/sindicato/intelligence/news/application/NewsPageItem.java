@@ -7,6 +7,7 @@ public record NewsPageItem(
         Long sourceId,
         String sourceName,
         String title,
+        String url,
         String processingStatus,
         Long eventId,
         String category,

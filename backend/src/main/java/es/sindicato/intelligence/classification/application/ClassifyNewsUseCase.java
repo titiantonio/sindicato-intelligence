@@ -2,8 +2,11 @@ package es.sindicato.intelligence.classification.application;
 
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
+import es.sindicato.intelligence.classification.domain.ClassificationCategory;
+import es.sindicato.intelligence.classification.domain.ImpactLevel;
 import es.sindicato.intelligence.classification.domain.NewsClassification;
 import es.sindicato.intelligence.classification.domain.NewsClassificationRepository;
+import es.sindicato.intelligence.classification.domain.UrgencyLevel;
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import es.sindicato.intelligence.news.domain.NewsRepository;
 import org.slf4j.Logger;
@@ -11,8 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -81,9 +87,14 @@ public class ClassifyNewsUseCase {
                             prompt.userPrompt()
                     )));
         } catch (RuntimeException exception) {
-            metricsRecorder.recordFailure("CLASSIFICATION", "WF02_CLASSIFICATION", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
-            log.error("classification failed: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
-            throw exception;
+            aiResponse = fallbackForOutOfScopeResponseWithoutText(newsArticle, effectiveContent, exception);
+            if (aiResponse != null) {
+                log.warn("classification used out-of-scope fallback after provider response without text: newsId={}, reason={}", newsArticle.getId(), exception.getMessage());
+            } else {
+                metricsRecorder.recordFailure("CLASSIFICATION", "WF02_CLASSIFICATION", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
+                log.error("classification failed: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
+                throw exception;
+            }
         }
         NewsClassification classification = new NewsClassification(
                 null,
@@ -139,6 +150,57 @@ public class ClassifyNewsUseCase {
         return savedClassification;
     }
 
+    private ClassificationAIResponse fallbackForOutOfScopeResponseWithoutText(NewsArticle newsArticle, String effectiveContent, RuntimeException exception) {
+        if (!isProviderResponseWithoutText(exception) || containsEducationScopeSignal(newsArticle, effectiveContent)) {
+            return null;
+        }
+
+        return new ClassificationAIResponse(
+                ClassificationCategory.OTROS,
+                "FUERA_DE_AMBITO",
+                BigDecimal.ZERO,
+                ImpactLevel.LOW,
+                UrgencyLevel.LOW,
+                List.of(),
+                List.of(),
+                null
+        );
+    }
+
+    private boolean isProviderResponseWithoutText(RuntimeException exception) {
+        String message = exception.getMessage();
+        return message != null && message.startsWith("Gemini response does not contain candidates[0].content.parts[0].text");
+    }
+
+    private boolean containsEducationScopeSignal(NewsArticle newsArticle, String effectiveContent) {
+        String text = normalize(String.join(" ",
+                safe(newsArticle.getTitle()),
+                safe(newsArticle.getUrl()),
+                safe(newsArticle.getSummary()),
+                safe(effectiveContent)
+        ));
+
+        return containsAny(text,
+                "educacion", "educativo", "educativa", "docente", "docentes", "profesor", "profesora", "profesorado",
+                "maestro", "maestra", "maestros", "maestras", "colegio", "colegios", "instituto", "institutos",
+                "centro educativo", "centros educativos", "aula", "aulas", "alumnado", "universidad", "universitario",
+                "fp", "formacion profesional", "oposicion", "oposiciones", "interino", "interinos", "sipri",
+                "bolsa docente", "bolsas docentes", "plantilla docente", "plantillas docentes", "retribucion", "retribuciones",
+                "curriculo", "curricular", "inspeccion educativa", "inclusion educativa", "digitalizacion educativa",
+                "consejeria de desarrollo educativo", "consejeria de educacion", "junta de andalucia", "boja",
+                "sindicato docente", "sindicatos docentes", "mesa sectorial", "ensenanza", "escuela", "escuelas"
+        );
+    }
+
+    private boolean containsAny(String text, String... candidates) {
+        for (String candidate : candidates) {
+            if (text.contains(candidate)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String enrichContentIfNeeded(NewsArticle newsArticle) {
         String content = newsArticle.getContent();
         if (!hasInsufficientLocalContext(newsArticle)) {
@@ -177,6 +239,12 @@ public class ClassifyNewsUseCase {
 
     private String safe(String value) {
         return value == null ? "" : value;
+    }
+
+    private String normalize(String value) {
+        return Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase();
     }
 
     private Map<String, Object> classificationDetails(NewsArticle newsArticle, NewsClassification classification, String aiSummary) {

@@ -2,6 +2,7 @@ package es.sindicato.intelligence.news.api;
 
 import es.sindicato.intelligence.news.application.CreateNewsCommand;
 import es.sindicato.intelligence.news.application.CreateNewsUseCase;
+import es.sindicato.intelligence.news.application.DiscardNewsUseCase;
 import es.sindicato.intelligence.event.api.EventResponseMapper;
 import es.sindicato.intelligence.news.application.GetNewsTraceUseCase;
 import es.sindicato.intelligence.news.application.GetNewsTraceUseCase.NewsTrace;
@@ -15,6 +16,7 @@ import es.sindicato.intelligence.news.application.NewsPage;
 import es.sindicato.intelligence.news.application.NewsPageItem;
 import es.sindicato.intelligence.news.application.NewsPageQuery;
 import es.sindicato.intelligence.news.application.NewsNotFoundException;
+import es.sindicato.intelligence.news.application.RestoreDiscardedNewsUseCase;
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -42,6 +44,8 @@ public class NewsController {
     private final ListNewsPageUseCase listNewsPageUseCase;
     private final GetNewsUseCase getNewsUseCase;
     private final GetNewsTraceUseCase getNewsTraceUseCase;
+    private final DiscardNewsUseCase discardNewsUseCase;
+    private final RestoreDiscardedNewsUseCase restoreDiscardedNewsUseCase;
     private final EventResponseMapper eventResponseMapper;
 
     public NewsController(
@@ -51,6 +55,8 @@ public class NewsController {
             ListNewsPageUseCase listNewsPageUseCase,
             GetNewsUseCase getNewsUseCase,
             GetNewsTraceUseCase getNewsTraceUseCase,
+            DiscardNewsUseCase discardNewsUseCase,
+            RestoreDiscardedNewsUseCase restoreDiscardedNewsUseCase,
             EventResponseMapper eventResponseMapper
     ) {
         this.createNewsUseCase = createNewsUseCase;
@@ -59,6 +65,8 @@ public class NewsController {
         this.listNewsPageUseCase = listNewsPageUseCase;
         this.getNewsUseCase = getNewsUseCase;
         this.getNewsTraceUseCase = getNewsTraceUseCase;
+        this.discardNewsUseCase = discardNewsUseCase;
+        this.restoreDiscardedNewsUseCase = restoreDiscardedNewsUseCase;
         this.eventResponseMapper = eventResponseMapper;
     }
 
@@ -153,6 +161,16 @@ public class NewsController {
         return toResponse(getNewsTraceUseCase.execute(id));
     }
 
+    @PostMapping("/{id}/discard")
+    public NewsResponse discardNews(@PathVariable Long id) {
+        return toResponse(discardNewsUseCase.execute(id));
+    }
+
+    @PostMapping("/{id}/restore")
+    public NewsResponse restoreDiscardedNews(@PathVariable Long id) {
+        return toResponse(restoreDiscardedNewsUseCase.execute(id));
+    }
+
     @ExceptionHandler(NewsNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNotFound(NewsNotFoundException exception) {
@@ -220,6 +238,7 @@ public class NewsController {
                 item.sourceId(),
                 item.sourceName(),
                 item.title(),
+                item.url(),
                 item.processingStatus(),
                 item.eventId(),
                 item.category(),

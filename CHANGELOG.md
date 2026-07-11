@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.93-SNAPSHOT`.
+- Frontend version: subida la version del paquete frontend a `0.0.22`.
+- Backend IA WF-02: las respuestas Gemini sin texto para noticias sin senales educativas/sindicales generan una clasificacion segura `OTROS/FUERA_DE_AMBITO` y dejan la noticia `DISCARDED`, evitando reintentos infinitos de noticias fuera de ambito.
+- Frontend noticias: la tabla `/news` permite abrir la noticia original y ejecutar acciones manuales de descartar/restaurar desde cada fila.
 - Versionado backend actualizado a `0.0.92-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.21`.
 - Backend/Frontend IA: las acciones IA manuales y programadas coordinan ejecucion por modelo efectivo, con cooldown configurable por ADMIN desde `/settings` para evitar solapes y saturacion del modelo.
@@ -95,6 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend noticias: anadidos endpoints `POST /api/v1/news/{id}/discard` y `POST /api/v1/news/{id}/restore` con auditoria `NEWS_DISCARDED` y `NEWS_RESTORED`.
 - Backend publicaciones: anadido endpoint operativo `GET /api/v1/publications/telegram-destinations` para destinos activos sin exponer `chatId`.
 - Frontend publicaciones: anadido editor ligero HTML para negrita, cursiva, subrayado, enlaces y emotes en mensajes manuales Telegram.
 - Backend publicaciones: anadidas publicaciones manuales Telegram con endpoint multipart `POST /api/v1/publications/manual`, historial comun, auditoria, targets por destino y adjuntos persistidos como metadatos.

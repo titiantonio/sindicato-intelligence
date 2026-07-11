@@ -59,4 +59,20 @@ describe('NewsService', () => {
     expect(request.request.method).toBe('GET');
     request.flush({ id: 12 });
   });
+
+  it('discards news', () => {
+    service.discardNews(12).subscribe();
+
+    const request = httpTestingController.expectOne('/api/v1/news/12/discard');
+    expect(request.request.method).toBe('POST');
+    request.flush({ id: 12, processingStatus: 'DISCARDED' });
+  });
+
+  it('restores news', () => {
+    service.restoreNews(12).subscribe();
+
+    const request = httpTestingController.expectOne('/api/v1/news/12/restore');
+    expect(request.request.method).toBe('POST');
+    request.flush({ id: 12, processingStatus: 'CAPTURED' });
+  });
 });

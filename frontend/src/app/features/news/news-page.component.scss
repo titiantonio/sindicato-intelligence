@@ -85,6 +85,13 @@
   padding: 0.45rem 0.65rem;
 }
 
+.news-page__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
 @media (max-width: 760px) {
   .news-page__header {
     display: grid;

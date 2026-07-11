@@ -24,6 +24,14 @@ export class NewsService {
     return this.httpClient.get<NewsDetail>(`/api/v1/news/${newsId}`);
   }
 
+  discardNews(newsId: number) {
+    return this.httpClient.post<NewsDetail>(`/api/v1/news/${newsId}/discard`, {});
+  }
+
+  restoreNews(newsId: number) {
+    return this.httpClient.post<NewsDetail>(`/api/v1/news/${newsId}/restore`, {});
+  }
+
   private toHttpParams(params: NewsPageParams): HttpParams {
     let httpParams = new HttpParams()
       .set('page', params.page)

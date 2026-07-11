@@ -32,6 +32,20 @@ public final class AuditDetailFormatter {
                 + ". Noticias asociadas: " + newsCount + ".";
     }
 
+    public static String newsDiscarded(Long newsId, String title, Object previousStatus, Object newStatus) {
+        return "Noticia " + idText(newsId)
+                + " descartada manualmente. Titulo: \"" + safe(title)
+                + "\". Estado anterior: " + previousStatus
+                + ". Estado resultante: " + newStatus + ".";
+    }
+
+    public static String newsRestored(Long newsId, String title, Object previousStatus, Object newStatus) {
+        return "Noticia " + idText(newsId)
+                + " restaurada tras descarte manual. Titulo: \"" + safe(title)
+                + "\". Estado anterior: " + previousStatus
+                + ". Estado resultante: " + newStatus + ".";
+    }
+
     public static String sourceCreated(Long sourceId, String name, String type, int priority, boolean active) {
         return "Fuente " + idText(sourceId)
                 + " creada. Nombre: \"" + safe(name)

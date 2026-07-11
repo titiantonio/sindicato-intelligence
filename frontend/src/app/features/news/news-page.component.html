@@ -100,8 +100,15 @@
                 <td class="table-cell-nowrap">{{ categoryLabel(item) }}</td>
                 <td class="table-cell-nowrap">{{ formatDate(item.publishedAt) }}</td>
                 <td class="table-cell-nowrap">{{ formatDate(item.capturedAt) }}</td>
-                <td class="table-cell-nowrap">
+                <td class="news-page__actions table-cell-nowrap">
                   <a class="news-page__action" [routerLink]="['/news', item.id]">Ver</a>
+                  <a class="news-page__action" [href]="item.url" target="_blank" rel="noopener noreferrer">Original</a>
+                  @if (canDiscard(item)) {
+                    <button pButton type="button" severity="warn" size="small" [disabled]="actionNewsId() !== null" (click)="discardNews(item)">Descartar</button>
+                  }
+                  @if (canRestore(item)) {
+                    <button pButton type="button" severity="secondary" size="small" [disabled]="actionNewsId() !== null" (click)="restoreNews(item)">Restaurar</button>
+                  }
                 </td>
               </tr>
         </ng-template>

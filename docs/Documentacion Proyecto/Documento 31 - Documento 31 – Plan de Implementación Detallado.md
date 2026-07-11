@@ -3243,3 +3243,20 @@ Completado en esta iteracion:
 Verificacion:
 - Backend focal: `mvnw.cmd "-Dtest=AiModelExecutionCoordinatorTest,RunAutomationWorkflowUseCaseTest,ClassifyNewsUseCaseTest,DetectEventUseCaseTest,GenerateAnalysisUseCaseTest,GenerateContentUseCaseTest,AiSettingsControllerTest,AIProviderSelectionTest,ClassificationControllerTest,AnalysisControllerTest,ContentControllerTest" test` OK, 33 tests.
 - Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts --include=src/app/core/services/ai-observability.service.spec.ts` OK, 17 tests.
+
+## 19.30 Fallback WF-02 y descarte manual de noticias - 2026-07-11
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 6 Clasificacion IA y Fase 11 Frontend Angular.
+
+Completado en esta iteracion:
+- [x] WF-02: anadido fallback seguro para respuestas Gemini sin `candidates[0].content.parts[0].text` cuando la noticia no contiene senales educativas ni sindicales.
+- [x] WF-02: las noticias fuera de ambito afectadas por ese fallo se clasifican como `OTROS/FUERA_DE_AMBITO`, relevancia `0`, impacto `LOW`, urgencia `LOW` y pasan a `DISCARDED`.
+- [x] Backend noticias: anadidos `POST /api/v1/news/{id}/discard` y `POST /api/v1/news/{id}/restore`.
+- [x] Backend auditoria: anadidos registros `NEWS_DISCARDED` y `NEWS_RESTORED`.
+- [x] Frontend noticias: anadidas acciones de tabla `Original`, `Descartar` y `Restaurar`.
+- [x] Version backend subida a `0.0.93-SNAPSHOT`.
+- [x] Version frontend subida a `0.0.22`.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=ClassifyNewsUseCaseTest,NewsControllerTest" test` OK, 24 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/news/news-page.component.spec.ts --include=src/app/core/services/news.service.spec.ts` OK, 14 tests.

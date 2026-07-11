@@ -23,6 +23,7 @@ export interface NewsPageItem {
   sourceId: number;
   sourceName: string | null;
   title: string;
+  url: string;
   processingStatus: string;
   eventId: number | null;
   category: string | null;

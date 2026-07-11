@@ -42,6 +42,7 @@ export class NewsPageComponent implements OnInit {
   protected readonly sortDirection = signal<SortDirection>('desc');
   protected readonly pageSize = signal(10);
   protected readonly currentPage = signal(1);
+  protected readonly actionNewsId = signal<number | null>(null);
   protected readonly pageSizeOptions = [5, 10, 25, 50];
   protected readonly statusOptions = ['CAPTURED', 'CLASSIFIED', 'DISCARDED', 'EVENT_MATCHED', 'ARCHIVED'];
   protected readonly categoryOptions = [
@@ -129,6 +130,52 @@ export class NewsPageComponent implements OnInit {
 
   protected categoryLabel(item: NewsListItem): string {
     return item.category ?? 'Sin clasificar';
+  }
+
+  protected canDiscard(item: NewsListItem): boolean {
+    return item.processingStatus !== 'DISCARDED' && item.processingStatus !== 'ARCHIVED';
+  }
+
+  protected canRestore(item: NewsListItem): boolean {
+    return item.processingStatus === 'DISCARDED';
+  }
+
+  protected discardNews(item: NewsListItem): void {
+    if (!this.canDiscard(item) || this.actionNewsId() !== null) {
+      return;
+    }
+
+    this.actionNewsId.set(item.id);
+    this.errorMessage.set(null);
+    this.newsService.discardNews(item.id).subscribe({
+      next: () => {
+        this.actionNewsId.set(null);
+        this.loadNews();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo descartar la noticia.');
+        this.actionNewsId.set(null);
+      }
+    });
+  }
+
+  protected restoreNews(item: NewsListItem): void {
+    if (!this.canRestore(item) || this.actionNewsId() !== null) {
+      return;
+    }
+
+    this.actionNewsId.set(item.id);
+    this.errorMessage.set(null);
+    this.newsService.restoreNews(item.id).subscribe({
+      next: () => {
+        this.actionNewsId.set(null);
+        this.loadNews();
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo restaurar la noticia.');
+        this.actionNewsId.set(null);
+      }
+    });
   }
 
   protected setGlobalFilter(value: string): void {
