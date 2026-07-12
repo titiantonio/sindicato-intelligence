@@ -108,6 +108,18 @@ public class AutomationWorkflowSetting {
         return true;
     }
 
+    public void recoverStaleRunning(String error, OffsetDateTime now) {
+        this.running = false;
+        this.lastProcessedCount = 0;
+        this.lastSuccessCount = 0;
+        this.lastFailedCount = 1;
+        this.lastSkippedCount = 0;
+        this.lastFailureAt = Objects.requireNonNull(now, "now is required");
+        this.lastError = truncate(error);
+        this.nextRunAt = now;
+        touch(now);
+    }
+
     public void markFailed(String error, OffsetDateTime now) {
         this.running = false;
         this.lastProcessedCount = 0;

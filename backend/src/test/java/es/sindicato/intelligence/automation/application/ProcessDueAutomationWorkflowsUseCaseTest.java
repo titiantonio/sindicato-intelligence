@@ -19,13 +19,16 @@ class ProcessDueAutomationWorkflowsUseCaseTest {
     void runsOnlyDueWorkflowsReturnedByRepository() {
         AutomationWorkflowSettingRepository repository = mock(AutomationWorkflowSettingRepository.class);
         RunAutomationWorkflowUseCase runAutomationWorkflowUseCase = mock(RunAutomationWorkflowUseCase.class);
+        RecoverStaleAutomationWorkflowsUseCase recoverStaleAutomationWorkflowsUseCase = mock(RecoverStaleAutomationWorkflowsUseCase.class);
         AutomationWorkflowSetting setting = setting();
 
+        when(recoverStaleAutomationWorkflowsUseCase.execute()).thenReturn(0);
         when(repository.findDue(org.mockito.ArgumentMatchers.any())).thenReturn(List.of(setting));
 
-        int processed = new ProcessDueAutomationWorkflowsUseCase(repository, runAutomationWorkflowUseCase).execute();
+        int processed = new ProcessDueAutomationWorkflowsUseCase(repository, runAutomationWorkflowUseCase, recoverStaleAutomationWorkflowsUseCase).execute();
 
         assertEquals(1, processed);
+        verify(recoverStaleAutomationWorkflowsUseCase).execute();
         verify(runAutomationWorkflowUseCase).execute(AutomationWorkflowCode.WF03_EVENT_DETECTION);
     }
 

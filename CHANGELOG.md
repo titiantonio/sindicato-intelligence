@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.96-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.95-SNAPSHOT`.
 - Backend automatizaciones WF-02/WF-03: una clasificacion valida solicita la ejecucion inmediata de `WF03_EVENT_DETECTION`, manteniendo el scheduler como respaldo y reprogramando `WF-03` sin espera cuando consume un lote completo.
 - Versionado backend actualizado a `0.0.94-SNAPSHOT`.
@@ -73,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend automatizaciones: los workflows que quedan persistidos como `running=true` tras una parada o reinicio se recuperan automaticamente tras un timeout configurable y vuelven a quedar vencidos para reintento.
 - Backend IA WF-02: el fallback de respuestas Gemini sin texto decide si una noticia esta fuera de ambito usando solo el contexto capturado por WF-01, evitando que el enriquecimiento URL con navegacion generica bloquee el descarte de noticias de sucesos.
 - Backend automatizaciones WF-02/WF-03/WF-04: materializadas las consultas JPA de noticias y eventos antes de mapearlas para evitar `This ResultSet is closed` en ejecuciones programadas.
 - Backend automatizaciones WF-02: corregido el rollback global del lote cuando falla una clasificacion IA, permitiendo persistir las noticias clasificadas correctamente y avanzar `next_run_at` aunque haya fallos parciales.

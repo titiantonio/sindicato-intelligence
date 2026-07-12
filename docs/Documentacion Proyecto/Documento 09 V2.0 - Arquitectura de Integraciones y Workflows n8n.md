@@ -1099,3 +1099,30 @@ Las noticias descartadas por `WF-02` no solicitan `WF-03`.
 ### N8N-013
 
 El disparo rapido de eventos no devuelve responsabilidad a n8n ni acopla la clasificacion al matching de eventos. La clasificacion persiste primero su resultado y solo solicita adelantar la automatizacion backend de eventos.
+
+---
+
+# 23. Actualizacion Operativa 2026-07-12 - Recuperacion de automatizaciones bloqueadas
+
+Las automatizaciones backend pueden quedar persistidas con `running=true` si el proceso Spring Boot se detiene o reinicia mientras un workflow esta en ejecucion.
+
+Desde esta actualizacion, antes de procesar workflows vencidos, Spring Boot revisa `automation_workflow_settings` y recupera automaticamente workflows habilitados que sigan `running=true` mas alla del timeout operativo:
+
+```text
+app.automation.stale-running-timeout-minutes=30
+```
+
+Comportamiento de recuperacion:
+
+```text
+running=false
+last_failure_at=now
+last_error="Workflow recuperado tras quedar bloqueado en running=true"
+next_run_at=now
+```
+
+Esto permite que el scheduler los reintente sin intervencion manual. La recuperacion queda registrada en logs `WARN` y no cambia la responsabilidad de n8n.
+
+### N8N-014
+
+La recuperacion de candados obsoletos pertenece a Spring Boot y PostgreSQL. n8n sigue limitado a `WF-01-Capture-News`.

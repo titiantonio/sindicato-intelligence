@@ -3290,3 +3290,23 @@ Completado en esta iteracion:
 Verificacion:
 - Backend focal: `mvnw.cmd "-Dtest=ClassifyNewsUseCaseTest,RunAutomationWorkflowUseCaseTest,RequestImmediateAutomationWorkflowRunUseCaseTest,ProcessPendingEventDetectionUseCaseTest" test` OK, 18 tests.
 - Backend contexto Spring: `mvnw.cmd "-Dtest=IntelligenceApplicationTests" test` OK, 1 test.
+
+## 19.33 Recuperacion de automatizaciones bloqueadas en running - 2026-07-12
+
+Tarea correctiva posterior al Sprint 12 sobre Fase 12, automatizaciones internas backend.
+
+Diagnostico:
+- [x] Detectado `WF02_CLASSIFICATION` persistido con `running=true` desde una ejecucion anterior.
+- [x] Confirmado que existian noticias `CAPTURED`, por lo que el problema no era falta de trabajo sino bloqueo operativo persistido.
+
+Completado en esta iteracion:
+- [x] Anadido `RecoverStaleAutomationWorkflowsUseCase` para recuperar workflows habilitados atascados en `running=true` tras un timeout configurable.
+- [x] Anadido metodo de dominio `recoverStaleRunning` en `AutomationWorkflowSetting`.
+- [x] Integrada la recuperacion antes de consultar workflows vencidos en `ProcessDueAutomationWorkflowsUseCase`.
+- [x] Configurado timeout por propiedad `app.automation.stale-running-timeout-minutes`, por defecto 30 minutos.
+- [x] Desbloqueado manualmente el estado local de `WF02_CLASSIFICATION` en PostgreSQL para permitir su ejecucion inmediata.
+- [x] Version backend subida a `0.0.96-SNAPSHOT`.
+
+Verificacion:
+- Backend final: `mvnw.cmd "-Dtest=RecoverStaleAutomationWorkflowsUseCaseTest,ProcessDueAutomationWorkflowsUseCaseTest,RunAutomationWorkflowUseCaseTest,ClassifyNewsUseCaseTest,IntelligenceApplicationTests" test` OK, 18 tests.
+- PostgreSQL local: tras desbloqueo, `WF02_CLASSIFICATION` arranco automaticamente, proceso 10 noticias, con 2 exitos y 8 fallos IA recuperables.

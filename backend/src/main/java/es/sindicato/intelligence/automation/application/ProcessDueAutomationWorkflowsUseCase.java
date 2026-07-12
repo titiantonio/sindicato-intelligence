@@ -16,16 +16,24 @@ public class ProcessDueAutomationWorkflowsUseCase {
 
     private final AutomationWorkflowSettingRepository repository;
     private final RunAutomationWorkflowUseCase runAutomationWorkflowUseCase;
+    private final RecoverStaleAutomationWorkflowsUseCase recoverStaleAutomationWorkflowsUseCase;
 
     public ProcessDueAutomationWorkflowsUseCase(
             AutomationWorkflowSettingRepository repository,
-            RunAutomationWorkflowUseCase runAutomationWorkflowUseCase
+            RunAutomationWorkflowUseCase runAutomationWorkflowUseCase,
+            RecoverStaleAutomationWorkflowsUseCase recoverStaleAutomationWorkflowsUseCase
     ) {
         this.repository = repository;
         this.runAutomationWorkflowUseCase = runAutomationWorkflowUseCase;
+        this.recoverStaleAutomationWorkflowsUseCase = recoverStaleAutomationWorkflowsUseCase;
     }
 
     public int execute() {
+        int recoveredWorkflows = recoverStaleAutomationWorkflowsUseCase.execute();
+        if (recoveredWorkflows > 0) {
+            log.warn("stale automation workflows recovered before processing due workflows: recoveredWorkflows={}", recoveredWorkflows);
+        }
+
         List<AutomationWorkflowSetting> dueWorkflows = repository.findDue(OffsetDateTime.now());
         for (AutomationWorkflowSetting setting : dueWorkflows) {
             try {
