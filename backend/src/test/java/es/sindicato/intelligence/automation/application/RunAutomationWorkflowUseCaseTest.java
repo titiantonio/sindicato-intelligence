@@ -112,6 +112,28 @@ class RunAutomationWorkflowUseCaseTest {
         verify(classifications, never()).execute(1);
     }
 
+    @Test
+    void reschedulesEventDetectionImmediatelyWhenFullBatchIsProcessed() {
+        AutomationWorkflowSettingRepository repository = mock(AutomationWorkflowSettingRepository.class);
+        ProcessPendingClassificationsUseCase classifications = mock(ProcessPendingClassificationsUseCase.class);
+        ProcessPendingEventDetectionUseCase eventDetection = mock(ProcessPendingEventDetectionUseCase.class);
+        ProcessPendingEventAnalysisUseCase analysis = mock(ProcessPendingEventAnalysisUseCase.class);
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        AiModelExecutionCoordinator coordinator = coordinator();
+        TransactionOperations transactionOperations = transactionOperations();
+        AutomationWorkflowSetting setting = setting(AutomationWorkflowCode.WF03_EVENT_DETECTION, 3);
+
+        when(repository.findByCode(AutomationWorkflowCode.WF03_EVENT_DETECTION)).thenReturn(Optional.of(setting));
+        when(repository.save(setting)).thenReturn(setting);
+        when(eventDetection.execute(3)).thenReturn(new AutomationRunResult(3, 3, 0, 0, List.of()));
+
+        new RunAutomationWorkflowUseCase(repository, classifications, eventDetection, analysis, audit, transactionOperations, coordinator)
+                .execute(AutomationWorkflowCode.WF03_EVENT_DETECTION);
+
+        assertEquals(setting.getUpdatedAt(), setting.getNextRunAt());
+        verify(eventDetection).execute(3);
+    }
+
     private AutomationWorkflowSetting setting(AutomationWorkflowCode code, int batchSize) {
         OffsetDateTime now = OffsetDateTime.parse("2026-06-16T10:00:00Z");
         return new AutomationWorkflowSetting(

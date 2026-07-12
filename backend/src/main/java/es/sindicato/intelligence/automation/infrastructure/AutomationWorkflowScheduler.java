@@ -20,7 +20,7 @@ public class AutomationWorkflowScheduler {
     }
 
     @Scheduled(
-            fixedDelayString = "${app.automation.scheduler.fixed-delay-ms:30000}",
+            fixedDelayString = "${app.automation.scheduler.fixed-delay-ms:5000}",
             initialDelayString = "${app.automation.scheduler.initial-delay-ms:60000}"
     )
     public void processDueWorkflows() {

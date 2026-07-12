@@ -97,6 +97,17 @@ public class AutomationWorkflowSetting {
         touch(now);
     }
 
+    public boolean requestImmediateRun(OffsetDateTime now) {
+        Objects.requireNonNull(now, "now is required");
+        if (!enabled || running || !nextRunAt.isAfter(now)) {
+            return false;
+        }
+
+        this.nextRunAt = now;
+        touch(now);
+        return true;
+    }
+
     public void markFailed(String error, OffsetDateTime now) {
         this.running = false;
         this.lastProcessedCount = 0;

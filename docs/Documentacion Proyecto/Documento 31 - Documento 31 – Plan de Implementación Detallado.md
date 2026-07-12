@@ -3273,3 +3273,20 @@ Completado en esta iteracion:
 
 Verificacion:
 - Backend focal: `mvnw.cmd "-Dtest=ClassifyNewsUseCaseTest" test` OK, 10 tests.
+
+## 19.32 Disparo rapido WF-03 tras clasificacion - 2026-07-11
+
+Tarea de mejora operativa posterior al Sprint 12 sobre Fase 12, automatizaciones internas `WF-02` y `WF-03`.
+
+Completado en esta iteracion:
+- [x] Anadido puerto `ClassifiedNewsFollowUpPort` para no acoplar `classification` directamente a `automation`.
+- [x] Anadido `RequestImmediateAutomationWorkflowRunUseCase` para adelantar `nextRunAt` de un workflow habilitado y no ejecutandose.
+- [x] `WF-02` solicita `WF03_EVENT_DETECTION` inmediatamente tras una clasificacion valida no descartada.
+- [x] Las noticias `DISCARDED` no solicitan deteccion de eventos.
+- [x] `WF-03` se reprograma inmediatamente cuando procesa un lote completo, para drenar backlog sin esperar el intervalo ordinario.
+- [x] Reducido el delay por defecto del scheduler backend de automatizaciones de 30s a 5s.
+- [x] Version backend subida a `0.0.95-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=ClassifyNewsUseCaseTest,RunAutomationWorkflowUseCaseTest,RequestImmediateAutomationWorkflowRunUseCaseTest,ProcessPendingEventDetectionUseCaseTest" test` OK, 18 tests.
+- Backend contexto Spring: `mvnw.cmd "-Dtest=IntelligenceApplicationTests" test` OK, 1 test.

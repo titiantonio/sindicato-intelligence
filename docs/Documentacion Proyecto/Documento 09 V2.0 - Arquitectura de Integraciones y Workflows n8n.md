@@ -1075,3 +1075,27 @@ WF-05 Generacion de contenido bajo demanda
 ### N8N-012
 
 n8n no participa en esta coordinacion. El bloqueo por modelo y el cooldown se resuelven exclusivamente en Spring Boot para las automatizaciones internas migradas y acciones IA bajo demanda.
+
+---
+
+# 22. Actualizacion Operativa 2026-07-11 - Disparo rapido de WF-03 tras WF-02
+
+`WF-03_EVENT_DETECTION` sigue residiendo en Spring Boot y conserva su scheduler configurable como respaldo operativo.
+
+Desde esta actualizacion, cuando `WF-02_CLASSIFICATION` clasifica correctamente una noticia y la noticia no queda `DISCARDED`, Spring Boot solicita que `WF-03_EVENT_DETECTION` quede vencido inmediatamente (`nextRunAt = now`). La ejecucion real continua haciendose por el scheduler backend y respeta:
+
+```text
+enabled
+running
+batchSize
+cooldownSeconds por modelo IA
+trazabilidad en automation_workflow_settings
+```
+
+Si `WF-03` consume un lote completo, se reprograma de nuevo de forma inmediata para drenar backlog de noticias `CLASSIFIED` sin esperar el intervalo ordinario. Si no quedan pendientes, la siguiente ejecucion registra lote vacio y vuelve al intervalo configurado.
+
+Las noticias descartadas por `WF-02` no solicitan `WF-03`.
+
+### N8N-013
+
+El disparo rapido de eventos no devuelve responsabilidad a n8n ni acopla la clasificacion al matching de eventos. La clasificacion persiste primero su resultado y solo solicita adelantar la automatizacion backend de eventos.

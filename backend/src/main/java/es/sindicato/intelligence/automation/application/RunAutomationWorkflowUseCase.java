@@ -104,6 +104,11 @@ public class RunAutomationWorkflowUseCase {
     ) {
         transactionOperations.execute(status -> {
             setting.markCompleted(result, completedAt);
+            if (shouldContinueImmediately(setting, workflowCode, result, completedAt)) {
+                setting.requestImmediateRun(completedAt);
+                log.info("automation workflow rescheduled immediately after full batch: workflowCode={}, batchSize={}",
+                        workflowCode, setting.getBatchSize());
+            }
             repository.save(setting);
             recordAuditLogUseCase.record(
                     "AUTOMATION_RUN_COMPLETED",
@@ -114,6 +119,17 @@ public class RunAutomationWorkflowUseCase {
             );
             return null;
         });
+    }
+
+    private boolean shouldContinueImmediately(
+            AutomationWorkflowSetting setting,
+            AutomationWorkflowCode workflowCode,
+            AutomationRunResult result,
+            OffsetDateTime completedAt
+    ) {
+        return workflowCode == AutomationWorkflowCode.WF03_EVENT_DETECTION
+                && result.processedCount() >= setting.getBatchSize()
+                && setting.getNextRunAt().isAfter(completedAt);
     }
 
     private void markFailed(

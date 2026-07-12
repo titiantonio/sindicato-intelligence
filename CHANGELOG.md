@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.95-SNAPSHOT`.
+- Backend automatizaciones WF-02/WF-03: una clasificacion valida solicita la ejecucion inmediata de `WF03_EVENT_DETECTION`, manteniendo el scheduler como respaldo y reprogramando `WF-03` sin espera cuando consume un lote completo.
 - Versionado backend actualizado a `0.0.94-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.93-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.22`.

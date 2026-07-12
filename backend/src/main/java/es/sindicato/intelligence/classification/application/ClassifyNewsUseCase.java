@@ -34,6 +34,7 @@ public class ClassifyNewsUseCase {
     private final AiOperationMetricsRecorder metricsRecorder;
     private final AiModelExecutionCoordinator aiModelExecutionCoordinator;
     private final NewsContentEnrichmentPort newsContentEnrichmentPort;
+    private final ClassifiedNewsFollowUpPort classifiedNewsFollowUpPort;
 
     public ClassifyNewsUseCase(
             NewsRepository newsRepository,
@@ -42,7 +43,8 @@ public class ClassifyNewsUseCase {
             AIProvider aiProvider,
             AiOperationMetricsRecorder metricsRecorder,
             AiModelExecutionCoordinator aiModelExecutionCoordinator,
-            NewsContentEnrichmentPort newsContentEnrichmentPort
+            NewsContentEnrichmentPort newsContentEnrichmentPort,
+            ClassifiedNewsFollowUpPort classifiedNewsFollowUpPort
     ) {
         this.newsRepository = newsRepository;
         this.classificationRepository = classificationRepository;
@@ -51,6 +53,7 @@ public class ClassifyNewsUseCase {
         this.metricsRecorder = metricsRecorder;
         this.aiModelExecutionCoordinator = aiModelExecutionCoordinator;
         this.newsContentEnrichmentPort = newsContentEnrichmentPort;
+        this.classifiedNewsFollowUpPort = classifiedNewsFollowUpPort;
     }
 
     @Transactional
@@ -124,6 +127,8 @@ public class ClassifyNewsUseCase {
         }
         newsRepository.save(newsArticle);
 
+        requestEventDetectionIfClassified(newsArticle, classification);
+
         metricsRecorder.recordSuccess(
                 "CLASSIFICATION",
                 "WF02_CLASSIFICATION",
@@ -148,6 +153,18 @@ public class ClassifyNewsUseCase {
         );
 
         return savedClassification;
+    }
+
+    private void requestEventDetectionIfClassified(NewsArticle newsArticle, NewsClassification classification) {
+        if (classification.isDiscardableForEventDetection()) {
+            return;
+        }
+
+        try {
+            classifiedNewsFollowUpPort.requestEventDetection(newsArticle.getId());
+        } catch (RuntimeException exception) {
+            log.warn("classification follow-up event detection request failed: newsId={}, reason={}", newsArticle.getId(), exception.getMessage());
+        }
     }
 
     private ClassificationAIResponse fallbackForOutOfScopeResponseWithoutText(NewsArticle newsArticle, RuntimeException exception) {
