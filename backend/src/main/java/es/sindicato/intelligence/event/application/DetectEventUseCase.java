@@ -7,6 +7,7 @@ import es.sindicato.intelligence.classification.domain.NewsClassification;
 import es.sindicato.intelligence.classification.domain.NewsClassificationRepository;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
+import es.sindicato.intelligence.event.domain.EventMatchDecision;
 import es.sindicato.intelligence.event.domain.EventRepository;
 import es.sindicato.intelligence.event.domain.EventStatus;
 import es.sindicato.intelligence.event.domain.Importance;
@@ -19,17 +20,47 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.text.Normalizer;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class DetectEventUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(DetectEventUseCase.class);
     private static final int AUTOMATIC_MATCH_THRESHOLD = 85;
+    private static final int REVIEW_RECOMMENDED_THRESHOLD = 70;
+    private static final int MAX_CANDIDATES = 15;
+    private static final int MAX_VERIFICATION_CANDIDATES = 5;
+    private static final int MAX_RECENT_NEWS_TITLES = 3;
+    private static final int RELATED_CATEGORY_TEXT_SCORE_THRESHOLD = 2;
+    private static final int CROSS_CATEGORY_TEXT_SCORE_THRESHOLD = 4;
+    private static final Set<String> STOP_WORDS = Set.of(
+            "andalucia",
+            "andaluz",
+            "andaluza",
+            "educacion",
+            "educativa",
+            "educativo",
+            "docente",
+            "docentes",
+            "publica",
+            "publico",
+            "noticia",
+            "nueva",
+            "sobre",
+            "desde",
+            "para",
+            "como",
+            "esta",
+            "este",
+            "estos",
+            "estas"
+    );
 
     private final NewsRepository newsRepository;
     private final NewsClassificationRepository classificationRepository;
@@ -95,37 +126,37 @@ public class DetectEventUseCase {
 
         EventCategory category = EventCategory.valueOf(classification.getCategory().name());
         List<Event> activeEvents = eventRepository.findByStatusIn(List.of(EventStatus.OPEN, EventStatus.MONITORING)).stream()
-                .filter(event -> event.getCategory() == category)
+                .filter(event -> !event.isManualDiscarded())
                 .toList();
-        List<EventMatchCandidate> candidates = activeEvents.stream()
-                .map(event -> new EventMatchCandidate(event.getId(), event.getTitle(), event.getDescription(), event.getCategory()))
-                .toList();
-        log.info("event detection candidates loaded: newsId={}, category={}, candidateCount={}", newsArticle.getId(), category, candidates.size());
+        List<EventMatchCandidate> candidates = selectCandidates(newsArticle, category, activeEvents);
+        log.info("event detection candidates loaded: newsId={}, category={}, activeEventCount={}, candidateCount={}", newsArticle.getId(), category, activeEvents.size(), candidates.size());
         EventMatchPrompt prompt = promptBuilder.build(newsArticle.getTitle(), newsArticle.getSummary(), newsArticle.getContent(), candidates);
-        EventMatchingAIResponse aiResponse;
+        EventMatchingOutcome outcome;
         OffsetDateTime startedAt = metricsRecorder.start();
         try {
-            aiResponse = aiModelExecutionCoordinator.execute("WF03_EVENT_MATCHING", () -> matchWithProvider(newsArticle, candidates, prompt));
+            outcome = aiModelExecutionCoordinator.execute("WF03_EVENT_MATCHING", () -> matchWithVerification(newsArticle, activeEvents, candidates, prompt));
         } catch (RuntimeException exception) {
             metricsRecorder.recordFailure("EVENT_MATCHING", "WF03_EVENT_MATCHING", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
             log.error("event detection failed during AI matching: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
             throw exception;
         }
-        Event event = findAutomaticMatch(activeEvents, aiResponse);
+        EventMatchingAIResponse aiResponse = outcome.response();
+        Event event = outcome.event();
+        EventMatchDecision matchDecision = outcome.decision();
         boolean created = false;
         boolean matched = event != null;
 
         if (event == null) {
             event = createEvent(newsArticle, category, importanceOf(classification.getImpactLevel()));
             created = true;
-            log.info("event detection creating new event: newsId={}, category={}, importance={}", newsArticle.getId(), category, importanceOf(classification.getImpactLevel()));
+            log.info("event detection creating new event: newsId={}, category={}, importance={}, matchDecision={}, confidence={}", newsArticle.getId(), category, importanceOf(classification.getImpactLevel()), matchDecision, aiResponse.confidence());
         } else {
             event.addNews(newsArticle.getId(), OffsetDateTime.now());
-            log.info("event detection matched existing event: newsId={}, eventId={}, confidence={}", newsArticle.getId(), event.getId(), aiResponse.confidence());
+            log.info("event detection matched existing event: newsId={}, eventId={}, confidence={}, matchDecision={}", newsArticle.getId(), event.getId(), aiResponse.confidence(), matchDecision);
         }
 
         Event savedEvent = eventRepository.save(event);
-        eventRepository.saveNewsAssociation(savedEvent.getId(), newsArticle.getId(), aiResponse.confidence());
+        eventRepository.saveNewsAssociation(savedEvent.getId(), newsArticle.getId(), aiResponse.confidence(), matchDecision, aiResponse.reason());
         newsArticle.markEventMatched();
         newsRepository.save(newsArticle);
 
@@ -136,7 +167,8 @@ public class DetectEventUseCase {
                 matched,
                 aiResponse.confidence(),
                 aiResponse.reason(),
-                savedEvent.getStatus()
+                savedEvent.getStatus(),
+                matchDecision
         );
         metricsRecorder.recordSuccess(
                 "EVENT_MATCHING",
@@ -146,27 +178,76 @@ public class DetectEventUseCase {
                 "NEWS",
                 newsArticle.getId(),
                 startedAt,
-                eventDetectionDetails(newsArticle, classification, candidates.size(), aiResponse, result)
+                eventDetectionDetails(newsArticle, classification, candidates, outcome, result)
         );
         log.info(
-                "event detection completed: newsId={}, eventId={}, created={}, matched={}, confidence={}, status={}",
+                "event detection completed: newsId={}, eventId={}, created={}, matched={}, confidence={}, status={}, matchDecision={}",
                 result.newsId(),
                 result.eventId(),
                 result.created(),
                 result.matched(),
                 result.confidence(),
-                result.eventStatus()
+                result.eventStatus(),
+                result.matchDecision()
         );
 
         return result;
     }
 
-    private EventMatchingAIResponse matchWithProvider(NewsArticle newsArticle, List<EventMatchCandidate> candidates, EventMatchPrompt prompt) {
+    private EventMatchingOutcome matchWithVerification(NewsArticle newsArticle, List<Event> activeEvents, List<EventMatchCandidate> candidates, EventMatchPrompt prompt) {
+        EventMatchingAIResponse firstResponse = matchWithProvider(
+                newsArticle.getId(),
+                newsArticle.getTitle(),
+                newsArticle.getSummary(),
+                newsArticle.getContent(),
+                candidates,
+                prompt
+        );
+        Event firstMatch = findAutomaticMatch(activeEvents, candidates, firstResponse);
+        if (firstMatch != null) {
+            return new EventMatchingOutcome(firstResponse, firstMatch, EventMatchDecision.AUTOMATIC_MATCH, false, firstResponse);
+        }
+
+        if (!requiresSecondVerification(firstResponse, candidates)) {
+            return new EventMatchingOutcome(firstResponse, null, newEventDecision(firstResponse), false, firstResponse);
+        }
+
+        List<EventMatchCandidate> verificationCandidates = verificationCandidates(candidates, firstResponse.eventId());
+        EventMatchPrompt verificationPrompt = promptBuilder.build(
+                newsArticle.getTitle(),
+                newsArticle.getSummary(),
+                reducedContentForReviewVerification(),
+                verificationCandidates
+        );
+        EventMatchingAIResponse secondResponse = matchWithProvider(
+                newsArticle.getId(),
+                newsArticle.getTitle(),
+                newsArticle.getSummary(),
+                reducedContentForReviewVerification(),
+                verificationCandidates,
+                verificationPrompt
+        );
+        Event secondMatch = findAutomaticMatch(activeEvents, verificationCandidates, secondResponse);
+        if (secondMatch != null) {
+            return new EventMatchingOutcome(secondResponse, secondMatch, EventMatchDecision.VERIFIED_MATCH, true, firstResponse);
+        }
+
+        return new EventMatchingOutcome(secondResponse, null, EventMatchDecision.REVIEW_RECOMMENDED_NEW_EVENT, true, firstResponse);
+    }
+
+    private EventMatchingAIResponse matchWithProvider(
+            Long newsId,
+            String newsTitle,
+            String newsSummary,
+            String newsContent,
+            List<EventMatchCandidate> candidates,
+            EventMatchPrompt prompt
+    ) {
         try {
             return aiProvider.match(new EventMatchingAIRequest(
-                    newsArticle.getTitle(),
-                    newsArticle.getSummary(),
-                    newsArticle.getContent(),
+                    newsTitle,
+                    newsSummary,
+                    newsContent,
                     candidates,
                     prompt.systemPrompt(),
                     prompt.userPrompt()
@@ -176,18 +257,18 @@ public class DetectEventUseCase {
                 throw exception;
             }
 
-            log.warn("event detection retrying with reduced context after provider response without text: newsId={}, reason={}", newsArticle.getId(), exception.getMessage());
+            log.warn("event detection retrying with reduced context after provider response without text: newsId={}, reason={}", newsId, exception.getMessage());
             String reducedContent = reducedContentForNoTextRetry();
             EventMatchPrompt reducedPrompt = promptBuilder.build(
-                    newsArticle.getTitle(),
-                    newsArticle.getSummary(),
+                    newsTitle,
+                    newsSummary,
                     reducedContent,
                     candidates
             );
 
             return aiProvider.match(new EventMatchingAIRequest(
-                    newsArticle.getTitle(),
-                    newsArticle.getSummary(),
+                    newsTitle,
+                    newsSummary,
                     reducedContent,
                     candidates,
                     reducedPrompt.systemPrompt(),
@@ -205,11 +286,15 @@ public class DetectEventUseCase {
         return "Contexto reducido tras respuesta IA sin texto. Decide coincidencia usando solo titulo, resumen y eventos candidatos.";
     }
 
+    private String reducedContentForReviewVerification() {
+        return "Verificacion defensiva de coincidencia dudosa. Decide solo si la noticia pertenece claramente a uno de los eventos candidatos; si hay duda, responde match=false.";
+    }
+
     private Map<String, Object> eventDetectionDetails(
             NewsArticle newsArticle,
             NewsClassification classification,
-            int candidateCount,
-            EventMatchingAIResponse aiResponse,
+            List<EventMatchCandidate> candidates,
+            EventMatchingOutcome outcome,
             DetectEventResult result
     ) {
         Map<String, Object> details = new LinkedHashMap<>();
@@ -217,17 +302,23 @@ public class DetectEventUseCase {
         details.put("newsId", newsArticle.getId());
         details.put("newsTitle", abbreviate(newsArticle.getTitle()));
         details.put("category", classification.getCategory().name());
-        details.put("candidateCount", candidateCount);
-        details.put("aiMatch", aiResponse.match());
-        details.put("aiSuggestedEventId", aiResponse.eventId());
-        details.put("confidence", aiResponse.confidence());
+        details.put("candidateCount", candidates.size());
+        details.put("candidateEventIds", candidates.stream().map(EventMatchCandidate::eventId).toList());
+        details.put("aiMatch", outcome.response().match());
+        details.put("aiSuggestedEventId", outcome.response().eventId());
+        details.put("initialAiSuggestedEventId", outcome.initialResponse().eventId());
+        details.put("initialConfidence", outcome.initialResponse().confidence());
+        details.put("confidence", outcome.response().confidence());
         details.put("automaticMatchThreshold", AUTOMATIC_MATCH_THRESHOLD);
+        details.put("reviewRecommendedThreshold", REVIEW_RECOMMENDED_THRESHOLD);
         details.put("decision", result.created() ? "CREATED_EVENT" : "MATCHED_EXISTING_EVENT");
+        details.put("matchDecision", result.matchDecision().name());
+        details.put("secondVerification", outcome.secondVerification());
         details.put("created", result.created());
         details.put("matched", result.matched());
         details.put("finalEventId", result.eventId());
         details.put("eventStatus", result.eventStatus().name());
-        details.put("reason", abbreviate(aiResponse.reason()));
+        details.put("reason", abbreviate(outcome.response().reason()));
         return details;
     }
 
@@ -244,8 +335,14 @@ public class DetectEventUseCase {
         return trimmed.substring(0, 157) + "...";
     }
 
-    private Event findAutomaticMatch(List<Event> activeEvents, EventMatchingAIResponse aiResponse) {
+    private Event findAutomaticMatch(List<Event> activeEvents, List<EventMatchCandidate> candidates, EventMatchingAIResponse aiResponse) {
         if (!aiResponse.match() || aiResponse.confidence() < AUTOMATIC_MATCH_THRESHOLD || aiResponse.eventId() == null) {
+            return null;
+        }
+
+        boolean suggestedCandidateExists = candidates.stream()
+                .anyMatch(candidate -> candidate.eventId().equals(aiResponse.eventId()));
+        if (!suggestedCandidateExists) {
             return null;
         }
 
@@ -253,6 +350,141 @@ public class DetectEventUseCase {
                 .filter(event -> event.getId().equals(aiResponse.eventId()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private boolean requiresSecondVerification(EventMatchingAIResponse response, List<EventMatchCandidate> candidates) {
+        return response.confidence() >= REVIEW_RECOMMENDED_THRESHOLD
+                && response.confidence() < AUTOMATIC_MATCH_THRESHOLD
+                && !candidates.isEmpty();
+    }
+
+    private EventMatchDecision newEventDecision(EventMatchingAIResponse response) {
+        if (response.confidence() >= REVIEW_RECOMMENDED_THRESHOLD) {
+            return EventMatchDecision.REVIEW_RECOMMENDED_NEW_EVENT;
+        }
+        return EventMatchDecision.NEW_EVENT;
+    }
+
+    private List<EventMatchCandidate> verificationCandidates(List<EventMatchCandidate> candidates, Long suggestedEventId) {
+        List<EventMatchCandidate> selected = candidates.stream()
+                .filter(candidate -> suggestedEventId != null && candidate.eventId().equals(suggestedEventId))
+                .limit(1)
+                .collect(Collectors.toList());
+
+        candidates.stream()
+                .filter(candidate -> suggestedEventId == null || !candidate.eventId().equals(suggestedEventId))
+                .limit(MAX_VERIFICATION_CANDIDATES - selected.size())
+                .forEach(selected::add);
+
+        return List.copyOf(selected);
+    }
+
+    private List<EventMatchCandidate> selectCandidates(NewsArticle newsArticle, EventCategory category, List<Event> activeEvents) {
+        Set<String> newsTokens = tokens(String.join(" ", safe(newsArticle.getTitle()), safe(newsArticle.getSummary()), safe(newsArticle.getContent())));
+
+        return activeEvents.stream()
+                .map(event -> scoreEvent(event, category, newsTokens))
+                .filter(ScoredEventCandidate::eligible)
+                .sorted(this::compareCandidates)
+                .limit(MAX_CANDIDATES)
+                .map(candidate -> toMatchCandidate(candidate.event()))
+                .toList();
+    }
+
+    private int compareCandidates(ScoredEventCandidate left, ScoredEventCandidate right) {
+        int sameCategory = Boolean.compare(right.sameCategory(), left.sameCategory());
+        if (sameCategory != 0) {
+            return sameCategory;
+        }
+
+        int relatedCategory = Boolean.compare(right.relatedCategory(), left.relatedCategory());
+        if (relatedCategory != 0) {
+            return relatedCategory;
+        }
+
+        int textScore = Integer.compare(right.textScore(), left.textScore());
+        if (textScore != 0) {
+            return textScore;
+        }
+
+        int lastUpdatedAt = right.event().getLastUpdatedAt().compareTo(left.event().getLastUpdatedAt());
+        if (lastUpdatedAt != 0) {
+            return lastUpdatedAt;
+        }
+
+        return Long.compare(right.event().getId(), left.event().getId());
+    }
+
+    private ScoredEventCandidate scoreEvent(Event event, EventCategory category, Set<String> newsTokens) {
+        Set<String> eventTokens = tokens(String.join(" ", safe(event.getTitle()), safe(event.getDescription())));
+        int textScore = (int) eventTokens.stream().filter(newsTokens::contains).count();
+        boolean sameCategory = event.getCategory() == category;
+        boolean relatedCategory = relatedCategories(category).contains(event.getCategory());
+        boolean eligible = sameCategory
+                || (relatedCategory && textScore >= RELATED_CATEGORY_TEXT_SCORE_THRESHOLD)
+                || textScore >= CROSS_CATEGORY_TEXT_SCORE_THRESHOLD;
+        return new ScoredEventCandidate(event, textScore, sameCategory, relatedCategory, eligible);
+    }
+
+    private EventMatchCandidate toMatchCandidate(Event event) {
+        return new EventMatchCandidate(
+                event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getCategory(),
+                event.getStatus(),
+                event.getFirstDetectedAt(),
+                event.getLastUpdatedAt(),
+                event.getNewsIds().size(),
+                recentNewsTitles(event)
+        );
+    }
+
+    private List<String> recentNewsTitles(Event event) {
+        return event.getNewsIds().stream()
+                .map(newsRepository::findById)
+                .flatMap(java.util.Optional::stream)
+                .sorted((left, right) -> right.getCapturedAt().compareTo(left.getCapturedAt()))
+                .limit(MAX_RECENT_NEWS_TITLES)
+                .map(NewsArticle::getTitle)
+                .toList();
+    }
+
+    private Set<EventCategory> relatedCategories(EventCategory category) {
+        return switch (category) {
+            case OPOSICIONES -> Set.of(EventCategory.INTERINOS, EventCategory.SIPRI, EventCategory.LEGISLACION);
+            case INTERINOS -> Set.of(EventCategory.OPOSICIONES, EventCategory.SIPRI, EventCategory.PLANTILLAS);
+            case SIPRI -> Set.of(EventCategory.INTERINOS, EventCategory.OPOSICIONES);
+            case PLANTILLAS -> Set.of(EventCategory.INTERINOS, EventCategory.LEGISLACION);
+            case RETRIBUCIONES -> Set.of(EventCategory.SINDICAL, EventCategory.CONFLICTO_LABORAL);
+            case FORMACION -> Set.of(EventCategory.CURRICULO, EventCategory.DIGITALIZACION);
+            case INSPECCION -> Set.of(EventCategory.LEGISLACION);
+            case LEGISLACION -> Set.of(EventCategory.OPOSICIONES, EventCategory.INTERINOS, EventCategory.CURRICULO, EventCategory.INSPECCION);
+            case CURRICULO -> Set.of(EventCategory.FORMACION, EventCategory.LEGISLACION, EventCategory.FP, EventCategory.DIGITALIZACION);
+            case UNIVERSIDAD -> Set.of(EventCategory.FP, EventCategory.FORMACION);
+            case FP -> Set.of(EventCategory.CURRICULO, EventCategory.UNIVERSIDAD);
+            case DIGITALIZACION -> Set.of(EventCategory.CURRICULO, EventCategory.FORMACION);
+            case INCLUSION -> Set.of(EventCategory.CURRICULO, EventCategory.INFRAESTRUCTURAS);
+            case INFRAESTRUCTURAS -> Set.of(EventCategory.INCLUSION);
+            case CONFLICTO_LABORAL -> Set.of(EventCategory.SINDICAL, EventCategory.RETRIBUCIONES);
+            case SINDICAL -> Set.of(EventCategory.CONFLICTO_LABORAL, EventCategory.RETRIBUCIONES);
+            case OTROS -> Set.of();
+        };
+    }
+
+    private Set<String> tokens(String value) {
+        String normalized = Normalizer.normalize(safe(value), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase();
+
+        return java.util.Arrays.stream(normalized.split("[^a-z0-9]+"))
+                .filter(token -> token.length() >= 4)
+                .filter(token -> !STOP_WORDS.contains(token))
+                .collect(Collectors.toSet());
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 
     private Event createEvent(NewsArticle newsArticle, EventCategory category, Importance importance) {
@@ -287,5 +519,17 @@ public class DetectEventUseCase {
 
     private Importance importanceOf(ImpactLevel impactLevel) {
         return Importance.valueOf(impactLevel.name());
+    }
+
+    private record ScoredEventCandidate(Event event, int textScore, boolean sameCategory, boolean relatedCategory, boolean eligible) {
+    }
+
+    private record EventMatchingOutcome(
+            EventMatchingAIResponse response,
+            Event event,
+            EventMatchDecision decision,
+            boolean secondVerification,
+            EventMatchingAIResponse initialResponse
+    ) {
     }
 }

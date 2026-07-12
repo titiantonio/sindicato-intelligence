@@ -137,7 +137,11 @@ public class GeminiEventMatchingAIProvider implements EventMatchingAIProvider {
     private EventMatchingAIResponse parseResponse(String responseText) {
         try {
             JsonNode root = objectMapper.readTree(extractJsonObject(responseText));
+            validateRequiredFields(root);
             int confidence = root.path("confidence").asInt(-1);
+            if (confidence < 0 || confidence > 100) {
+                throw new IllegalArgumentException("Gemini event matching confidence is outside 0-100");
+            }
             return new EventMatchingAIResponse(
                     root.path("match").asBoolean(false),
                     root.path("eventId").isNull() || root.path("eventId").isMissingNode() ? null : root.path("eventId").asLong(),
@@ -146,6 +150,18 @@ public class GeminiEventMatchingAIProvider implements EventMatchingAIProvider {
             );
         } catch (JsonProcessingException exception) {
             throw new IllegalArgumentException("Gemini response is not valid event matching JSON", exception);
+        }
+    }
+
+    private void validateRequiredFields(JsonNode root) {
+        if (!root.path("match").isBoolean()) {
+            throw new IllegalArgumentException("Gemini event matching JSON does not contain boolean match");
+        }
+        if (!root.path("confidence").isInt()) {
+            throw new IllegalArgumentException("Gemini event matching JSON does not contain integer confidence");
+        }
+        if (!root.path("reason").isTextual()) {
+            throw new IllegalArgumentException("Gemini event matching JSON does not contain textual reason");
         }
     }
 

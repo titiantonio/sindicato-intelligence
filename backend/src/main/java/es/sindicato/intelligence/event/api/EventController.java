@@ -120,7 +120,8 @@ public class EventController {
                 result.matched(),
                 result.confidence(),
                 result.reason(),
-                result.eventStatus()
+                result.eventStatus(),
+                result.matchDecision()
         );
     }
 

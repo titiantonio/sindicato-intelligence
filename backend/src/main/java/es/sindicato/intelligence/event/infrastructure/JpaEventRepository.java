@@ -2,6 +2,7 @@ package es.sindicato.intelligence.event.infrastructure;
 
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
+import es.sindicato.intelligence.event.domain.EventMatchDecision;
 import es.sindicato.intelligence.event.domain.EventRepository;
 import es.sindicato.intelligence.event.domain.EventStatus;
 import es.sindicato.intelligence.event.domain.Importance;
@@ -129,17 +130,19 @@ public class JpaEventRepository implements EventRepository {
     }
 
     @Override
-    public void saveNewsAssociation(Long eventId, Long newsId, Integer confidenceScore) {
+    public void saveNewsAssociation(Long eventId, Long newsId, Integer confidenceScore, EventMatchDecision matchDecision, String matchReason) {
         validateConfidenceScore(confidenceScore);
 
         Optional<EventNewsEntity> existing = findAssociation(eventId, newsId);
 
         if (existing.isPresent()) {
             existing.get().setConfidenceScore(confidenceScore);
+            existing.get().setMatchDecision(matchDecision);
+            existing.get().setMatchReason(matchReason);
             return;
         }
 
-        entityManager.persist(new EventNewsEntity(null, eventId, newsId, confidenceScore, OffsetDateTime.now()));
+        entityManager.persist(new EventNewsEntity(null, eventId, newsId, confidenceScore, matchDecision, matchReason, OffsetDateTime.now()));
     }
 
     @Override

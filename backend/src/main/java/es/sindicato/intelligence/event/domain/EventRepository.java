@@ -21,7 +21,11 @@ public interface EventRepository {
 
     Optional<Event> findByNewsId(Long newsId);
 
-    void saveNewsAssociation(Long eventId, Long newsId, Integer confidenceScore);
+    default void saveNewsAssociation(Long eventId, Long newsId, Integer confidenceScore) {
+        saveNewsAssociation(eventId, newsId, confidenceScore, null, null);
+    }
+
+    void saveNewsAssociation(Long eventId, Long newsId, Integer confidenceScore, EventMatchDecision matchDecision, String matchReason);
 
     boolean existsNewsAssociation(Long newsId);
 }

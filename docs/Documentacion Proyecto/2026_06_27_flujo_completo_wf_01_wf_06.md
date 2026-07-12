@@ -430,7 +430,7 @@ Datos que necesita la IA:
 | `newsTitle` | `news_articles.title` |
 | `newsSummary` | `news_articles.summary` |
 | `newsContent` | `news_articles.content` |
-| `candidates` | Eventos `OPEN` o `MONITORING` de la misma categoría que la clasificación. |
+| `candidates` | Eventos `OPEN` o `MONITORING` no descartados manualmente, priorizando misma categoría y añadiendo categorías relacionadas si hay coincidencia textual fuerte. |
 
 Prompt system literal:
 
@@ -484,7 +484,15 @@ Formato de candidatos:
     "eventId": 184,
     "title": "Título del evento existente",
     "description": "Descripción del evento",
-    "category": "OPOSICIONES"
+    "category": "OPOSICIONES",
+    "status": "MONITORING",
+    "firstDetectedAt": "2026-06-10T09:00:00Z",
+    "lastUpdatedAt": "2026-06-12T10:00:00Z",
+    "newsCount": 5,
+    "recentNewsTitles": [
+      "Titulo reciente asociado al evento",
+      "Otro titulo reciente asociado al evento"
+    ]
   }
 ]
 ```
@@ -518,7 +526,10 @@ AUTOMATIC_MATCH_THRESHOLD = 85
 ```
 
 - Si `match=true`, `eventId` existe entre candidatos y `confidence >= 85`, se asocia al evento existente.
-- Si no cumple el umbral, se crea un evento nuevo.
+- Si `confidence` queda entre `70` y `84`, Spring Boot ejecuta una segunda verificacion defensiva con contexto reducido y candidatos acotados.
+- Si la segunda verificacion alcanza `confidence >= 85`, se asocia al evento existente con decision `VERIFIED_MATCH`.
+- Si no se confirma la coincidencia, se crea un evento nuevo con decision `REVIEW_RECOMMENDED_NEW_EVENT` para dejar trazabilidad de posible revision posterior.
+- Si no hay coincidencia suficiente, se crea un evento nuevo con decision `NEW_EVENT`.
 - La noticia solo puede pertenecer a un evento principal en el MVP.
 
 Salida persistida:
@@ -526,9 +537,9 @@ Salida persistida:
 | Tabla | Cambio |
 | --- | --- |
 | `events` | Crea evento nuevo si no hay match automático. |
-| `event_news` | Asocia noticia y evento con `confidence_score`. |
+| `event_news` | Asocia noticia y evento con `confidence_score`, `match_decision` y `match_reason`. |
 | `news_articles` | Pasa a `EVENT_MATCHED`. |
-| `ai_operation_metrics` | Registra éxito/error con `operation_type=EVENT_MATCHING`, `prompt_key=WF03_EVENT_MATCHING`, entidad `NEWS`. |
+| `ai_operation_metrics` | Registra éxito/error con `operation_type=EVENT_MATCHING`, `prompt_key=WF03_EVENT_MATCHING`, entidad `NEWS` y detalles funcionales sanitizados de candidatos y decision. |
 
 Salida hacia `WF-04`:
 

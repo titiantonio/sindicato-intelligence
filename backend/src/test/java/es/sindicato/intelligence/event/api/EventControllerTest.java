@@ -1,5 +1,9 @@
 package es.sindicato.intelligence.event.api;
 
+import es.sindicato.intelligence.ai.domain.AiProviderSetting;
+import es.sindicato.intelligence.ai.domain.AiProviderSettingRepository;
+import es.sindicato.intelligence.ai.domain.AiWorkflowSetting;
+import es.sindicato.intelligence.ai.domain.AiWorkflowSettingRepository;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import es.sindicato.intelligence.classification.domain.ClassificationCategory;
@@ -20,6 +24,7 @@ import es.sindicato.intelligence.news.domain.NewsRepository;
 import es.sindicato.intelligence.news.domain.NewsStatus;
 import es.sindicato.intelligence.source.domain.Source;
 import es.sindicato.intelligence.source.domain.SourceRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -77,6 +82,26 @@ class EventControllerTest {
     @Autowired
     private GeneratedContentRepository contentRepository;
 
+    @Autowired
+    private AiProviderSettingRepository providerSettingRepository;
+
+    @Autowired
+    private AiWorkflowSettingRepository workflowSettingRepository;
+
+    @BeforeEach
+    void useDeterministicEventMatchingProvider() {
+        OffsetDateTime now = OffsetDateTime.now();
+        AiProviderSetting provider = providerSettingRepository.findByCode("deterministic")
+                .orElse(new AiProviderSetting("deterministic", "Deterministic", true, null, now, now));
+        provider.update(true, null, false, now);
+        providerSettingRepository.save(provider);
+
+        AiWorkflowSetting workflow = workflowSettingRepository.findByWorkflowCode("WF03_EVENT_MATCHING")
+                .orElse(new AiWorkflowSetting("WF03_EVENT_MATCHING", "deterministic", "deterministic-event-matching", BigDecimal.ZERO, 1024, 0, now, now));
+        workflow.update("deterministic", "deterministic-event-matching", BigDecimal.ZERO, 1024, 0, now);
+        workflowSettingRepository.save(workflow);
+    }
+
     @Test
     void detectsEventCreatingNewEventWhenNoMatchExists() throws Exception {
         Source source = sourceRepository.save(source());
@@ -96,6 +121,7 @@ class EventControllerTest {
                 .andExpect(jsonPath("$.newsId").value(newsArticle.getId()))
                 .andExpect(jsonPath("$.created").value(true))
                 .andExpect(jsonPath("$.matched").value(false))
+                .andExpect(jsonPath("$.matchDecision").value("NEW_EVENT"))
                 .andExpect(jsonPath("$.eventStatus").value("OPEN"));
 
         assertTrue(eventRepository.existsNewsAssociation(newsArticle.getId()));
@@ -124,6 +150,7 @@ class EventControllerTest {
                 .andExpect(jsonPath("$.created").value(false))
                 .andExpect(jsonPath("$.matched").value(true))
                 .andExpect(jsonPath("$.confidence", greaterThanOrEqualTo(85)))
+                .andExpect(jsonPath("$.matchDecision").value("AUTOMATIC_MATCH"))
                 .andExpect(jsonPath("$.eventStatus").value("OPEN"));
 
         Event updatedEvent = eventRepository.findById(existingEvent.getId()).orElseThrow();

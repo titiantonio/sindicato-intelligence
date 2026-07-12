@@ -65,19 +65,40 @@ public class EventMatchPromptBuilder {
                           "eventId": %s,
                           "title": "%s",
                           "description": "%s",
-                          "category": "%s"
+                          "category": "%s",
+                          "status": "%s",
+                          "firstDetectedAt": "%s",
+                          "lastUpdatedAt": "%s",
+                          "newsCount": %s,
+                          "recentNewsTitles": %s
                         }
                         """.formatted(
                         candidate.eventId(),
                         escape(candidate.title()),
                         escape(candidate.description()),
-                        candidate.category()
+                        candidate.category(),
+                        safeEnum(candidate.status()),
+                        safe(candidate.firstDetectedAt() == null ? null : candidate.firstDetectedAt().toString()),
+                        safe(candidate.lastUpdatedAt() == null ? null : candidate.lastUpdatedAt().toString()),
+                        Math.max(0, candidate.newsCount()),
+                        formatStringArray(candidate.recentNewsTitles())
                 ))
                 .collect(Collectors.joining(",\n", "[\n", "\n]"));
     }
 
+    private String formatStringArray(List<String> values) {
+        List<String> safeValues = values == null ? List.of() : values;
+        return safeValues.stream()
+                .map(value -> "\"" + escape(value) + "\"")
+                .collect(Collectors.joining(", ", "[", "]"));
+    }
+
     private String safe(String value) {
         return value == null ? "" : value;
+    }
+
+    private String safeEnum(Enum<?> value) {
+        return value == null ? "" : value.name();
     }
 
     private String escape(String value) {

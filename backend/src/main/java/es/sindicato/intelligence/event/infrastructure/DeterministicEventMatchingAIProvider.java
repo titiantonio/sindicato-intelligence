@@ -63,7 +63,13 @@ public class DeterministicEventMatchingAIProvider implements EventMatchingAIProv
     }
 
     private int confidence(String newsText, Set<String> newsTokens, EventMatchCandidate candidate) {
-        String candidateText = normalize(String.join(" ", safe(candidate.title()), safe(candidate.description()), candidate.category().name()));
+        String candidateText = normalize(String.join(
+                " ",
+                safe(candidate.title()),
+                safe(candidate.description()),
+                candidate.category().name(),
+                String.join(" ", candidate.recentNewsTitles())
+        ));
         Set<String> candidateTokens = tokens(candidateText);
         long commonTokens = candidateTokens.stream().filter(newsTokens::contains).count();
 

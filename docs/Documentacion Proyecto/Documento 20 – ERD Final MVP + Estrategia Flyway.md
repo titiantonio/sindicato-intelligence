@@ -364,6 +364,12 @@ event_id BIGINT
 
 news_id BIGINT
 
+confidence_score INTEGER
+
+match_decision VARCHAR(80)
+
+match_reason TEXT
+
 created_at TIMESTAMPTZ
 ```
 

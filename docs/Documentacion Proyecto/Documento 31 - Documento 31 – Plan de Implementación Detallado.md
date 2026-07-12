@@ -3349,3 +3349,19 @@ Completado en esta iteracion:
 
 Verificacion:
 - Backend focal: `mvnw.cmd "-Dtest=DetectEventUseCaseTest,ClassifyNewsUseCaseTest" test` OK, 14 tests.
+
+## 19.36 Mejora de matching WF-03 y reduccion de duplicados - 2026-07-12
+
+Tarea de mejora posterior al Sprint 12 sobre Fase 7 Eventos y Fase 12 automatizaciones internas.
+
+Completado en esta iteracion:
+- [x] `WF-03` carga candidatos enriquecidos con estado, fechas, numero de noticias y titulos recientes del evento.
+- [x] La seleccion de candidatos mantiene prioridad por misma categoria y anade categorias relacionadas cuando existe coincidencia textual fuerte.
+- [x] Las coincidencias dudosas `70-84` ejecutan una segunda verificacion defensiva antes de crear evento nuevo.
+- [x] Si la duda persiste, se crea evento nuevo con decision trazable `REVIEW_RECOMMENDED_NEW_EVENT` en lugar de aceptar automaticamente una asociacion insegura.
+- [x] Anadida migracion Flyway `V22__event_news_match_trace.sql` con `match_decision` y `match_reason` en `event_news`.
+- [x] La respuesta tecnica de deteccion expone `matchDecision` y las metricas IA registran detalles sanitizados de candidatos y decision.
+- [x] Version backend subida a `0.0.99-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=DetectEventUseCaseTest,EventMatchPromptBuilderTest,DeterministicEventMatchingAIProviderTest" test` OK, 10 tests.

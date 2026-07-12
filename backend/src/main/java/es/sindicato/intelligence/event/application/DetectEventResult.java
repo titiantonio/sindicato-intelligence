@@ -1,5 +1,6 @@
 package es.sindicato.intelligence.event.application;
 
+import es.sindicato.intelligence.event.domain.EventMatchDecision;
 import es.sindicato.intelligence.event.domain.EventStatus;
 
 public record DetectEventResult(
@@ -9,6 +10,7 @@ public record DetectEventResult(
         boolean matched,
         int confidence,
         String reason,
-        EventStatus eventStatus
+        EventStatus eventStatus,
+        EventMatchDecision matchDecision
 ) {
 }

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.99-SNAPSHOT`.
+- Backend IA WF-03: el matching de eventos usa candidatos enriquecidos con estado, fechas, volumen de noticias y titulos recientes; ademas amplia la seleccion a categorias relacionadas con coincidencia textual fuerte.
 - Versionado backend actualizado a `0.0.98-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.97-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.96-SNAPSHOT`.
@@ -109,6 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend eventos: anadida trazabilidad de asociacion en `event_news` con `match_decision` y `match_reason` mediante Flyway `V22__event_news_match_trace.sql`.
 - Backend noticias: anadidos endpoints `POST /api/v1/news/{id}/discard` y `POST /api/v1/news/{id}/restore` con auditoria `NEWS_DISCARDED` y `NEWS_RESTORED`.
 - Backend publicaciones: anadido endpoint operativo `GET /api/v1/publications/telegram-destinations` para destinos activos sin exponer `chatId`.
 - Frontend publicaciones: anadido editor ligero HTML para negrita, cursiva, subrayado, enlaces y emotes en mensajes manuales Telegram.
