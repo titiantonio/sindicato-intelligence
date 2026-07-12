@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -230,6 +231,44 @@ class ClassifyNewsUseCaseTest {
         verify(classificationRepository, never()).save(any(NewsClassification.class));
         verify(newsRepository, never()).save(newsArticle);
         verify(metricsRecorder).recordFailure(eq("CLASSIFICATION"), eq("WF02_CLASSIFICATION"), eq("gemini"), eq("models/gemma-4-31b-it"), eq("NEWS"), eq(newsArticle.getId()), isNull(), any(AIProviderException.class));
+    }
+
+    @Test
+    void retriesWithReducedContextWhenGeminiReturnsNoTextForNewsWithEducationSignals() {
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
+        AIProvider aiProvider = mock(AIProvider.class);
+        AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
+        NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
+        ClassifiedNewsFollowUpPort followUpPort = mock(ClassifiedNewsFollowUpPort.class);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), aiProvider, metricsRecorder, coordinator(), enrichmentPort, followUpPort);
+        NewsArticle newsArticle = newsArticle(
+                "Educar en diversidad: 28 series que visibilizan los problemas LGTBI+",
+                "Recursos para educar en diversidad y crear un ambiente de tolerancia y respeto tanto en clase como en casa.",
+                "Mas de la mitad del alumnado ha sufrido acoso o ciberacoso durante la Educacion Secundaria."
+        );
+
+        when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
+        when(classificationRepository.existsByNewsId(newsArticle.getId())).thenReturn(false);
+        when(aiProvider.classify(any(ClassificationAIRequest.class)))
+                .thenThrow(new AIProviderException("Gemini response does not contain candidates[0].content.parts[0].text"))
+                .thenReturn(aiResponse(ClassificationCategory.INCLUSION, "Diversidad", BigDecimal.valueOf(35), ImpactLevel.LOW, UrgencyLevel.LOW));
+        when(aiProvider.providerName()).thenReturn("gemini");
+        when(aiProvider.modelName()).thenReturn("models/gemma-4-31b-it");
+        when(classificationRepository.save(any(NewsClassification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(new ClassifyNewsCommand(newsArticle.getId()));
+
+        ArgumentCaptor<ClassificationAIRequest> requestCaptor = ArgumentCaptor.forClass(ClassificationAIRequest.class);
+        ArgumentCaptor<NewsClassification> classificationCaptor = ArgumentCaptor.forClass(NewsClassification.class);
+        verify(aiProvider, times(2)).classify(requestCaptor.capture());
+        verify(classificationRepository).save(classificationCaptor.capture());
+        assertEquals(ClassificationCategory.INCLUSION, classificationCaptor.getValue().getCategory());
+        org.junit.jupiter.api.Assertions.assertTrue(requestCaptor.getAllValues().getFirst().content().contains("acoso"));
+        org.junit.jupiter.api.Assertions.assertFalse(requestCaptor.getAllValues().get(1).content().contains("acoso"));
+        org.junit.jupiter.api.Assertions.assertTrue(requestCaptor.getAllValues().get(1).content().contains("Contexto reducido"));
+        assertEquals(NewsStatus.CLASSIFIED, newsArticle.getProcessingStatus());
+        verify(followUpPort).requestEventDetection(newsArticle.getId());
     }
 
     @Test

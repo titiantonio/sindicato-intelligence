@@ -3310,3 +3310,23 @@ Completado en esta iteracion:
 Verificacion:
 - Backend final: `mvnw.cmd "-Dtest=RecoverStaleAutomationWorkflowsUseCaseTest,ProcessDueAutomationWorkflowsUseCaseTest,RunAutomationWorkflowUseCaseTest,ClassifyNewsUseCaseTest,IntelligenceApplicationTests" test` OK, 18 tests.
 - PostgreSQL local: tras desbloqueo, `WF02_CLASSIFICATION` arranco automaticamente, proceso 10 noticias, con 2 exitos y 8 fallos IA recuperables.
+
+## 19.34 Reintento reducido WF-02 para Gemini sin texto en noticias educativas - 2026-07-12
+
+Tarea correctiva posterior a `19.30` y `19.31` sobre Fase 6 Clasificacion IA.
+
+Diagnostico:
+- [x] Confirmado que el fallo recurrente actual no corresponde al caso anterior de noticias de sucesos fuera de ambito.
+- [x] Detectado `newsId=4611` en `CAPTURED` con 17 fallos `Gemini response does not contain candidates[0].content.parts[0].text`.
+- [x] Confirmado que la noticia contiene senales educativas reales, por lo que el fallback `FUERA_DE_AMBITO` no debe aplicarse automaticamente.
+
+Completado en esta iteracion:
+- [x] Ajustado `ClassifyNewsUseCase` para reintentar una vez con contexto reducido cuando Gemini no devuelve texto y la noticia contiene senales educativas.
+- [x] El reintento reducido usa titulo, URL y resumen capturado por `WF-01`, evitando reenviar el contenido largo o sensible que puede activar bloqueo del proveedor.
+- [x] El reintento se ejecuta dentro de la misma ejecucion coordinada del modelo para no esperar el `cooldown` entre intento normal y recuperacion.
+- [x] Se mantiene sin cambios el fallback `OTROS/FUERA_DE_AMBITO` para noticias sin senales educativas ni sindicales.
+- [x] Anadida prueba de regresion para noticia educativa con contenido sensible que se recupera con contexto reducido.
+- [x] Version backend subida a `0.0.97-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=ClassifyNewsUseCaseTest" test` OK, 11 tests.

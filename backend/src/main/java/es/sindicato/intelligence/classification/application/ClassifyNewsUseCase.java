@@ -81,14 +81,7 @@ public class ClassifyNewsUseCase {
         ClassificationAIResponse aiResponse;
         OffsetDateTime startedAt = metricsRecorder.start();
         try {
-            aiResponse = aiModelExecutionCoordinator.execute("WF02_CLASSIFICATION", () -> aiProvider.classify(new ClassificationAIRequest(
-                            newsArticle.getTitle(),
-                            newsArticle.getUrl(),
-                            newsArticle.getSummary(),
-                            effectiveContent,
-                            prompt.systemPrompt(),
-                            prompt.userPrompt()
-                    )));
+            aiResponse = aiModelExecutionCoordinator.execute("WF02_CLASSIFICATION", () -> classifyWithProvider(newsArticle, effectiveContent, prompt));
         } catch (RuntimeException exception) {
             aiResponse = fallbackForOutOfScopeResponseWithoutText(newsArticle, exception);
             if (aiResponse != null) {
@@ -167,6 +160,41 @@ public class ClassifyNewsUseCase {
         }
     }
 
+    private ClassificationAIResponse classifyWithProvider(NewsArticle newsArticle, String effectiveContent, ClassifyNewsPrompt prompt) {
+        try {
+            return aiProvider.classify(new ClassificationAIRequest(
+                    newsArticle.getTitle(),
+                    newsArticle.getUrl(),
+                    newsArticle.getSummary(),
+                    effectiveContent,
+                    prompt.systemPrompt(),
+                    prompt.userPrompt()
+            ));
+        } catch (RuntimeException exception) {
+            if (!isProviderResponseWithoutText(exception) || !containsEducationScopeSignal(newsArticle)) {
+                throw exception;
+            }
+
+            log.warn("classification retrying with reduced context after provider response without text: newsId={}, reason={}", newsArticle.getId(), exception.getMessage());
+            String reducedContent = reducedContentForNoTextRetry();
+            ClassifyNewsPrompt reducedPrompt = promptBuilder.build(
+                    newsArticle.getTitle(),
+                    newsArticle.getUrl(),
+                    newsArticle.getSummary(),
+                    reducedContent
+            );
+
+            return aiProvider.classify(new ClassificationAIRequest(
+                    newsArticle.getTitle(),
+                    newsArticle.getUrl(),
+                    newsArticle.getSummary(),
+                    reducedContent,
+                    reducedPrompt.systemPrompt(),
+                    reducedPrompt.userPrompt()
+            ));
+        }
+    }
+
     private ClassificationAIResponse fallbackForOutOfScopeResponseWithoutText(NewsArticle newsArticle, RuntimeException exception) {
         if (!isProviderResponseWithoutText(exception) || containsEducationScopeSignal(newsArticle)) {
             return null;
@@ -187,6 +215,10 @@ public class ClassifyNewsUseCase {
     private boolean isProviderResponseWithoutText(RuntimeException exception) {
         String message = exception.getMessage();
         return message != null && message.startsWith("Gemini response does not contain candidates[0].content.parts[0].text");
+    }
+
+    private String reducedContentForNoTextRetry() {
+        return "Contexto reducido tras respuesta IA sin texto. Clasifica solo con titulo, URL y resumen capturado por WF-01.";
     }
 
     private boolean containsEducationScopeSignal(NewsArticle newsArticle) {
