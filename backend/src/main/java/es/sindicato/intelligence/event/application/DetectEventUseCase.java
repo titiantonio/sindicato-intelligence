@@ -105,14 +105,7 @@ public class DetectEventUseCase {
         EventMatchingAIResponse aiResponse;
         OffsetDateTime startedAt = metricsRecorder.start();
         try {
-            aiResponse = aiModelExecutionCoordinator.execute("WF03_EVENT_MATCHING", () -> aiProvider.match(new EventMatchingAIRequest(
-                            newsArticle.getTitle(),
-                            newsArticle.getSummary(),
-                            newsArticle.getContent(),
-                            candidates,
-                            prompt.systemPrompt(),
-                            prompt.userPrompt()
-                    )));
+            aiResponse = aiModelExecutionCoordinator.execute("WF03_EVENT_MATCHING", () -> matchWithProvider(newsArticle, candidates, prompt));
         } catch (RuntimeException exception) {
             metricsRecorder.recordFailure("EVENT_MATCHING", "WF03_EVENT_MATCHING", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
             log.error("event detection failed during AI matching: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
@@ -166,6 +159,50 @@ public class DetectEventUseCase {
         );
 
         return result;
+    }
+
+    private EventMatchingAIResponse matchWithProvider(NewsArticle newsArticle, List<EventMatchCandidate> candidates, EventMatchPrompt prompt) {
+        try {
+            return aiProvider.match(new EventMatchingAIRequest(
+                    newsArticle.getTitle(),
+                    newsArticle.getSummary(),
+                    newsArticle.getContent(),
+                    candidates,
+                    prompt.systemPrompt(),
+                    prompt.userPrompt()
+            ));
+        } catch (RuntimeException exception) {
+            if (!isProviderResponseWithoutText(exception)) {
+                throw exception;
+            }
+
+            log.warn("event detection retrying with reduced context after provider response without text: newsId={}, reason={}", newsArticle.getId(), exception.getMessage());
+            String reducedContent = reducedContentForNoTextRetry();
+            EventMatchPrompt reducedPrompt = promptBuilder.build(
+                    newsArticle.getTitle(),
+                    newsArticle.getSummary(),
+                    reducedContent,
+                    candidates
+            );
+
+            return aiProvider.match(new EventMatchingAIRequest(
+                    newsArticle.getTitle(),
+                    newsArticle.getSummary(),
+                    reducedContent,
+                    candidates,
+                    reducedPrompt.systemPrompt(),
+                    reducedPrompt.userPrompt()
+            ));
+        }
+    }
+
+    private boolean isProviderResponseWithoutText(RuntimeException exception) {
+        String message = exception.getMessage();
+        return message != null && message.startsWith("Gemini response does not contain candidates[0].content.parts[0].text");
+    }
+
+    private String reducedContentForNoTextRetry() {
+        return "Contexto reducido tras respuesta IA sin texto. Decide coincidencia usando solo titulo, resumen y eventos candidatos.";
     }
 
     private Map<String, Object> eventDetectionDetails(

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.98-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.97-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.96-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.95-SNAPSHOT`.
@@ -75,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend IA WF-03: las noticias clasificadas que reciben una respuesta Gemini sin texto durante la deteccion de eventos se reintentan una vez con contexto reducido, manteniendo candidatos y evitando reenviar contenido largo o sensible.
 - Backend IA WF-02: las noticias educativas que reciben una respuesta Gemini sin texto se reintentan una vez con contexto reducido a titulo, URL y resumen para evitar bloqueos por contenido largo o sensible sin descartarlas automaticamente.
 - Backend automatizaciones: los workflows que quedan persistidos como `running=true` tras una parada o reinicio se recuperan automaticamente tras un timeout configurable y vuelven a quedar vencidos para reintento.
 - Backend IA WF-02: el fallback de respuestas Gemini sin texto decide si una noticia esta fuera de ambito usando solo el contexto capturado por WF-01, evitando que el enriquecimiento URL con navegacion generica bloquee el descarte de noticias de sucesos.

@@ -3330,3 +3330,22 @@ Completado en esta iteracion:
 
 Verificacion:
 - Backend focal: `mvnw.cmd "-Dtest=ClassifyNewsUseCaseTest" test` OK, 11 tests.
+
+## 19.35 Reintento reducido WF-03 para Gemini sin texto en deteccion de eventos - 2026-07-12
+
+Tarea correctiva posterior a `19.34` sobre Fase 7 Eventos.
+
+Diagnostico:
+- [x] Confirmado que `newsId=4611` ya paso `WF-02` y quedo `CLASSIFIED` como `INCLUSION/Educacion LGTBI+`.
+- [x] Detectado fallo en `WF03_EVENT_MATCHING` con `Gemini response does not contain candidates[0].content.parts[0].text` usando `models/gemma-4-26b-a4b-it`.
+- [x] Confirmado que la noticia no tenia evento asociado y que existian 21 eventos abiertos candidatos de categoria `INCLUSION`.
+
+Completado en esta iteracion:
+- [x] Ajustado `DetectEventUseCase` para reintentar una vez con contexto reducido cuando Gemini no devuelve texto durante la deteccion de eventos.
+- [x] El reintento reducido mantiene titulo, resumen y eventos candidatos, pero no reenvia el contenido completo de la noticia.
+- [x] El reintento se ejecuta dentro de la misma ejecucion coordinada del modelo para no esperar el `cooldown` entre intento normal y recuperacion.
+- [x] Anadida prueba de regresion para una noticia educativa sensible que falla en el primer intento y se agrupa con un evento existente tras el reintento reducido.
+- [x] Version backend subida a `0.0.98-SNAPSHOT`.
+
+Verificacion:
+- Backend focal: `mvnw.cmd "-Dtest=DetectEventUseCaseTest,ClassifyNewsUseCaseTest" test` OK, 14 tests.
