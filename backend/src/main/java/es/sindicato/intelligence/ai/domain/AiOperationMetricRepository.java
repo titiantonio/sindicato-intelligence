@@ -10,4 +10,12 @@ public interface AiOperationMetricRepository {
     List<AiOperationMetric> findRecent(int limit);
 
     List<AiOperationMetric> findByCreatedAtBetween(OffsetDateTime fromInclusive, OffsetDateTime toExclusive);
+
+    long countByPromptKeyAndRelatedEntityAndStatusSince(
+            String promptKey,
+            String relatedEntityType,
+            Long relatedEntityId,
+            AiMetricStatus status,
+            OffsetDateTime since
+    );
 }

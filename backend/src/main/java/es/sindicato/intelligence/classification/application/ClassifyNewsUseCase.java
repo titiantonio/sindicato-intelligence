@@ -71,26 +71,55 @@ public class ClassifyNewsUseCase {
 
         log.info("classification started: newsId={}, title='{}'", newsArticle.getId(), abbreviate(newsArticle.getTitle()));
 
-        String effectiveContent = enrichContentIfNeeded(newsArticle);
+        ClassificationContext classificationContext = classificationContext(newsArticle);
         ClassifyNewsPrompt prompt = promptBuilder.build(
                 newsArticle.getTitle(),
                 newsArticle.getUrl(),
                 newsArticle.getSummary(),
-                effectiveContent
+                classificationContext.effectiveContent()
         );
-        ClassificationAIResponse aiResponse;
+        ClassificationAttempt classificationAttempt;
         OffsetDateTime startedAt = metricsRecorder.start();
         try {
-            aiResponse = aiModelExecutionCoordinator.execute("WF02_CLASSIFICATION", () -> classifyWithProvider(newsArticle, effectiveContent, prompt));
+            classificationAttempt = aiModelExecutionCoordinator.execute("WF02_CLASSIFICATION", () -> classifyWithProvider(newsArticle, classificationContext.effectiveContent(), prompt));
         } catch (RuntimeException exception) {
-            aiResponse = fallbackForOutOfScopeResponseWithoutText(newsArticle, exception);
-            if (aiResponse != null) {
+            ClassificationAIResponse fallbackResponse = fallbackForOutOfScopeResponseWithoutText(newsArticle, exception);
+            if (fallbackResponse != null) {
+                classificationAttempt = new ClassificationAttempt(fallbackResponse, false, true, "PROVIDER_NO_TEXT_OUT_OF_SCOPE");
                 log.warn("classification used out-of-scope fallback after provider response without text: newsId={}, reason={}", newsArticle.getId(), exception.getMessage());
             } else {
-                metricsRecorder.recordFailure("CLASSIFICATION", "WF02_CLASSIFICATION", aiProvider.providerName(), aiProvider.modelName(), "NEWS", newsArticle.getId(), startedAt, exception);
+                metricsRecorder.recordFailure(
+                        "CLASSIFICATION",
+                        "WF02_CLASSIFICATION",
+                        aiProvider.providerName(),
+                        aiProvider.modelName(),
+                        "NEWS",
+                        newsArticle.getId(),
+                        startedAt,
+                        exception,
+                        classificationFailureDetails(newsArticle, classificationContext, exception)
+                );
                 log.error("classification failed: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
                 throw exception;
             }
+        }
+        ClassificationAIResponse aiResponse;
+        try {
+            aiResponse = normalizeAndValidate(classificationAttempt.response());
+        } catch (RuntimeException exception) {
+            metricsRecorder.recordFailure(
+                    "CLASSIFICATION",
+                    "WF02_CLASSIFICATION",
+                    aiProvider.providerName(),
+                    aiProvider.modelName(),
+                    "NEWS",
+                    newsArticle.getId(),
+                    startedAt,
+                    exception,
+                    classificationFailureDetails(newsArticle, classificationContext, exception)
+            );
+            log.error("classification response validation failed: newsId={}, reason={}", newsArticle.getId(), exception.getMessage(), exception);
+            throw exception;
         }
         NewsClassification classification = new NewsClassification(
                 null,
@@ -130,7 +159,7 @@ public class ClassifyNewsUseCase {
                 "NEWS",
                 newsArticle.getId(),
                 startedAt,
-                classificationDetails(newsArticle, savedClassification, aiResponse.summary())
+                classificationDetails(newsArticle, savedClassification, aiResponse, classificationContext, classificationAttempt)
         );
 
         log.info(
@@ -160,9 +189,9 @@ public class ClassifyNewsUseCase {
         }
     }
 
-    private ClassificationAIResponse classifyWithProvider(NewsArticle newsArticle, String effectiveContent, ClassifyNewsPrompt prompt) {
+    private ClassificationAttempt classifyWithProvider(NewsArticle newsArticle, String effectiveContent, ClassifyNewsPrompt prompt) {
         try {
-            return aiProvider.classify(new ClassificationAIRequest(
+            ClassificationAIResponse response = aiProvider.classify(new ClassificationAIRequest(
                     newsArticle.getTitle(),
                     newsArticle.getUrl(),
                     newsArticle.getSummary(),
@@ -170,6 +199,7 @@ public class ClassifyNewsUseCase {
                     prompt.systemPrompt(),
                     prompt.userPrompt()
             ));
+            return new ClassificationAttempt(response, false, false, null);
         } catch (RuntimeException exception) {
             if (!isProviderResponseWithoutText(exception) || !containsEducationScopeSignal(newsArticle)) {
                 throw exception;
@@ -184,7 +214,7 @@ public class ClassifyNewsUseCase {
                     reducedContent
             );
 
-            return aiProvider.classify(new ClassificationAIRequest(
+            ClassificationAIResponse response = aiProvider.classify(new ClassificationAIRequest(
                     newsArticle.getTitle(),
                     newsArticle.getUrl(),
                     newsArticle.getSummary(),
@@ -192,7 +222,53 @@ public class ClassifyNewsUseCase {
                     reducedPrompt.systemPrompt(),
                     reducedPrompt.userPrompt()
             ));
+            return new ClassificationAttempt(response, true, false, "PROVIDER_NO_TEXT_REDUCED_CONTEXT");
         }
+    }
+
+    private ClassificationAIResponse normalizeAndValidate(ClassificationAIResponse response) {
+        Objects.requireNonNull(response, "classification response is required");
+        Objects.requireNonNull(response.category(), "classification category is required");
+        Objects.requireNonNull(response.relevance(), "classification relevance is required");
+        Objects.requireNonNull(response.impact(), "classification impact is required");
+        Objects.requireNonNull(response.urgency(), "classification urgency is required");
+
+        if (isDiscardResponse(response)) {
+            return new ClassificationAIResponse(
+                    ClassificationCategory.OTROS,
+                    response.subcategory(),
+                    BigDecimal.ZERO,
+                    ImpactLevel.LOW,
+                    UrgencyLevel.LOW,
+                    List.of(),
+                    List.of(),
+                    null,
+                    response.classificationReason()
+            );
+        }
+
+        if (response.relevance().compareTo(BigDecimal.ZERO) == 0 && response.category() != ClassificationCategory.OTROS) {
+            throw new IllegalArgumentException("classification response incoherent: non-discarded category cannot have zero relevance");
+        }
+        if (response.relevance().compareTo(BigDecimal.valueOf(70)) >= 0 && response.impact() == ImpactLevel.LOW) {
+            throw new IllegalArgumentException("classification response incoherent: high relevance cannot have LOW impact");
+        }
+        if (response.relevance().compareTo(BigDecimal.valueOf(90)) >= 0
+                && response.impact() != ImpactLevel.HIGH
+                && response.impact() != ImpactLevel.CRITICAL) {
+            throw new IllegalArgumentException("classification response incoherent: critical relevance requires HIGH or CRITICAL impact");
+        }
+
+        return response;
+    }
+
+    private boolean isDiscardResponse(ClassificationAIResponse response) {
+        if (response.category() != ClassificationCategory.OTROS || response.subcategory() == null) {
+            return false;
+        }
+        String normalized = response.subcategory().trim();
+        return "FUERA_DE_AMBITO".equalsIgnoreCase(normalized)
+                || "INFORMACION_INSUFICIENTE".equalsIgnoreCase(normalized);
     }
 
     private ClassificationAIResponse fallbackForOutOfScopeResponseWithoutText(NewsArticle newsArticle, RuntimeException exception) {
@@ -208,7 +284,8 @@ public class ClassifyNewsUseCase {
                 UrgencyLevel.LOW,
                 List.of(),
                 List.of(),
-                null
+                null,
+                "Respuesta sin texto del proveedor para noticia sin senales educativas capturadas."
         );
     }
 
@@ -250,20 +327,20 @@ public class ClassifyNewsUseCase {
         return false;
     }
 
-    private String enrichContentIfNeeded(NewsArticle newsArticle) {
+    private ClassificationContext classificationContext(NewsArticle newsArticle) {
         String content = newsArticle.getContent();
         if (!hasInsufficientLocalContext(newsArticle)) {
-            return content;
+            return new ClassificationContext(content, false);
         }
 
         try {
             return newsContentEnrichmentPort.enrich(newsArticle.getUrl())
                     .filter(enriched -> !enriched.isBlank())
-                    .map(enriched -> mergeContent(content, enriched))
-                    .orElse(content);
+                    .map(enriched -> new ClassificationContext(mergeContent(content, enriched), true))
+                    .orElse(new ClassificationContext(content, false));
         } catch (RuntimeException exception) {
             log.warn("classification url enrichment skipped: newsId={}, reason={}", newsArticle.getId(), exception.getMessage());
-            return content;
+            return new ClassificationContext(content, false);
         }
     }
 
@@ -296,11 +373,24 @@ public class ClassifyNewsUseCase {
                 .toLowerCase();
     }
 
-    private Map<String, Object> classificationDetails(NewsArticle newsArticle, NewsClassification classification, String aiSummary) {
+    private Map<String, Object> classificationDetails(
+            NewsArticle newsArticle,
+            NewsClassification classification,
+            ClassificationAIResponse aiResponse,
+            ClassificationContext classificationContext,
+            ClassificationAttempt classificationAttempt
+    ) {
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("workflowCode", "WF02_CLASSIFICATION");
         details.put("newsId", newsArticle.getId());
         details.put("newsTitle", abbreviate(newsArticle.getTitle()));
+        details.put("prioritySignals", prioritySignals(newsArticle));
+        details.put("urlEnriched", classificationContext.urlEnriched());
+        details.put("reducedContextRetry", classificationAttempt.reducedContextRetry());
+        details.put("fallbackUsed", classificationAttempt.fallbackUsed());
+        if (classificationAttempt.recoveryReason() != null) {
+            details.put("recoveryReason", classificationAttempt.recoveryReason());
+        }
         details.put("category", classification.getCategory().name());
         details.put("subcategory", classification.getSubcategory());
         details.put("relevance", classification.getRelevanceScore());
@@ -313,9 +403,53 @@ public class ClassifyNewsUseCase {
         } else {
             details.put("keywords", classification.getKeywords());
             details.put("entities", classification.getEntities());
-            details.put("aiSummary", abbreviate(aiSummary));
+            details.put("aiSummary", abbreviate(aiResponse.summary()));
+            details.put("classificationReason", abbreviate(aiResponse.classificationReason()));
         }
         return details;
+    }
+
+    private Map<String, Object> classificationFailureDetails(
+            NewsArticle newsArticle,
+            ClassificationContext classificationContext,
+            RuntimeException exception
+    ) {
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("workflowCode", "WF02_CLASSIFICATION");
+        details.put("newsId", newsArticle.getId());
+        details.put("newsTitle", abbreviate(newsArticle.getTitle()));
+        details.put("prioritySignals", prioritySignals(newsArticle));
+        details.put("urlEnriched", classificationContext.urlEnriched());
+        details.put("providerResponseWithoutText", isProviderResponseWithoutText(exception));
+        details.put("educationScopeSignals", containsEducationScopeSignal(newsArticle));
+        details.put("finalNewsStatus", newsArticle.getProcessingStatus().name());
+        return details;
+    }
+
+    public List<String> prioritySignals(NewsArticle newsArticle) {
+        String text = normalize(String.join(" ",
+                safe(newsArticle.getTitle()),
+                safe(newsArticle.getUrl()),
+                safe(newsArticle.getSummary()),
+                safe(newsArticle.getContent())
+        ));
+
+        return java.util.stream.Stream.of(
+                        signal(text, "boja", "BOJA"),
+                        signal(text, "sipri", "SIPRI"),
+                        signal(text, "plazo", "PLAZO"),
+                        signal(text, "convocatoria", "CONVOCATORIA"),
+                        signal(text, "oposicion", "OPOSICIONES"),
+                        signal(text, "adjudicacion", "ADJUDICACION"),
+                        signal(text, "mesa sectorial", "MESA_SECTORIAL"),
+                        signal(text, "huelga", "HUELGA")
+                )
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private String signal(String text, String needle, String signal) {
+        return text.contains(needle) ? signal : null;
     }
 
     private String abbreviate(String value) {
@@ -329,5 +463,16 @@ public class ClassifyNewsUseCase {
         }
 
         return trimmed.substring(0, 117) + "...";
+    }
+
+    private record ClassificationContext(String effectiveContent, boolean urlEnriched) {
+    }
+
+    private record ClassificationAttempt(
+            ClassificationAIResponse response,
+            boolean reducedContextRetry,
+            boolean fallbackUsed,
+            String recoveryReason
+    ) {
     }
 }

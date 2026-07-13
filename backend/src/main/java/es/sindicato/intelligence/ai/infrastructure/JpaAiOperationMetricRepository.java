@@ -3,6 +3,7 @@ package es.sindicato.intelligence.ai.infrastructure;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import es.sindicato.intelligence.ai.domain.AiMetricStatus;
 import es.sindicato.intelligence.ai.domain.AiOperationMetric;
 import es.sindicato.intelligence.ai.domain.AiOperationMetricRepository;
 import jakarta.persistence.EntityManager;
@@ -80,6 +81,34 @@ public class JpaAiOperationMetricRepository implements AiOperationMetricReposito
                 .stream()
                 .map(this::toDomain)
                 .toList();
+    }
+
+    @Override
+    public long countByPromptKeyAndRelatedEntityAndStatusSince(
+            String promptKey,
+            String relatedEntityType,
+            Long relatedEntityId,
+            AiMetricStatus status,
+            OffsetDateTime since
+    ) {
+        return entityManager.createQuery(
+                        """
+                        SELECT COUNT(metric)
+                        FROM AiOperationMetricEntity metric
+                        WHERE metric.promptKey = :promptKey
+                          AND metric.relatedEntityType = :relatedEntityType
+                          AND metric.relatedEntityId = :relatedEntityId
+                          AND metric.status = :status
+                          AND metric.createdAt >= :since
+                        """,
+                        Long.class
+                )
+                .setParameter("promptKey", promptKey)
+                .setParameter("relatedEntityType", relatedEntityType)
+                .setParameter("relatedEntityId", relatedEntityId)
+                .setParameter("status", status)
+                .setParameter("since", since)
+                .getSingleResult();
     }
 
     private AiOperationMetric toDomain(AiOperationMetricEntity entity) {

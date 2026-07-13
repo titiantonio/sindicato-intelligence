@@ -160,7 +160,8 @@ Devuelve:
   "subcategory": "",
   "relevance": 0,
   "impact": "",
-  "urgency": ""
+  "urgency": "",
+  "classificationReason": ""
 }
 ```
 
@@ -196,9 +197,13 @@ Criterios de `urgency`:
 - `MEDIUM`: seguimiento necesario a corto plazo aunque no haya accion inmediata.
 - `LOW`: informacion de contexto, baja prioridad o informacion insuficiente.
 
-Para noticias clasificables, rellena `subcategory` con una etiqueta corta y concreta. Solo en noticias clasificables puedes anadir `summary` con maximo dos frases, `keywords` y `entities` con terminos y actores relevantes detectados.
+Para noticias clasificables, rellena `subcategory` con una etiqueta corta y concreta. Solo en noticias clasificables puedes anadir `summary` con maximo dos frases, `keywords`, `entities` y `classificationReason` con una frase breve que justifique la categoria, relevancia, impacto y urgencia.
 
 Si el titulo, resumen, contenido y contexto enriquecido desde la URL no permiten inferir una tematica educativa concreta, no rechaces la tarea y no expliques fuera del JSON: usa `category` `OTROS` y `subcategory` `INFORMACION_INSUFICIENTE`.
+
+El backend valida la coherencia de la respuesta antes de persistirla. Las respuestas de descarte se normalizan a relevancia `0`, impacto `LOW`, urgencia `LOW` y sin campos enriquecidos. Las respuestas incoherentes, por ejemplo relevancia alta con impacto `LOW`, se rechazan y quedan registradas como fallo operativo del `WF-02`.
+
+Si una noticia acumula fallos recientes repetidos de clasificacion IA, el backend puede saltarla temporalmente en el lote automatico para evitar bucles y consumo innecesario del proveedor. La noticia permanece `CAPTURED` para revision manual o reintento posterior.
 
 ---
 

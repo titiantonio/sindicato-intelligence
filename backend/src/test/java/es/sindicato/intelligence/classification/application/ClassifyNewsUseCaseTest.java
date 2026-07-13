@@ -155,6 +155,67 @@ class ClassifyNewsUseCaseTest {
     }
 
     @Test
+    void normalizesDiscardableClassificationBeforePersisting() {
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
+        AIProvider aiProvider = mock(AIProvider.class);
+        AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
+        NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), aiProvider, metricsRecorder, coordinator(), enrichmentPort, mock(ClassifiedNewsFollowUpPort.class));
+        NewsArticle newsArticle = newsArticle();
+
+        when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
+        when(classificationRepository.existsByNewsId(newsArticle.getId())).thenReturn(false);
+        when(aiProvider.classify(any(ClassificationAIRequest.class))).thenReturn(new ClassificationAIResponse(
+                ClassificationCategory.OTROS,
+                "FUERA_DE_AMBITO",
+                BigDecimal.valueOf(50),
+                ImpactLevel.HIGH,
+                UrgencyLevel.HIGH,
+                List.of("ruido"),
+                List.of("actor"),
+                "Resumen no deseado",
+                "Fuera de ambito"
+        ));
+        when(aiProvider.providerName()).thenReturn("test-provider");
+        when(aiProvider.modelName()).thenReturn("test-model");
+        when(classificationRepository.save(any(NewsClassification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        useCase.execute(new ClassifyNewsCommand(newsArticle.getId()));
+
+        ArgumentCaptor<NewsClassification> captor = ArgumentCaptor.forClass(NewsClassification.class);
+        verify(classificationRepository).save(captor.capture());
+        assertEquals(BigDecimal.ZERO, captor.getValue().getRelevanceScore());
+        assertEquals(ImpactLevel.LOW, captor.getValue().getImpactLevel());
+        assertEquals(UrgencyLevel.LOW, captor.getValue().getUrgencyLevel());
+        assertEquals(List.of(), captor.getValue().getKeywords());
+        assertEquals(List.of(), captor.getValue().getEntities());
+        assertEquals(NewsStatus.DISCARDED, newsArticle.getProcessingStatus());
+    }
+
+    @Test
+    void rejectsIncoherentHighRelevanceWithLowImpact() {
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
+        AIProvider aiProvider = mock(AIProvider.class);
+        AiOperationMetricsRecorder metricsRecorder = mock(AiOperationMetricsRecorder.class);
+        NewsContentEnrichmentPort enrichmentPort = mock(NewsContentEnrichmentPort.class);
+        ClassifyNewsUseCase useCase = new ClassifyNewsUseCase(newsRepository, classificationRepository, new ClassifyNewsPromptBuilder(), aiProvider, metricsRecorder, coordinator(), enrichmentPort, mock(ClassifiedNewsFollowUpPort.class));
+        NewsArticle newsArticle = newsArticle();
+
+        when(newsRepository.findById(newsArticle.getId())).thenReturn(Optional.of(newsArticle));
+        when(classificationRepository.existsByNewsId(newsArticle.getId())).thenReturn(false);
+        when(aiProvider.classify(any(ClassificationAIRequest.class))).thenReturn(aiResponse(ClassificationCategory.SIPRI, "Adjudicaciones", BigDecimal.valueOf(80), ImpactLevel.LOW, UrgencyLevel.HIGH));
+        when(aiProvider.providerName()).thenReturn("test-provider");
+        when(aiProvider.modelName()).thenReturn("test-model");
+
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute(new ClassifyNewsCommand(newsArticle.getId())));
+
+        verify(classificationRepository, never()).save(any(NewsClassification.class));
+        verify(newsRepository, never()).save(newsArticle);
+    }
+
+    @Test
     void fallsBackToOutOfScopeDiscardWhenGeminiReturnsNoTextForNewsWithoutEducationSignals() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         NewsClassificationRepository classificationRepository = mock(NewsClassificationRepository.class);
@@ -230,7 +291,17 @@ class ClassifyNewsUseCaseTest {
 
         verify(classificationRepository, never()).save(any(NewsClassification.class));
         verify(newsRepository, never()).save(newsArticle);
-        verify(metricsRecorder).recordFailure(eq("CLASSIFICATION"), eq("WF02_CLASSIFICATION"), eq("gemini"), eq("models/gemma-4-31b-it"), eq("NEWS"), eq(newsArticle.getId()), isNull(), any(AIProviderException.class));
+        verify(metricsRecorder).recordFailure(
+                eq("CLASSIFICATION"),
+                eq("WF02_CLASSIFICATION"),
+                eq("gemini"),
+                eq("models/gemma-4-31b-it"),
+                eq("NEWS"),
+                eq(newsArticle.getId()),
+                isNull(),
+                any(AIProviderException.class),
+                org.mockito.ArgumentMatchers.<Map<String, Object>>any()
+        );
     }
 
     @Test

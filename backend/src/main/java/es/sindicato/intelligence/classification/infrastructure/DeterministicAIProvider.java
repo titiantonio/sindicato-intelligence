@@ -64,7 +64,8 @@ public class DeterministicAIProvider implements AIProvider {
                 urgency,
                 keywords,
                 List.of("educacion publica andaluza"),
-                "Clasificacion determinista para MVP tecnico."
+                "Clasificacion determinista para MVP tecnico.",
+                "Clasificacion basada en coincidencias textuales deterministas del MVP."
         );
     }
 

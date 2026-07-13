@@ -3409,3 +3409,23 @@ Verificacion:
 - Backend focal WF-05: `mvnw.cmd -q "-Dtest=GenerateContentUseCaseTest,GenerateContentPromptBuilderTest,GeminiContentAIProviderTest,DeterministicContentAIProviderTest,JpaGeneratedContentRepositoryTest,ContentControllerTest" test` OK.
 - Frontend focal WF-05: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/events/event-detail-page.component.spec.ts --include=src/app/core/services/content.service.spec.ts --include=src/app/features/content/content-page.component.spec.ts` OK, 11 tests.
 - Frontend build: `npm.cmd run build` OK.
+
+## 19.39 Mejora integral WF-02 clasificacion IA - 2026-07-13
+
+Tarea de mejora posterior al Sprint 12 sobre Fase 6 Clasificacion IA y Fase 12 automatizaciones internas, observabilidad y configuracion ADMIN.
+
+Completado en esta iteracion:
+- [x] `WF-02` prioriza el lote de noticias `CAPTURED` con senales operativas urgentes como `BOJA`, `SIPRI`, plazos, convocatorias, oposiciones, adjudicaciones, mesa sectorial y huelga.
+- [x] `WF-02` aplica cuarentena temporal sin cambiar estado cuando una noticia acumula fallos recientes repetidos de clasificacion IA, evitando bucles y consumo innecesario del proveedor.
+- [x] La cuarentena no consume cupo de llamadas IA del lote y no bloquea noticias posteriores dentro del margen de lookahead.
+- [x] Anadida migracion Flyway `V25__ai_operation_metrics_entity_failure_index.sql` para acelerar consultas de fallos recientes por workflow, entidad, estado y fecha.
+- [x] Anadida validacion post-IA para normalizar descartes y rechazar respuestas incoherentes antes de persistir clasificaciones o avanzar a `WF-03`.
+- [x] Anadida trazabilidad sanitizada en metricas IA con senales de prioridad, enriquecimiento URL, reintento reducido, fallback, motivo de descarte y razon interna de clasificacion.
+- [x] El prompt oficial `WF-02` acepta `classificationReason` opcional en noticias clasificables, sin cambiar API publica ni tablas de clasificacion.
+- [x] `WF-02` se reprograma inmediatamente cuando consume un lote completo con trabajo real y evita bucles si todo el lote fue saltado por cuarentena.
+- [x] Revisado impacto en `WF-03`, `WF-04` y `WF-05`: no requieren cambios directos; se benefician de clasificaciones mas coherentes, prioridad temprana y menos ruido operativo.
+- [x] Version backend subida a `0.0.102-SNAPSHOT`.
+
+Verificacion:
+- Backend focal WF-02: `mvn -q "-Dtest=ClassifyNewsUseCaseTest,ClassifyNewsPromptBuilderTest,GeminiAIProviderTest,DeterministicAIProviderTest,ProcessPendingClassificationsUseCaseTest,RunAutomationWorkflowUseCaseTest,JpaAiOperationMetricRepositoryTest" test` OK.
+- Backend compile: `mvn -q -DskipTests compile` OK.

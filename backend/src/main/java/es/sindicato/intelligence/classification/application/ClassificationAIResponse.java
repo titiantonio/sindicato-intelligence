@@ -15,6 +15,20 @@ public record ClassificationAIResponse(
         UrgencyLevel urgency,
         List<String> keywords,
         List<String> entities,
-        String summary
+        String summary,
+        String classificationReason
 ) {
+
+    public ClassificationAIResponse(
+            ClassificationCategory category,
+            String subcategory,
+            BigDecimal relevance,
+            ImpactLevel impact,
+            UrgencyLevel urgency,
+            List<String> keywords,
+            List<String> entities,
+            String summary
+    ) {
+        this(category, subcategory, relevance, impact, urgency, keywords, entities, summary, null);
+    }
 }

@@ -150,7 +150,7 @@ public class GeminiAIProvider implements AIProvider {
                 - Usa impact exacto de esta lista: LOW, MEDIUM, HIGH, CRITICAL.
                 - Usa urgency exacto de esta lista: LOW, MEDIUM, HIGH.
                 - relevance debe ser un numero entre 0 y 100.
-                - Para noticias clasificables puedes devolver keywords y entities como arrays de strings, y summary como texto breve.
+                - Para noticias clasificables puedes devolver keywords y entities como arrays de strings, summary como texto breve y classificationReason como una frase breve de justificacion.
                 - Para category OTROS con subcategory FUERA_DE_AMBITO o INFORMACION_INSUFICIENTE no devuelvas keywords, entities ni summary.
                 """;
     }
@@ -181,10 +181,11 @@ public class GeminiAIProvider implements AIProvider {
                                 "type", "ARRAY",
                                 "items", Map.of("type", "STRING")
                         ),
-                        "summary", Map.of("type", "STRING")
+                        "summary", Map.of("type", "STRING"),
+                        "classificationReason", Map.of("type", "STRING")
                 ),
                 "required", List.of("category", "subcategory", "relevance", "impact", "urgency"),
-                "propertyOrdering", List.of("category", "subcategory", "relevance", "impact", "urgency", "keywords", "entities", "summary")
+                "propertyOrdering", List.of("category", "subcategory", "relevance", "impact", "urgency", "keywords", "entities", "summary", "classificationReason")
         );
     }
 
@@ -218,7 +219,8 @@ public class GeminiAIProvider implements AIProvider {
                     requiredEnum(UrgencyLevel.class, root, "urgency"),
                     stringList(root, "keywords"),
                     stringList(root, "entities"),
-                    optionalText(root, "summary")
+                    optionalText(root, "summary"),
+                    optionalText(root, "classificationReason")
             );
         } catch (JsonProcessingException exception) {
             throw new AIProviderException("Gemini response is not valid classification JSON", exception);

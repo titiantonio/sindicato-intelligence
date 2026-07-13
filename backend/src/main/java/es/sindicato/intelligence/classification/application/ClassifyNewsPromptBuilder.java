@@ -47,7 +47,8 @@ public class ClassifyNewsPromptBuilder {
                   "subcategory": "",
                   "relevance": 0,
                   "impact": "",
-                  "urgency": ""
+                  "urgency": "",
+                  "classificationReason": ""
                 }
 
                 Categorias permitidas para category:
@@ -77,7 +78,7 @@ public class ClassifyNewsPromptBuilder {
                 - MEDIUM: seguimiento necesario a corto plazo aunque no haya accion inmediata.
                 - LOW: informacion de contexto, baja prioridad o informacion insuficiente.
 
-                Para noticias clasificables, rellena subcategory con una etiqueta corta y concreta. Solo en noticias clasificables puedes anadir summary con maximo dos frases, keywords y entities con terminos y actores relevantes detectados.
+                Para noticias clasificables, rellena subcategory con una etiqueta corta y concreta. Solo en noticias clasificables puedes anadir summary con maximo dos frases, keywords, entities y classificationReason con una frase breve que justifique la categoria, relevancia, impacto y urgencia.
 
                 Si el titulo, resumen, contenido y contexto enriquecido desde la URL no permiten inferir una tematica educativa concreta, no rechaces la tarea y no expliques fuera del JSON: usa category OTROS y subcategory INFORMACION_INSUFICIENTE.
                 """.formatted(safe(title), safe(url), safe(summary), safe(content));

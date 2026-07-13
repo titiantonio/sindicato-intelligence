@@ -46,7 +46,7 @@ class RunAutomationWorkflowUseCaseTest {
         assertFalse(setting.isRunning());
         assertEquals(1, setting.getLastProcessedCount());
         assertEquals(1, setting.getLastSuccessCount());
-        assertTrue(setting.getNextRunAt().isAfter(setting.getLastRunAt()));
+        assertEquals(setting.getUpdatedAt(), setting.getNextRunAt());
         verify(classifications).execute(1);
         verify(audit).record(org.mockito.ArgumentMatchers.eq("AUTOMATION_RUN_COMPLETED"), org.mockito.ArgumentMatchers.eq("AUTOMATION"), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.any());
     }
@@ -132,6 +132,50 @@ class RunAutomationWorkflowUseCaseTest {
 
         assertEquals(setting.getUpdatedAt(), setting.getNextRunAt());
         verify(eventDetection).execute(3);
+    }
+
+    @Test
+    void reschedulesClassificationImmediatelyWhenFullBatchHasWork() {
+        AutomationWorkflowSettingRepository repository = mock(AutomationWorkflowSettingRepository.class);
+        ProcessPendingClassificationsUseCase classifications = mock(ProcessPendingClassificationsUseCase.class);
+        ProcessPendingEventDetectionUseCase eventDetection = mock(ProcessPendingEventDetectionUseCase.class);
+        ProcessPendingEventAnalysisUseCase analysis = mock(ProcessPendingEventAnalysisUseCase.class);
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        AiModelExecutionCoordinator coordinator = coordinator();
+        TransactionOperations transactionOperations = transactionOperations();
+        AutomationWorkflowSetting setting = setting(AutomationWorkflowCode.WF02_CLASSIFICATION, 3);
+
+        when(repository.findByCode(AutomationWorkflowCode.WF02_CLASSIFICATION)).thenReturn(Optional.of(setting));
+        when(repository.save(setting)).thenReturn(setting);
+        when(classifications.execute(3)).thenReturn(new AutomationRunResult(3, 2, 1, 0, List.of(new AutomationRunError(10L, "temporary failure"))));
+
+        new RunAutomationWorkflowUseCase(repository, classifications, eventDetection, analysis, audit, transactionOperations, coordinator)
+                .execute(AutomationWorkflowCode.WF02_CLASSIFICATION);
+
+        assertEquals(setting.getUpdatedAt(), setting.getNextRunAt());
+        verify(classifications).execute(3);
+    }
+
+    @Test
+    void doesNotRescheduleClassificationImmediatelyWhenFullBatchIsOnlySkipped() {
+        AutomationWorkflowSettingRepository repository = mock(AutomationWorkflowSettingRepository.class);
+        ProcessPendingClassificationsUseCase classifications = mock(ProcessPendingClassificationsUseCase.class);
+        ProcessPendingEventDetectionUseCase eventDetection = mock(ProcessPendingEventDetectionUseCase.class);
+        ProcessPendingEventAnalysisUseCase analysis = mock(ProcessPendingEventAnalysisUseCase.class);
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        AiModelExecutionCoordinator coordinator = coordinator();
+        TransactionOperations transactionOperations = transactionOperations();
+        AutomationWorkflowSetting setting = setting(AutomationWorkflowCode.WF02_CLASSIFICATION, 3);
+
+        when(repository.findByCode(AutomationWorkflowCode.WF02_CLASSIFICATION)).thenReturn(Optional.of(setting));
+        when(repository.save(setting)).thenReturn(setting);
+        when(classifications.execute(3)).thenReturn(new AutomationRunResult(3, 0, 0, 3, List.of()));
+
+        new RunAutomationWorkflowUseCase(repository, classifications, eventDetection, analysis, audit, transactionOperations, coordinator)
+                .execute(AutomationWorkflowCode.WF02_CLASSIFICATION);
+
+        assertTrue(setting.getNextRunAt().isAfter(setting.getUpdatedAt()));
+        verify(classifications).execute(3);
     }
 
     private AutomationWorkflowSetting setting(AutomationWorkflowCode code, int batchSize) {
