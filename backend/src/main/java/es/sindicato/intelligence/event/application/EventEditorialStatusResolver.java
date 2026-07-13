@@ -31,7 +31,12 @@ public class EventEditorialStatusResolver {
             return EventEditorialStatus.PUBLISHED;
         }
 
-        if (analysisRepository.existsByEventId(event.getId())) {
+        var latestAnalysis = analysisRepository.findLatestByEventId(event.getId());
+        if (latestAnalysis.isPresent() && latestAnalysis.get().isOutdatedFor(event.getUpdatedAt())) {
+            return EventEditorialStatus.ANALYSIS_OUTDATED;
+        }
+
+        if (latestAnalysis.isPresent()) {
             return EventEditorialStatus.ANALYZED;
         }
 

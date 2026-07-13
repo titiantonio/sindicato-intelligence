@@ -205,6 +205,8 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                     stringList(root, "keyPoints"),
                     stringList(root, "risks"),
                     stringList(root, "opportunities"),
+                    stringList(root, "affectedGroups"),
+                    stringList(root, "recommendedMonitoring"),
                     resolvedModel
             );
         } catch (JsonProcessingException exception) {

@@ -27,6 +27,14 @@ describe('EventDetailPageComponent', () => {
       keyPoints: [],
       risks: [],
       opportunities: [],
+      affectedGroups: [],
+      recommendedMonitoring: [],
+      analysisType: 'PRIORITY',
+      generationTrigger: 'MANUAL',
+      eventUpdatedAtSnapshot: '2026-06-16T09:00:00Z',
+      contextNewsCount: 1,
+      contextTruncated: false,
+      outdated: false,
       modelUsed: 'deterministic',
       generatedAt: '2026-06-16T10:00:00Z'
     }));
@@ -111,6 +119,14 @@ describe('EventDetailPageComponent', () => {
           keyPoints: [],
           risks: [],
           opportunities: [],
+          affectedGroups: ['Profesorado'],
+          recommendedMonitoring: ['Revisar BOJA'],
+          analysisType: 'PRIORITY',
+          generationTrigger: 'PRIORITY_AUTO',
+          eventUpdatedAtSnapshot: '2026-06-16T09:00:00Z',
+          contextNewsCount: 1,
+          contextTruncated: false,
+          outdated: false,
           modelUsed: 'deterministic',
           generatedAt: '2026-06-16T09:30:00Z'
         }

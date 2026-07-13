@@ -42,6 +42,7 @@ public class GenerateAnalysisPromptBuilder {
                 descripcion: %s
                 categoria: %s
                 importancia: %s
+                tipo_analisis: %s
 
                 NOTICIAS:
                 %s
@@ -66,6 +67,12 @@ public class GenerateAnalysisPromptBuilder {
                 - affectedGroups: 0 a 5 items, maximo 120 caracteres por item, colectivos afectados si se mencionan o se deducen claramente.
                 - recommendedMonitoring: 1 a 4 items, maximo 180 caracteres por item, aspectos concretos a vigilar en proximas noticias o fuentes oficiales.
 
+                Reglas por tipo de analisis:
+                - CRISIS: prioriza impacto inmediato, incertidumbres, colectivos afectados y seguimiento urgente.
+                - PRIORITY: prioriza lectura sindical y riesgos operativos sin exagerar.
+                - STANDARD: sintetiza hechos y seguimiento normal.
+                - QUICK: genera un analisis breve para decidir si merece seguimiento adicional.
+
                 Si la informacion es limitada, no rellenes con suposiciones: explica la limitacion de forma breve dentro del JSON.
                 No repitas palabras o fragmentos. No uses ingles salvo nombres propios o siglas presentes en las noticias.
                 """.formatted(
@@ -74,6 +81,7 @@ public class GenerateAnalysisPromptBuilder {
                 safe(request.eventDescription()),
                 request.category(),
                 request.importance(),
+                request.analysisType(),
                 newsContext(request.news())
         );
 
@@ -88,7 +96,10 @@ public class GenerateAnalysisPromptBuilder {
         StringBuilder builder = new StringBuilder();
         for (AnalysisNewsItem item : news) {
             builder.append("- id: ").append(item.id()).append('\n')
+                    .append("  fuente: ").append(safe(item.sourceName())).append('\n')
+                    .append("  prioridad_fuente: ").append(item.sourcePriority() == null ? "" : item.sourcePriority()).append('\n')
                     .append("  titulo: ").append(limit(item.title(), MAX_TITLE_LENGTH)).append('\n')
+                    .append("  url: ").append(limit(item.url(), MAX_TITLE_LENGTH)).append('\n')
                     .append("  resumen: ").append(limit(item.summary(), MAX_SUMMARY_LENGTH)).append('\n')
                     .append("  contenido: ").append(limit(item.content(), MAX_CONTENT_LENGTH)).append('\n')
                     .append("  publicado: ").append(item.publishedAt()).append("\n\n");
@@ -99,6 +110,11 @@ public class GenerateAnalysisPromptBuilder {
         }
 
         return limit(builder.toString().trim(), MAX_NEWS_CONTEXT_LENGTH);
+    }
+
+    public boolean isContextTruncated(List<AnalysisNewsItem> news) {
+        String context = newsContext(news);
+        return context.contains("[recortado]") || context.contains("Contexto adicional omitido");
     }
 
     private String safe(String value) {

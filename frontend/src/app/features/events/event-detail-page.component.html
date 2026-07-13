@@ -109,8 +109,31 @@
       @for (analysis of item.analyses; track analysis.id) {
         <article class="stack-item">
           <span>#{{ analysis.id }} · {{ formatDate(analysis.generatedAt) }} · {{ analysis.modelUsed }}</span>
+          <span>{{ analysis.analysisType }} · {{ analysis.generationTrigger }} · {{ analysis.contextNewsCount }} noticias</span>
+          @if (analysis.outdated) {
+            <p-message severity="warn" text="Analisis obsoleto: el evento tiene cambios posteriores." />
+          }
+          @if (analysis.contextTruncated) {
+            <p-message severity="info" text="Contexto recortado por limite operativo del prompt." />
+          }
           <h3>{{ analysis.executiveSummary }}</h3>
           <p>{{ analysis.unionSummary }}</p>
+          @if (analysis.affectedGroups.length > 0) {
+            <strong>Colectivos afectados</strong>
+            <ul>
+              @for (group of analysis.affectedGroups; track group) {
+                <li>{{ group }}</li>
+              }
+            </ul>
+          }
+          @if (analysis.recommendedMonitoring.length > 0) {
+            <strong>Seguimiento recomendado</strong>
+            <ul>
+              @for (item of analysis.recommendedMonitoring; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          }
         </article>
       } @empty {
         <p class="empty-state">No hay analisis generados.</p>

@@ -11,6 +11,13 @@ public record EventAIAnalysisResponse(
         List<String> keyPoints,
         List<String> risks,
         List<String> opportunities,
+        List<String> affectedGroups,
+        List<String> recommendedMonitoring,
+        String analysisType,
+        String generationTrigger,
+        OffsetDateTime eventUpdatedAtSnapshot,
+        int contextNewsCount,
+        boolean contextTruncated,
         String modelUsed,
         OffsetDateTime generatedAt
 ) {

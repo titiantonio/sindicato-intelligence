@@ -2,10 +2,14 @@ package es.sindicato.intelligence.analysis.infrastructure;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import es.sindicato.intelligence.analysis.domain.AnalysisGenerationTrigger;
+import es.sindicato.intelligence.analysis.domain.AnalysisType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -41,6 +45,31 @@ public class EventAIAnalysisEntity {
     @Column(name = "opportunities", columnDefinition = "jsonb")
     private List<String> opportunities;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "affected_groups", columnDefinition = "jsonb")
+    private List<String> affectedGroups;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "recommended_monitoring", columnDefinition = "jsonb")
+    private List<String> recommendedMonitoring;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "analysis_type", nullable = false, length = 40)
+    private AnalysisType analysisType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "generation_trigger", nullable = false, length = 40)
+    private AnalysisGenerationTrigger generationTrigger;
+
+    @Column(name = "event_updated_at_snapshot", nullable = false)
+    private OffsetDateTime eventUpdatedAtSnapshot;
+
+    @Column(name = "context_news_count", nullable = false)
+    private int contextNewsCount;
+
+    @Column(name = "context_truncated", nullable = false)
+    private boolean contextTruncated;
+
     @Column(name = "model_used", nullable = false, length = 100)
     private String modelUsed;
 
@@ -58,6 +87,13 @@ public class EventAIAnalysisEntity {
             List<String> keyPoints,
             List<String> risks,
             List<String> opportunities,
+            List<String> affectedGroups,
+            List<String> recommendedMonitoring,
+            AnalysisType analysisType,
+            AnalysisGenerationTrigger generationTrigger,
+            OffsetDateTime eventUpdatedAtSnapshot,
+            int contextNewsCount,
+            boolean contextTruncated,
             String modelUsed,
             OffsetDateTime generatedAt
     ) {
@@ -68,6 +104,13 @@ public class EventAIAnalysisEntity {
         this.keyPoints = keyPoints;
         this.risks = risks;
         this.opportunities = opportunities;
+        this.affectedGroups = affectedGroups;
+        this.recommendedMonitoring = recommendedMonitoring;
+        this.analysisType = analysisType;
+        this.generationTrigger = generationTrigger;
+        this.eventUpdatedAtSnapshot = eventUpdatedAtSnapshot;
+        this.contextNewsCount = contextNewsCount;
+        this.contextTruncated = contextTruncated;
         this.modelUsed = modelUsed;
         this.generatedAt = generatedAt;
     }
@@ -98,6 +141,34 @@ public class EventAIAnalysisEntity {
 
     public List<String> getOpportunities() {
         return opportunities;
+    }
+
+    public List<String> getAffectedGroups() {
+        return affectedGroups;
+    }
+
+    public List<String> getRecommendedMonitoring() {
+        return recommendedMonitoring;
+    }
+
+    public AnalysisType getAnalysisType() {
+        return analysisType;
+    }
+
+    public AnalysisGenerationTrigger getGenerationTrigger() {
+        return generationTrigger;
+    }
+
+    public OffsetDateTime getEventUpdatedAtSnapshot() {
+        return eventUpdatedAtSnapshot;
+    }
+
+    public int getContextNewsCount() {
+        return contextNewsCount;
+    }
+
+    public boolean isContextTruncated() {
+        return contextTruncated;
     }
 
     public String getModelUsed() {

@@ -52,6 +52,14 @@ export interface EventAnalysisItem {
   keyPoints: string[];
   risks: string[];
   opportunities: string[];
+  affectedGroups: string[];
+  recommendedMonitoring: string[];
+  analysisType: string;
+  generationTrigger: string;
+  eventUpdatedAtSnapshot: string;
+  contextNewsCount: number;
+  contextTruncated: boolean;
+  outdated?: boolean;
   modelUsed: string;
   generatedAt: string;
 }

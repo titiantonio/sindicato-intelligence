@@ -51,6 +51,13 @@ public class AnalysisController {
                 analysis.getKeyPoints(),
                 analysis.getRisks(),
                 analysis.getOpportunities(),
+                analysis.getAffectedGroups(),
+                analysis.getRecommendedMonitoring(),
+                analysis.getAnalysisType().name(),
+                analysis.getGenerationTrigger().name(),
+                analysis.getEventUpdatedAtSnapshot(),
+                analysis.getContextNewsCount(),
+                analysis.isContextTruncated(),
                 analysis.getModelUsed(),
                 analysis.getGeneratedAt()
         );

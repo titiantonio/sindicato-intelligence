@@ -48,6 +48,19 @@ public class JpaEventAIAnalysisRepository implements EventAIAnalysisRepository {
     }
 
     @Override
+    public Optional<EventAIAnalysis> findLatestByEventId(Long eventId) {
+        return entityManager.createQuery(
+                        "SELECT analysis FROM EventAIAnalysisEntity analysis WHERE analysis.eventId = :eventId ORDER BY analysis.generatedAt DESC, analysis.id DESC",
+                        EventAIAnalysisEntity.class
+                )
+                .setParameter("eventId", eventId)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .map(this::toDomain);
+    }
+
+    @Override
     public boolean existsByEventId(Long eventId) {
         Long count = entityManager.createQuery(
                         "SELECT COUNT(analysis) FROM EventAIAnalysisEntity analysis WHERE analysis.eventId = :eventId",
@@ -68,6 +81,13 @@ public class JpaEventAIAnalysisRepository implements EventAIAnalysisRepository {
                 analysis.getKeyPoints(),
                 analysis.getRisks(),
                 analysis.getOpportunities(),
+                analysis.getAffectedGroups(),
+                analysis.getRecommendedMonitoring(),
+                analysis.getAnalysisType(),
+                analysis.getGenerationTrigger(),
+                analysis.getEventUpdatedAtSnapshot(),
+                analysis.getContextNewsCount(),
+                analysis.isContextTruncated(),
                 analysis.getModelUsed(),
                 analysis.getGeneratedAt()
         );
@@ -82,6 +102,13 @@ public class JpaEventAIAnalysisRepository implements EventAIAnalysisRepository {
                 entity.getKeyPoints() == null ? List.of() : entity.getKeyPoints(),
                 entity.getRisks() == null ? List.of() : entity.getRisks(),
                 entity.getOpportunities() == null ? List.of() : entity.getOpportunities(),
+                entity.getAffectedGroups() == null ? List.of() : entity.getAffectedGroups(),
+                entity.getRecommendedMonitoring() == null ? List.of() : entity.getRecommendedMonitoring(),
+                entity.getAnalysisType(),
+                entity.getGenerationTrigger(),
+                entity.getEventUpdatedAtSnapshot(),
+                entity.getContextNewsCount(),
+                entity.isContextTruncated(),
                 entity.getModelUsed(),
                 entity.getGeneratedAt()
         );

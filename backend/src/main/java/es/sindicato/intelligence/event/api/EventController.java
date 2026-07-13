@@ -173,7 +173,7 @@ public class EventController {
                 event.getCreatedAt(),
                 event.getUpdatedAt(),
                 detail.news().stream().map(this::toNewsResponse).toList(),
-                detail.analyses().stream().map(this::toAnalysisResponse).toList(),
+                detail.analyses().stream().map(analysis -> toAnalysisResponse(event, analysis)).toList(),
                 detail.contents().stream().map(this::toContentResponse).toList()
         );
     }
@@ -208,7 +208,7 @@ public class EventController {
         );
     }
 
-    private EventAnalysisResponse toAnalysisResponse(EventAIAnalysis analysis) {
+    private EventAnalysisResponse toAnalysisResponse(Event event, EventAIAnalysis analysis) {
         return new EventAnalysisResponse(
                 analysis.getId(),
                 analysis.getEventId(),
@@ -217,6 +217,14 @@ public class EventController {
                 analysis.getKeyPoints(),
                 analysis.getRisks(),
                 analysis.getOpportunities(),
+                analysis.getAffectedGroups(),
+                analysis.getRecommendedMonitoring(),
+                analysis.getAnalysisType().name(),
+                analysis.getGenerationTrigger().name(),
+                analysis.getEventUpdatedAtSnapshot(),
+                analysis.getContextNewsCount(),
+                analysis.isContextTruncated(),
+                analysis.isOutdatedFor(event.getUpdatedAt()),
                 analysis.getModelUsed(),
                 analysis.getGeneratedAt()
         );

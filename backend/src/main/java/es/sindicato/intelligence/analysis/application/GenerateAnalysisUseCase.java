@@ -4,14 +4,20 @@ import es.sindicato.intelligence.audit.application.AuditDetailFormatter;
 import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
+import es.sindicato.intelligence.analysis.domain.AnalysisGenerationTrigger;
+import es.sindicato.intelligence.analysis.domain.AnalysisType;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import es.sindicato.intelligence.event.domain.Event;
+import es.sindicato.intelligence.event.domain.Importance;
 import es.sindicato.intelligence.event.domain.EventRepository;
 import es.sindicato.intelligence.news.domain.NewsArticle;
 import es.sindicato.intelligence.news.domain.NewsRepository;
+import es.sindicato.intelligence.source.domain.Source;
+import es.sindicato.intelligence.source.domain.SourceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +34,7 @@ public class GenerateAnalysisUseCase {
 
     private final EventRepository eventRepository;
     private final NewsRepository newsRepository;
+    private final SourceRepository sourceRepository;
     private final EventAIAnalysisRepository analysisRepository;
     private final GenerateAnalysisPromptBuilder promptBuilder;
     private final AnalysisAIProvider aiProvider;
@@ -35,9 +42,11 @@ public class GenerateAnalysisUseCase {
     private final RecordAuditLogUseCase recordAuditLogUseCase;
     private final AiModelExecutionCoordinator aiModelExecutionCoordinator;
 
+    @Autowired
     public GenerateAnalysisUseCase(
             EventRepository eventRepository,
             NewsRepository newsRepository,
+            SourceRepository sourceRepository,
             EventAIAnalysisRepository analysisRepository,
             GenerateAnalysisPromptBuilder promptBuilder,
             AnalysisAIProvider aiProvider,
@@ -47,12 +56,26 @@ public class GenerateAnalysisUseCase {
     ) {
         this.eventRepository = eventRepository;
         this.newsRepository = newsRepository;
+        this.sourceRepository = sourceRepository;
         this.analysisRepository = analysisRepository;
         this.promptBuilder = promptBuilder;
         this.aiProvider = aiProvider;
         this.metricsRecorder = metricsRecorder;
         this.recordAuditLogUseCase = recordAuditLogUseCase;
         this.aiModelExecutionCoordinator = aiModelExecutionCoordinator;
+    }
+
+    GenerateAnalysisUseCase(
+            EventRepository eventRepository,
+            NewsRepository newsRepository,
+            EventAIAnalysisRepository analysisRepository,
+            GenerateAnalysisPromptBuilder promptBuilder,
+            AnalysisAIProvider aiProvider,
+            AiOperationMetricsRecorder metricsRecorder,
+            RecordAuditLogUseCase recordAuditLogUseCase,
+            AiModelExecutionCoordinator aiModelExecutionCoordinator
+    ) {
+        this(eventRepository, newsRepository, null, analysisRepository, promptBuilder, aiProvider, metricsRecorder, recordAuditLogUseCase, aiModelExecutionCoordinator);
     }
 
     @Transactional
@@ -66,12 +89,16 @@ public class GenerateAnalysisUseCase {
                 .orElseThrow(() -> new IllegalArgumentException("event not found: " + command.eventId()));
         List<NewsArticle> newsArticles = loadNewsArticles(event);
         List<AnalysisNewsItem> newsItems = newsArticles.stream().map(this::toNewsItem).toList();
+        AnalysisType analysisType = analysisTypeFor(event.getImportance());
+        AnalysisGenerationTrigger trigger = command.trigger() == null ? AnalysisGenerationTrigger.MANUAL : command.trigger();
+        boolean contextTruncated = promptBuilder.isContextTruncated(newsItems);
         GenerateAnalysisPrompt prompt = promptBuilder.build(new AnalysisAIRequest(
                 event.getId(),
                 event.getTitle(),
                 event.getDescription(),
                 event.getCategory(),
                 event.getImportance(),
+                analysisType,
                 newsItems,
                 "",
                 ""
@@ -87,6 +114,7 @@ public class GenerateAnalysisUseCase {
                             event.getDescription(),
                             event.getCategory(),
                             event.getImportance(),
+                            analysisType,
                             newsItems,
                             prompt.systemPrompt(),
                             prompt.userPrompt()
@@ -104,6 +132,13 @@ public class GenerateAnalysisUseCase {
                 aiResponse.keyPoints(),
                 aiResponse.risks(),
                 aiResponse.opportunities(),
+                aiResponse.affectedGroups(),
+                aiResponse.recommendedMonitoring(),
+                analysisType,
+                trigger,
+                event.getUpdatedAt(),
+                newsArticles.size(),
+                contextTruncated,
                 aiResponse.modelUsed(),
                 OffsetDateTime.now()
         );
@@ -135,9 +170,11 @@ public class GenerateAnalysisUseCase {
         );
 
         log.info(
-                "analysis generation completed: eventId={}, analysisId={}, keyPoints={}, risks={}, opportunities={}, modelUsed={}",
+                "analysis generation completed: eventId={}, analysisId={}, analysisType={}, trigger={}, keyPoints={}, risks={}, opportunities={}, modelUsed={}",
                 event.getId(),
                 savedAnalysis.getId(),
+                savedAnalysis.getAnalysisType(),
+                savedAnalysis.getGenerationTrigger(),
                 savedAnalysis.getKeyPoints().size(),
                 savedAnalysis.getRisks().size(),
                 savedAnalysis.getOpportunities().size(),
@@ -156,11 +193,18 @@ public class GenerateAnalysisUseCase {
         details.put("eventImportance", event.getImportance().name());
         details.put("newsCount", newsCount);
         details.put("analysisId", analysis.getId());
+        details.put("analysisType", analysis.getAnalysisType().name());
+        details.put("generationTrigger", analysis.getGenerationTrigger().name());
+        details.put("eventUpdatedAtSnapshot", analysis.getEventUpdatedAtSnapshot().toString());
+        details.put("contextNewsCount", analysis.getContextNewsCount());
+        details.put("contextTruncated", analysis.isContextTruncated());
         details.put("executiveSummary", abbreviate(analysis.getExecutiveSummary()));
         details.put("unionSummary", abbreviate(analysis.getUnionSummary()));
         details.put("keyPoints", abbreviateList(analysis.getKeyPoints()));
         details.put("risks", abbreviateList(analysis.getRisks()));
         details.put("opportunities", abbreviateList(analysis.getOpportunities()));
+        details.put("affectedGroups", abbreviateList(analysis.getAffectedGroups()));
+        details.put("recommendedMonitoring", abbreviateList(analysis.getRecommendedMonitoring()));
         details.put("modelUsed", analysis.getModelUsed());
         return details;
     }
@@ -193,12 +237,25 @@ public class GenerateAnalysisUseCase {
     }
 
     private AnalysisNewsItem toNewsItem(NewsArticle newsArticle) {
+        Source source = sourceRepository == null ? null : sourceRepository.findById(newsArticle.getSourceId()).orElse(null);
         return new AnalysisNewsItem(
                 newsArticle.getId(),
+                source == null ? "source:" + newsArticle.getSourceId() : source.getName(),
+                source == null ? null : source.getPriority(),
                 newsArticle.getTitle(),
+                newsArticle.getUrl(),
                 newsArticle.getSummary(),
                 newsArticle.getContent(),
                 newsArticle.getPublishedAt()
         );
+    }
+
+    private AnalysisType analysisTypeFor(Importance importance) {
+        return switch (importance) {
+            case CRITICAL -> AnalysisType.CRISIS;
+            case HIGH -> AnalysisType.PRIORITY;
+            case LOW -> AnalysisType.QUICK;
+            default -> AnalysisType.STANDARD;
+        };
     }
 }

@@ -36,7 +36,7 @@ public class EventResponseMapper {
                 event.getCreatedAt(),
                 event.getUpdatedAt(),
                 detail.news().stream().map(this::toNewsResponse).toList(),
-                detail.analyses().stream().map(this::toAnalysisResponse).toList(),
+                detail.analyses().stream().map(analysis -> toAnalysisResponse(event, analysis)).toList(),
                 detail.contents().stream().map(this::toContentResponse).toList()
         );
     }
@@ -71,7 +71,7 @@ public class EventResponseMapper {
         );
     }
 
-    public EventAnalysisResponse toAnalysisResponse(EventAIAnalysis analysis) {
+    public EventAnalysisResponse toAnalysisResponse(Event event, EventAIAnalysis analysis) {
         return new EventAnalysisResponse(
                 analysis.getId(),
                 analysis.getEventId(),
@@ -80,6 +80,14 @@ public class EventResponseMapper {
                 analysis.getKeyPoints(),
                 analysis.getRisks(),
                 analysis.getOpportunities(),
+                analysis.getAffectedGroups(),
+                analysis.getRecommendedMonitoring(),
+                analysis.getAnalysisType().name(),
+                analysis.getGenerationTrigger().name(),
+                analysis.getEventUpdatedAtSnapshot(),
+                analysis.getContextNewsCount(),
+                analysis.isContextTruncated(),
+                analysis.isOutdatedFor(event.getUpdatedAt()),
                 analysis.getModelUsed(),
                 analysis.getGeneratedAt()
         );

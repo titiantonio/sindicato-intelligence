@@ -73,6 +73,19 @@ public class JpaEventSummaryQueryRepository implements EventSummaryQueryReposito
                             SELECT 1
                             FROM event_ai_analysis analysis
                             WHERE analysis.event_id = event.id
+                              AND event.updated_at > analysis.event_updated_at_snapshot
+                              AND analysis.id = (
+                                  SELECT latest_analysis.id
+                                  FROM event_ai_analysis latest_analysis
+                                  WHERE latest_analysis.event_id = event.id
+                                  ORDER BY latest_analysis.generated_at DESC, latest_analysis.id DESC
+                                  LIMIT 1
+                              )
+                        ) THEN 'ANALYSIS_OUTDATED'
+                        WHEN EXISTS (
+                            SELECT 1
+                            FROM event_ai_analysis analysis
+                            WHERE analysis.event_id = event.id
                         ) THEN 'ANALYZED'
                         ELSE 'PENDING_ANALYSIS'
                     END AS editorial_status,

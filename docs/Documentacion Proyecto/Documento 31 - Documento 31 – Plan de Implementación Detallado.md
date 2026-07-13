@@ -3365,3 +3365,24 @@ Completado en esta iteracion:
 
 Verificacion:
 - Backend focal: `mvnw.cmd "-Dtest=DetectEventUseCaseTest,EventMatchPromptBuilderTest,DeterministicEventMatchingAIProviderTest" test` OK, 10 tests.
+
+## 19.37 Mejora de analisis WF-04 y priorizacion automatica - 2026-07-13
+
+Tarea de mejora posterior al Sprint 12 sobre Fase 12, automatizaciones internas, observabilidad IA y backoffice operativo.
+
+Completado en esta iteracion:
+- [x] `WF-04` procesa candidatos por prioridad `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, con desempate por volumen de noticias y recencia.
+- [x] `HIGH` y `CRITICAL` solicitan ejecucion inmediata de `WF04_ANALYSIS` tras `WF-03`, sin ejecutar IA dentro de la transaccion de deteccion de eventos.
+- [x] `MEDIUM` se analiza por lote tras ventana de estabilizacion y `LOW` requiere volumen minimo de noticias.
+- [x] Los analisis existentes se consideran obsoletos si el evento cambia despues del snapshot usado para generarlos.
+- [x] Anadida migracion Flyway `V23__enhance_event_ai_analysis.sql` con colectivos afectados, seguimiento recomendado, tipo, disparador, snapshot, numero de noticias y recorte de contexto.
+- [x] `GenerateAnalysisUseCase`, proveedor determinista y Gemini persisten `affectedGroups` y `recommendedMonitoring`.
+- [x] El prompt oficial `WF-04` incluye tipo de analisis y contexto enriquecido de fuente, prioridad, URL y fecha.
+- [x] El detalle de evento expone aviso de analisis obsoleto, tipo/disparador y campos de seguimiento sindical.
+- [x] Version backend subida a `0.0.100-SNAPSHOT`.
+
+Verificacion:
+- Backend compile: `mvn -q -DskipTests compile` OK.
+- Backend focal WF-04: `mvn -q "-Dtest=GenerateAnalysisUseCaseTest,GenerateAnalysisPromptBuilderTest,GeminiAnalysisAIProviderTest,DeterministicAnalysisAIProviderTest,EventAIAnalysisTest,JpaEventAIAnalysisRepositoryTest,ProcessPendingEventAnalysisUseCaseTest,DetectEventUseCaseTest" test` OK.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/events/event-detail-page.component.spec.ts --include=src/app/core/services/analysis.service.spec.ts` OK, 3 tests.
+- Nota: `EventControllerTest` aislado mantiene 2 fallos previos/no relacionados por datos acumulados y expectativas de `WF-03` (`matchDecision` y orden por ids) en la base local compartida.

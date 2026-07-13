@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Backend IA WF-04: anadida migracion `V23` para persistir colectivos afectados, seguimiento recomendado, tipo de analisis, disparador, snapshot del evento y contexto usado en `event_ai_analysis`.
+- Backend/Frontend WF-04: el detalle de evento muestra tipo/disparador del analisis, contexto usado, avisos de obsolescencia y campos de seguimiento sindical.
+
 ### Changed
 
+- Versionado backend actualizado a `0.0.100-SNAPSHOT`.
+- Backend automatizaciones WF-04: los analisis se procesan por prioridad `CRITICAL`/`HIGH`/`MEDIUM`/`LOW`, `HIGH` y `CRITICAL` solicitan ejecucion inmediata tras WF-03, `LOW` queda limitado a eventos con suficiente volumen y los eventos modificados se reanalizan como obsoletos.
+- Backend IA WF-04: el prompt incorpora tipo de analisis y contexto enriquecido de fuente/URL manteniendo limites de recorte y salida JSON estricta.
 - Versionado backend actualizado a `0.0.99-SNAPSHOT`.
 - Backend IA WF-03: el matching de eventos usa candidatos enriquecidos con estado, fechas, volumen de noticias y titulos recientes; ademas amplia la seleccion a categorias relacionadas con coincidencia textual fuerte.
 - Versionado backend actualizado a `0.0.98-SNAPSHOT`.

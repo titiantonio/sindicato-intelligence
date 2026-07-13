@@ -2,6 +2,8 @@ package es.sindicato.intelligence.event.application;
 
 import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.ai.application.AiModelExecutionCoordinator;
+import es.sindicato.intelligence.automation.application.RequestImmediateAutomationWorkflowRunUseCase;
+import es.sindicato.intelligence.automation.domain.AutomationWorkflowCode;
 import es.sindicato.intelligence.classification.domain.ImpactLevel;
 import es.sindicato.intelligence.classification.domain.NewsClassification;
 import es.sindicato.intelligence.classification.domain.NewsClassificationRepository;
@@ -16,6 +18,7 @@ import es.sindicato.intelligence.news.domain.NewsRepository;
 import es.sindicato.intelligence.news.domain.NewsStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,7 +72,9 @@ public class DetectEventUseCase {
     private final EventMatchingAIProvider aiProvider;
     private final AiOperationMetricsRecorder metricsRecorder;
     private final AiModelExecutionCoordinator aiModelExecutionCoordinator;
+    private final RequestImmediateAutomationWorkflowRunUseCase requestImmediateAutomationWorkflowRunUseCase;
 
+    @Autowired
     public DetectEventUseCase(
             NewsRepository newsRepository,
             NewsClassificationRepository classificationRepository,
@@ -77,7 +82,8 @@ public class DetectEventUseCase {
             EventMatchPromptBuilder promptBuilder,
             EventMatchingAIProvider aiProvider,
             AiOperationMetricsRecorder metricsRecorder,
-            AiModelExecutionCoordinator aiModelExecutionCoordinator
+            AiModelExecutionCoordinator aiModelExecutionCoordinator,
+            RequestImmediateAutomationWorkflowRunUseCase requestImmediateAutomationWorkflowRunUseCase
     ) {
         this.newsRepository = newsRepository;
         this.classificationRepository = classificationRepository;
@@ -86,6 +92,19 @@ public class DetectEventUseCase {
         this.aiProvider = aiProvider;
         this.metricsRecorder = metricsRecorder;
         this.aiModelExecutionCoordinator = aiModelExecutionCoordinator;
+        this.requestImmediateAutomationWorkflowRunUseCase = requestImmediateAutomationWorkflowRunUseCase;
+    }
+
+    DetectEventUseCase(
+            NewsRepository newsRepository,
+            NewsClassificationRepository classificationRepository,
+            EventRepository eventRepository,
+            EventMatchPromptBuilder promptBuilder,
+            EventMatchingAIProvider aiProvider,
+            AiOperationMetricsRecorder metricsRecorder,
+            AiModelExecutionCoordinator aiModelExecutionCoordinator
+    ) {
+        this(newsRepository, classificationRepository, eventRepository, promptBuilder, aiProvider, metricsRecorder, aiModelExecutionCoordinator, null);
     }
 
     @Transactional
@@ -159,6 +178,7 @@ public class DetectEventUseCase {
         eventRepository.saveNewsAssociation(savedEvent.getId(), newsArticle.getId(), aiResponse.confidence(), matchDecision, aiResponse.reason());
         newsArticle.markEventMatched();
         newsRepository.save(newsArticle);
+        requestPriorityAnalysisIfNeeded(savedEvent);
 
         DetectEventResult result = new DetectEventResult(
                 savedEvent.getId(),
@@ -519,6 +539,19 @@ public class DetectEventUseCase {
 
     private Importance importanceOf(ImpactLevel impactLevel) {
         return Importance.valueOf(impactLevel.name());
+    }
+
+    private void requestPriorityAnalysisIfNeeded(Event event) {
+        if (event.getImportance() != Importance.HIGH && event.getImportance() != Importance.CRITICAL) {
+            return;
+        }
+        if (requestImmediateAutomationWorkflowRunUseCase == null) {
+            return;
+        }
+
+        boolean requested = requestImmediateAutomationWorkflowRunUseCase.execute(AutomationWorkflowCode.WF04_ANALYSIS);
+        log.info("priority analysis automation requested after event detection: eventId={}, importance={}, requested={}",
+                event.getId(), event.getImportance(), requested);
     }
 
     private record ScoredEventCandidate(Event event, int textScore, boolean sameCategory, boolean relatedCategory, boolean eligible) {

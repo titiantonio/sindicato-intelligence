@@ -18,6 +18,8 @@ public class DeterministicAnalysisAIProvider implements AnalysisAIProvider {
                 List.of("Evento de categoria " + request.category(), "Noticias asociadas: " + request.news().size()),
                 List.of("La informacion puede estar incompleta si las noticias asociadas no aportan contexto suficiente."),
                 List.of("Monitorizar novedades oficiales y nuevas publicaciones relacionadas."),
+                List.of("Comunidad educativa afectada segun el contexto disponible."),
+                List.of("Revisar nuevas fuentes oficiales y noticias asociadas al evento."),
                 "deterministic-analysis"
         );
     }

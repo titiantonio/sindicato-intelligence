@@ -365,6 +365,10 @@ EVENTO:
 
 {{event}}
 
+TIPO DE ANALISIS:
+
+{{analysisType}}
+
 NOTICIAS:
 
 {{news}}
@@ -392,6 +396,24 @@ Criterios de longitud:
 - `opportunities`: 0 a 4 oportunidades de seguimiento o comunicación, máximo 180 caracteres por item.
 - `affectedGroups`: 0 a 5 colectivos afectados, máximo 120 caracteres por item.
 - `recommendedMonitoring`: 1 a 4 aspectos concretos a vigilar, máximo 180 caracteres por item.
+
+Contexto de cada noticia:
+
+- `id`.
+- `fuente`.
+- `prioridad_fuente` si esta disponible.
+- `titulo`.
+- `url`.
+- `resumen`.
+- `contenido`.
+- `publicado`.
+
+Reglas por tipo de analisis:
+
+- `CRISIS`: priorizar impacto inmediato, incertidumbres, colectivos afectados y seguimiento urgente.
+- `PRIORITY`: priorizar lectura sindical y riesgos operativos sin exagerar.
+- `STANDARD`: sintetizar hechos y seguimiento normal.
+- `QUICK`: generar un analisis breve para decidir si merece seguimiento adicional.
 
 ---
 
