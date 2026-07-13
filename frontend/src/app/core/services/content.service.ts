@@ -8,6 +8,7 @@ export interface GenerateContentPayload {
   analysisId: number | null;
   channel: string;
   tone: string;
+  contentType: string;
   length: string;
 }
 

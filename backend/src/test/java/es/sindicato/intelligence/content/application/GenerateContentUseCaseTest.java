@@ -6,10 +6,12 @@ import es.sindicato.intelligence.ai.application.AiOperationMetricsRecorder;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysisRepository;
 import es.sindicato.intelligence.content.domain.ContentStatus;
+import es.sindicato.intelligence.content.domain.ContentType;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
+import es.sindicato.intelligence.event.domain.EventNewsAssociationTraceRepository;
 import es.sindicato.intelligence.event.domain.EventRepository;
 import es.sindicato.intelligence.event.domain.EventStatus;
 import es.sindicato.intelligence.event.domain.Importance;
@@ -50,7 +52,7 @@ class GenerateContentUseCaseTest {
         RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
         RelevantContentLinkExtractor linkExtractor = mock(RelevantContentLinkExtractor.class);
         CurrentContentAuthorProvider authorProvider = () -> 1L;
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, authorProvider, metricsRecorder, audit, linkExtractor, coordinator());
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, authorProvider, metricsRecorder, audit, linkExtractor, coordinator(), mock(EventNewsAssociationTraceRepository.class), new ContentAIResponseValidator());
         Event event = event();
         NewsArticle newsArticle = newsArticle(2L);
         EventAIAnalysis analysis = analysis(20L, event.getId());
@@ -66,7 +68,7 @@ class GenerateContentUseCaseTest {
         when(aiProvider.modelName()).thenReturn("test-content-model");
         when(contentRepository.save(any(GeneratedContent.class))).thenReturn(savedContent);
 
-        GeneratedContent result = useCase.execute(new GenerateContentCommand(event.getId(), null, "telegram", "informativo", "standard"));
+        GeneratedContent result = useCase.execute(new GenerateContentCommand(event.getId(), null, "telegram", "informativo", null, "standard"));
 
         ArgumentCaptor<ContentAIRequest> requestCaptor = ArgumentCaptor.forClass(ContentAIRequest.class);
         ArgumentCaptor<GeneratedContent> contentCaptor = ArgumentCaptor.forClass(GeneratedContent.class);
@@ -80,6 +82,8 @@ class GenerateContentUseCaseTest {
         assertEquals(analysis.getId(), requestCaptor.getValue().analysis().getId());
         assertEquals("TELEGRAM", requestCaptor.getValue().channel());
         assertEquals("INFORMATIVO", requestCaptor.getValue().tone());
+        assertEquals(ContentType.TELEGRAM_POST, requestCaptor.getValue().contentType());
+        assertEquals("STANDARD", requestCaptor.getValue().length());
         assertEquals(relevantLinks, requestCaptor.getValue().relevantLinks());
         assertEquals(true, requestCaptor.getValue().systemPrompt().contains("redactor de comunicacion institucional"));
         assertEquals(true, requestCaptor.getValue().userPrompt().contains("ANALISIS"));
@@ -87,6 +91,8 @@ class GenerateContentUseCaseTest {
         assertEquals(true, requestCaptor.getValue().userPrompt().contains("https://www.juntadeandalucia.es/educacion/documento.pdf"));
         assertEquals(event.getId(), contentToSave.getEventId());
         assertEquals(1L, contentToSave.getCreatedBy());
+        assertEquals(ContentType.TELEGRAM_POST, contentToSave.getContentType());
+        assertEquals("STANDARD", contentToSave.getLength());
         assertEquals(ContentStatus.PENDING_REVIEW, contentToSave.getStatus());
         assertEquals("Titulo Telegram", contentToSave.getTitle());
         assertEquals("Mensaje generado\n\n#Educacion #Andalucia", contentToSave.getContent());
@@ -111,7 +117,7 @@ class GenerateContentUseCaseTest {
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
         ContentAIProvider aiProvider = mock(ContentAIProvider.class);
         RelevantContentLinkExtractor linkExtractor = mock(RelevantContentLinkExtractor.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), linkExtractor, coordinator());
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), aiProvider, () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), linkExtractor, coordinator(), mock(EventNewsAssociationTraceRepository.class), new ContentAIResponseValidator());
         Event event = event();
         NewsArticle newsArticle = newsArticle(2L);
         EventAIAnalysis analysis = analysis(20L, event.getId());
@@ -123,7 +129,7 @@ class GenerateContentUseCaseTest {
         when(aiProvider.generate(any(ContentAIRequest.class))).thenReturn(aiResponse());
         when(contentRepository.save(any(GeneratedContent.class))).thenReturn(content(30L, event.getId(), 1L));
 
-        useCase.execute(new GenerateContentCommand(event.getId(), analysis.getId(), null, null, null));
+        useCase.execute(new GenerateContentCommand(event.getId(), analysis.getId(), null, null, null, null));
 
         verify(analysisRepository, never()).findByEventId(event.getId());
         verify(contentRepository).save(any(GeneratedContent.class));
@@ -135,13 +141,13 @@ class GenerateContentUseCaseTest {
         NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class), coordinator());
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class), coordinator(), mock(EventNewsAssociationTraceRepository.class), new ContentAIResponseValidator());
         Event event = event();
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(analysisRepository.findByEventId(event.getId())).thenReturn(List.of());
 
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute(new GenerateContentCommand(event.getId(), null, "TELEGRAM", "INFORMATIVO", "STANDARD")));
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute(new GenerateContentCommand(event.getId(), null, "TELEGRAM", "INFORMATIVO", null, "STANDARD")));
 
         verify(contentRepository, never()).save(any(GeneratedContent.class));
     }
@@ -152,15 +158,54 @@ class GenerateContentUseCaseTest {
         NewsRepository newsRepository = mock(NewsRepository.class);
         EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
         GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
-        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class), coordinator());
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class), coordinator(), mock(EventNewsAssociationTraceRepository.class), new ContentAIResponseValidator());
         Event event = event();
         EventAIAnalysis analysis = analysis(20L, 999L);
 
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
         when(analysisRepository.findById(analysis.getId())).thenReturn(Optional.of(analysis));
 
-        assertThrows(IllegalArgumentException.class, () -> useCase.execute(new GenerateContentCommand(event.getId(), analysis.getId(), "TELEGRAM", "INFORMATIVO", "STANDARD")));
+        assertThrows(IllegalArgumentException.class, () -> useCase.execute(new GenerateContentCommand(event.getId(), analysis.getId(), "TELEGRAM", "INFORMATIVO", null, "STANDARD")));
 
+        verify(contentRepository, never()).save(any(GeneratedContent.class));
+    }
+
+    @Test
+    void rejectsOutdatedAnalysis() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
+        GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class), coordinator(), mock(EventNewsAssociationTraceRepository.class), new ContentAIResponseValidator());
+        Event event = event();
+        EventAIAnalysis analysis = analysis(20L, event.getId(), event.getUpdatedAt().minusMinutes(1));
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(analysisRepository.findById(analysis.getId())).thenReturn(Optional.of(analysis));
+
+        assertThrows(IllegalStateException.class, () -> useCase.execute(new GenerateContentCommand(event.getId(), analysis.getId(), "TELEGRAM", "INFORMATIVO", null, "STANDARD")));
+
+        verify(newsRepository, never()).findById(any());
+        verify(contentRepository, never()).save(any(GeneratedContent.class));
+    }
+
+    @Test
+    void rejectsActiveDuplicateContent() {
+        EventRepository eventRepository = mock(EventRepository.class);
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        EventAIAnalysisRepository analysisRepository = mock(EventAIAnalysisRepository.class);
+        GeneratedContentRepository contentRepository = mock(GeneratedContentRepository.class);
+        GenerateContentUseCase useCase = new GenerateContentUseCase(eventRepository, newsRepository, analysisRepository, contentRepository, new GenerateContentPromptBuilder(), mock(ContentAIProvider.class), () -> 1L, mock(AiOperationMetricsRecorder.class), mock(RecordAuditLogUseCase.class), mock(RelevantContentLinkExtractor.class), coordinator(), mock(EventNewsAssociationTraceRepository.class), new ContentAIResponseValidator());
+        Event event = event();
+        EventAIAnalysis analysis = analysis(20L, event.getId());
+
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(analysisRepository.findById(analysis.getId())).thenReturn(Optional.of(analysis));
+        when(contentRepository.existsActiveByEventIdAndAnalysisIdAndChannelAndContentType(event.getId(), analysis.getId(), "TELEGRAM", ContentType.TELEGRAM_POST)).thenReturn(true);
+
+        assertThrows(IllegalStateException.class, () -> useCase.execute(new GenerateContentCommand(event.getId(), analysis.getId(), "TELEGRAM", "INFORMATIVO", null, "STANDARD")));
+
+        verify(newsRepository, never()).findById(any());
         verify(contentRepository, never()).save(any(GeneratedContent.class));
     }
 
@@ -184,6 +229,10 @@ class GenerateContentUseCaseTest {
     }
 
     private EventAIAnalysis analysis(Long id, Long eventId) {
+        return analysis(id, eventId, OffsetDateTime.parse("2026-06-08T10:00:00Z"));
+    }
+
+    private EventAIAnalysis analysis(Long id, Long eventId, OffsetDateTime eventUpdatedAtSnapshot) {
         return new EventAIAnalysis(
                 id,
                 eventId,
@@ -192,6 +241,13 @@ class GenerateContentUseCaseTest {
                 List.of("Punto clave"),
                 List.of("Riesgo"),
                 List.of("Oportunidad"),
+                List.of("Profesorado"),
+                List.of("Revisar BOJA"),
+                es.sindicato.intelligence.analysis.domain.AnalysisType.STANDARD,
+                es.sindicato.intelligence.analysis.domain.AnalysisGenerationTrigger.BATCH,
+                eventUpdatedAtSnapshot,
+                1,
+                false,
                 "deterministic-analysis",
                 OffsetDateTime.parse("2026-06-08T10:00:00Z")
         );

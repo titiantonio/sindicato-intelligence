@@ -38,7 +38,8 @@ describe('ContentService', () => {
       analysisId: 4,
       channel: 'Telegram',
       tone: 'INFORMATIVO',
-      length: 'MEDIUM'
+      contentType: 'TELEGRAM_POST',
+      length: 'STANDARD'
     };
 
     service.generateContent(payload).subscribe();

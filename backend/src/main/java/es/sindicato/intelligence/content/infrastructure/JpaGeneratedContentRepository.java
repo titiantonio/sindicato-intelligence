@@ -2,6 +2,8 @@ package es.sindicato.intelligence.content.infrastructure;
 
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.content.domain.GeneratedContentRepository;
+import es.sindicato.intelligence.content.domain.ContentType;
+import es.sindicato.intelligence.content.domain.ContentStatus;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 
@@ -57,6 +59,30 @@ public class JpaGeneratedContentRepository implements GeneratedContentRepository
                 .toList();
     }
 
+    @Override
+    public boolean existsActiveByEventIdAndAnalysisIdAndChannelAndContentType(Long eventId, Long analysisId, String channel, ContentType contentType) {
+        Long count = entityManager.createQuery(
+                        """
+                        SELECT COUNT(content)
+                        FROM GeneratedContentEntity content
+                        WHERE content.eventId = :eventId
+                          AND content.analysisId = :analysisId
+                          AND content.channel = :channel
+                          AND content.contentType = :contentType
+                          AND content.status IN :activeStatuses
+                        """,
+                        Long.class
+                )
+                .setParameter("eventId", eventId)
+                .setParameter("analysisId", analysisId)
+                .setParameter("channel", channel)
+                .setParameter("contentType", contentType)
+                .setParameter("activeStatuses", List.of(ContentStatus.PENDING_REVIEW, ContentStatus.APPROVED))
+                .getSingleResult();
+
+        return count > 0;
+    }
+
     private GeneratedContentEntity toEntity(GeneratedContent content) {
         return new GeneratedContentEntity(
                 content.getId(),
@@ -65,11 +91,14 @@ public class JpaGeneratedContentRepository implements GeneratedContentRepository
                 content.getCreatedBy(),
                 content.getChannel(),
                 content.getTone(),
+                content.getContentType(),
+                content.getLength(),
                 content.getTitle(),
                 content.getContent(),
                 content.getStatus(),
                 content.getGeneratedAt(),
-                content.getApprovedAt()
+                content.getApprovedAt(),
+                content.getGenerationMetadata()
         );
     }
 
@@ -81,11 +110,14 @@ public class JpaGeneratedContentRepository implements GeneratedContentRepository
                 entity.getCreatedBy(),
                 entity.getChannel(),
                 entity.getTone(),
+                entity.getContentType(),
+                entity.getLength(),
                 entity.getTitle(),
                 entity.getContent(),
                 entity.getStatus(),
                 entity.getGeneratedAt(),
-                entity.getApprovedAt()
+                entity.getApprovedAt(),
+                entity.getGenerationMetadata() == null ? java.util.Map.of() : entity.getGenerationMetadata()
         );
     }
 }

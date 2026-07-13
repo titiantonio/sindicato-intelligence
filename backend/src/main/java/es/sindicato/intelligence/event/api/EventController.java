@@ -238,11 +238,14 @@ public class EventController {
                 content.getCreatedBy(),
                 content.getChannel(),
                 content.getTone(),
+                content.getContentType().name(),
+                content.getLength(),
                 content.getTitle(),
                 content.getContent(),
                 content.getStatus(),
                 content.getGeneratedAt(),
-                content.getApprovedAt()
+                content.getApprovedAt(),
+                content.getGenerationMetadata()
         );
     }
 }

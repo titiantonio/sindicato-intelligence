@@ -460,6 +460,14 @@ ENLACES RELEVANTES PERMITIDOS:
 
 {{relevantLinks}}
 
+CONTEXTO WF-03:
+
+{{eventMatchingTrace}}
+
+CONTEXTO WF-04:
+
+{{analysisOperationalContext}}
+
 Genera:
 
 ```json
@@ -476,6 +484,26 @@ Reglas de enlaces:
 - No inventes enlaces.
 - No incluyas enlaces de sindicatos distintos al sindicato propietario de la plataforma.
 - Si no hay enlaces relevantes permitidos, genera el mensaje sin enlaces.
+
+Reglas de trazabilidad y prudencia:
+
+- Usa los colectivos afectados y el seguimiento recomendado del analisis solo si aportan precision y estan respaldados por el contexto recibido.
+- Si la trazabilidad de `WF-03` indica baja confianza, decision de revision recomendada o asociacion dudosa, redacta con prudencia y evita afirmar como definitivo lo que deba verificarse.
+- Si el analisis `WF-04` esta marcado como obsoleto por el backend, el contenido no debe generarse hasta regenerar el analisis.
+- No generes contenido duplicado para el mismo evento, analisis, canal y tipo editorial si ya existe contenido pendiente o aprobado; esta regla la aplica Spring Boot.
+
+Tipos editoriales admitidos por Spring Boot:
+
+- `TELEGRAM_POST`: borrador estandar de Telegram.
+- `TELEGRAM_SHORT`: resumen breve de Telegram.
+- `UNION_STATEMENT`: comunicado sindical mas desarrollado.
+
+Validaciones backend posteriores a la IA:
+
+- `title`, `message` y `hashtags` deben existir.
+- Los hashtags deben comenzar por `#`.
+- Las URLs incluidas deben pertenecer a `ENLACES RELEVANTES PERMITIDOS`.
+- La longitud debe respetar el tipo editorial solicitado.
 
 ---
 

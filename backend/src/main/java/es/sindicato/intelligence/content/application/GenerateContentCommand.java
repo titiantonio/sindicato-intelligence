@@ -5,6 +5,7 @@ public record GenerateContentCommand(
         Long analysisId,
         String channel,
         String tone,
+        String contentType,
         String length
 ) {
 }

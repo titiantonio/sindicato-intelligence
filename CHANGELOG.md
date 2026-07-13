@@ -9,11 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend IA WF-05: anadida migracion `V24` para persistir `content_type`, `length` y `generation_metadata` en `generated_content`.
+- Backend/Frontend WF-05: la generacion editorial permite tipo de contenido `TELEGRAM_POST`, `TELEGRAM_SHORT` o `UNION_STATEMENT`, con avisos de analisis obsoleto y duplicados activos en el detalle de evento.
 - Backend IA WF-04: anadida migracion `V23` para persistir colectivos afectados, seguimiento recomendado, tipo de analisis, disparador, snapshot del evento y contexto usado en `event_ai_analysis`.
 - Backend/Frontend WF-04: el detalle de evento muestra tipo/disparador del analisis, contexto usado, avisos de obsolescencia y campos de seguimiento sindical.
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.101-SNAPSHOT`.
+- Frontend version: subida la version del paquete frontend a `0.0.23`.
+- Backend IA WF-05: el prompt de contenido usa campos enriquecidos de `WF-04` y trazabilidad resumida de `WF-03`, bloquea analisis obsoletos, evita contenido activo duplicado y valida URLs/hashtags/longitud antes de persistir.
+- Backend IA WF-05: Gemini reintenta una vez con contexto reducido cuando la respuesta de contenido llega vacia o sin JSON valido.
 - Versionado backend actualizado a `0.0.100-SNAPSHOT`.
 - Backend automatizaciones WF-04: los analisis se procesan por prioridad `CRITICAL`/`HIGH`/`MEDIUM`/`LOW`, `HIGH` y `CRITICAL` solicitan ejecucion inmediata tras WF-03, `LOW` queda limitado a eventos con suficiente volumen y los eventos modificados se reanalizan como obsoletos.
 - Backend IA WF-04: el prompt incorpora tipo de analisis y contexto enriquecido de fuente/URL manteniendo limites de recorte y salida JSON estricta.

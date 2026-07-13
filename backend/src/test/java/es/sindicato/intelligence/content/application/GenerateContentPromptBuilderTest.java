@@ -1,6 +1,7 @@
 package es.sindicato.intelligence.content.application;
 
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
+import es.sindicato.intelligence.content.domain.ContentType;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
 import es.sindicato.intelligence.event.domain.EventStatus;
@@ -24,8 +25,10 @@ class GenerateContentPromptBuilderTest {
                 analysis(),
                 "TELEGRAM",
                 "INFORMATIVO",
+                ContentType.TELEGRAM_POST,
                 "STANDARD",
                 List.of(new RelevantContentLink(2L, "Consulta oficial", "https://www.juntadeandalucia.es/educacion/consulta")),
+                new ContentGenerationContext(2, 2, 91, false, List.of("MATCHED_EXISTING_EVENT"), List.of("Coincidencia tematica alta")),
                 "",
                 ""
         ));
@@ -36,6 +39,9 @@ class GenerateContentPromptBuilderTest {
         assertTrue(prompt.userPrompt().contains("ANALISIS"));
         assertTrue(prompt.userPrompt().contains("ENLACES RELEVANTES PERMITIDOS"));
         assertTrue(prompt.userPrompt().contains("Consulta oficial"));
+        assertTrue(prompt.userPrompt().contains("TRAZABILIDAD WF-03"));
+        assertTrue(prompt.userPrompt().contains("colectivos afectados"));
+        assertTrue(prompt.userPrompt().contains("tipo contenido"));
         assertTrue(prompt.userPrompt().contains("https://www.juntadeandalucia.es/educacion/consulta"));
         assertTrue(prompt.userPrompt().contains("title"));
         assertTrue(prompt.userPrompt().contains("hashtags"));

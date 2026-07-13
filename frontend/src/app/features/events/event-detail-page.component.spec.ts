@@ -45,11 +45,14 @@ describe('EventDetailPageComponent', () => {
       createdBy: 1,
       channel: 'Telegram',
       tone: 'INFORMATIVO',
+      contentType: 'TELEGRAM_POST',
+      length: 'STANDARD',
       title: 'Contenido',
       content: 'Texto',
       status: 'PENDING_REVIEW',
       generatedAt: '2026-06-16T10:00:00Z',
-      approvedAt: null
+      approvedAt: null,
+      generationMetadata: {}
     }));
 
     await TestBed.configureTestingModule({
@@ -84,7 +87,8 @@ describe('EventDetailPageComponent', () => {
       analysisId: 3,
       channel: 'Telegram',
       tone: 'INFORMATIVO',
-      length: 'MEDIUM'
+      contentType: 'TELEGRAM_POST',
+      length: 'STANDARD'
     });
   });
 

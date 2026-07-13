@@ -2,9 +2,11 @@ package es.sindicato.intelligence.content.infrastructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
+import es.sindicato.intelligence.content.application.ContentGenerationContext;
 import es.sindicato.intelligence.content.application.ContentAIProviderException;
 import es.sindicato.intelligence.content.application.ContentAIRequest;
 import es.sindicato.intelligence.content.application.ContentAIResponse;
+import es.sindicato.intelligence.content.domain.ContentType;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
 import es.sindicato.intelligence.event.domain.EventStatus;
@@ -88,7 +90,7 @@ class GeminiContentAIProviderTest {
     }
 
     private ContentAIRequest request() {
-        return new ContentAIRequest(event(), analysis(), "TELEGRAM", "INFORMATIVO", "STANDARD", List.of(), "system", "EVENTO: Evento sindical");
+        return new ContentAIRequest(event(), analysis(), "TELEGRAM", "INFORMATIVO", ContentType.TELEGRAM_POST, "STANDARD", List.of(), new ContentGenerationContext(1, 0, null, false, List.of(), List.of()), "system", "EVENTO: Evento sindical");
     }
 
     private Event event() {

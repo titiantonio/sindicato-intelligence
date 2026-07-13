@@ -3386,3 +3386,26 @@ Verificacion:
 - Backend focal WF-04: `mvn -q "-Dtest=GenerateAnalysisUseCaseTest,GenerateAnalysisPromptBuilderTest,GeminiAnalysisAIProviderTest,DeterministicAnalysisAIProviderTest,EventAIAnalysisTest,JpaEventAIAnalysisRepositoryTest,ProcessPendingEventAnalysisUseCaseTest,DetectEventUseCaseTest" test` OK.
 - Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/events/event-detail-page.component.spec.ts --include=src/app/core/services/analysis.service.spec.ts` OK, 3 tests.
 - Nota: `EventControllerTest` aislado mantiene 2 fallos previos/no relacionados por datos acumulados y expectativas de `WF-03` (`matchDecision` y orden por ids) en la base local compartida.
+
+## 19.38 Mejora de generacion editorial WF-05 - 2026-07-13
+
+Tarea de mejora posterior al Sprint 12 sobre Fase 12, generacion editorial asistida por IA, observabilidad y backoffice operativo.
+
+Completado en esta iteracion:
+- [x] `WF-05` bloquea generacion si el evento no esta operativo, esta descartado manualmente o el analisis seleccionado esta obsoleto respecto a `event.updatedAt`.
+- [x] Si no se indica `analysisId`, `WF-05` prioriza el analisis vigente mas reciente.
+- [x] `WF-05` evita duplicados activos `PENDING_REVIEW` o `APPROVED` para el mismo evento, analisis, canal y tipo editorial.
+- [x] Anadida migracion Flyway `V24__enhance_generated_content_trace.sql` con `content_type`, `length` y `generation_metadata` en `generated_content`.
+- [x] Anadidos tipos editoriales `TELEGRAM_POST`, `TELEGRAM_SHORT` y `UNION_STATEMENT`.
+- [x] El prompt `WF-05` usa campos enriquecidos de `WF-04`: colectivos afectados, seguimiento recomendado, tipo/disparador, numero de noticias y recorte de contexto.
+- [x] `WF-05` consulta trazabilidad resumida de `WF-03` desde `event_news`: confianza media, decisiones de matching y razones acotadas.
+- [x] La respuesta IA se valida en backend: titulo, mensaje, hashtags, URLs permitidas y longitud maxima por tipo.
+- [x] Gemini contenido reintenta una vez con contexto reducido si falla por respuesta vacia o JSON invalido.
+- [x] El detalle de evento permite seleccionar tipo editorial, usa por defecto el analisis vigente y deshabilita generacion con analisis obsoleto o duplicado activo.
+- [x] Version backend subida a `0.0.101-SNAPSHOT` y frontend a `0.0.23`.
+
+Verificacion:
+- Backend compile: `mvnw.cmd -q -DskipTests compile` OK.
+- Backend focal WF-05: `mvnw.cmd -q "-Dtest=GenerateContentUseCaseTest,GenerateContentPromptBuilderTest,GeminiContentAIProviderTest,DeterministicContentAIProviderTest,JpaGeneratedContentRepositoryTest,ContentControllerTest" test` OK.
+- Frontend focal WF-05: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/events/event-detail-page.component.spec.ts --include=src/app/core/services/content.service.spec.ts --include=src/app/features/content/content-page.component.spec.ts` OK, 11 tests.
+- Frontend build: `npm.cmd run build` OK.

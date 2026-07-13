@@ -1,8 +1,10 @@
 package es.sindicato.intelligence.content.infrastructure;
 
 import es.sindicato.intelligence.analysis.domain.EventAIAnalysis;
+import es.sindicato.intelligence.content.application.ContentGenerationContext;
 import es.sindicato.intelligence.content.application.ContentAIRequest;
 import es.sindicato.intelligence.content.application.ContentAIResponse;
+import es.sindicato.intelligence.content.domain.ContentType;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
 import es.sindicato.intelligence.event.domain.EventStatus;
@@ -22,7 +24,7 @@ class DeterministicContentAIProviderTest {
     void generatesDeterministicContent() {
         DeterministicContentAIProvider provider = new DeterministicContentAIProvider();
 
-        ContentAIResponse response = provider.generate(new ContentAIRequest(event(), analysis(), "TELEGRAM", "INFORMATIVO", "STANDARD", List.of(), "system", "user"));
+        ContentAIResponse response = provider.generate(new ContentAIRequest(event(), analysis(), "TELEGRAM", "INFORMATIVO", ContentType.TELEGRAM_POST, "STANDARD", List.of(), new ContentGenerationContext(1, 0, null, false, List.of(), List.of()), "system", "user"));
 
         assertEquals("Evento sindical", response.title());
         assertFalse(response.message().isBlank());

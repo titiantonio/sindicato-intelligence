@@ -73,7 +73,7 @@ public class GeminiContentAIProvider implements ContentAIProvider {
         ContentAIProviderException lastException = null;
         for (int attempt = 1; attempt <= MAX_CONTENT_ATTEMPTS; attempt++) {
             try {
-                JsonNode response = callGemini(request, resolvedApiKey, resolvedModel, resolvedTemperature, resolvedMaxOutputTokens);
+                JsonNode response = callGemini(request, resolvedApiKey, resolvedModel, resolvedTemperature, resolvedMaxOutputTokens, attempt > 1);
                 String responseText = extractResponseText(response);
                 return parseContentResponse(responseText);
             } catch (ContentAIProviderException exception) {
@@ -82,7 +82,7 @@ public class GeminiContentAIProvider implements ContentAIProvider {
                     throw exception;
                 }
 
-                log.warn("Gemini content response invalid, retrying: attempt={}, maxAttempts={}, reason={}", attempt, MAX_CONTENT_ATTEMPTS, exception.getMessage());
+                log.warn("Gemini content response invalid, retrying with reduced context: attempt={}, maxAttempts={}, reason={}", attempt, MAX_CONTENT_ATTEMPTS, exception.getMessage());
             }
         }
 
@@ -99,14 +99,14 @@ public class GeminiContentAIProvider implements ContentAIProvider {
         return normalizeModel(model);
     }
 
-    private JsonNode callGemini(ContentAIRequest request, String resolvedApiKey, String resolvedModel, double resolvedTemperature, int resolvedMaxOutputTokens) {
+    private JsonNode callGemini(ContentAIRequest request, String resolvedApiKey, String resolvedModel, double resolvedTemperature, int resolvedMaxOutputTokens, boolean reducedContext) {
         Map<String, Object> body = Map.of(
                 "systemInstruction", Map.of(
                         "parts", List.of(Map.of("text", request.systemPrompt()))
                 ),
                 "contents", List.of(Map.of(
                         "role", "user",
-                        "parts", List.of(Map.of("text", buildUserPrompt(request)))
+                        "parts", List.of(Map.of("text", buildUserPrompt(request, reducedContext)))
                 )),
                 "generationConfig", Map.of(
                         "temperature", resolvedTemperature,
@@ -136,8 +136,9 @@ public class GeminiContentAIProvider implements ContentAIProvider {
         }
     }
 
-    private String buildUserPrompt(ContentAIRequest request) {
-        return request.userPrompt() + """
+    private String buildUserPrompt(ContentAIRequest request, boolean reducedContext) {
+        String prompt = reducedContext ? reducedUserPrompt(request) : request.userPrompt();
+        return prompt + """
 
                 Reglas obligatorias de respuesta:
                 - Tu salida debe ser el objeto JSON final de contenido, no un resumen de estas instrucciones.
@@ -146,6 +147,67 @@ public class GeminiContentAIProvider implements ContentAIProvider {
                 - title y message deben ser strings.
                 - hashtags debe ser un array de strings, cada item empezando por #.
                 """;
+    }
+
+    private String reducedUserPrompt(ContentAIRequest request) {
+        return """
+                EVENTO:
+                id: %s
+                titulo: %s
+                categoria: %s
+                importancia: %s
+
+                ANALISIS REDUCIDO:
+                resumen ejecutivo: %s
+                resumen sindical: %s
+                colectivos afectados: %s
+                seguimiento recomendado: %s
+
+                PARAMETROS:
+                canal: %s
+                tono: %s
+                tipo contenido: %s
+                longitud: %s
+
+                ENLACES RELEVANTES PERMITIDOS:
+                %s
+
+                Genera un objeto JSON con exactamente esta estructura:
+                {
+                  "title": "",
+                  "message": "",
+                  "hashtags": []
+                }
+                """.formatted(
+                request.event().getId(),
+                safe(request.event().getTitle()),
+                request.event().getCategory(),
+                request.event().getImportance(),
+                safe(request.analysis().getExecutiveSummary()),
+                safe(request.analysis().getUnionSummary()),
+                request.analysis().getAffectedGroups(),
+                request.analysis().getRecommendedMonitoring(),
+                request.channel(),
+                request.tone(),
+                request.contentType(),
+                request.length(),
+                relevantLinks(request)
+        );
+    }
+
+    private String relevantLinks(ContentAIRequest request) {
+        if (request.relevantLinks() == null || request.relevantLinks().isEmpty()) {
+            return "Sin enlaces relevantes permitidos.";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (var link : request.relevantLinks().stream().limit(3).toList()) {
+            builder.append("- ").append(safe(link.label())).append(": ").append(safe(link.url())).append('\n');
+        }
+        return builder.toString().trim();
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 
     private Map<String, Object> contentResponseSchema() {

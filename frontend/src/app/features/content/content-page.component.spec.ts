@@ -166,11 +166,14 @@ describe('ContentPageComponent', () => {
       createdBy: 1,
       channel,
       tone: 'INFORMATIVO',
+      contentType: 'TELEGRAM_POST',
+      length: 'STANDARD',
       title,
       content: `Contenido ${title}`,
       status,
       generatedAt,
-      approvedAt
+      approvedAt,
+      generationMetadata: {}
     };
   }
 });

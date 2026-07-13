@@ -12,4 +12,6 @@ public interface GeneratedContentRepository {
     List<GeneratedContent> findAll();
 
     List<GeneratedContent> findByEventId(Long eventId);
+
+    boolean existsActiveByEventIdAndAnalysisIdAndChannelAndContentType(Long eventId, Long analysisId, String channel, ContentType contentType);
 }

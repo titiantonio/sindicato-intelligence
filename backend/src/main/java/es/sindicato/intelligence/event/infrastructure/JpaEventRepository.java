@@ -3,6 +3,8 @@ package es.sindicato.intelligence.event.infrastructure;
 import es.sindicato.intelligence.event.domain.Event;
 import es.sindicato.intelligence.event.domain.EventCategory;
 import es.sindicato.intelligence.event.domain.EventMatchDecision;
+import es.sindicato.intelligence.event.domain.EventNewsAssociationTrace;
+import es.sindicato.intelligence.event.domain.EventNewsAssociationTraceRepository;
 import es.sindicato.intelligence.event.domain.EventRepository;
 import es.sindicato.intelligence.event.domain.EventStatus;
 import es.sindicato.intelligence.event.domain.Importance;
@@ -16,7 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
-public class JpaEventRepository implements EventRepository {
+public class JpaEventRepository implements EventRepository, EventNewsAssociationTraceRepository {
 
     private final EntityManager entityManager;
 
@@ -155,6 +157,24 @@ public class JpaEventRepository implements EventRepository {
                 .getSingleResult();
 
         return count > 0;
+    }
+
+    @Override
+    public List<EventNewsAssociationTrace> findByEventId(Long eventId) {
+        return entityManager.createQuery(
+                        "SELECT eventNews FROM EventNewsEntity eventNews WHERE eventNews.eventId = :eventId ORDER BY eventNews.createdAt ASC, eventNews.id ASC",
+                        EventNewsEntity.class
+                )
+                .setParameter("eventId", eventId)
+                .getResultList()
+                .stream()
+                .map(eventNews -> new EventNewsAssociationTrace(
+                        eventNews.getNewsId(),
+                        eventNews.getConfidenceScore(),
+                        eventNews.getMatchDecision(),
+                        eventNews.getMatchReason()
+                ))
+                .toList();
     }
 
     private void syncNewsAssociations(Long eventId, Set<Long> newsIds) {

@@ -25,6 +25,7 @@ public class GenerateContentPromptBuilder {
             4. Genera un borrador listo para revision humana, no para publicacion automatica.
             5. Responde exclusivamente con JSON valido.
             6. Si se aportan enlaces relevantes permitidos, incluye al menos uno en el mensaje cuando aporte contexto directo al evento.
+            7. Si la trazabilidad de asociacion indica revision recomendada o baja confianza, redacta con prudencia y evita afirmaciones categoricas.
             """;
 
     public GenerateContentPrompt build(ContentAIRequest request) {
@@ -45,6 +46,20 @@ public class GenerateContentPromptBuilder {
                 puntos clave: %s
                 riesgos: %s
                 oportunidades: %s
+                colectivos afectados: %s
+                seguimiento recomendado: %s
+                tipo analisis: %s
+                disparador analisis: %s
+                noticias usadas en analisis: %s
+                contexto recortado: %s
+
+                TRAZABILIDAD WF-03:
+                noticias asociadas al evento: %s
+                asociaciones trazadas: %s
+                confianza media asociacion: %s
+                decisiones de matching: %s
+                razones de asociacion: %s
+                requiere prudencia editorial: %s
 
                 ENLACES RELEVANTES PERMITIDOS:
                 %s
@@ -52,6 +67,7 @@ public class GenerateContentPromptBuilder {
                 PARAMETROS:
                 canal: %s
                 tono: %s
+                tipo contenido: %s
                 longitud: %s
 
                 Genera un objeto JSON con exactamente esta estructura:
@@ -64,7 +80,10 @@ public class GenerateContentPromptBuilder {
                 Criterios para Telegram:
                 - Longitud STANDARD: 150-400 palabras.
                 - Longitud SHORT: 50-100 palabras.
+                - Longitud LONG o tipo UNION_STATEMENT: 400-800 palabras, formato comunicado sindical revisable.
                 - El mensaje debe ser claro, revisable y sin afirmaciones no respaldadas.
+                - Usa colectivos afectados y seguimiento recomendado solo si aportan precision y estan respaldados por el analisis.
+                - Si requiere prudencia editorial es true, usa formulas como "segun la informacion disponible" y evita presentar como definitivo lo que deba verificarse.
                 - Si ENLACES RELEVANTES PERMITIDOS contiene documentos, consultas, listados, anexos o paginas oficiales utiles, incluye el enlace mas relevante de forma natural en el mensaje.
                 - No inventes enlaces ni incluyas enlaces que no esten en ENLACES RELEVANTES PERMITIDOS.
                 - Incluye hashtags utiles y prudentes, sin saturar el mensaje.
@@ -80,9 +99,22 @@ public class GenerateContentPromptBuilder {
                 analysis.getKeyPoints(),
                 analysis.getRisks(),
                 analysis.getOpportunities(),
+                analysis.getAffectedGroups(),
+                analysis.getRecommendedMonitoring(),
+                analysis.getAnalysisType(),
+                analysis.getGenerationTrigger(),
+                analysis.getContextNewsCount(),
+                analysis.isContextTruncated(),
+                request.generationContext().newsCount(),
+                request.generationContext().tracedAssociations(),
+                request.generationContext().averageConfidence() == null ? "Sin dato" : request.generationContext().averageConfidence(),
+                request.generationContext().matchDecisions(),
+                request.generationContext().matchReasons(),
+                request.generationContext().hasReviewRecommendedMatches(),
                 relevantLinksContext(request.relevantLinks()),
                 request.channel(),
                 request.tone(),
+                request.contentType(),
                 request.length()
         );
 

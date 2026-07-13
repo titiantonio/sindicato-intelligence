@@ -13,6 +13,7 @@ public record GenerateContentRequest(
 
         String channel,
         String tone,
+        String contentType,
         String length
 ) {
 }

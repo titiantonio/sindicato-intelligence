@@ -88,6 +88,7 @@ public class ContentController {
                 request.analysisId(),
                 request.channel(),
                 request.tone(),
+                request.contentType(),
                 request.length()
         )));
     }
@@ -135,11 +136,14 @@ public class ContentController {
                 content.getCreatedBy(),
                 content.getChannel(),
                 content.getTone(),
+                content.getContentType().name(),
+                content.getLength(),
                 content.getTitle(),
                 content.getContent(),
                 content.getStatus(),
                 content.getGeneratedAt(),
-                content.getApprovedAt()
+                content.getApprovedAt(),
+                content.getGenerationMetadata()
         );
     }
 }

@@ -5,7 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 
-import { EventDetail, EventNewsItem } from '../../core/models/event.models';
+import { EventAnalysisItem, EventDetail, EventNewsItem } from '../../core/models/event.models';
 import { AnalysisService } from '../../core/services/analysis.service';
 import { ContentService } from '../../core/services/content.service';
 import { EventService } from '../../core/services/event.service';
@@ -35,7 +35,8 @@ export class EventDetailPageComponent implements OnInit {
   protected readonly isGeneratingContent = signal(false);
   protected readonly selectedAnalysisId = signal<number | null>(null);
   protected readonly contentTone = signal('INFORMATIVO');
-  protected readonly contentLength = signal('MEDIUM');
+  protected readonly contentType = signal('TELEGRAM_POST');
+  protected readonly contentLength = signal('STANDARD');
   protected readonly newsIdFilter = signal('');
   protected readonly newsTitleFilter = signal('');
   protected readonly newsStatusFilter = signal('');
@@ -53,6 +54,23 @@ export class EventDetailPageComponent implements OnInit {
     const page = Math.min(this.newsCurrentPage(), this.newsTotalPages());
     const start = (page - 1) * this.newsPageSize();
     return this.displayedNews().slice(start, start + this.newsPageSize());
+  });
+  protected readonly selectedAnalysis = computed(() => {
+    const selectedId = this.selectedAnalysisId();
+    return this.event()?.analyses.find((analysis) => analysis.id === selectedId) ?? null;
+  });
+  protected readonly hasActiveDuplicateContent = computed(() => {
+    const selected = this.selectedAnalysis();
+    const event = this.event();
+    if (!selected || !event) {
+      return false;
+    }
+    return event.contents.some((content) =>
+      content.analysisId === selected.id &&
+      content.channel.toUpperCase() === 'TELEGRAM' &&
+      content.contentType === this.contentType() &&
+      ['PENDING_REVIEW', 'APPROVED'].includes(content.status)
+    );
   });
 
   ngOnInit(): void {
@@ -73,7 +91,7 @@ export class EventDetailPageComponent implements OnInit {
     this.eventService.getEvent(eventId).subscribe({
       next: (event) => {
         this.event.set(event);
-        this.selectedAnalysisId.set(event.analyses[0]?.id ?? null);
+        this.selectedAnalysisId.set(this.defaultAnalysisId(event.analyses));
         this.newsCurrentPage.set(Math.min(this.newsCurrentPage(), this.newsTotalPages()));
         this.isLoading.set(false);
       },
@@ -152,8 +170,18 @@ export class EventDetailPageComponent implements OnInit {
   }
 
   protected generateContent(item: EventDetail): void {
-    if (this.selectedAnalysisId() === null) {
+    const selected = this.selectedAnalysis();
+
+    if (!selected) {
       this.errorMessage.set('Selecciona un analisis para generar contenido.');
+      return;
+    }
+    if (selected.outdated) {
+      this.errorMessage.set('El analisis seleccionado esta obsoleto. Regenera el analisis antes de crear contenido.');
+      return;
+    }
+    if (this.hasActiveDuplicateContent()) {
+      this.errorMessage.set('Ya existe contenido pendiente o aprobado para este analisis y tipo editorial.');
       return;
     }
 
@@ -163,9 +191,10 @@ export class EventDetailPageComponent implements OnInit {
 
     this.contentService.generateContent({
       eventId: item.id,
-      analysisId: this.selectedAnalysisId(),
+      analysisId: selected.id,
       channel: 'Telegram',
       tone: this.contentTone(),
+      contentType: this.contentType(),
       length: this.contentLength()
     }).subscribe({
       next: () => {
@@ -178,6 +207,23 @@ export class EventDetailPageComponent implements OnInit {
         this.isGeneratingContent.set(false);
       }
     });
+  }
+
+  protected setContentType(value: string): void {
+    this.contentType.set(value);
+    if (value === 'TELEGRAM_SHORT') {
+      this.contentLength.set('SHORT');
+      return;
+    }
+    if (value === 'UNION_STATEMENT') {
+      this.contentLength.set('LONG');
+      return;
+    }
+    this.contentLength.set('STANDARD');
+  }
+
+  private defaultAnalysisId(analyses: EventAnalysisItem[]): number | null {
+    return analyses.find((analysis) => !analysis.outdated)?.id ?? analyses[0]?.id ?? null;
   }
 
   private filterNews(newsItems: EventNewsItem[]): EventNewsItem[] {

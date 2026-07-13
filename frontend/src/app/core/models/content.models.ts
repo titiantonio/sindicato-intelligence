@@ -7,11 +7,14 @@ export interface ContentListItem {
   createdBy: number;
   channel: string;
   tone: string;
+  contentType: string;
+  length: string;
   title: string;
   content: string;
   status: string;
   generatedAt: string;
   approvedAt: string | null;
+  generationMetadata: Record<string, unknown>;
 }
 
 export interface ContentDetail {

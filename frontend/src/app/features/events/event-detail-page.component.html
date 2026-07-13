@@ -150,13 +150,27 @@
           Analisis
           <select [ngModel]="selectedAnalysisId()" (ngModelChange)="setSelectedAnalysis($event)" name="analysisId" [disabled]="item.analyses.length === 0">
             @for (analysis of item.analyses; track analysis.id) {
-              <option [value]="analysis.id">#{{ analysis.id }} - {{ formatDate(analysis.generatedAt) }}</option>
+              <option [value]="analysis.id">#{{ analysis.id }} - {{ formatDate(analysis.generatedAt) }}{{ analysis.outdated ? ' - obsoleto' : '' }}</option>
             }
           </select>
         </label>
+        @if (selectedAnalysis()?.outdated) {
+          <p-message severity="warn" text="El analisis seleccionado esta obsoleto. Regenera WF-04 antes de generar contenido." />
+        }
+        @if (hasActiveDuplicateContent()) {
+          <p-message severity="warn" text="Ya existe un contenido pendiente o aprobado para este analisis y tipo editorial." />
+        }
         <label>
           Canal
           <input pInputText type="text" value="Telegram" disabled />
+        </label>
+        <label>
+          Tipo editorial
+          <select [ngModel]="contentType()" (ngModelChange)="setContentType($event)" name="contentType">
+            <option value="TELEGRAM_POST">Telegram estandar</option>
+            <option value="TELEGRAM_SHORT">Telegram corto</option>
+            <option value="UNION_STATEMENT">Comunicado sindical</option>
+          </select>
         </label>
         <label>
           Tono
@@ -170,16 +184,16 @@
           Longitud
           <select [ngModel]="contentLength()" (ngModelChange)="contentLength.set($event)" name="length">
             <option value="SHORT">Corta</option>
-            <option value="MEDIUM">Media</option>
+            <option value="STANDARD">Media</option>
             <option value="LONG">Larga</option>
           </select>
         </label>
-        <button pButton type="submit" icon="pi pi-pen-to-square" label="Generar contenido" [loading]="isGeneratingContent()" [disabled]="item.analyses.length === 0 || isGeneratingContent()"></button>
+        <button pButton type="submit" icon="pi pi-pen-to-square" label="Generar contenido" [loading]="isGeneratingContent()" [disabled]="item.analyses.length === 0 || isGeneratingContent() || selectedAnalysis()?.outdated || hasActiveDuplicateContent()"></button>
       </form>
 
       @for (content of item.contents; track content.id) {
         <article class="stack-item">
-          <span>#{{ content.id }} · {{ content.channel }} · {{ content.tone }}</span>
+          <span>#{{ content.id }} · {{ content.channel }} · {{ content.tone }} · {{ content.contentType }} · {{ content.length }}</span>
           <h3><a [routerLink]="['/content', content.id]">{{ content.title }}</a></h3>
           <p>Analisis: {{ content.analysisId ? '#' + content.analysisId : 'No registrado' }}</p>
           <p>{{ content.content }}</p>
