@@ -922,15 +922,15 @@ lastSkippedCount
 lastError
 ```
 
-Valores iniciales conservadores:
+Valores iniciales conservadores desde la configuracion inicial:
 
 ```text
-WF02_CLASSIFICATION    enabled=true   intervalSeconds=600   batchSize=1
-WF03_EVENT_DETECTION   enabled=true   intervalSeconds=600   batchSize=3
+WF02_CLASSIFICATION    enabled=false  intervalSeconds=600   batchSize=1
+WF03_EVENT_DETECTION   enabled=false  intervalSeconds=600   batchSize=3
 WF04_ANALYSIS          enabled=false  intervalSeconds=900   batchSize=1
 ```
 
-La configuracion se administra desde Angular en `/settings`, visible solo para `ADMIN`.
+La configuracion se administra desde Angular en `/settings`, visible solo para `ADMIN`, que debe activar manualmente los workflows cuando proceda.
 
 Endpoints de configuracion:
 

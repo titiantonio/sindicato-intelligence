@@ -106,6 +106,49 @@ El avance operativo se controla con el Documento 31. Las tareas completadas se m
 
 ## Comandos utiles
 
+### Desarrollo Local
+
+Para desarrollar no uses el stack TFM completo, porque ejecuta backend y frontend dentro de Docker con build de produccion.
+
+Arranque recomendado desde la raiz del repositorio:
+
+```powershell
+.\dev-start.ps1
+```
+
+El script:
+
+- Para el stack Docker TFM si estaba activo.
+- Para una infraestructura Docker de desarrollo anterior si estaba activa.
+- Crea `database/.env` desde `database/.env.example` si falta.
+- Levanta solo PostgreSQL, n8n y MailHog desde `database/docker-compose.yml`.
+- No borra volumenes ni datos.
+
+Despues arranca el backend local en una terminal:
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+Y el frontend local en otra terminal:
+
+```powershell
+cd frontend
+npm.cmd start
+```
+
+URLs de desarrollo:
+
+```text
+Frontend dev: http://localhost:4200
+Backend dev: http://localhost:8080/api/v1/health
+n8n: http://localhost:5678
+MailHog: http://localhost:8025
+```
+
+No ejecutes a la vez `dev-start.ps1` y `tfm-start.ps1`, porque comparten puertos `5432`, `5678`, `8025` y `1025`. `dev-start.ps1` detiene primero los stacks previos para evitar ese conflicto.
+
 ### Ejecucion Docker para TFM
 
 Requisitos:

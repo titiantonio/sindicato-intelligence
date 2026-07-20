@@ -50,6 +50,15 @@
   margin-top: 1.5rem;
 }
 
+.metric-grid {
+  align-items: stretch;
+  display: grid;
+  gap: 1rem;
+  grid-auto-rows: 1fr;
+  grid-template-columns: repeat(4, minmax(min(100%, 17rem), 1fr));
+  min-width: 0;
+}
+
 .section-header--with-action,.workflow-panel header,.workflow-panel footer,.workflow-form,.ai-provider-form header,.ai-provider-form footer,.metric-modal header {
   align-items: center;
   display: flex;
@@ -178,6 +187,10 @@ code {
     grid-template-columns: 1fr;
   }
 
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(min(100%, 17rem), 1fr));
+  }
+
 }
 
 @media (max-width: 720px) {
@@ -189,6 +202,10 @@ code {
   }
 
   .ai-workflow-fields,.workflow-status {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-grid {
     grid-template-columns: 1fr;
   }
 }

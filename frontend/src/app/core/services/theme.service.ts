@@ -43,5 +43,10 @@ export class ThemeService {
   private applyTheme(theme: ThemeMode): void {
     this.document.documentElement.dataset['theme'] = theme;
     this.document.documentElement.style.colorScheme = theme;
+    this.document.documentElement.classList.toggle('theme-dark', theme === 'dark');
+    this.document.documentElement.classList.toggle('theme-light', theme === 'light');
+    this.document.body.dataset['theme'] = theme;
+    this.document.body.classList.toggle('theme-dark', theme === 'dark');
+    this.document.body.classList.toggle('theme-light', theme === 'light');
   }
 }

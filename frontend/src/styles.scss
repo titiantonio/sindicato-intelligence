@@ -71,7 +71,10 @@
   --focus-ring: 0 0 0 3px rgba(21, 94, 239, 0.22);
 }
 
-:root[data-theme='dark'] {
+:root[data-theme='dark'],
+:root.theme-dark,
+body[data-theme='dark'],
+body.theme-dark {
   --color-page: #0b1120;
   --color-page-accent: #111827;
   --color-page-accent-strong: #172033;

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend/Flyway: consolidado el seed inicial para pausar por defecto automatizaciones backend y proveedores IA en instalaciones limpias.
+- Infraestructura desarrollo: anadido `dev-start.ps1` para detener stacks Docker previos y levantar solo PostgreSQL, n8n y MailHog para desarrollo local.
 - Infraestructura TFM: anadido `docker-compose.yml` raiz para levantar PostgreSQL, backend, frontend, n8n y MailHog en Docker.
 - Infraestructura TFM: anadidos scripts `tfm-start.ps1`, `tfm-stop.ps1`, `tfm-reset.ps1` y `tfm-check.ps1` para arranque, parada, reset y verificacion de la entrega.
 - Documentacion TFM: anadida `docs/guia_ejecucion_tfm.md` y seccion de ejecucion Docker en `README.md`.
@@ -22,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.106-SNAPSHOT`.
+- Frontend version: subida la version del paquete frontend a `0.0.25`.
+- Frontend Docker: desactivado el inline critical CSS de Angular en produccion para evitar que la CSP de Nginx bloquee la carga completa de estilos.
+- Frontend settings: definido grid propio para tarjetas metricas en `/settings`, evitando tarjetas a ancho completo por encapsulacion CSS.
 - Versionado backend actualizado a `0.0.105-SNAPSHOT`.
 - n8n WF-01: las llamadas al backend usan `BACKEND_BASE_URL`, permitiendo ejecucion tanto en compose TFM como en desarrollo local, y se anade id estable para importacion CLI.
 - Backend Flyway: reconsolidadas las migraciones de desarrollo en `V1__create_mvp_schema.sql` y `V2__seed_initial_data.sql`, requiriendo reset de BBDD local para arranques limpios.
@@ -108,6 +114,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Frontend shell/dashboard: corregida la carga de PrimeIcons para que se vean los iconos de menu, botones y tarjetas metricas.
+- Frontend tema: `ThemeService` se inicializa desde `App`, aplicando el tema global desde el arranque y manteniendo operativo el cambio claro/oscuro.
 - Backend IA WF-02: anadida validacion post-IA para normalizar descartes y rechazar respuestas incoherentes antes de persistir clasificaciones o avanzar a eventos.
 - Backend IA WF-03: las noticias clasificadas que reciben una respuesta Gemini sin texto durante la deteccion de eventos se reintentan una vez con contexto reducido, manteniendo candidatos y evitando reenviar contenido largo o sensible.
 - Backend IA WF-02: las noticias educativas que reciben una respuesta Gemini sin texto se reintentan una vez con contexto reducido a titulo, URL y resumen para evitar bloqueos por contenido largo o sensible sin descartarlas automaticamente.

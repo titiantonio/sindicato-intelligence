@@ -20,6 +20,9 @@ describe('ThemeService', () => {
 
   it('applies the initial theme to the document', () => {
     expect(['light', 'dark']).toContain(document.documentElement.dataset['theme'] ?? '');
+    expect(document.body.dataset['theme']).toBe(document.documentElement.dataset['theme']);
+    expect(document.documentElement.classList.contains(`theme-${service.theme()}`)).toBeTrue();
+    expect(document.body.classList.contains(`theme-${service.theme()}`)).toBeTrue();
   });
 
   it('toggles and persists the selected theme', () => {
@@ -29,6 +32,9 @@ describe('ThemeService', () => {
 
     expect(service.theme()).not.toBe(initialTheme);
     expect(document.documentElement.dataset['theme']).toBe(service.theme());
+    expect(document.body.dataset['theme']).toBe(service.theme());
+    expect(document.documentElement.classList.contains(`theme-${service.theme()}`)).toBeTrue();
+    expect(document.body.classList.contains(`theme-${service.theme()}`)).toBeTrue();
     expect(localStorage.getItem('sindicato-theme')).toBe(JSON.stringify(service.theme()));
   });
 });

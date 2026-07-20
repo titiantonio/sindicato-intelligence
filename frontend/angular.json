@@ -33,12 +33,21 @@
               }
             ],
             "styles": [
+              "node_modules/primeicons/primeicons.css",
               "src/tailwind.css",
               "src/styles.scss"
             ]
           },
           "configurations": {
             "production": {
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "fonts": true
+              },
               "budgets": [
                 {
                   "type": "initial",
@@ -96,6 +105,7 @@
               }
             ],
             "styles": [
+              "node_modules/primeicons/primeicons.css",
               "src/tailwind.css",
               "src/styles.scss"
             ]

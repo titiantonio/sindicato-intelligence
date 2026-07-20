@@ -17,7 +17,7 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: Aura,
         options: {
-          darkModeSelector: ':root[data-theme="dark"]'
+          darkModeSelector: '.theme-dark'
         }
       },
       ripple: true

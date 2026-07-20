@@ -100,8 +100,8 @@ INSERT INTO automation_workflow_settings (
     batch_size,
     next_run_at
 ) VALUES
-    ('WF02_CLASSIFICATION', TRUE, 600, 1, NOW() + INTERVAL '10 minutes'),
-    ('WF03_EVENT_DETECTION', TRUE, 600, 3, NOW() + INTERVAL '10 minutes'),
+    ('WF02_CLASSIFICATION', FALSE, 600, 1, NOW() + INTERVAL '10 minutes'),
+    ('WF03_EVENT_DETECTION', FALSE, 600, 3, NOW() + INTERVAL '10 minutes'),
     ('WF04_ANALYSIS', FALSE, 900, 1, NOW() + INTERVAL '15 minutes');
 
 INSERT INTO telegram_publication_settings (
@@ -138,7 +138,7 @@ INSERT INTO ai_provider_settings (
     display_name,
     enabled
 ) VALUES
-    ('deterministic', 'Determinista local', TRUE),
+    ('deterministic', 'Determinista local', FALSE),
     ('gemini', 'Google Gemini', FALSE);
 
 INSERT INTO ai_workflow_settings (

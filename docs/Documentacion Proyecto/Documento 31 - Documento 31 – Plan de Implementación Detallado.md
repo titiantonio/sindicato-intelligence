@@ -1264,6 +1264,7 @@ Implementado:
 - Docker Compose con PostgreSQL, n8n y MailHog.
 - Compose TFM completo con PostgreSQL, backend, frontend, n8n y MailHog.
 - Scripts TFM `tfm-start.ps1`, `tfm-stop.ps1`, `tfm-reset.ps1` y `tfm-check.ps1` para entrega y correccion con Docker.
+- Script de desarrollo `dev-start.ps1` para parar stacks Docker previos y levantar solo PostgreSQL, n8n y MailHog, dejando backend/frontend para ejecucion local.
 - Configuracion local SMTP MailHog `localhost:1025` y UI `localhost:8025`.
 - Scripts locales de arranque/diagnostico documentados.
 - Maven/Angular builds ejecutables en entorno local Windows.
@@ -1276,6 +1277,23 @@ Parcial o faltante:
 | Entrega Docker TFM local | Completado el 2026-07-20 con compose raiz, scripts de arranque/reset/check, importacion WF-01 y guia de ejecucion. | Completed | - |
 | Gestion de secretos productivos | Variables previstas; para TFM se usan credenciales demo locales y queda pendiente checklist productivo final. | Medium | 34 |
 | Observabilidad runtime | Logs existen; falta dashboard/metricas Sprint 12. | Medium | 25 |
+
+## 19.42 Estado inicial pausado de IA y automatizaciones - 2026-07-20
+
+Tarea de mantenimiento correctivo sobre Fase 12, automatizaciones internas y configuracion ADMIN.
+
+Completado en esta iteracion:
+- [x] Unificado Flyway manteniendo el estado inicial en `V2__seed_initial_data.sql`, sin migracion incremental `V3`.
+- [x] `WF02_CLASSIFICATION`, `WF03_EVENT_DETECTION` y `WF04_ANALYSIS` quedan con `enabled=false` al aplicar el seed inicial.
+- [x] Los proveedores IA `deterministic` y `gemini` quedan con `enabled=false` al aplicar el seed inicial.
+- [x] El ADMIN debe activar manualmente proveedores IA y workflows desde `/settings` segun necesidad operativa.
+- [x] Version backend subida a `0.0.106-SNAPSHOT`.
+
+Verificacion:
+- [x] Reset de BBDD de desarrollo eliminando el volumen Docker `database_postgres_data`.
+- [x] Backend Spring Boot arrancado contra BBDD limpia y Flyway aplicado correctamente con solo `V1` y `V2`.
+- [x] Verificado en PostgreSQL que `WF02_CLASSIFICATION`, `WF03_EVENT_DETECTION` y `WF04_ANALYSIS` quedan `enabled=false` y `running=false`.
+- [x] Verificado en PostgreSQL que `deterministic` y `gemini` quedan `enabled=false`.
 
 ## 16.10 Testing
 
@@ -3455,3 +3473,23 @@ Verificacion:
 - Reset final post-tests: recreado de nuevo `database_postgres_data` para retirar datos generados por pruebas.
 - Flyway limpio final: `flyway_schema_history` contiene solo `V1 create mvp schema` y `V2 seed initial data`, ambas `success=true`.
 - Semillas finales verificadas: 3 usuarios, 54 fuentes RSS, 3 workflows y 4 prompts IA.
+
+## 19.41 Correccion visual frontend iconos y tema - 2026-07-20
+
+Tarea de mantenimiento correctivo sobre Sprint 11 Frontend Angular.
+
+Completado en esta iteracion:
+- [x] Anadida la hoja `node_modules/primeicons/primeicons.css` a `angular.json` para que los iconos `pi pi-*` se rendericen en menu lateral, botones y tarjetas metricas.
+- [x] Inicializado `ThemeService` desde `App` para aplicar `data-theme` al documento desde el arranque de la aplicacion.
+- [x] Desactivado `inlineCritical` en el build Angular de produccion para evitar que la CSP de Nginx bloquee el `onload` del stylesheet completo y deje activa solo la CSS critica clara.
+- [x] `ThemeService` aplica `data-theme` y clases `theme-light`/`theme-dark` en `html` y `body` para reforzar el cambio claro/oscuro y la integracion con PrimeNG.
+- [x] Anadido `.metric-grid` local en `/settings` para que las tarjetas metricas no dependan del SCSS encapsulado de dashboard.
+- [x] Anadido test de bootstrap para comprobar que el tema global queda aplicado al iniciar la app.
+- [x] Version frontend subida a `0.0.25`.
+
+Verificacion:
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/app.spec.ts --include=src/app/core/services/theme.service.spec.ts --include=src/app/layout/shell/shell.component.spec.ts --include=src/app/shared/components/metric-card/metric-card.component.spec.ts` OK, 8 tests.
+- Frontend build: `npm.cmd run build` OK.
+- Docker frontend: `docker compose build frontend` y `docker compose up -d frontend` OK.
+- Stack TFM: `./tfm-check.ps1` OK tras recrear el frontend.
+- Browser real Chrome headless: login, dashboard y settings verificados. CSS completo cargado con `media=null`, tema cambia colores reales, menu tiene 9 iconos, metric cards tienen 20 iconos y `/settings` muestra tarjetas en 2 columnas.
