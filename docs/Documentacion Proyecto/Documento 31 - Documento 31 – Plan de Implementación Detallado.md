@@ -1262,6 +1262,8 @@ Parcial o faltante:
 
 Implementado:
 - Docker Compose con PostgreSQL, n8n y MailHog.
+- Compose TFM completo con PostgreSQL, backend, frontend, n8n y MailHog.
+- Scripts TFM `tfm-start.ps1`, `tfm-stop.ps1`, `tfm-reset.ps1` y `tfm-check.ps1` para entrega y correccion con Docker.
 - Configuracion local SMTP MailHog `localhost:1025` y UI `localhost:8025`.
 - Scripts locales de arranque/diagnostico documentados.
 - Maven/Angular builds ejecutables en entorno local Windows.
@@ -1271,7 +1273,8 @@ Parcial o faltante:
 | --- | --- | --- | --- |
 | CI/CD | Documento 14 lo contempla; no se observa pipeline versionado. | Medium | 32 |
 | Despliegue Proxmox/Nginx productivo | Documentado como infraestructura objetivo; no hay automatizacion completa versionada. | Medium | 33 |
-| Gestion de secretos productivos | Variables previstas; falta checklist operativo final. | Medium | 34 |
+| Entrega Docker TFM local | Completado el 2026-07-20 con compose raiz, scripts de arranque/reset/check, importacion WF-01 y guia de ejecucion. | Completed | - |
+| Gestion de secretos productivos | Variables previstas; para TFM se usan credenciales demo locales y queda pendiente checklist productivo final. | Medium | 34 |
 | Observabilidad runtime | Logs existen; falta dashboard/metricas Sprint 12. | Medium | 25 |
 
 ## 16.10 Testing

@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: sindicato_intelligence
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d sindicato_intelligence"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    environment:
+      DB_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      SETTINGS_ENCRYPTION_KEY: ${SETTINGS_ENCRYPTION_KEY:?SETTINGS_ENCRYPTION_KEY is required}
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      PASSWORD_RESET_BASE_URL: http://localhost:4200/reset-password
+      PASSWORD_RESET_MAIL_FROM: no-reply@sindicato.local
+      OPENAPI_API_DOCS_ENABLED: ${OPENAPI_API_DOCS_ENABLED:-true}
+      OPENAPI_SWAGGER_UI_ENABLED: ${OPENAPI_SWAGGER_UI_ENABLED:-true}
+      OPENAPI_PUBLIC_ACCESS: ${OPENAPI_PUBLIC_ACCESS:-true}
+      AI_PROVIDER: ${AI_PROVIDER:-deterministic}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      TELEGRAM_ENABLED: ${TELEGRAM_ENABLED:-false}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend_data:/app/data
+      - backend_logs:/app/logs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/api/v1/health | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "4200:80"
+
+  n8n:
+    image: n8nio/n8n:latest
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-false}
+      N8N_BASIC_AUTH_ACTIVE: ${N8N_BASIC_AUTH_ACTIVE:-true}
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:?N8N_BASIC_AUTH_USER is required}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:?N8N_BASIC_AUTH_PASSWORD is required}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY is required}
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: ${N8N_BLOCK_ENV_ACCESS_IN_NODE:-false}
+      N8N_RUNNERS_ENABLED: ${N8N_RUNNERS_ENABLED:-true}
+      GENERIC_TIMEZONE: Europe/Madrid
+      TZ: Europe/Madrid
+      BACKEND_BASE_URL: ${BACKEND_BASE_URL:-http://backend:8080}
+      BACKEND_N8N_AUTH_EMAIL: ${BACKEND_N8N_AUTH_EMAIL:?BACKEND_N8N_AUTH_EMAIL is required}
+      BACKEND_N8N_AUTH_PASSWORD: ${BACKEND_N8N_AUTH_PASSWORD:?BACKEND_N8N_AUTH_PASSWORD is required}
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+
+volumes:
+  postgres_data:
+  n8n_data:
+  backend_data:
+  backend_logs:

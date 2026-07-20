@@ -11,7 +11,14 @@ FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-RUN groupadd --system app && useradd --system --gid app app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --system app \
+    && useradd --system --gid app app \
+    && mkdir -p /app/logs/errors /app/data \
+    && chown -R app:app /app
 
 COPY --from=build /app/target/*.jar app.jar
 

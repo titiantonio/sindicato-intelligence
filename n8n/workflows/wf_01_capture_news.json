@@ -1,4 +1,5 @@
 {
+  "id": "wf01capturenewsmvp",
   "name": "WF-01-Capture-News",
   "nodes": [
     {
@@ -24,7 +25,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:8080/api/v1/auth/login",
+        "url": "={{ ($env.BACKEND_BASE_URL || 'http://backend:8080') + '/api/v1/auth/login' }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"email\": \"{{$env.BACKEND_N8N_AUTH_EMAIL}}\",\n  \"password\": \"{{$env.BACKEND_N8N_AUTH_PASSWORD}}\"\n}",
@@ -42,7 +43,7 @@
     },
     {
       "parameters": {
-        "url": "http://host.docker.internal:8080/api/v1/sources",
+        "url": "={{ ($env.BACKEND_BASE_URL || 'http://backend:8080') + '/api/v1/sources' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -189,7 +190,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:8080/api/v1/news/bulk",
+        "url": "={{ ($env.BACKEND_BASE_URL || 'http://backend:8080') + '/api/v1/news/bulk' }}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{$json.batch}}",

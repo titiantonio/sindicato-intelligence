@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Infraestructura TFM: anadido `docker-compose.yml` raiz para levantar PostgreSQL, backend, frontend, n8n y MailHog en Docker.
+- Infraestructura TFM: anadidos scripts `tfm-start.ps1`, `tfm-stop.ps1`, `tfm-reset.ps1` y `tfm-check.ps1` para arranque, parada, reset y verificacion de la entrega.
+- Documentacion TFM: anadida `docs/guia_ejecucion_tfm.md` y seccion de ejecucion Docker en `README.md`.
+- Docker: anadidos `.dockerignore` para backend y frontend.
 - Backend seguridad: anadida migracion `V26` para crear el usuario default `editor@sindicato.es` y unificar passwords bootstrap de `admin`, `editor` y `n8n`.
 - Backend IA WF-02: anadida migracion `V25` con indice compuesto para consultar fallos recientes por workflow, entidad y estado en `ai_operation_metrics`.
 - Backend IA WF-05: anadida migracion `V24` para persistir `content_type`, `length` y `generation_metadata` en `generated_content`.
@@ -18,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.105-SNAPSHOT`.
+- n8n WF-01: las llamadas al backend usan `BACKEND_BASE_URL`, permitiendo ejecucion tanto en compose TFM como en desarrollo local, y se anade id estable para importacion CLI.
 - Backend Flyway: reconsolidadas las migraciones de desarrollo en `V1__create_mvp_schema.sql` y `V2__seed_initial_data.sql`, requiriendo reset de BBDD local para arranques limpios.
 - Versionado backend actualizado a `0.0.104-SNAPSHOT`.
 - Infraestructura local: el acceso UI de n8n usa `n8n@sindicato.es` en lugar de un correo personal.

@@ -106,6 +106,57 @@ El avance operativo se controla con el Documento 31. Las tareas completadas se m
 
 ## Comandos utiles
 
+### Ejecucion Docker para TFM
+
+Requisitos:
+
+- Docker Desktop o Docker Engine con Docker Compose.
+- Puertos libres: `4200`, `8080`, `5678`, `5432`, `8025` y `1025`.
+
+Arranque completo desde la raiz del repositorio:
+
+```powershell
+.\tfm-start.ps1
+```
+
+El script crea `.env` desde `.env.example` si no existe, construye backend y frontend, levanta PostgreSQL, Spring Boot, Angular/Nginx, n8n y MailHog, configura n8n e importa `WF-01-Capture-News` si falta.
+
+URLs principales:
+
+```text
+Frontend: http://localhost:4200
+Backend health: http://localhost:8080/api/v1/health
+Swagger/OpenAPI: http://localhost:8080/swagger-ui/index.html
+n8n: http://localhost:5678
+MailHog: http://localhost:8025
+```
+
+Comprobacion rapida:
+
+```powershell
+.\tfm-check.ps1
+```
+
+Parada:
+
+```powershell
+.\tfm-stop.ps1
+```
+
+Reset completo de contenedores y volumenes:
+
+```powershell
+.\tfm-reset.ps1
+```
+
+Las credenciales de evaluacion se entregan en el documento de contrasenas local indicado por el autor del TFM.
+
+Guia detallada:
+
+```text
+docs/guia_ejecucion_tfm.md
+```
+
 Desde `backend/`:
 
 ```powershell
