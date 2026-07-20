@@ -1,3 +1,41 @@
+-- Password comun de bootstrap/local: Admin@12345
+-- Hash BCrypt generado con Spring Security para cuentas tecnicas/default.
+WITH bootstrap_password AS (
+    SELECT '$2a$10$7GM2nYgIU8j/7iI8EWm9pO7dr6VjpJG5nkuoNQue6mMAHWtJYfBKK'::VARCHAR(255) AS password_hash
+), default_users(email, name, role) AS (
+    VALUES
+        ('admin@sindicato.es', 'Admin Sindicato', 'ADMIN'),
+        ('n8n@sindicato.es', 'N8N Service', 'ADMIN'),
+        ('editor@sindicato.es', 'Editor Sindicato', 'EDITOR')
+)
+INSERT INTO users (
+    email,
+    password_hash,
+    name,
+    role,
+    active,
+    must_change_password,
+    status,
+    temporary_password_expires_at,
+    last_password_change_at,
+    created_at,
+    updated_at
+)
+SELECT
+    default_users.email,
+    bootstrap_password.password_hash,
+    default_users.name,
+    default_users.role,
+    TRUE,
+    FALSE,
+    'ACTIVE',
+    NULL,
+    NOW(),
+    NOW(),
+    NOW()
+FROM default_users
+CROSS JOIN bootstrap_password;
+
 INSERT INTO sources (name, url, type, priority, active)
 VALUES
     ('CCOO Enseñanza', 'https://fe.ccoo.es/rss.php?canal=9500', 'RSS', 1, TRUE),
@@ -53,10 +91,65 @@ VALUES
     ('Diario Sur', 'https://www.diariosur.es/rss/2.0/', 'RSS', 51, TRUE),
     ('ABC Andalucía', 'https://www.abc.es/rss/feeds/abc_Andalucia.xml', 'RSS', 52, TRUE),
     ('Prensa Google News (Profesorado Andalucía)', 'https://news.google.com/rss/search?q=(intitle:profesorado+OR+intitle:profesores+OR+intitle:docentes+OR+intitle:maestros+OR+intitle:SIPRI+OR+intitle:interinos+OR+intitle:oposiciones+OR+intitle:educación)+%22Andaluc%C3%ADa%22+when:1d&hl=es&gl=ES&ceid=ES:es', 'RSS', 53, TRUE),
-    ('CEF Oposiciones', 'https://www.cef.es/es/rss/noticias', 'RSS', 54, TRUE)
-ON CONFLICT (url) DO UPDATE SET
-    name = EXCLUDED.name,
-    type = EXCLUDED.type,
-    priority = EXCLUDED.priority,
-    active = EXCLUDED.active,
-    updated_at = NOW();
+    ('CEF Oposiciones', 'https://www.cef.es/es/rss/noticias', 'RSS', 54, TRUE);
+
+INSERT INTO automation_workflow_settings (
+    workflow_code,
+    enabled,
+    interval_seconds,
+    batch_size,
+    next_run_at
+) VALUES
+    ('WF02_CLASSIFICATION', TRUE, 600, 1, NOW() + INTERVAL '10 minutes'),
+    ('WF03_EVENT_DETECTION', TRUE, 600, 3, NOW() + INTERVAL '10 minutes'),
+    ('WF04_ANALYSIS', FALSE, 900, 1, NOW() + INTERVAL '15 minutes');
+
+INSERT INTO telegram_publication_settings (
+    id,
+    enabled,
+    base_url,
+    bot_token,
+    chat_id,
+    disable_web_page_preview,
+    max_attachment_count,
+    max_attachment_file_bytes,
+    max_attachment_total_bytes
+) VALUES (
+    1,
+    FALSE,
+    'https://api.telegram.org',
+    NULL,
+    NULL,
+    TRUE,
+    10,
+    20971520,
+    52428800
+);
+
+INSERT INTO ai_prompt_versions (prompt_key, prompt_name, module, version, checksum, active)
+VALUES
+    ('WF02_CLASSIFICATION', 'Clasificacion de noticias', 'classification', '1.0.0', 'f5d89b8f7ce78e3137c6b0e789dc51d8a99625ff8d8b9af4ea6b5bd6a845621a', TRUE),
+    ('WF03_EVENT_MATCHING', 'Agrupacion de eventos', 'event', '1.0.0', '8d7f41e6f77eae71b18d8d9704f87d95dba9ec4f2511d6f1d983b80b4fa6d3a4', TRUE),
+    ('WF04_ANALYSIS', 'Analisis de evento', 'analysis', '1.0.0', '52a4ef08963b497595b5467ff3d3d2011cb1f983e9373c4e6ac94cd87bb24a68', TRUE),
+    ('WF05_CONTENT', 'Generacion de contenido Telegram', 'content', '1.0.0', '7a9ca36bd2836edbdc2c696e003e41c70d6fd02c7acef27cd98c71555d2054b1', TRUE);
+
+INSERT INTO ai_provider_settings (
+    provider_code,
+    display_name,
+    enabled
+) VALUES
+    ('deterministic', 'Determinista local', TRUE),
+    ('gemini', 'Google Gemini', FALSE);
+
+INSERT INTO ai_workflow_settings (
+    workflow_code,
+    provider_code,
+    model_name,
+    temperature,
+    max_output_tokens,
+    cooldown_seconds
+) VALUES
+    ('WF02_CLASSIFICATION', 'deterministic', 'deterministic-classification', 0.2, 1024, 60),
+    ('WF03_EVENT_MATCHING', 'deterministic', 'deterministic-event-matching', 0.2, 1024, 60),
+    ('WF04_ANALYSIS', 'deterministic', 'deterministic-analysis', 0.2, 1024, 60),
+    ('WF05_CONTENT', 'deterministic', 'deterministic-content', 0.2, 1024, 60);

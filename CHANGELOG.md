@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Backend Flyway: reconsolidadas las migraciones de desarrollo en `V1__create_mvp_schema.sql` y `V2__seed_initial_data.sql`, requiriendo reset de BBDD local para arranques limpios.
+- Versionado backend actualizado a `0.0.104-SNAPSHOT`.
+- Infraestructura local: el acceso UI de n8n usa `n8n@sindicato.es` en lugar de un correo personal.
 - Versionado backend actualizado a `0.0.103-SNAPSHOT`.
 - Infraestructura local: PostgreSQL, la autenticacion tecnica de n8n y el acceso basico a la UI de n8n quedan alineados con la password comun de bootstrap.
 - Versionado backend actualizado a `0.0.102-SNAPSHOT`.

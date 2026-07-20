@@ -689,6 +689,15 @@ Nunca modificar una migración ejecutada.
 
 Siempre crear una nueva versión.
 
+Excepción de desarrollo:
+
+Cuando la base de datos pueda destruirse por completo y no existan datos productivos, se permite reconsolidar migraciones iniciales para reducir deuda técnica. Esta operación exige resetear la BBDD o el volumen PostgreSQL antes de volver a arrancar Flyway, porque los checksums de `flyway_schema_history` dejan de ser válidos.
+
+Estado consolidado de desarrollo desde 2026-07-20:
+
+- `V1__create_mvp_schema.sql`: esquema final operativo del MVP, tablas, constraints e índices.
+- `V2__seed_initial_data.sql`: usuarios bootstrap, fuentes RSS, automatizaciones, Telegram, prompts IA y configuración IA inicial.
+
 ---
 
 # 15. Migraciones Iniciales

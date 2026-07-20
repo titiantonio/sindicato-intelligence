@@ -32,7 +32,8 @@ Unificar la password local/bootstrap de PostgreSQL, cuentas default del backend 
 - Se usa nueva migracion Flyway `V26` para no modificar migraciones ya aplicadas.
 - `admin@sindicato.es`, `n8n@sindicato.es` y `editor@sindicato.es` quedan como cuentas default activas con password bootstrap comun.
 - La migracion revoca refresh tokens activos de esas cuentas default tras la rotacion.
-- n8n UI queda protegida mediante variables `N8N_BASIC_AUTH_*` en Docker Compose local.
+- n8n UI queda protegida mediante variables `N8N_BASIC_AUTH_*` en Docker Compose local usando `n8n@sindicato.es` como usuario, sin correos personales.
+- El usuario interno owner de n8n se actualiza en la SQLite local de n8n a `n8n@sindicato.es` con la password comun.
 
 ## Verificacion
 
@@ -44,3 +45,4 @@ Unificar la password local/bootstrap de PostgreSQL, cuentas default del backend 
 - `n8n/validate-workflows.ps1` OK para `WF-01`.
 - Backend focal: `mvnw.cmd "-Dtest=AuthControllerTest,DatabaseUserDetailsServiceTest,SecurityConfigTest,JwtTokenServiceTest" test` OK, 17 tests, 0 fallos, 0 errores.
 - Flyway Maven `validate` OK contra PostgreSQL local.
+- Actualizado el usuario interno owner de n8n mediante SQLite local: primero se alineo la password y despues se cambio el email a `n8n@sindicato.es`.

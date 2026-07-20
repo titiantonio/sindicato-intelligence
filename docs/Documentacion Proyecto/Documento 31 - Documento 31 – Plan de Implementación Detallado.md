@@ -3429,3 +3429,26 @@ Completado en esta iteracion:
 Verificacion:
 - Backend focal WF-02: `mvn -q "-Dtest=ClassifyNewsUseCaseTest,ClassifyNewsPromptBuilderTest,GeminiAIProviderTest,DeterministicAIProviderTest,ProcessPendingClassificationsUseCaseTest,RunAutomationWorkflowUseCaseTest,JpaAiOperationMetricRepositoryTest" test` OK.
 - Backend compile: `mvn -q -DskipTests compile` OK.
+
+## 19.40 Reconsolidacion Flyway de desarrollo - 2026-07-20
+
+Tarea de mantenimiento correctivo sobre Fase 2 Modelo de Datos y deuda operativa del roadmap `16`.
+
+Decision:
+- [x] Se acepta reset de BBDD de desarrollo y pruebas.
+- [x] Se reconsolida Flyway en `V1__create_mvp_schema.sql` para el esquema final operativo del MVP.
+- [x] Se reconsolida Flyway en `V2__seed_initial_data.sql` para semillas iniciales.
+- [x] Se eliminan migraciones incrementales `V3` a `V26` porque sus cambios quedan integrados en la nueva linea base o no aplican a BBDD limpia.
+
+Completado en esta iteracion:
+- [x] `V1` incluye tablas, FKs, checks e indices finales para sources, usuarios, seguridad, noticias, clasificacion, eventos, analisis, contenido, publicaciones, auditoria, automatizaciones, Telegram e IA.
+- [x] `V2` incluye usuarios bootstrap `admin`, `n8n` y `editor` con password local `Admin@12345`, fuentes RSS, settings de automatizaciones, Telegram, prompts IA y proveedor determinista/Gemini.
+- [x] Actualizado Documento 20 para documentar la excepcion de reconsolidacion solo en desarrollo.
+- [x] Version backend subida a `0.0.104-SNAPSHOT`.
+
+Verificacion:
+- Reset BBDD local: recreado solo el volumen Docker `database_postgres_data`, sin borrar `database_n8n_data`.
+- Backend completo: `mvnw.cmd test` OK, 334 tests, 0 fallos, 0 errores.
+- Reset final post-tests: recreado de nuevo `database_postgres_data` para retirar datos generados por pruebas.
+- Flyway limpio final: `flyway_schema_history` contiene solo `V1 create mvp schema` y `V2 seed initial data`, ambas `success=true`.
+- Semillas finales verificadas: 3 usuarios, 54 fuentes RSS, 3 workflows y 4 prompts IA.
