@@ -2,7 +2,7 @@ param(
     [string]$BaseUrl = "http://localhost:8080",
     [string]$MailHogUrl = "http://localhost:8025",
     [string]$AdminEmail = "admin@sindicato.es",
-    [string[]]$AdminPasswordCandidates = @("Admin#12345A", "Admin@123")
+    [string[]]$AdminPasswordCandidates = @("Admin@12345")
 )
 
 $ErrorActionPreference = "Stop"

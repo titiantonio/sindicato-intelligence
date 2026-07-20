@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Backend seguridad: anadida migracion `V26` para crear el usuario default `editor@sindicato.es` y unificar passwords bootstrap de `admin`, `editor` y `n8n`.
 - Backend IA WF-02: anadida migracion `V25` con indice compuesto para consultar fallos recientes por workflow, entidad y estado en `ai_operation_metrics`.
 - Backend IA WF-05: anadida migracion `V24` para persistir `content_type`, `length` y `generation_metadata` en `generated_content`.
 - Backend/Frontend WF-05: la generacion editorial permite tipo de contenido `TELEGRAM_POST`, `TELEGRAM_SHORT` o `UNION_STATEMENT`, con avisos de analisis obsoleto y duplicados activos en el detalle de evento.
@@ -17,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.103-SNAPSHOT`.
+- Infraestructura local: PostgreSQL, la autenticacion tecnica de n8n y el acceso basico a la UI de n8n quedan alineados con la password comun de bootstrap.
 - Versionado backend actualizado a `0.0.102-SNAPSHOT`.
 - Backend automatizaciones WF-02: la clasificacion automatica prioriza noticias capturadas con senales operativas urgentes, aplica cuarentena temporal ante fallos IA repetidos y se reprograma inmediatamente cuando consume un lote completo con trabajo real.
 - Backend IA WF-02: el prompt y los detalles de metricas incorporan una razon interna opcional de clasificacion, trazabilidad sanitizada de enriquecimiento URL, reintento reducido, fallback y senales de prioridad.
@@ -117,6 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Backend seguridad: al rotar la password bootstrap de cuentas default se revocan refresh tokens activos de `admin@sindicato.es`, `editor@sindicato.es` y `n8n@sindicato.es`.
 - Frontend dependencias: resueltas las 13 vulnerabilidades pendientes de `npm audit` con actualizacion no forzada del toolchain y overrides controlados para `@babel/core` y `undici`.
 - Backend IA: las claves API de proveedores IA configurables se guardan cifradas en reposo y no se exponen en respuestas API, logs ni URLs de llamadas a Gemini.
 - Auditoria seguridad: retirada clave Gemini versionada y scripts temporales con credenciales/tokens; se anade plantilla segura `set_ai_env.example.ps1` y exclusiones en `.gitignore`.

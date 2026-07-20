@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/sindicato_intelligence
     username: sindicato
-    password: sindicato123
+    password: ${DB_PASSWORD:Admin@12345}
 
   jpa:
     hibernate:
@@ -43,7 +43,7 @@ springdoc:
 app:
   openapi:
     public-access: ${OPENAPI_PUBLIC_ACCESS:true}
-    version: ${OPENAPI_VERSION:0.0.67-SNAPSHOT}
+    version: ${OPENAPI_VERSION:0.0.103-SNAPSHOT}
 
   security:
     jwt:

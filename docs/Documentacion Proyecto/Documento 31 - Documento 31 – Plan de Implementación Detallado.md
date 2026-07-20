@@ -1209,7 +1209,7 @@ Parcial o faltante:
 | --- | --- | --- | --- |
 | Consulta visual/API de auditoria | Implementada pantalla ADMIN `/audit` y APIs de usuarios/editorial. | Completed | - |
 | Cobertura total de acciones auditadas | Acciones de usuarios/editoriales cubiertas por auditoria visible y aceptacion local; queda ampliacion de cobertura E2E como mejora. | Completed | - |
-| Politica de password inicial admin/n8n | Seeds documentan password inicial `Admin@123`, que no cumple politica runtime >=10. | Medium | 21 |
+| Politica de password inicial admin/n8n/editor | Completado el 2026-07-20 con migracion `V26`: password comun bootstrap compatible con politica runtime, usuario default `editor@sindicato.es` y revocacion de refresh tokens activos de cuentas default. | Completed | - |
 | Validaciones frontend completas | Completado el 2026-06-13 con suite Angular focal de auth/users/guards/services y pantallas criticas. | Completed | - |
 
 ## 16.6 n8n Workflows
@@ -1328,7 +1328,7 @@ Inconsistencias y deuda:
 18. Completed 2026-06-13: modelado scheduling de publicaciones en dominio/API/UI.
 19. Completed 2026-06-13: expuesta consulta ADMIN de auditoria de usuarios en `/api/v1/audit/users` y pantalla `/audit`.
 20. Completed 2026-06-13: aceptacion local cubre create/change password/lock/unlock/disable y auditoria visible.
-21. Medium: actualizar seeds admin/n8n para cumplir politica de password o documentar excepcion de bootstrap.
+21. Completed 2026-07-20: actualizada politica bootstrap de `admin`, `n8n` y `editor` mediante `V26`, con password comun compatible y revocacion de refresh tokens.
 22. Low: definir tablas o exportadores para metricas IA si T12.2 lo requiere.
 23. Completed 2026-06-13: autenticacion JWT alineada en WF-02..WF-06.
 24. Completed 2026-06-13: anadida validacion automatizada de workflows n8n.

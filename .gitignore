@@ -7,6 +7,7 @@ docs/.obsidian/
 !.env.example
 tmp_*.ps1
 set_ai_env.ps1
+docs/Docs_Asistentes/2026_07_20_contrasenas_proyecto_local.md
 
 # Local publication attachments
 backend/data/
