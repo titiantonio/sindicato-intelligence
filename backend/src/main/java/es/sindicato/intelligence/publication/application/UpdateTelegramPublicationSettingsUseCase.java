@@ -5,6 +5,8 @@ import es.sindicato.intelligence.audit.application.RecordAuditLogUseCase;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationSettings;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationDestination;
 import es.sindicato.intelligence.publication.domain.TelegramPublicationSettingsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +15,8 @@ import java.util.List;
 
 @Service
 public class UpdateTelegramPublicationSettingsUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(UpdateTelegramPublicationSettingsUseCase.class);
 
     private final TelegramPublicationSettingsRepository repository;
     private final RecordAuditLogUseCase recordAuditLogUseCase;
@@ -24,6 +28,7 @@ public class UpdateTelegramPublicationSettingsUseCase {
 
     @Transactional
     public TelegramPublicationSettings execute(UpdateTelegramPublicationSettingsCommand command) {
+        log.info("telegram settings update started: enabled={}, clearBotToken={}", command.enabled(), command.clearBotToken());
         TelegramPublicationSettings settings = repository.find()
                 .orElseThrow(() -> new IllegalStateException("telegram publication settings not found"));
         OffsetDateTime now = OffsetDateTime.now();
@@ -32,7 +37,7 @@ public class UpdateTelegramPublicationSettingsUseCase {
         settings.update(
                 command.enabled(),
                 command.baseUrl(),
-                command.botToken(),
+                command.clearBotToken() ? "" : command.botToken(),
                 primaryChatId(command.chatId(), destinations),
                 command.disableWebPagePreview(),
                 command.maxAttachmentCount(),
@@ -49,6 +54,7 @@ public class UpdateTelegramPublicationSettingsUseCase {
                 oldValues,
                 telegramSettings(savedSettings)
         );
+        log.info("telegram settings update completed: enabled={}, readyToPublish={}, destinations={}", savedSettings.isEnabled(), savedSettings.isReadyToPublish(), savedSettings.getDestinations().size());
         return savedSettings;
     }
 

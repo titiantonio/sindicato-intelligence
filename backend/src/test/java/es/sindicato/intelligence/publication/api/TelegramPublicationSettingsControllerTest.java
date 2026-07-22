@@ -80,6 +80,38 @@ class TelegramPublicationSettingsControllerTest {
                 .andExpect(jsonPath("$.readyToPublish").value(true));
     }
 
+    @Test
+    void allowsAdminToClearTelegramBotToken() throws Exception {
+        when(updateSettingsUseCase.execute(new UpdateTelegramPublicationSettingsCommand(
+                false,
+                "https://api.telegram.org",
+                null,
+                "chat-id",
+                true,
+                TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_COUNT,
+                TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_FILE_BYTES,
+                TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_TOTAL_BYTES,
+                java.util.List.of(),
+                true
+        ))).thenReturn(settings(false, null, "chat-id"));
+
+        mockMvc.perform(put("/api/v1/settings/telegram")
+                        .with(jwt().authorities(() -> "ROLE_ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "enabled": false,
+                                  "baseUrl": "https://api.telegram.org",
+                                  "clearBotToken": true,
+                                  "chatId": "chat-id",
+                                  "disableWebPagePreview": true
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.botTokenConfigured").value(false))
+                .andExpect(jsonPath("$.readyToPublish").value(false));
+    }
+
     private String validPayload() {
         return """
                 {

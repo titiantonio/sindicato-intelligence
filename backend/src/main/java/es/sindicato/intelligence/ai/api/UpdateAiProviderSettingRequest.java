@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record UpdateAiProviderSettingRequest(
         @NotNull Boolean enabled,
-        String apiKey
+        String apiKey,
+        Boolean clearApiKey
 ) {
 }

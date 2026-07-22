@@ -49,7 +49,8 @@ public class TelegramPublicationSettingsController {
                 valueOrDefault(request.maxAttachmentCount(), TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_COUNT),
                 valueOrDefault(request.maxAttachmentFileBytes(), TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_FILE_BYTES),
                 valueOrDefault(request.maxAttachmentTotalBytes(), TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_TOTAL_BYTES),
-                toDestinationCommands(request)
+                toDestinationCommands(request),
+                Boolean.TRUE.equals(request.clearBotToken())
         )));
     }
 

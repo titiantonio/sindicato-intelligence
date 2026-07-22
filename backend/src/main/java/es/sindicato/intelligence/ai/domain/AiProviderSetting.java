@@ -22,8 +22,14 @@ public class AiProviderSetting {
     }
 
     public void update(boolean enabled, String apiKey, boolean replaceApiKey, OffsetDateTime now) {
+        update(enabled, apiKey, replaceApiKey, false, now);
+    }
+
+    public void update(boolean enabled, String apiKey, boolean replaceApiKey, boolean clearApiKey, OffsetDateTime now) {
         this.enabled = enabled;
-        if (replaceApiKey) {
+        if (clearApiKey) {
+            this.apiKey = null;
+        } else if (replaceApiKey) {
             this.apiKey = normalize(apiKey);
         }
         this.updatedAt = Objects.requireNonNull(now, "now is required");

@@ -2566,6 +2566,29 @@ Estado:
 
 ---
 
+## [x] T12.35
+
+Refinar gestion ADMIN de secretos IA y Telegram en `/settings`.
+
+Resultado:
+- Anadido borrado explicito de API key IA mediante `clearApiKey` en `PUT /api/v1/ai/providers/{providerCode}`.
+- Anadido borrado explicito de bot token Telegram mediante `clearBotToken` en `PUT /api/v1/settings/telegram`.
+- Mantenido `null` como semantica de conservar secreto actual para evitar borrados accidentales.
+- La pantalla `/settings` permite a ADMIN eliminar API key IA y bot token Telegram con confirmacion previa.
+- El selector de modelo IA carga modelos automaticamente al abrirse para el proveedor seleccionado del workflow, sin requerir el boton manual de carga.
+- El boton de modelos queda como recarga manual de respaldo.
+- Incrementado `backend/pom.xml` a `0.0.107-SNAPSHOT` y `frontend/package.json` a `0.0.34`.
+
+Verificacion:
+- Backend focal: `mvn clean "-Dtest=AiSettingsControllerTest,TelegramPublicationSettingsControllerTest,UpdateTelegramPublicationSettingsUseCaseTest" test` OK, 12 tests.
+- Frontend focal: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts --include=src/app/core/services/ai-observability.service.spec.ts --include=src/app/core/services/application-settings.service.spec.ts` OK, 22 tests.
+- Frontend build: `npm.cmd run build` OK.
+
+Estado:
+- Refinamiento operativo posterior al cierre de Sprint 12; no introduce nuevas tecnologias, migraciones ni cambios de arquitectura.
+
+---
+
 ## 16.40 Descarte de noticias fuera de ambito antes de eventos - 2026-06-25
 
 Tarea de mantenimiento correctivo sobre Fases 6-7 y Sprint 12.

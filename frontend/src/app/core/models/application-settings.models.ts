@@ -26,6 +26,7 @@ export interface UpdateTelegramPublicationSettingsRequest {
   enabled: boolean;
   baseUrl: string;
   botToken: string | null;
+  clearBotToken?: boolean;
   chatId: string | null;
   disableWebPagePreview: boolean;
   maxAttachmentCount: number;

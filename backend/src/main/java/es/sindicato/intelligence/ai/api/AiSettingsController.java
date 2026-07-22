@@ -57,7 +57,7 @@ public class AiSettingsController {
     ) {
         return toResponse(updateAiProviderSettingUseCase.execute(
                 providerCode,
-                new UpdateAiProviderSettingCommand(request.enabled(), request.apiKey())
+                new UpdateAiProviderSettingCommand(request.enabled(), request.apiKey(), Boolean.TRUE.equals(request.clearApiKey()))
         ));
     }
 

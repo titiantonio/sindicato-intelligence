@@ -428,7 +428,50 @@ export class SettingsPageComponent implements OnInit {
     });
   }
 
-  protected loadModels(providerCode: string): void {
+  protected clearAiProviderApiKey(provider: AiProviderSetting): void {
+    if (!provider.apiKeyConfigured || !window.confirm(`Eliminar la API key de ${provider.displayName}?`)) {
+      return;
+    }
+    this.busyAiProvider.set(provider.providerCode);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.aiObservabilityService.updateProvider(provider.providerCode, {
+      enabled: this.aiProviderFormFor(provider.providerCode).enabled,
+      apiKey: null,
+      clearApiKey: true
+    }).subscribe({
+      next: () => {
+        this.successMessage.set('API key de IA eliminada.');
+        this.busyAiProvider.set(null);
+        this.aiModelOptions.update((options) => {
+          const { [provider.providerCode]: _removed, ...remaining } = options;
+          return remaining;
+        });
+        this.automationLoaded.set(false);
+        this.loadSettings(true);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo eliminar la API key de IA.');
+        this.busyAiProvider.set(null);
+      }
+    });
+  }
+
+  protected loadWorkflowModels(workflowCode: string): void {
+    const providerCode = this.aiWorkflowFormFor(workflowCode).providerCode;
+    if (providerCode === 'deterministic') {
+      return;
+    }
+    this.loadModels(providerCode);
+  }
+
+  protected loadModels(providerCode: string, force = false): void {
+    if (!force && this.modelsFor(providerCode).length > 0) {
+      return;
+    }
+    if (this.busyModelProvider() === providerCode) {
+      return;
+    }
     const form = this.aiProviderFormFor(providerCode);
     this.busyModelProvider.set(providerCode);
     this.errorMessage.set(null);
@@ -511,6 +554,46 @@ export class SettingsPageComponent implements OnInit {
       },
       error: (error: { error?: { error?: string } }) => {
         this.errorMessage.set(error.error?.error ?? 'No se pudo guardar la configuracion de Telegram.');
+        this.isTelegramSaving.set(false);
+      }
+    });
+  }
+
+  protected clearTelegramBotToken(): void {
+    if (!this.telegramSettings()?.botTokenConfigured || !window.confirm('Eliminar el bot token de Telegram?')) {
+      return;
+    }
+    const form = this.telegramForm();
+    const destinations = form.destinations
+      .map((destination) => ({
+        ...destination,
+        name: destination.name.trim(),
+        chatId: destination.chatId.trim()
+      }))
+      .filter((destination) => destination.name && destination.chatId);
+    this.isTelegramSaving.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.applicationSettingsService.updateTelegramSettings({
+      enabled: form.enabled,
+      baseUrl: form.baseUrl,
+      botToken: null,
+      clearBotToken: true,
+      chatId: form.chatId.trim() ? form.chatId.trim() : null,
+      disableWebPagePreview: form.disableWebPagePreview,
+      maxAttachmentCount: Math.max(1, Math.round(Number(form.maxAttachmentCount))),
+      maxAttachmentFileBytes: Math.max(1, Math.round(Number(form.maxAttachmentFileBytes))),
+      maxAttachmentTotalBytes: Math.max(1, Math.round(Number(form.maxAttachmentTotalBytes))),
+      ...(destinations.length ? { destinations } : {})
+    }).subscribe({
+      next: (settings) => {
+        this.telegramSettings.set(settings);
+        this.telegramForm.update((current) => ({ ...current, botToken: '' }));
+        this.successMessage.set('Bot token de Telegram eliminado.');
+        this.isTelegramSaving.set(false);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.errorMessage.set(error.error?.error ?? 'No se pudo eliminar el bot token de Telegram.');
         this.isTelegramSaving.set(false);
       }
     });

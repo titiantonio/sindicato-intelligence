@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend settings: el selector de modelo IA carga automaticamente los modelos del proveedor seleccionado al abrirse, dejando el boton como recarga manual.
+- Versionado backend actualizado a `0.0.107-SNAPSHOT`.
+- Frontend version: subida la version del paquete frontend a `0.0.34`.
 - Infraestructura TFM: `tfm-start.ps1` detiene la infraestructura Docker de desarrollo previa y procesos locales reconocidos del propio proyecto antes de levantar el stack de entrega para evitar conflictos de puertos.
 - Frontend E2E: configurados reportes HTML, trazas en reintento, screenshots en fallo y videos retenidos en fallo para diagnostico CI/local.
 - Frontend version: subida la version del paquete frontend a `0.0.33`.
@@ -153,6 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Backend/frontend settings: ADMIN puede eliminar explicitamente API keys IA y el bot token de Telegram sin exponer secretos completos ni confundir campos vacios con conservar credenciales.
 - Frontend dependencias: aprobados de forma acotada los scripts de instalacion npm del toolchain Angular mediante `allowScripts` versionado, eliminando avisos `allow-scripts` sin permitir scripts arbitrarios.
 - Frontend dependencias: corregidas vulnerabilidades npm restantes con `npm audit fix` y override controlado de `@hono/node-server` a `2.0.11`, manteniendo Angular CLI en la rama 21.2.x.
 - Backend seguridad: al rotar la password bootstrap de cuentas default se revocan refresh tokens activos de `admin@sindicato.es`, `editor@sindicato.es` y `n8n@sindicato.es`.

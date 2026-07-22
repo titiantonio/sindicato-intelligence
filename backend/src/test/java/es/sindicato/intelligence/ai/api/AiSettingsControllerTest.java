@@ -81,7 +81,7 @@ class AiSettingsControllerTest {
     void allowsAdminToUpdateProvider() throws Exception {
         when(updateAiProviderSettingUseCase.execute(
                 "gemini",
-                new UpdateAiProviderSettingCommand(true, "new-key")
+                new UpdateAiProviderSettingCommand(true, "new-key", false)
         )).thenReturn(provider());
 
         mockMvc.perform(put("/api/v1/ai/providers/gemini")
@@ -95,6 +95,28 @@ class AiSettingsControllerTest {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.providerCode").value("gemini"));
+    }
+
+    @Test
+    void allowsAdminToClearProviderApiKey() throws Exception {
+        OffsetDateTime now = OffsetDateTime.parse("2026-06-24T10:00:00Z");
+        when(updateAiProviderSettingUseCase.execute(
+                "gemini",
+                new UpdateAiProviderSettingCommand(false, null, true)
+        )).thenReturn(new AiProviderSettingView("gemini", "Google Gemini", false, false, null, now, now));
+
+        mockMvc.perform(put("/api/v1/ai/providers/gemini")
+                        .with(jwt().authorities(() -> "ROLE_ADMIN"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "enabled": false,
+                                  "clearApiKey": true
+                                }
+                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.apiKeyConfigured").value(false))
+                .andExpect(jsonPath("$.apiKey").doesNotExist());
     }
 
     @Test

@@ -165,6 +165,64 @@ describe('SettingsPageComponent', () => {
     });
   });
 
+  it('loads workflow models when the model selector is opened', () => {
+    const component = fixture.componentInstance as any;
+
+    component.setTab('automation');
+    component.updateAiWorkflowForm('WF04_ANALYSIS', { providerCode: 'gemini' });
+    component.loadWorkflowModels('WF04_ANALYSIS');
+    component.loadWorkflowModels('WF04_ANALYSIS');
+
+    expect(aiObservabilityService.listProviderModels).toHaveBeenCalledOnceWith('gemini', null);
+  });
+
+  it('clears ai provider api key after confirmation', () => {
+    const component = fixture.componentInstance as any;
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    component.setTab('automation');
+    component.clearAiProviderApiKey(aiProviders()[1]);
+
+    expect(aiObservabilityService.updateProvider).toHaveBeenCalledWith('gemini', {
+      enabled: false,
+      apiKey: null,
+      clearApiKey: true
+    });
+  });
+
+  it('clears telegram bot token after confirmation', () => {
+    const component = fixture.componentInstance as any;
+    spyOn(window, 'confirm').and.returnValue(true);
+    applicationSettingsService.getTelegramSettings.and.returnValue(of({
+      ...telegramSettings(),
+      botTokenConfigured: true,
+      botTokenPreview: '1234...oken',
+      chatId: 'chat-id'
+    }));
+    applicationSettingsService.updateTelegramSettings.and.returnValue(of({
+      ...telegramSettings(),
+      botTokenConfigured: false,
+      botTokenPreview: null,
+      chatId: 'chat-id'
+    }));
+
+    component.setTab('publication');
+    component.clearTelegramBotToken();
+
+    expect(applicationSettingsService.updateTelegramSettings).toHaveBeenCalledWith({
+      enabled: false,
+      baseUrl: 'https://api.telegram.org',
+      botToken: null,
+      clearBotToken: true,
+      chatId: 'chat-id',
+      disableWebPagePreview: true,
+      maxAttachmentCount: 10,
+      maxAttachmentFileBytes: 20971520,
+      maxAttachmentTotalBytes: 52428800,
+      destinations: [{ id: null, name: 'Principal', chatId: 'chat-id', active: true, defaultSelected: true }]
+    });
+  });
+
   it('saves ai workflow provider and model settings', () => {
     const component = fixture.componentInstance as any;
 

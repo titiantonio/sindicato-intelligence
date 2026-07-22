@@ -54,6 +54,7 @@ export interface AiProviderSetting {
 export interface UpdateAiProviderSettingRequest {
   enabled: boolean;
   apiKey: string | null;
+  clearApiKey?: boolean;
 }
 
 export interface AiModelOption {

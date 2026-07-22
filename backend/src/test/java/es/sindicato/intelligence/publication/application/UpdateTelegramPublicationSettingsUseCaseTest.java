@@ -9,6 +9,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -36,6 +37,33 @@ class UpdateTelegramPublicationSettingsUseCaseTest {
         ));
 
         assertEquals(true, result.isEnabled());
+        verify(audit).record(eq("TELEGRAM_SETTINGS_UPDATED"), eq("TELEGRAM_SETTINGS"), eq(1L), any(), any());
+    }
+
+    @Test
+    void clearsBotTokenWhenRequested() {
+        TelegramPublicationSettingsRepository repository = mock(TelegramPublicationSettingsRepository.class);
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        UpdateTelegramPublicationSettingsUseCase useCase = new UpdateTelegramPublicationSettingsUseCase(repository, audit);
+        TelegramPublicationSettings settings = settings(true);
+
+        when(repository.find()).thenReturn(Optional.of(settings));
+        when(repository.save(settings)).thenReturn(settings);
+
+        TelegramPublicationSettings result = useCase.execute(new UpdateTelegramPublicationSettingsCommand(
+                true,
+                "https://api.telegram.org",
+                null,
+                "chat-id",
+                true,
+                TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_COUNT,
+                TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_FILE_BYTES,
+                TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_TOTAL_BYTES,
+                java.util.List.of(),
+                true
+        ));
+
+        assertNull(result.getBotToken());
         verify(audit).record(eq("TELEGRAM_SETTINGS_UPDATED"), eq("TELEGRAM_SETTINGS"), eq(1L), any(), any());
     }
 

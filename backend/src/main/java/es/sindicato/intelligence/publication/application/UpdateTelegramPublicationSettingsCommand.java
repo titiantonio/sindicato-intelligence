@@ -11,8 +11,23 @@ public record UpdateTelegramPublicationSettingsCommand(
         int maxAttachmentCount,
         long maxAttachmentFileBytes,
         long maxAttachmentTotalBytes,
-        List<TelegramPublicationDestinationCommand> destinations
+        List<TelegramPublicationDestinationCommand> destinations,
+        boolean clearBotToken
 ) {
+    public UpdateTelegramPublicationSettingsCommand(
+            boolean enabled,
+            String baseUrl,
+            String botToken,
+            String chatId,
+            boolean disableWebPagePreview,
+            int maxAttachmentCount,
+            long maxAttachmentFileBytes,
+            long maxAttachmentTotalBytes,
+            List<TelegramPublicationDestinationCommand> destinations
+    ) {
+        this(enabled, baseUrl, botToken, chatId, disableWebPagePreview, maxAttachmentCount, maxAttachmentFileBytes, maxAttachmentTotalBytes, destinations, false);
+    }
+
     public UpdateTelegramPublicationSettingsCommand(boolean enabled, String baseUrl, String botToken, String chatId, boolean disableWebPagePreview) {
         this(
                 enabled,
@@ -23,7 +38,8 @@ public record UpdateTelegramPublicationSettingsCommand(
                 es.sindicato.intelligence.publication.domain.TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_COUNT,
                 es.sindicato.intelligence.publication.domain.TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_FILE_BYTES,
                 es.sindicato.intelligence.publication.domain.TelegramPublicationSettings.DEFAULT_MAX_ATTACHMENT_TOTAL_BYTES,
-                List.of()
+                List.of(),
+                false
         );
     }
 }

@@ -10,6 +10,7 @@ public record UpdateTelegramPublicationSettingsRequest(
         @NotNull Boolean enabled,
         @NotBlank String baseUrl,
         String botToken,
+        Boolean clearBotToken,
         String chatId,
         @NotNull Boolean disableWebPagePreview,
         @Min(1) Integer maxAttachmentCount,
