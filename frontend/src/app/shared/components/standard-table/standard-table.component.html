@@ -47,21 +47,21 @@
   </p-table>
 </div>
 
-<footer class="standard-table-pagination">
+<nav class="standard-table-pagination" aria-label="Paginación de resultados">
   <span>{{ totalItems() }} {{ totalLabel() }}</span>
 
   <label>
-    Filas por pagina
-    <p-select [options]="pageSizeOptions()" [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" [appendTo]="'body'" aria-label="Filas por pagina" />
+    Filas por página
+    <p-select [options]="pageSizeOptions()" [ngModel]="pageSize()" (ngModelChange)="setPageSize($event)" [appendTo]="'body'" ariaLabel="Filas por página" />
   </label>
 
   <div class="standard-table-pagination__pager">
     <button pButton type="button" severity="secondary" size="small" icon="pi pi-angle-left" (click)="previousPage.emit()" [disabled]="currentPage() === 1">
       Anterior
     </button>
-    <span>Pagina {{ currentPage() }} de {{ totalPages() }}</span>
+    <span aria-live="polite">Página {{ currentPage() }} de {{ totalPages() }}</span>
     <button pButton type="button" severity="secondary" size="small" icon="pi pi-angle-right" iconPos="right" (click)="nextPage.emit()" [disabled]="currentPage() === totalPages()">
       Siguiente
     </button>
   </div>
-</footer>
+</nav>

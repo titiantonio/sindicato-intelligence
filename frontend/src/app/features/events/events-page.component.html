@@ -1,219 +1,352 @@
-<section class="page-header">
-  <div>
-    <span class="page-header__eyebrow">Eventos</span>
-    <h1>Centro operativo del sistema</h1>
-    <p>Listado real de eventos detectados y agrupados por el backend.</p>
+<div class="events-page">
+  <header class="events-hero" aria-labelledby="events-title">
+    <div class="events-hero__copy">
+      <span class="events-hero__eyebrow">
+        <i class="pi pi-sparkles" aria-hidden="true"></i>
+        Inteligencia editorial
+      </span>
+      <h1 id="events-title">Eventos</h1>
+      <p>Supervisa los hechos relevantes, prioriza su seguimiento y decide qué merece atención editorial.</p>
+    </div>
+
+    <dl class="events-hero__metrics" aria-label="Resumen de eventos">
+      <div>
+        <dt>Total</dt>
+        <dd>{{ events().length }}</dd>
+      </div>
+      <div>
+        <dt>En seguimiento</dt>
+        <dd>{{ activeEvents().length }}</dd>
+      </div>
+      <div>
+        <dt>Críticos</dt>
+        <dd>{{ criticalEventCount() }}</dd>
+      </div>
+      <div>
+        <dt>Noticias vinculadas</dt>
+        <dd>{{ linkedNewsCount() }}</dd>
+      </div>
+    </dl>
+  </header>
+
+  <div class="events-feedback" aria-live="polite" aria-atomic="true">
+    @if (errorMessage()) {
+      <p-message severity="error" [text]="errorMessage() ?? ''" />
+    }
+
+    @if (successMessage()) {
+      <p-message severity="success" [text]="successMessage() ?? ''" />
+    }
+
+    @if (isLoading() && events().length > 0) {
+      <p class="events-feedback__loading" role="status">
+        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        Actualizando eventos
+      </p>
+    }
   </div>
 
-  <label class="search-box">
-    Busqueda global
-    <input
-      pInputText
-      type="search"
-      placeholder="Buscar por ID, titulo, categoria, impacto, noticias, estado o fecha"
-      [ngModel]="globalFilter()"
-      (ngModelChange)="setGlobalFilter($event)"
-    />
-  </label>
-</section>
+  <section class="events-workspace" aria-labelledby="events-workspace-title">
+    <header class="events-workspace__header">
+      <div>
+        <span class="section-kicker">Vista operativa</span>
+        <h2 id="events-workspace-title">Explorar eventos</h2>
+        <p>{{ displayedEvents().length }} de {{ events().length }} eventos visibles</p>
+      </div>
 
-@if (errorMessage()) {
-  <p-message severity="error" [text]="errorMessage() ?? ''" />
-}
-
-@if (successMessage()) {
-  <p-message severity="success" [text]="successMessage() ?? ''" />
-}
-
-@if (isLoading() && events().length > 0) {
-  <p class="page-alert">Actualizando eventos...</p>
-}
-
-<section class="panel merge-panel">
-  <div>
-    <span class="page-header__eyebrow">Fusion</span>
-    <h2>Fusionar eventos</h2>
-  </div>
-
-    <div class="merge-panel__grid">
-    <div class="merge-panel__targets">
-      <span>Evento destino</span>
-      <div class="merge-panel__target-list">
-        @if (isLoading() && events().length === 0) {
-          @for (placeholder of [1, 2, 3]; track placeholder) {
-            <div class="event-option event-option--skeleton" aria-hidden="true"><span></span></div>
-          }
-        } @else {
-          @for (event of activeEvents(); track event.id) {
-          <label class="event-option">
+      <div class="events-workspace__tools">
+        <label class="events-search" for="events-global-search">
+          <span>Buscar en todos los campos</span>
+          <span class="events-search__control">
+            <i class="pi pi-search" aria-hidden="true"></i>
             <input
-              type="radio"
-              name="targetEvent"
-              [value]="event.id"
-              [checked]="targetEventId() === event.id"
-              (change)="setTargetEventId(event.id)"
+              id="events-global-search"
+              pInputText
+              type="search"
+              autocomplete="off"
+              placeholder="Título, categoría, estado…"
+              [ngModel]="globalFilter()"
+              (ngModelChange)="setGlobalFilter($event)"
             />
-            <span>
-              <strong>#{{ event.id }} · {{ event.importance }} · {{ event.newsCount }} noticias</strong>
-              <em>{{ event.title }}</em>
-            </span>
-          </label>
-          }
-        }
+          </span>
+        </label>
+
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          icon="pi pi-filter-slash"
+          label="Limpiar filtros"
+          [disabled]="!hasActiveFilters()"
+          (click)="clearFilters()"
+        ></button>
       </div>
-    </div>
+    </header>
 
-    <div class="merge-panel__sources">
-      <span>Eventos origen</span>
-      <div class="merge-panel__source-list">
-        @for (event of activeEvents(); track event.id) {
-          @if (event.id !== targetEventId()) {
-            <label>
-              <input
-                type="checkbox"
-                [checked]="isSourceSelected(event.id)"
-                (change)="toggleSourceEvent(event.id, $any($event.target).checked)"
-              />
-              <span class="event-option__content">
-                <strong>#{{ event.id }} · {{ event.importance }} · {{ event.newsCount }} noticias</strong>
-                <em>{{ event.title }}</em>
-                @if (event.description) {
-                  <small>{{ event.description }}</small>
-                }
-              </span>
-            </label>
-          }
-        }
-      </div>
-    </div>
-
-    <div class="merge-panel__summary">
-      @if (targetEvent(); as target) {
-        <span>Destino #{{ target.id }}</span>
-        <strong>{{ selectedSourceEvents().length }} origenes · {{ selectedSourceNewsCount() }} noticias</strong>
-      } @else {
-        <span>Sin destino seleccionado</span>
-        <strong>Selecciona un evento activo</strong>
-      }
-      <button pButton type="button" class="merge-panel__button" icon="pi pi-sitemap" (click)="requestMergeEvents()">Fusionar</button>
-    </div>
-  </div>
-</section>
-
-<section class="panel">
-  <app-standard-table
-    [rows]="paginatedEvents()"
-    [columnCount]="9"
-    [totalItems]="displayedEvents().length"
-    totalLabel="eventos filtrados"
-    [pageSize]="pageSize()"
-    [currentPage]="currentPage()"
-    [totalPages]="totalPages()"
-    [pageSizeOptions]="pageSizeOptions"
-    [loading]="isLoading() && events().length === 0"
-    minWidth="78rem"
-    (pageSizeChange)="setPageSize($event)"
-    (previousPage)="goToPreviousPage()"
-    (nextPage)="goToNextPage()"
-  >
+    <app-standard-table
+      appearance="pilot"
+      [rows]="paginatedEvents()"
+      [columnCount]="9"
+      [totalItems]="displayedEvents().length"
+      totalLabel="eventos filtrados"
+      [pageSize]="pageSize()"
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [pageSizeOptions]="pageSizeOptions"
+      [loading]="isLoading() && events().length === 0"
+      minWidth="70rem"
+      (pageSizeChange)="setPageSize($event)"
+      (previousPage)="goToPreviousPage()"
+      (nextPage)="goToNextPage()"
+    >
       <ng-template #tableHeader>
         <tr>
-          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
-          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
-          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('category')">Categoria {{ sortLabel('category') }}</button></th>
-          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('importance')">Impacto {{ sortLabel('importance') }}</button></th>
-          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('newsCount')">Noticias {{ sortLabel('newsCount') }}</button></th>
-          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
-          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('editorialStatus')">Editorial {{ sortLabel('editorialStatus') }}</button></th>
-          <th scope="col"><button type="button" class="sort-button" (click)="changeSort('updatedAt')">Actualizado {{ sortLabel('updatedAt') }}</button></th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('id')">
+            <button type="button" class="sort-button" [attr.aria-label]="sortAriaLabel('ID', 'id')" (click)="changeSort('id')">
+              ID <i [class]="sortIcon('id')" aria-hidden="true"></i>
+            </button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('title')">
+            <button type="button" class="sort-button" [attr.aria-label]="sortAriaLabel('título', 'title')" (click)="changeSort('title')">
+              Título <i [class]="sortIcon('title')" aria-hidden="true"></i>
+            </button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('category')">
+            <button type="button" class="sort-button" [attr.aria-label]="sortAriaLabel('categoría', 'category')" (click)="changeSort('category')">
+              Categoría <i [class]="sortIcon('category')" aria-hidden="true"></i>
+            </button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('importance')">
+            <button type="button" class="sort-button" [attr.aria-label]="sortAriaLabel('impacto', 'importance')" (click)="changeSort('importance')">
+              Impacto <i [class]="sortIcon('importance')" aria-hidden="true"></i>
+            </button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('newsCount')">
+            <button type="button" class="sort-button" [attr.aria-label]="sortAriaLabel('noticias', 'newsCount')" (click)="changeSort('newsCount')">
+              Noticias <i [class]="sortIcon('newsCount')" aria-hidden="true"></i>
+            </button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('status')">
+            <button type="button" class="sort-button" [attr.aria-label]="sortAriaLabel('estado', 'status')" (click)="changeSort('status')">
+              Estado <i [class]="sortIcon('status')" aria-hidden="true"></i>
+            </button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('editorialStatus')">
+            <button type="button" class="sort-button" [attr.aria-label]="sortAriaLabel('estado editorial', 'editorialStatus')" (click)="changeSort('editorialStatus')">
+              Editorial <i [class]="sortIcon('editorialStatus')" aria-hidden="true"></i>
+            </button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('updatedAt')">
+            <button type="button" class="sort-button" [attr.aria-label]="sortAriaLabel('fecha de actualización', 'updatedAt')" (click)="changeSort('updatedAt')">
+              Actualizado <i [class]="sortIcon('updatedAt')" aria-hidden="true"></i>
+            </button>
+          </th>
           <th scope="col">Acciones</th>
         </tr>
       </ng-template>
+
       <ng-template #tableFilters>
         <tr class="column-filters">
-          <th scope="col">
-            <input pInputText type="search" aria-label="Filtrar por ID" [ngModel]="idFilter()" (ngModelChange)="setIdFilter($event)" />
+          <th>
+            <input pInputText type="search" autocomplete="off" placeholder="ID" aria-label="Filtrar por ID" [ngModel]="idFilter()" (ngModelChange)="setIdFilter($event)" />
           </th>
-          <th scope="col">
-            <input pInputText type="search" aria-label="Filtrar por titulo" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" />
+          <th>
+            <input pInputText type="search" autocomplete="off" placeholder="Título" aria-label="Filtrar por título" [ngModel]="titleFilter()" (ngModelChange)="setTitleFilter($event)" />
           </th>
-          <th scope="col">
-            <p-select [options]="categoryOptions()" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event ?? '')" placeholder="Todas" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar por categoria" />
+          <th>
+            <p-select inputId="events-category-filter" [options]="categoryOptions()" [ngModel]="categoryFilter()" (ngModelChange)="setCategoryFilter($event ?? '')" placeholder="Todas" [showClear]="true" [appendTo]="'body'" ariaLabel="Filtrar por categoría" />
           </th>
-          <th scope="col">
-            <p-select [options]="importanceOptions()" [ngModel]="importanceFilter()" (ngModelChange)="setImportanceFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar por impacto" />
+          <th>
+            <p-select inputId="events-importance-filter" [options]="importanceOptions()" [ngModel]="importanceFilter()" (ngModelChange)="setImportanceFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" ariaLabel="Filtrar por impacto" />
           </th>
-          <th scope="col">
-            <input pInputText type="search" aria-label="Filtrar por noticias" [ngModel]="newsCountFilter()" (ngModelChange)="setNewsCountFilter($event)" />
+          <th>
+            <input pInputText type="search" autocomplete="off" placeholder="N.º" aria-label="Filtrar por número de noticias" [ngModel]="newsCountFilter()" (ngModelChange)="setNewsCountFilter($event)" />
           </th>
-          <th scope="col">
-            <p-select [options]="statusOptions()" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar por estado" />
+          <th>
+            <p-select inputId="events-status-filter" [options]="statusOptions()" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" ariaLabel="Filtrar por estado" />
           </th>
-          <th scope="col">
-            <p-select [options]="editorialStatusOptions()" [ngModel]="editorialStatusFilter()" (ngModelChange)="setEditorialStatusFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar por estado editorial" />
+          <th>
+            <p-select inputId="events-editorial-filter" [options]="editorialStatusOptions()" [ngModel]="editorialStatusFilter()" (ngModelChange)="setEditorialStatusFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" ariaLabel="Filtrar por estado editorial" />
           </th>
-          <th scope="col">
-            <input pInputText type="search" aria-label="Filtrar por actualizado" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" />
+          <th>
+            <input pInputText type="search" autocomplete="off" placeholder="Fecha" aria-label="Filtrar por fecha de actualización" [ngModel]="updatedAtFilter()" (ngModelChange)="setUpdatedAtFilter($event)" />
           </th>
-          <th scope="col"></th>
+          <th aria-hidden="true"></th>
         </tr>
       </ng-template>
+
       <ng-template #tableRow let-event>
-          <tr>
-            <td class="table-cell-nowrap">#{{ event.id }}</td>
-            <td class="event-title-cell">{{ event.title }}</td>
-            <td class="table-cell-nowrap">{{ event.category }}</td>
-            <td class="table-cell-nowrap"><app-status-badge [value]="event.importance" /></td>
-            <td class="table-cell-nowrap">{{ event.newsCount }}</td>
-            <td class="table-cell-nowrap"><app-status-badge [value]="event.status" /></td>
-            <td class="table-cell-nowrap"><app-status-badge [value]="event.editorialStatus" /></td>
-            <td class="table-cell-nowrap">{{ formatDate(event.updatedAt) }}</td>
-            <td>
-              <div class="table-actions">
-              <a class="table-action" [routerLink]="['/events', event.id]">Ver</a>
+        <tr>
+          <td class="table-cell-nowrap event-id">#{{ event.id }}</td>
+          <td class="event-title-cell">
+            <a [routerLink]="['/events', event.id]">{{ event.title }}</a>
+            @if (event.description) {
+              <span>{{ event.description }}</span>
+            }
+          </td>
+          <td class="table-cell-nowrap"><span class="category-label">{{ event.category }}</span></td>
+          <td class="table-cell-nowrap"><app-status-badge [value]="event.importance" /></td>
+          <td class="table-cell-nowrap"><strong>{{ event.newsCount }}</strong></td>
+          <td class="table-cell-nowrap"><app-status-badge [value]="event.status" /></td>
+          <td class="table-cell-nowrap"><app-status-badge [value]="event.editorialStatus" /></td>
+          <td class="table-cell-nowrap">{{ formatDate(event.updatedAt) }}</td>
+          <td>
+            <div class="table-actions">
+              <a class="table-action table-action--primary" [routerLink]="['/events', event.id]" [attr.aria-label]="'Abrir evento #' + event.id">
+                <i class="pi pi-arrow-up-right" aria-hidden="true"></i>
+                Abrir
+              </a>
               @if (canDiscard(event)) {
-                <button pButton type="button" severity="danger" class="table-action table-action--danger" icon="pi pi-trash" (click)="discardEvent(event)">Descartar</button>
+                <button pButton type="button" severity="danger" [text]="true" icon="pi pi-trash" [attr.aria-label]="'Descartar evento #' + event.id" [attr.title]="'Descartar evento #' + event.id" (click)="discardEvent(event)"></button>
               }
               @if (canRestore(event)) {
-                <button pButton type="button" severity="secondary" class="table-action" icon="pi pi-undo" (click)="restoreEvent(event)">Deshacer descarte</button>
+                <button pButton type="button" severity="secondary" [text]="true" icon="pi pi-undo" [attr.aria-label]="'Restaurar evento #' + event.id" [attr.title]="'Restaurar evento #' + event.id" (click)="restoreEvent(event)"></button>
               }
-              </div>
-            </td>
-          </tr>
-      </ng-template>
-      <ng-template #tableEmpty>
-        <tr>
-          <td colspan="9">No hay eventos que coincidan con los filtros.</td>
+            </div>
+          </td>
         </tr>
       </ng-template>
-  </app-standard-table>
-</section>
+
+      <ng-template #tableEmpty>
+        <tr>
+          <td colspan="9">
+            <div class="events-empty">
+              <i class="pi pi-search" aria-hidden="true"></i>
+              <strong>No hay eventos que coincidan</strong>
+              <span>Prueba a cambiar o limpiar los filtros activos.</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </app-standard-table>
+  </section>
+
+  <details class="merge-workspace">
+    <summary>
+      <span class="merge-workspace__icon" aria-hidden="true"><i class="pi pi-sitemap"></i></span>
+      <span class="merge-workspace__summary-copy">
+        <strong>Fusionar eventos duplicados</strong>
+        <small>Consolida varias coberturas del mismo hecho en un único evento.</small>
+      </span>
+      <span class="merge-workspace__availability">{{ activeEvents().length }} disponibles</span>
+      <i class="pi pi-chevron-down merge-workspace__chevron" aria-hidden="true"></i>
+    </summary>
+
+    <div class="merge-workspace__body">
+      <header>
+        <span class="section-kicker">Herramienta editorial</span>
+        <h2>Configurar fusión</h2>
+        <p>El evento destino conservará su identidad y recibirá las noticias de los eventos de origen.</p>
+      </header>
+
+      <div class="merge-workspace__grid">
+        <fieldset>
+          <legend>1. Elige el evento destino</legend>
+          <p>Será el evento principal después de la fusión.</p>
+          <div class="event-option-list">
+            @if (isLoading() && events().length === 0) {
+              @for (placeholder of [1, 2, 3]; track placeholder) {
+                <div class="event-option event-option--skeleton" aria-hidden="true"><span></span></div>
+              }
+            } @else {
+              @for (event of activeEvents(); track event.id) {
+                <label class="event-option" [class.event-option--selected]="targetEventId() === event.id">
+                  <input type="radio" name="targetEvent" [value]="event.id" [checked]="targetEventId() === event.id" (change)="setTargetEventId(event.id)" />
+                  <span class="event-option__content">
+                    <span class="event-option__meta">#{{ event.id }} · {{ event.importance }} · {{ event.newsCount }} noticias</span>
+                    <strong>{{ event.title }}</strong>
+                  </span>
+                </label>
+              } @empty {
+                <p class="merge-workspace__empty">No hay eventos operativos disponibles.</p>
+              }
+            }
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>2. Selecciona los eventos de origen</legend>
+          <p>Se archivarán manteniendo toda su trazabilidad.</p>
+          <div class="event-option-list">
+            @for (event of activeEvents(); track event.id) {
+              @if (event.id !== targetEventId()) {
+                <label class="event-option" [class.event-option--selected]="isSourceSelected(event.id)">
+                  <input type="checkbox" [checked]="isSourceSelected(event.id)" (change)="toggleSourceEvent(event.id, $any($event.target).checked)" />
+                  <span class="event-option__content">
+                    <span class="event-option__meta">#{{ event.id }} · {{ event.importance }} · {{ event.newsCount }} noticias</span>
+                    <strong>{{ event.title }}</strong>
+                    @if (event.description) {
+                      <small>{{ event.description }}</small>
+                    }
+                  </span>
+                </label>
+              }
+            } @empty {
+              <p class="merge-workspace__empty">No hay eventos de origen disponibles.</p>
+            }
+          </div>
+        </fieldset>
+
+        <aside class="merge-review" aria-live="polite">
+          <div id="merge-selection-summary">
+            <span>Resumen de la operación</span>
+            @if (targetEvent(); as target) {
+              <strong>Destino #{{ target.id }}</strong>
+              <small>{{ selectedSourceEvents().length }} eventos de origen · {{ selectedSourceNewsCount() }} noticias</small>
+            } @else {
+              <strong>Selección incompleta</strong>
+              <small>Elige un destino y al menos un origen.</small>
+            }
+          </div>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-sitemap"
+            label="Revisar y fusionar"
+            [disabled]="!canRequestMerge()"
+            aria-describedby="merge-selection-summary"
+            (click)="requestMergeEvents()"
+          ></button>
+        </aside>
+      </div>
+    </div>
+  </details>
+</div>
 
 <p-dialog
   [visible]="pendingConfirmation() !== null"
+  [header]="pendingConfirmation()?.title ?? 'Confirmar acción'"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
-  [style]="{ width: 'min(100vw - 2rem, 34rem)' }"
+  [focusOnShow]="true"
+  [focusTrap]="true"
+  [closeAriaLabel]="'Cerrar confirmación'"
+  [role]="'alertdialog'"
+  styleClass="events-confirm-dialog"
+  [style]="{ width: 'min(100vw - 2rem, 32rem)' }"
   (visibleChange)="!$event && closeConfirmation()"
+  (onHide)="restoreConfirmationFocus()"
 >
   @if (pendingConfirmation(); as confirmation) {
-    <ng-template pTemplate="header">
-      <div>
-        <span class="page-header__eyebrow">Confirmacion</span>
-        <h2 id="events-confirm-title">{{ confirmation.title }}</h2>
-      </div>
-    </ng-template>
+    <div class="confirmation-copy">
+      <span class="confirmation-copy__icon" aria-hidden="true"><i class="pi pi-exclamation-triangle"></i></span>
+      <p>{{ confirmation.message }}</p>
+    </div>
 
-    <p>{{ confirmation.message }}</p>
-
-    <ng-template pTemplate="footer">
-      <button pButton type="button" severity="danger" icon="pi pi-check" (click)="confirmPendingAction()">
-        {{ confirmation.confirmLabel }}
-      </button>
-      <button pButton type="button" severity="secondary" icon="pi pi-times" (click)="closeConfirmation()">
-        Cancelar
-      </button>
-    </ng-template>
   }
+
+  <ng-template pTemplate="footer">
+    @if (pendingConfirmation(); as confirmation) {
+      <button pButton type="button" severity="secondary" icon="pi pi-times" label="Cancelar" (click)="closeConfirmation()"></button>
+      <button
+        pButton
+        type="button"
+        [severity]="confirmation.type === 'restore' ? 'success' : 'danger'"
+        icon="pi pi-check"
+        [label]="confirmation.confirmLabel"
+        (click)="confirmPendingAction()"
+      ></button>
+    }
+  </ng-template>
 </p-dialog>

@@ -9,7 +9,10 @@ import { TableModule } from 'primeng/table';
   selector: 'app-standard-table',
   imports: [ButtonModule, FormsModule, NgTemplateOutlet, SelectModule, TableModule],
   templateUrl: './standard-table.component.html',
-  styleUrl: './standard-table.component.scss'
+  styleUrl: './standard-table.component.scss',
+  host: {
+    '[class.standard-table-host--pilot]': "appearance() === 'pilot'"
+  }
 })
 export class StandardTableComponent<T> {
   readonly rows = input.required<T[]>();
@@ -23,6 +26,7 @@ export class StandardTableComponent<T> {
   readonly loading = input(false);
   readonly loadingRows = input(5);
   readonly minWidth = input('64rem');
+  readonly appearance = input<'default' | 'pilot'>('default');
 
   readonly pageSizeChange = output<string>();
   readonly previousPage = output<void>();

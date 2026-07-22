@@ -3704,3 +3704,111 @@ Verificacion:
 - Docker frontend: `docker compose build frontend` y `docker compose up -d frontend` OK.
 - Stack TFM: `./tfm-check.ps1` OK tras recrear el frontend.
 - Browser real Chrome headless: login, dashboard y settings verificados. CSS completo cargado con `media=null`, tema cambia colores reales, menu tiene 9 iconos, metric cards tienen 20 iconos y `/settings` muestra tarjetas en 2 columnas.
+
+---
+
+# 20. [ ] Sprint 14
+
+# Modernizacion visual integral y accesibilidad WCAG 2.2 AA
+
+Trabajo evolutivo posterior a la Fase 11. No modifica contratos REST, roles, dominio ni automatizaciones. Mantiene Angular 21, PrimeNG, Tailwind y SCSS como tecnologias oficiales.
+
+Objetivo:
+
+```text
+Validar un nuevo sistema visual en /events y, tras aprobacion, extenderlo de forma coherente a todas las paginas, estados y dialogos del frontend con objetivo WCAG 2.2 AA.
+```
+
+## T14.1 [x]
+
+Actualizar la especificacion de accesibilidad del frontend.
+
+Subtareas:
+
+```text
+T14.1.1 [x] Definir alcance y estado de conformidad sin sobredeclarar cumplimiento
+T14.1.2 [x] Incorporar criterios WCAG 2.2 A y AA aplicables
+T14.1.3 [x] Definir reglas para navegacion, formularios, tablas, dialogos y estados
+T14.1.4 [x] Definir metodo de verificacion y criterio de terminado por pagina
+T14.1.5 [x] Registrar referencia normativa oficial W3C
+```
+
+## T14.2 [ ]
+
+Crear y verificar el piloto visual accesible en `/events`.
+
+Subtareas:
+
+```text
+T14.2.1 [x] Seleccionar /events por centralidad de Event y cobertura de componentes
+T14.2.2 [x] Redisenar jerarquia, cabecera, metricas, busqueda, filtros y tabla
+T14.2.3 [x] Convertir la fusion en herramienta progresiva con grupos semanticos
+T14.2.4 [x] Mejorar ordenacion, acciones, estados y dialogo de confirmacion
+T14.2.5 [x] Aislar la variante visual para no alterar aun el resto de paginas
+T14.2.6 [x] Anadir pruebas Angular y Playwright especificas del piloto
+T14.2.7 [x] Verificar tests, build, teclado, contraste y responsive
+T14.2.8 [ ] Presentar evidencia visual y recoger validacion del usuario
+T14.2.9 [x] Reforzar idioma, titulos de ruta, retorno de foco y espaciado de texto WCAG
+```
+
+## T14.3 [ ]
+
+Consolidar el sistema visual aprobado.
+
+Subtareas:
+
+```text
+T14.3.1 [ ] Confirmar direccion visual con el usuario
+T14.3.2 [ ] Consolidar tokens de color, tipografia, espaciado, radios y elevacion
+T14.3.3 [ ] Consolidar variantes compartidas de botones, campos, tablas, badges y dialogos
+T14.3.4 [ ] Documentar patrones de pagina, estados y responsive
+T14.3.5 [ ] Verificar temas claro y oscuro
+```
+
+## T14.4 [ ]
+
+Extender el sistema visual a shell y autenticacion.
+
+```text
+T14.4.1 [ ] Shell, cabecera, sidebar y navegacion movil
+T14.4.2 [ ] Login
+T14.4.3 [ ] Forgot password
+T14.4.4 [ ] Reset password
+T14.4.5 [ ] Change password
+```
+
+## T14.5 [ ]
+
+Extender el sistema visual a pantallas editoriales.
+
+```text
+T14.5.1 [ ] Dashboard
+T14.5.2 [ ] Detalle de evento
+T14.5.3 [ ] Noticias y detalle de noticia
+T14.5.4 [ ] Contenido y detalle/editor de contenido
+T14.5.5 [ ] Publicaciones y detalle de publicacion
+```
+
+## T14.6 [ ]
+
+Extender el sistema visual a pantallas ADMIN.
+
+```text
+T14.6.1 [ ] Fuentes y sus dialogos
+T14.6.2 [ ] Usuarios y sus dialogos
+T14.6.3 [ ] Auditoria
+T14.6.4 [ ] Settings, Telegram, automatizaciones y observabilidad IA
+```
+
+## T14.7 [ ]
+
+Auditoria final y cierre de modernizacion.
+
+```text
+T14.7.1 [ ] Revisar todos los estados de carga, vacio, exito, advertencia y error
+T14.7.2 [ ] Revisar todos los dialogos y confirmaciones
+T14.7.3 [ ] Ejecutar suite Angular completa y build de produccion
+T14.7.4 [ ] Ejecutar Playwright mockeado y E2E local controlado cuando proceda
+T14.7.5 [ ] Completar revision manual WCAG 2.2 AA y responsive
+T14.7.6 [ ] Actualizar accessibility.md con evidencia final por ruta
+```

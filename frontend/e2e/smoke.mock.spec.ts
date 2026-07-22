@@ -13,7 +13,7 @@ test('permite login mockeado y navegacion editorial principal', async ({ page })
   await expect(page.getByText('Convocatoria extraordinaria de oposiciones')).toBeVisible();
 
   await page.getByRole('link', { name: 'Eventos', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Centro operativo del sistema' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Eventos', exact: true })).toBeVisible();
   await expect(page.getByRole('cell', { name: 'Actualizacion de bolsas docentes' })).toBeVisible();
 
   await page.getByRole('link', { name: 'Contenido', exact: true }).click();

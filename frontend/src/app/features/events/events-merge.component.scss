@@ -1,0 +1,355 @@
+﻿.merge-workspace {
+  overflow: clip;
+}
+
+.merge-workspace > summary {
+  align-items: center;
+  cursor: pointer;
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  list-style: none;
+  min-height: 5.25rem;
+  padding: 1rem 1.25rem;
+}
+
+.merge-workspace > summary::-webkit-details-marker {
+  display: none;
+}
+
+.merge-workspace > summary:hover {
+  background: var(--events-surface-subtle);
+}
+
+.merge-workspace > summary:focus-visible {
+  outline: 3px solid var(--events-accent);
+  outline-offset: -3px;
+}
+
+.merge-workspace__icon {
+  align-items: center;
+  background: var(--events-accent-soft);
+  border-radius: 0.75rem;
+  color: var(--events-accent-strong);
+  display: inline-flex;
+  height: 2.75rem;
+  justify-content: center;
+  width: 2.75rem;
+}
+
+.merge-workspace__summary-copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.merge-workspace__summary-copy strong {
+  color: var(--events-text);
+}
+
+.merge-workspace__summary-copy small,
+.merge-workspace__availability {
+  color: var(--events-muted);
+}
+
+.merge-workspace__availability {
+  background: var(--events-surface-subtle);
+  border: 1px solid var(--events-border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.4rem 0.7rem;
+  white-space: nowrap;
+}
+
+.merge-workspace__chevron {
+  color: var(--events-muted);
+  transition: transform 180ms ease;
+}
+
+.merge-workspace[open] .merge-workspace__chevron {
+  transform: rotate(180deg);
+}
+
+.merge-workspace__body {
+  border-top: 1px solid var(--events-border);
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.merge-workspace__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1.25rem;
+}
+
+.merge-workspace fieldset {
+  border: 1px solid var(--events-border);
+  border-radius: 0.875rem;
+  margin: 0;
+  min-width: 0;
+  padding: 1rem;
+}
+
+.merge-workspace legend {
+  color: var(--events-text);
+  font-weight: 800;
+  padding: 0 0.4rem;
+}
+
+.merge-workspace fieldset > p {
+  color: var(--events-muted);
+  font-size: 0.85rem;
+  margin: 0 0 0.8rem;
+}
+
+.events-page .event-option-list {
+  display: grid;
+  gap: 0.5rem;
+  max-height: 18rem;
+  overflow: auto;
+  padding: 0.15rem;
+  scrollbar-gutter: stable;
+}
+
+.events-page .event-option {
+  align-items: flex-start;
+  background: var(--events-surface);
+  border: 1px solid var(--events-control-border);
+  border-radius: 0.75rem;
+  color: var(--events-text);
+  cursor: pointer;
+  display: flex;
+  gap: 0.75rem;
+  min-height: 4.25rem;
+  padding: 0.75rem;
+}
+
+.events-page .event-option:hover {
+  border-color: var(--events-accent);
+}
+
+.events-page .event-option:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--events-accent) 28%, transparent);
+}
+
+.events-page .event-option--selected {
+  background: color-mix(in srgb, var(--events-accent-soft) 68%, var(--events-surface));
+  border-color: var(--events-accent);
+}
+
+.events-page .event-option input {
+  accent-color: var(--events-accent-strong);
+  flex: 0 0 auto;
+  height: 1.25rem;
+  margin: 0.1rem 0 0;
+  width: 1.25rem;
+}
+
+.events-page .event-option__content {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.events-page .event-option__content strong {
+  line-height: 1.35;
+}
+
+.events-page .event-option__meta,
+.events-page .event-option__content small {
+  color: var(--events-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.events-page .event-option--skeleton {
+  cursor: default;
+}
+
+.events-page .event-option--skeleton span {
+  animation: events-skeleton-pulse 1.2s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--events-border), var(--events-surface-subtle), var(--events-border));
+  background-size: 200% 100%;
+  border-radius: 999px;
+  display: block;
+  height: 2.4rem;
+  width: 100%;
+}
+
+.merge-workspace__empty {
+  color: var(--events-muted);
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+}
+
+.merge-review {
+  align-items: center;
+  background: var(--events-surface-subtle);
+  border: 1px solid var(--events-border);
+  border-radius: 0.875rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  grid-column: 1 / -1;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.merge-review > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.merge-review span,
+.merge-review small {
+  color: var(--events-muted);
+  font-size: 0.8rem;
+}
+
+.merge-review strong {
+  color: var(--events-text);
+}
+
+.confirmation-copy {
+  align-items: start;
+  display: flex;
+  gap: 0.85rem;
+}
+
+.confirmation-copy__icon {
+  align-items: center;
+  background: var(--color-warning-soft);
+  border-radius: 50%;
+  color: var(--color-warning-text);
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 2.5rem;
+  justify-content: center;
+  width: 2.5rem;
+}
+
+.confirmation-copy p {
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+:host ::ng-deep .events-confirm-dialog .p-dialog-title {
+  color: var(--color-text);
+  font-size: 1.2rem;
+}
+
+:host ::ng-deep .events-confirm-dialog .p-dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}
+
+@keyframes events-skeleton-pulse {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 1180px) {
+  .events-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .events-hero__metrics {
+    max-width: 42rem;
+  }
+}
+
+@media (max-width: 820px) {
+  .events-workspace__header {
+    align-items: stretch;
+    display: grid;
+  }
+
+  .events-workspace__tools {
+    min-width: 0;
+  }
+
+  .merge-workspace__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .merge-review {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .events-hero {
+    border-radius: 0.875rem;
+    gap: 1.5rem;
+  }
+
+  .events-hero__metrics {
+    gap: 0.5rem;
+  }
+
+  .events-hero__metrics div {
+    padding: 0.75rem;
+  }
+
+  .events-workspace,
+  .merge-workspace {
+    border-radius: 0.875rem;
+  }
+
+  .events-workspace__tools,
+  .merge-review {
+    align-items: stretch;
+    display: grid;
+  }
+
+  .events-workspace__tools button,
+  .merge-review button {
+    width: 100%;
+  }
+
+  .merge-workspace > summary {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 0.9rem 1rem;
+  }
+
+  .merge-workspace__availability {
+    display: none;
+  }
+
+  .events-page .event-option-list {
+    max-height: 22rem;
+  }
+
+  :host ::ng-deep .events-confirm-dialog .p-dialog-footer button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .events-hero__metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .merge-workspace__chevron,
+  .events-page .event-option {
+    transition: none;
+  }
+
+  .events-page .event-option--skeleton span {
+    animation: none;
+  }
+}
+
+

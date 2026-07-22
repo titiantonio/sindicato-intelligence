@@ -70,6 +70,47 @@ describe('EventsPageComponent', () => {
     expect((component as any).paginatedEvents().map((event: EventListItem) => event.id)).toEqual([1]);
   });
 
+  it('exposes an accessible page structure and sorting state', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const heading = root.querySelector<HTMLHeadingElement>('#events-title');
+    const search = root.querySelector<HTMLInputElement>('#events-global-search');
+    const searchLabel = root.querySelector<HTMLLabelElement>('label[for="events-global-search"]');
+    const importanceHeader = root.querySelector<HTMLTableCellElement>('th[aria-sort="ascending"]');
+
+    expect(heading?.textContent).toContain('Eventos');
+    expect(search).not.toBeNull();
+    expect(searchLabel).not.toBeNull();
+    expect(importanceHeader?.textContent).toContain('Impacto');
+    expect(root.querySelectorAll('fieldset legend').length).toBe(2);
+    expect(root.textContent).not.toContain('Â');
+  });
+
+  it('clears every active filter from one control', () => {
+    (component as any).setGlobalFilter('oposiciones');
+    (component as any).setCategoryFilter('SIPRI');
+    (component as any).setStatusFilter('OPEN');
+
+    expect((component as any).hasActiveFilters()).toBeTrue();
+
+    (component as any).clearFilters();
+
+    expect((component as any).hasActiveFilters()).toBeFalse();
+    expect((component as any).displayedEvents().length).toBe(3);
+  });
+
+  it('enables merge review only when destination and origin are selected', () => {
+    const mergeButton = () => (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('button[aria-describedby="merge-selection-summary"]');
+
+    expect(mergeButton()?.disabled).toBeTrue();
+
+    (component as any).setTargetEventId(1);
+    (component as any).toggleSourceEvent(3, true);
+    fixture.detectChanges();
+
+    expect(mergeButton()?.disabled).toBeFalse();
+  });
+
   it('discards active events and reloads the list', () => {
     const confirmSpy = spyOn(window, 'confirm');
 

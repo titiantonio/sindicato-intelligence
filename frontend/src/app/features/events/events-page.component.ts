@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -23,10 +24,16 @@ type PendingConfirmation =
   selector: 'app-events-page',
   imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, MessageModule, RouterLink, SelectModule, StandardTableComponent, StatusBadgeComponent],
   templateUrl: './events-page.component.html',
-  styleUrl: './events-page.component.scss'
+  styleUrls: [
+    './events-page.component.scss',
+    './events-workspace.component.scss',
+    './events-merge.component.scss'
+  ]
 })
 export class EventsPageComponent implements OnInit {
+  private readonly document = inject(DOCUMENT);
   private readonly eventService = inject(EventService);
+  private confirmationTrigger: HTMLElement | null = null;
 
   protected readonly events = signal<EventListItem[]>([]);
   protected readonly isLoading = signal(false);
@@ -35,9 +42,18 @@ export class EventsPageComponent implements OnInit {
   protected readonly targetEventId = signal<number | null>(null);
   protected readonly sourceEventIds = signal<number[]>([]);
   protected readonly activeEvents = computed(() => this.events().filter((event) => this.canUseInMerge(event)));
+  protected readonly criticalEventCount = computed(() =>
+    this.events().filter((event) => event.importance === 'CRITICAL' && this.canUseInMerge(event)).length
+  );
+  protected readonly linkedNewsCount = computed(() =>
+    this.events().reduce((total, event) => total + event.newsCount, 0)
+  );
   protected readonly targetEvent = computed(() => this.activeEvents().find((event) => event.id === this.targetEventId()) ?? null);
   protected readonly selectedSourceEvents = computed(() => this.activeEvents().filter((event) => this.sourceEventIds().includes(event.id)));
   protected readonly selectedSourceNewsCount = computed(() => this.selectedSourceEvents().reduce((total, event) => total + event.newsCount, 0));
+  protected readonly canRequestMerge = computed(() =>
+    this.targetEventId() !== null && this.sourceEventIds().length > 0
+  );
   protected readonly pendingConfirmation = signal<PendingConfirmation | null>(null);
   protected readonly globalFilter = signal('');
   protected readonly idFilter = signal('');
@@ -57,6 +73,17 @@ export class EventsPageComponent implements OnInit {
   protected readonly importanceOptions = computed(() => this.uniqueOptions((event) => event.importance));
   protected readonly statusOptions = computed(() => this.uniqueOptions((event) => event.status));
   protected readonly editorialStatusOptions = computed(() => this.uniqueOptions((event) => event.editorialStatus));
+  protected readonly hasActiveFilters = computed(() => [
+    this.globalFilter(),
+    this.idFilter(),
+    this.titleFilter(),
+    this.categoryFilter(),
+    this.importanceFilter(),
+    this.newsCountFilter(),
+    this.statusFilter(),
+    this.editorialStatusFilter(),
+    this.updatedAtFilter()
+  ].some((value) => value.trim().length > 0));
   protected readonly displayedEvents = computed(() => this.sortEvents(this.filterEvents(this.events())));
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.displayedEvents().length / this.pageSize())));
   protected readonly paginatedEvents = computed(() => {
@@ -151,12 +178,42 @@ export class EventsPageComponent implements OnInit {
     this.sortDirection.set(column === 'updatedAt' ? 'desc' : 'asc');
   }
 
-  protected sortLabel(column: EventSortColumn): string {
+  protected sortIcon(column: EventSortColumn): string {
     if (this.sortColumn() !== column) {
-      return '';
+      return 'pi pi-sort-alt';
     }
 
-    return this.sortDirection() === 'asc' ? '↑' : '↓';
+    return this.sortDirection() === 'asc' ? 'pi pi-sort-amount-up-alt' : 'pi pi-sort-amount-down';
+  }
+
+  protected sortAriaValue(column: EventSortColumn): 'ascending' | 'descending' | 'none' {
+    if (this.sortColumn() !== column) {
+      return 'none';
+    }
+
+    return this.sortDirection() === 'asc' ? 'ascending' : 'descending';
+  }
+
+  protected sortAriaLabel(label: string, column: EventSortColumn): string {
+    if (this.sortColumn() !== column) {
+      return `Ordenar por ${label} de forma ascendente`;
+    }
+
+    const nextDirection = this.sortDirection() === 'asc' ? 'descendente' : 'ascendente';
+    return `Ordenar por ${label} de forma ${nextDirection}`;
+  }
+
+  protected clearFilters(): void {
+    this.globalFilter.set('');
+    this.idFilter.set('');
+    this.titleFilter.set('');
+    this.categoryFilter.set('');
+    this.importanceFilter.set('');
+    this.newsCountFilter.set('');
+    this.statusFilter.set('');
+    this.editorialStatusFilter.set('');
+    this.updatedAtFilter.set('');
+    this.resetPagination();
   }
 
   protected setTargetEventId(value: string | number): void {
@@ -185,6 +242,7 @@ export class EventsPageComponent implements OnInit {
       return;
     }
 
+    this.rememberConfirmationTrigger();
     this.pendingConfirmation.set({
       type: 'merge',
       title: 'Fusionar eventos',
@@ -194,6 +252,7 @@ export class EventsPageComponent implements OnInit {
   }
 
   protected discardEvent(event: EventListItem): void {
+    this.rememberConfirmationTrigger();
     this.pendingConfirmation.set({
       type: 'discard',
       event,
@@ -204,6 +263,7 @@ export class EventsPageComponent implements OnInit {
   }
 
   protected restoreEvent(event: EventListItem): void {
+    this.rememberConfirmationTrigger();
     this.pendingConfirmation.set({
       type: 'restore',
       event,
@@ -215,6 +275,15 @@ export class EventsPageComponent implements OnInit {
 
   protected closeConfirmation(): void {
     this.pendingConfirmation.set(null);
+  }
+
+  protected restoreConfirmationFocus(): void {
+    const trigger = this.confirmationTrigger;
+    this.confirmationTrigger = null;
+
+    if (trigger?.isConnected) {
+      trigger.focus();
+    }
   }
 
   protected confirmPendingAction(): void {
@@ -328,6 +397,7 @@ export class EventsPageComponent implements OnInit {
       event.id.toString(),
       `#${event.id}`,
       event.title,
+      event.description ?? '',
       event.category,
       event.importance,
       event.newsCount.toString(),
@@ -401,6 +471,13 @@ export class EventsPageComponent implements OnInit {
 
   private normalize(value: string): string {
     return value.trim().toLocaleLowerCase('es');
+  }
+
+  private rememberConfirmationTrigger(): void {
+    const activeElement = this.document.activeElement;
+    this.confirmationTrigger = activeElement instanceof HTMLElement && activeElement !== this.document.body
+      ? activeElement
+      : null;
   }
 
   private resetPagination(): void {

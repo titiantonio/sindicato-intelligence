@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend accesibilidad: actualizado `docs/accessibility.md` con el objetivo WCAG 2.2 AA, criterios por componente, método de verificación y definición de terminado sin sobredeclarar conformidad global.
+- Frontend eventos: creado el piloto visual accesible de `/events` con nueva jerarquía, métricas, búsqueda, tabla, herramienta progresiva de fusión y diálogo verificable por teclado.
+- Frontend E2E: añadida una suite Playwright mockeada para el piloto de eventos, incluyendo ordenación, filtros, foco del diálogo, cierre con `Escape`, objetivos táctiles y reflow a 320 CSS px.
 - Frontend E2E: anadidos scripts `e2e:mock` y `e2e:ci` para ejecutar la suite Playwright mockeada rapida sin backend en preparacion de CI/CD.
 - Frontend E2E: anadida suite Playwright mockeada de flujo editorial controlado para generar contenido desde evento, aprobar/rechazar y programar publicacion sin IA ni Telegram real.
 - Frontend E2E: anadida suite Playwright opt-in contra backend local mediante variables de entorno, separada de las pruebas mockeadas.
@@ -29,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend version: subida la versión del paquete frontend a `0.0.38`.
+- Frontend accesibilidad: definido el idioma español y títulos de documento específicos para todas las rutas; el diálogo de eventos devuelve el foco al control que lo abrió.
+- Frontend E2E: ampliado el piloto de eventos con comprobaciones de título, idioma, contención y retorno del foco, espaciado de texto y ausencia de controles textuales recortados.
+- Frontend version: subida la versión del paquete frontend a `0.0.37`.
+- Frontend tablas: incorporada una variante visual opt-in para el piloto y semántica de navegación accesible en el paginador compartido.
 - Frontend settings: corregidos los textos de eliminacion de credenciales para usar “API de IA” y “token del bot de Telegram” en modales, botones y mensajes.
 - Frontend version: subida la version del paquete frontend a `0.0.36`.
 - Frontend settings: las confirmaciones para eliminar API key IA y bot token Telegram usan un dialogo del backoffice en lugar de `window.confirm` del navegador.

@@ -14,6 +14,11 @@
   width: 100%;
 }
 
+:host(.standard-table-host--pilot) .standard-table {
+  border-color: var(--events-border, var(--color-border));
+  border-radius: 0.75rem;
+}
+
 :host ::ng-deep .standard-table__prime,
 :host ::ng-deep .standard-table__prime .p-datatable-wrapper {
   max-width: 100%;
@@ -39,6 +44,15 @@
   white-space: nowrap;
 }
 
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .p-datatable-thead > tr > th {
+  background: var(--events-surface-subtle, var(--color-muted-surface));
+  border-color: var(--events-border, var(--color-border));
+  color: var(--events-muted, var(--color-text-muted));
+  font-size: 0.72rem;
+  letter-spacing: 0.045em;
+  padding-block: 0.7rem;
+}
+
 :host ::ng-deep .standard-table__prime .p-datatable-tbody > tr > td {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border-soft);
@@ -47,8 +61,40 @@
   vertical-align: top;
 }
 
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .p-datatable-tbody > tr > td {
+  background: var(--events-surface, var(--color-surface));
+  border-color: var(--events-border, var(--color-border-soft));
+  color: var(--events-text, var(--color-text));
+}
+
 :host ::ng-deep .standard-table__prime .p-datatable-tbody > tr:hover > td {
   background: var(--color-muted-surface);
+}
+
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .p-datatable-tbody > tr:hover > td {
+  background: color-mix(in srgb, var(--events-accent-soft, var(--color-page-accent)) 35%, var(--events-surface, var(--color-surface)));
+}
+
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .p-datatable-thead > tr > th:last-child,
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .p-datatable-tbody > tr > td:last-child {
+  box-shadow: -0.75rem 0 1rem -1rem rgba(15, 23, 42, 0.5);
+  min-width: 8.5rem;
+  position: sticky;
+  right: 0;
+}
+
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .p-datatable-thead > tr > th:last-child {
+  background: var(--events-surface-subtle, var(--color-muted-surface));
+  z-index: 3;
+}
+
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .p-datatable-tbody > tr > td:last-child {
+  background: var(--events-surface, var(--color-surface));
+  z-index: 1;
+}
+
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .p-datatable-tbody > tr:hover > td:last-child {
+  background: color-mix(in srgb, var(--events-accent-soft, var(--color-page-accent)) 35%, var(--events-surface, var(--color-surface)));
 }
 
 :host ::ng-deep .standard-table__prime .p-datatable-tbody > tr:last-child > td {
@@ -69,6 +115,17 @@
   padding: 0;
   text-align: left;
   text-transform: inherit;
+}
+
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .sort-button {
+  gap: 0.4rem;
+  min-height: 1.75rem;
+  min-width: 1.75rem;
+}
+
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .sort-button i {
+  color: var(--events-accent-strong, var(--color-primary));
+  font-size: 0.75rem;
 }
 
 :host ::ng-deep .standard-table__prime input,
@@ -97,6 +154,17 @@
   padding: 0.55rem 0.75rem;
 }
 
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .column-filters th {
+  background: var(--events-surface, var(--color-surface));
+  border-bottom: 1px solid var(--events-border, var(--color-border));
+}
+
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .column-filters input,
+:host(.standard-table-host--pilot) ::ng-deep .standard-table__prime .column-filters .p-select,
+:host(.standard-table-host--pilot) ::ng-deep .standard-table-pagination .p-select {
+  border-color: var(--events-control-border, var(--color-input-border));
+}
+
 :host ::ng-deep .standard-table__prime a {
   color: var(--color-primary);
   font-weight: 800;
@@ -115,6 +183,12 @@
   gap: var(--space-3);
   justify-content: space-between;
   padding: var(--space-4) 0 0;
+}
+
+:host(.standard-table-host--pilot) .standard-table-pagination {
+  border-top: 0;
+  color: var(--events-muted, var(--color-text-muted));
+  padding-top: 1rem;
 }
 
 .standard-table-pagination label,

@@ -18,6 +18,7 @@ frontend/
     smoke.mock.spec.ts
     admin.mock.spec.ts
     editorial-flow.mock.spec.ts
+    events-pilot.mock.spec.ts
     backend.local.spec.ts
 ```
 
@@ -83,7 +84,7 @@ cd frontend
 npm.cmd run e2e:ci
 ```
 
-Este comando ejecuta solo `app-startup`, `smoke.mock`, `admin.mock` y `editorial-flow.mock`; no incluye `backend.local.spec.ts`.
+Este comando ejecuta solo `app-startup`, `smoke.mock`, `admin.mock`, `editorial-flow.mock` y `events-pilot.mock`; no incluye `backend.local.spec.ts`.
 
 ## Suites con backend real
 
@@ -194,9 +195,12 @@ frontend/e2e/support/mock-api.ts
 frontend/e2e/smoke.mock.spec.ts
 frontend/e2e/admin.mock.spec.ts
 frontend/e2e/editorial-flow.mock.spec.ts
+frontend/e2e/events-pilot.mock.spec.ts
 ```
 
 Estas suites cubren login simulado, navegacion editorial principal, ocultacion de rutas ADMIN para `EDITOR` y navegacion de pantallas ADMIN para `ADMIN`.
+
+`events-pilot.mock.spec.ts` valida además el piloto visual de `/events`: nombres accesibles, título e idioma del documento, ordenación y filtros, operativa de fusión con teclado, contención y retorno del foco, reflow a 320 CSS px, objetivos táctiles y espaciado de texto WCAG.
 
 Desde `T13.5`, `editorial-flow.mock.spec.ts` cubre de forma simulada el flujo `evento -> contenido -> revision humana -> publicacion programada`, incluyendo aprobacion y rechazo de contenido sin ejecutar IA real ni Telegram real.
 

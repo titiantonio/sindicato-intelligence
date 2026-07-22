@@ -7,11 +7,13 @@ import { roleGuard } from './core/guards/role.guard';
 export const routes: Routes = [
   {
     path: 'login',
+    title: 'Acceso | Sindicato Intelligence',
     loadComponent: () =>
       import('./features/auth/login/login-page.component').then((module) => module.LoginPageComponent)
   },
   {
     path: 'forgot-password',
+    title: 'Recuperar contraseña | Sindicato Intelligence',
     loadComponent: () =>
       import('./features/auth/forgot-password/forgot-password-page.component').then(
         (module) => module.ForgotPasswordPageComponent
@@ -19,6 +21,7 @@ export const routes: Routes = [
   },
   {
     path: 'reset-password',
+    title: 'Restablecer contraseña | Sindicato Intelligence',
     loadComponent: () =>
       import('./features/auth/reset-password/reset-password-page.component').then(
         (module) => module.ResetPasswordPageComponent
@@ -26,6 +29,7 @@ export const routes: Routes = [
   },
   {
     path: 'change-password',
+    title: 'Cambiar contraseña | Sindicato Intelligence',
     loadComponent: () =>
       import('./features/auth/change-password/change-password-page.component').then(
         (module) => module.ChangePasswordPageComponent
@@ -45,6 +49,7 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard',
+        title: 'Dashboard | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/dashboard/dashboard-page.component').then(
             (module) => module.DashboardPageComponent
@@ -52,6 +57,7 @@ export const routes: Routes = [
       },
       {
         path: 'events/:id',
+        title: 'Detalle de evento | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/events/event-detail-page.component').then(
             (module) => module.EventDetailPageComponent
@@ -59,16 +65,19 @@ export const routes: Routes = [
       },
       {
         path: 'events',
+        title: 'Eventos | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/events/events-page.component').then((module) => module.EventsPageComponent)
       },
       {
         path: 'content',
+        title: 'Contenido | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/content/content-page.component').then((module) => module.ContentPageComponent)
       },
       {
         path: 'content/:id',
+        title: 'Detalle de contenido | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/content/content-detail-page.component').then(
             (module) => module.ContentDetailPageComponent
@@ -76,6 +85,7 @@ export const routes: Routes = [
       },
       {
         path: 'publications',
+        title: 'Publicaciones | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/publications/publications-page.component').then(
             (module) => module.PublicationsPageComponent
@@ -83,6 +93,7 @@ export const routes: Routes = [
       },
       {
         path: 'publications/:id',
+        title: 'Detalle de publicación | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/publications/publication-detail-page.component').then(
             (module) => module.PublicationDetailPageComponent
@@ -90,6 +101,7 @@ export const routes: Routes = [
       },
       {
         path: 'news/:id',
+        title: 'Detalle de noticia | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/news/news-detail-page.component').then(
             (module) => module.NewsDetailPageComponent
@@ -97,11 +109,13 @@ export const routes: Routes = [
       },
       {
         path: 'news',
+        title: 'Noticias | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/news/news-page.component').then((module) => module.NewsPageComponent)
       },
       {
         path: 'sources',
+        title: 'Fuentes | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/sources/sources-page.component').then(
             (module) => module.SourcesPageComponent
@@ -113,6 +127,7 @@ export const routes: Routes = [
       },
       {
         path: 'users',
+        title: 'Usuarios | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/users/users-page.component').then((module) => module.UsersPageComponent),
         canActivate: [roleGuard],
@@ -122,6 +137,7 @@ export const routes: Routes = [
       },
       {
         path: 'audit',
+        title: 'Auditoría | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/audit/audit-page.component').then((module) => module.AuditPageComponent),
         canActivate: [roleGuard],
@@ -136,6 +152,7 @@ export const routes: Routes = [
       },
       {
         path: 'settings',
+        title: 'Configuración | Sindicato Intelligence',
         loadComponent: () =>
           import('./features/settings/settings-page.component').then(
             (module) => module.SettingsPageComponent
