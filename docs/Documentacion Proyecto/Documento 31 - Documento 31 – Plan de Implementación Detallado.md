@@ -1294,6 +1294,10 @@ Verificacion:
 - [x] Backend Spring Boot arrancado contra BBDD limpia y Flyway aplicado correctamente con solo `V1` y `V2`.
 - [x] Verificado en PostgreSQL que `WF02_CLASSIFICATION`, `WF03_EVENT_DETECTION` y `WF04_ANALYSIS` quedan `enabled=false` y `running=false`.
 - [x] Verificado en PostgreSQL que `deterministic` y `gemini` quedan `enabled=false`.
+- [x] Reset de BBDD TFM/prod de pruebas eliminando el volumen Docker `sindicato-intelligence_postgres_data`.
+- [x] Imagen backend Docker reconstruida con `0.0.106-SNAPSHOT` y Flyway consolidado.
+- [x] Stack TFM/prod levantado con `tfm-start.ps1 -NoBuild` y comprobado con `tfm-check.ps1`.
+- [x] Verificado en PostgreSQL TFM/prod que Flyway contiene solo `V1` y `V2`, y que workflows/proveedores IA quedan pausados.
 
 ## 16.10 Testing
 

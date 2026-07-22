@@ -36,3 +36,14 @@ Asegurar que, al iniciar el proyecto por primera vez en desarrollo o entrega Doc
 - Verificado `flyway_schema_history`: solo `V1__create_mvp_schema.sql` y `V2__seed_initial_data.sql`, ambas con `success=true`.
 - Verificado `automation_workflow_settings`: `WF02_CLASSIFICATION`, `WF03_EVENT_DETECTION` y `WF04_ANALYSIS` con `enabled=false` y `running=false`.
 - Verificado `ai_provider_settings`: `deterministic` y `gemini` con `enabled=false`.
+- Reset de BBDD TFM/prod de pruebas eliminando el volumen Docker `sindicato-intelligence_postgres_data`.
+- Reconstruida la imagen backend Docker tras consolidar Flyway.
+- Arrancado stack TFM/prod con `tfm-start.ps1 -NoBuild`.
+- Verificado PostgreSQL TFM/prod: `flyway_schema_history` contiene solo `V1` y `V2`, ambas con `success=true`.
+- Verificado PostgreSQL TFM/prod: workflows `WF02_CLASSIFICATION`, `WF03_EVENT_DETECTION` y `WF04_ANALYSIS` con `enabled=false` y `running=false`.
+- Verificado PostgreSQL TFM/prod: proveedores `deterministic` y `gemini` con `enabled=false`.
+- Ejecutado `tfm-check.ps1` correctamente: PostgreSQL, backend health, frontend, n8n, MailHog y WF-01 importado OK.
+
+## Nota operativa
+
+En produccion real no se debe resetear la BBDD para cambios Flyway ordinarios. Se ha hecho aqui porque el entorno esta en pruebas y se ha pedido consolidar Flyway modificando la migracion `V2`, lo que exige recrear bases ya migradas para evitar checksum mismatch.
