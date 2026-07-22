@@ -38,6 +38,78 @@ function New-BasicAuthHeader {
     return 'Basic ' + [Convert]::ToBase64String($bytes)
 }
 
+function Invoke-DockerCommand {
+    param(
+        [string]$Description,
+        [string[]]$Arguments,
+        [switch]$IgnoreFailure
+    )
+
+    Write-Host $Description -ForegroundColor Cyan
+    & docker @Arguments
+    if ($LASTEXITCODE -ne 0 -and -not $IgnoreFailure) {
+        throw "Fallo Docker: $Description"
+    }
+}
+
+function Stop-DevelopmentStackIfPresent {
+    param([string]$Root)
+
+    $databaseDir = Join-Path $Root 'database'
+    $databaseCompose = Join-Path $databaseDir 'docker-compose.yml'
+    $databaseEnv = Join-Path $databaseDir '.env'
+    $databaseEnvExample = Join-Path $databaseDir '.env.example'
+
+    if (-not (Test-Path -LiteralPath $databaseCompose)) {
+        return
+    }
+
+    $composeArgs = @('compose', '--project-directory', $databaseDir)
+    if (Test-Path -LiteralPath $databaseEnv) {
+        $composeArgs += @('--env-file', $databaseEnv)
+    }
+    elseif (Test-Path -LiteralPath $databaseEnvExample) {
+        $composeArgs += @('--env-file', $databaseEnvExample)
+    }
+    $composeArgs += @('-f', $databaseCompose, 'stop')
+
+    Invoke-DockerCommand `
+        -Description 'Parando infraestructura Docker de desarrollo previa si estaba activa...' `
+        -Arguments $composeArgs `
+        -IgnoreFailure
+}
+
+function Stop-LocalProjectProcessOnPort {
+    param(
+        [int]$Port,
+        [string]$Description,
+        [string]$ExpectedCommandPattern
+    )
+
+    $connections = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
+    if ($connections.Count -eq 0) {
+        return
+    }
+
+    $processIds = @($connections | Select-Object -ExpandProperty OwningProcess -Unique | Where-Object { $_ -gt 0 })
+    foreach ($processId in $processIds) {
+        $process = Get-CimInstance Win32_Process -Filter "ProcessId = $processId" -ErrorAction SilentlyContinue
+        if ($null -eq $process) {
+            continue
+        }
+
+        $commandLine = if ($process.CommandLine) { $process.CommandLine } else { $process.Name }
+        if ($commandLine -match $ExpectedCommandPattern) {
+            Write-Host "Parando $Description local en puerto ${Port} (PID $processId)..." -ForegroundColor Yellow
+            Stop-Process -Id $processId -Force
+            Start-Sleep -Seconds 2
+            continue
+        }
+
+        throw "El puerto ${Port} esta ocupado por un proceso no reconocido ($($process.Name), PID $processId). Cierra ese proceso antes de arrancar el stack TFM."
+    }
+}
+
 function Wait-HttpOk {
     param(
         [string]$Url,
@@ -69,6 +141,10 @@ if (-not (Test-Path -LiteralPath $envPath)) {
 }
 
 $envValues = Read-EnvFile -Path $envPath
+
+Stop-DevelopmentStackIfPresent -Root $root
+Stop-LocalProjectProcessOnPort -Port 8080 -Description 'backend Spring Boot' -ExpectedCommandPattern 'es\.sindicato\.intelligence\.IntelligenceApplication|spring-boot'
+Stop-LocalProjectProcessOnPort -Port 4200 -Description 'frontend Angular' -ExpectedCommandPattern 'ng(\.cmd)?\s+serve|angular|@angular'
 
 Write-Host "Levantando stack Docker TFM..." -ForegroundColor Cyan
 $composeArgs = @('compose', 'up', '-d')

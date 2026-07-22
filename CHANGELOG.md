@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Infraestructura TFM: `tfm-start.ps1` detiene la infraestructura Docker de desarrollo previa y procesos locales reconocidos del propio proyecto antes de levantar el stack de entrega para evitar conflictos de puertos.
 - Frontend E2E: configurados reportes HTML, trazas en reintento, screenshots en fallo y videos retenidos en fallo para diagnostico CI/local.
 - Frontend version: subida la version del paquete frontend a `0.0.33`.
 - Frontend version: subida la version del paquete frontend a `0.0.32`.
