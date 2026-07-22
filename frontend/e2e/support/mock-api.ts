@@ -2,10 +2,63 @@ import { Page, Route } from '@playwright/test';
 
 type MockRole = 'ADMIN' | 'EDITOR';
 
+interface MockApiState {
+  contentItems: MockContentItem[];
+  publications: MockPublicationItem[];
+  nextContentId: number;
+  nextPublicationId: number;
+}
+
+interface MockContentItem {
+  id: number;
+  eventId: number;
+  analysisId: number | null;
+  createdBy: number;
+  channel: string;
+  tone: string;
+  contentType: string;
+  length: string;
+  title: string;
+  content: string;
+  status: string;
+  generatedAt: string;
+  approvedAt: string | null;
+  generationMetadata: Record<string, unknown>;
+}
+
+interface MockPublicationItem {
+  id: number;
+  contentId: number | null;
+  channel: string;
+  publicationType: 'GENERATED_CONTENT' | 'MANUAL_MESSAGE';
+  titleSnapshot: string | null;
+  messageSnapshot: string | null;
+  requestedBy: number | null;
+  requestedByName: string | null;
+  requestedByEmail: string | null;
+  externalId: string | null;
+  status: string;
+  publishedAt: string | null;
+  responsePayload: string | null;
+  scheduledAt: string | null;
+  targets: unknown[];
+  attachments: unknown[];
+}
+
 const now = '2026-07-22T10:00:00Z';
 
-export async function mockApi(page: Page): Promise<void> {
-  await page.route('**/api/v1/**', async (route) => handleApiRoute(route));
+export function createMockApiState(): MockApiState {
+  return {
+    contentItems: [initialContentItem()],
+    publications: [initialPublicationItem()],
+    nextContentId: 202,
+    nextPublicationId: 402
+  };
+}
+
+export async function mockApi(page: Page, state = createMockApiState()): Promise<MockApiState> {
+  await page.route('**/api/v1/**', async (route) => handleApiRoute(route, state));
+  return state;
 }
 
 export async function loginWithMockRole(page: Page, role: MockRole): Promise<void> {
@@ -15,7 +68,7 @@ export async function loginWithMockRole(page: Page, role: MockRole): Promise<voi
   await page.getByRole('button', { name: 'Entrar' }).click();
 }
 
-async function handleApiRoute(route: Route): Promise<void> {
+async function handleApiRoute(route: Route, state: MockApiState): Promise<void> {
   const request = route.request();
   const url = new URL(request.url());
   const method = request.method();
@@ -34,17 +87,87 @@ async function handleApiRoute(route: Route): Promise<void> {
   }
 
   if (method === 'GET' && path === '/api/v1/events') {
-    await json(route, eventsResponse());
+    await json(route, eventsResponse(state));
+    return;
+  }
+
+  const eventDetailMatch = path.match(/^\/api\/v1\/events\/(\d+)$/);
+  if (method === 'GET' && eventDetailMatch) {
+    await json(route, eventDetailResponse(Number(eventDetailMatch[1]), state));
+    return;
+  }
+
+  if (method === 'POST' && path === '/api/v1/content/generate') {
+    const body = request.postDataJSON() as { eventId: number; analysisId: number | null; tone: string; contentType: string; length: string };
+    const item = generatedContentItem(state.nextContentId++, body);
+    state.contentItems.push(item);
+    await json(route, item);
     return;
   }
 
   if (method === 'GET' && path === '/api/v1/content') {
-    await json(route, contentResponse());
+    await json(route, contentResponse(state));
+    return;
+  }
+
+  const contentDetailMatch = path.match(/^\/api\/v1\/content\/(\d+)\/detail$/);
+  if (method === 'GET' && contentDetailMatch) {
+    const content = findContent(state, Number(contentDetailMatch[1]));
+    await json(route, { content, event: eventDetailResponse(content.eventId, state) });
+    return;
+  }
+
+  const contentApproveMatch = path.match(/^\/api\/v1\/content\/(\d+)\/approve$/);
+  if (method === 'POST' && contentApproveMatch) {
+    const content = findContent(state, Number(contentApproveMatch[1]));
+    content.status = 'APPROVED';
+    content.approvedAt = now;
+    await json(route, content);
+    return;
+  }
+
+  const contentRejectMatch = path.match(/^\/api\/v1\/content\/(\d+)\/reject$/);
+  if (method === 'POST' && contentRejectMatch) {
+    const content = findContent(state, Number(contentRejectMatch[1]));
+    content.status = 'REJECTED';
+    await json(route, content);
+    return;
+  }
+
+  const contentUpdateMatch = path.match(/^\/api\/v1\/content\/(\d+)$/);
+  if (method === 'PUT' && contentUpdateMatch) {
+    const body = request.postDataJSON() as { title: string; content: string; tone: string };
+    const content = findContent(state, Number(contentUpdateMatch[1]));
+    content.title = body.title;
+    content.content = body.content;
+    content.tone = body.tone;
+    content.status = 'PENDING_REVIEW';
+    content.approvedAt = null;
+    await json(route, content);
     return;
   }
 
   if (method === 'GET' && path === '/api/v1/publications') {
-    await json(route, publicationsResponse());
+    await json(route, publicationsResponse(state));
+    return;
+  }
+
+  const publicationScheduleMatch = path.match(/^\/api\/v1\/publications\/(\d+)\/schedule$/);
+  if (method === 'POST' && publicationScheduleMatch) {
+    const body = request.postDataJSON() as { scheduledAt: string };
+    const publication = scheduledPublicationItem(state.nextPublicationId++, findContent(state, Number(publicationScheduleMatch[1])), body.scheduledAt);
+    state.publications.unshift(publication);
+    await json(route, publication);
+    return;
+  }
+
+  const publicationPublishMatch = path.match(/^\/api\/v1\/publications\/(\d+)\/publish$/);
+  if (method === 'POST' && publicationPublishMatch) {
+    const content = findContent(state, Number(publicationPublishMatch[1]));
+    content.status = 'PUBLISHED';
+    const publication = publishedPublicationItem(state.nextPublicationId++, content);
+    state.publications.unshift(publication);
+    await json(route, publication);
     return;
   }
 
@@ -149,7 +272,8 @@ function metricCard(label: string, value: string, subtitle: string, tone: string
   };
 }
 
-function eventsResponse() {
+function eventsResponse(state: MockApiState) {
+  const hasPublishedContent = state.contentItems.some((content) => content.eventId === 101 && content.status === 'PUBLISHED');
   return [
     {
       id: 101,
@@ -158,7 +282,7 @@ function eventsResponse() {
       category: 'OPOSICIONES',
       importance: 'CRITICAL',
       status: 'OPEN',
-      editorialStatus: 'PENDING_CONTENT',
+      editorialStatus: hasPublishedContent ? 'PUBLISHED' : 'PENDING_CONTENT',
       newsCount: 5,
       firstDetectedAt: now,
       lastUpdatedAt: now,
@@ -180,48 +304,156 @@ function eventsResponse() {
   ];
 }
 
-function contentResponse() {
+function eventDetailResponse(eventId: number, state: MockApiState) {
+  const baseEvent = eventsResponse(state).find((event) => event.id === eventId) ?? eventsResponse(state)[0];
+  return {
+    ...baseEvent,
+    createdAt: now,
+    news: eventNewsResponse(eventId),
+    analyses: eventAnalysesResponse(eventId),
+    contents: state.contentItems.filter((content) => content.eventId === eventId)
+  };
+}
+
+function eventNewsResponse(eventId: number) {
   return [
     {
-      id: 201,
-      eventId: 101,
-      analysisId: 301,
-      createdBy: 1,
-      channel: 'TELEGRAM',
-      tone: 'INFORMATIVO',
-      contentType: 'TELEGRAM_POST',
-      length: 'SHORT',
-      title: 'Resumen sindical de oposiciones',
-      content: 'Contenido editorial de prueba para revision humana.',
-      status: 'PENDING_REVIEW',
-      generatedAt: now,
-      approvedAt: null,
-      generationMetadata: {}
+      id: eventId === 101 ? 1001 : 1002,
+      sourceId: 501,
+      title: eventId === 101 ? 'La Junta anuncia convocatoria extraordinaria de oposiciones' : 'Actualizacion de bolsas docentes SIPRI',
+      url: 'https://example.test/noticia-e2e',
+      summary: 'Noticia educativa de prueba para el flujo editorial.',
+      processingStatus: 'EVENT_MATCHED',
+      publishedAt: now,
+      capturedAt: now,
+      classification: {
+        id: 901,
+        newsId: eventId === 101 ? 1001 : 1002,
+        category: eventId === 101 ? 'OPOSICIONES' : 'INTERINOS',
+        subcategory: null,
+        relevanceScore: 0.91,
+        impactLevel: 'HIGH',
+        urgencyLevel: 'HIGH',
+        keywords: ['docentes', 'Andalucia'],
+        entities: ['Junta de Andalucia'],
+        classifiedAt: now
+      }
     }
   ];
 }
 
-function publicationsResponse() {
+function eventAnalysesResponse(eventId: number) {
   return [
     {
-      id: 401,
-      contentId: 201,
-      channel: 'TELEGRAM',
-      publicationType: 'GENERATED_CONTENT',
-      titleSnapshot: 'Resumen sindical de oposiciones',
-      messageSnapshot: 'Mensaje publicado de prueba.',
-      requestedBy: 1,
-      requestedByName: 'Admin E2E',
-      requestedByEmail: 'admin.e2e@sindicato.test',
-      externalId: 'e2e-message-1',
-      status: 'PUBLISHED',
-      publishedAt: now,
-      responsePayload: '{"ok":true,"messageId":"e2e"}',
-      scheduledAt: null,
-      targets: [],
-      attachments: []
+      id: eventId === 101 ? 301 : 302,
+      eventId,
+      executiveSummary: eventId === 101 ? 'Impacto relevante en oposiciones docentes.' : 'Seguimiento relevante para bolsas docentes.',
+      unionSummary: 'Resumen sindical mockeado sin llamada a IA real.',
+      keyPoints: ['Punto clave de seguimiento'],
+      risks: ['Riesgo operativo controlado'],
+      opportunities: ['Oportunidad informativa'],
+      affectedGroups: ['Docentes'],
+      recommendedMonitoring: ['Revisar nuevas comunicaciones oficiales'],
+      analysisType: 'STANDARD',
+      generationTrigger: 'MANUAL',
+      eventUpdatedAtSnapshot: now,
+      contextNewsCount: 1,
+      contextTruncated: false,
+      outdated: false,
+      modelUsed: 'mock-model',
+      generatedAt: now
     }
   ];
+}
+
+function contentResponse(state: MockApiState) {
+  return state.contentItems;
+}
+
+function publicationsResponse(state: MockApiState) {
+  return state.publications;
+}
+
+function initialContentItem(): MockContentItem {
+  return {
+    id: 201,
+    eventId: 101,
+    analysisId: 301,
+    createdBy: 1,
+    channel: 'TELEGRAM',
+    tone: 'INFORMATIVO',
+    contentType: 'TELEGRAM_POST',
+    length: 'SHORT',
+    title: 'Resumen sindical de oposiciones',
+    content: 'Contenido editorial de prueba para revision humana.',
+    status: 'PENDING_REVIEW',
+    generatedAt: now,
+    approvedAt: null,
+    generationMetadata: {}
+  };
+}
+
+function initialPublicationItem(): MockPublicationItem {
+  return publishedPublicationItem(401, initialContentItem());
+}
+
+function generatedContentItem(id: number, payload: { eventId: number; analysisId: number | null; tone: string; contentType: string; length: string }): MockContentItem {
+  return {
+    id,
+    eventId: payload.eventId,
+    analysisId: payload.analysisId,
+    createdBy: 2,
+    channel: 'TELEGRAM',
+    tone: payload.tone,
+    contentType: payload.contentType,
+    length: payload.length,
+    title: payload.contentType === 'TELEGRAM_SHORT' ? 'Resumen breve E2E de oposiciones' : 'Contenido editorial E2E de oposiciones',
+    content: 'Borrador editorial generado de forma mockeada para revision humana.',
+    status: 'PENDING_REVIEW',
+    generatedAt: now,
+    approvedAt: null,
+    generationMetadata: { e2e: true }
+  };
+}
+
+function publishedPublicationItem(id: number, content: MockContentItem): MockPublicationItem {
+  return {
+    id,
+    contentId: content.id,
+    channel: 'TELEGRAM',
+    publicationType: 'GENERATED_CONTENT',
+    titleSnapshot: content.title,
+    messageSnapshot: content.content,
+    requestedBy: 1,
+    requestedByName: 'Admin E2E',
+    requestedByEmail: 'admin.e2e@sindicato.test',
+    externalId: `e2e-message-${id}`,
+    status: 'PUBLISHED',
+    publishedAt: now,
+    responsePayload: '{"ok":true,"messageId":"e2e"}',
+    scheduledAt: null,
+    targets: [],
+    attachments: []
+  };
+}
+
+function scheduledPublicationItem(id: number, content: MockContentItem, scheduledAt: string): MockPublicationItem {
+  return {
+    ...publishedPublicationItem(id, content),
+    externalId: null,
+    status: 'SCHEDULED',
+    publishedAt: null,
+    responsePayload: null,
+    scheduledAt
+  };
+}
+
+function findContent(state: MockApiState, contentId: number): MockContentItem {
+  const content = state.contentItems.find((item) => item.id === contentId);
+  if (!content) {
+    throw new Error(`Contenido mock no encontrado: ${contentId}`);
+  }
+  return content;
 }
 
 function sourcesResponse() {

@@ -169,9 +169,12 @@ Desde `T13.3` existen tambien suites mockeadas que interceptan `/api/v1/**` y no
 frontend/e2e/support/mock-api.ts
 frontend/e2e/smoke.mock.spec.ts
 frontend/e2e/admin.mock.spec.ts
+frontend/e2e/editorial-flow.mock.spec.ts
 ```
 
 Estas suites cubren login simulado, navegacion editorial principal, ocultacion de rutas ADMIN para `EDITOR` y navegacion de pantallas ADMIN para `ADMIN`.
+
+Desde `T13.5`, `editorial-flow.mock.spec.ts` cubre de forma simulada el flujo `evento -> contenido -> revision humana -> publicacion programada`, incluyendo aprobacion y rechazo de contenido sin ejecutar IA real ni Telegram real.
 
 ## Criterio de cierre por fase
 

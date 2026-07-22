@@ -1230,7 +1230,7 @@ Nota posterior 2026-07-22: estabilizada la ejecucion local de Playwright con un 
 
 ---
 
-## T13.5 [ ]
+## T13.5 [x]
 
 Cubrir flujo editorial MVP controlado.
 
@@ -1242,6 +1242,8 @@ Alcance:
 - Validar programacion o publicacion simulada sin enviar a Telegram real.
 - Evitar ejecucion real de IA y Telegram salvo entorno seguro explicitamente preparado.
 ```
+
+Nota posterior 2026-07-22: completado el flujo editorial MVP controlado con la suite mockeada `frontend/e2e/editorial-flow.mock.spec.ts`. Se amplia `frontend/e2e/support/mock-api.ts` con estado mutable por test para simular detalle de evento, generacion de contenido, aprobacion, rechazo y programacion/publicacion sin invocar IA real ni Telegram real. Verificado con `npm.cmd run build` OK, `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK con 152 tests, `npm.cmd audit` sin vulnerabilidades y `npm.cmd run e2e` OK con 6 tests pasados y 4 omitidos por backend local no habilitado.
 
 ---
 
