@@ -74,6 +74,7 @@ Skills especificas del proyecto:
 - `skills/sindicato-testing-quality/SKILL.md`: usar para crear o revisar pruebas JUnit 5/Mockito, criterios de aceptacion, cobertura y regresiones.
 - `skills/sindicato-documentacion-changelog/SKILL.md`: usar para documentar intervenciones, aplicar convenciones documentales, versionado Maven y changelog Keep a Changelog.
 - `skills/sindicato-frontend-angular-backoffice/SKILL.md`: usar para trabajos de frontend Angular y backoffice, especialmente en la Fase 11.
+- `skills/sindicato-playwright-e2e/SKILL.md`: usar para crear, revisar o ejecutar pruebas E2E Playwright del backoffice Angular, tanto mockeadas como contra backend local controlado.
 - `skills/sindicato-logging-observabilidad/SKILL.md`: usar para configurar o revisar logs, Logback, trazabilidad operativa, diagnostico de errores e incorporacion de logs en nuevas funcionalidades backend.
 
 Cuando una tarea encaje claramente con una skill, revisa su `SKILL.md` antes de actuar. Si una skill contradice `AGENTS.md`, `docs/00-agent-context.md` o los documentos tecnicos, prevalecen `AGENTS.md` y la documentacion tecnica del proyecto.
@@ -124,6 +125,7 @@ Backend:
 Frontend:
 
 - Angular.
+- Playwright para pruebas End-to-End del backoffice Angular.
 - Backoffice operativo con rutas `login`, `dashboard`, `events`, `content`, `publications`, `sources`, `users`, `audit` y `settings`.
 - `/settings` es el centro ADMIN de configuracion: Telegram, automatizaciones backend, prompts IA versionados, metricas IA y vision operativa.
 - `/audit` es la pantalla ADMIN de auditoria de usuarios y auditoria editorial.
@@ -467,6 +469,8 @@ Frameworks:
 
 - JUnit 5.
 - Mockito.
+- Karma/Jasmine para pruebas unitarias Angular existentes.
+- Playwright para pruebas End-to-End del backoffice Angular.
 
 Objetivo MVP:
 
@@ -484,6 +488,18 @@ Criterios funcionales de aceptacion:
 - Seguridad: login, refresh, recuperacion, password temporal, cambio obligatorio y roles `ADMIN`/`EDITOR`.
 - Auditoria: acciones de usuario y editoriales visibles para `ADMIN`.
 - Observabilidad IA: prompts versionados y metricas diarias consultables desde `/settings`.
+
+Reglas Playwright:
+
+- Mantener los tests E2E en `frontend/e2e`.
+- Separar suites mockeadas de suites con backend real.
+- Usar preferentemente locators accesibles de Playwright como `getByRole`, `getByLabel` y `getByText`.
+- No usar selectores fragiles basados en clases CSS salvo que no exista alternativa estable.
+- No versionar secretos, JWT, refresh tokens, passwords reales ni API keys en tests E2E.
+- No ejecutar IA real ni publicar en Telegram real desde E2E, salvo entorno seguro explicitamente preparado y documentado.
+- Las pruebas mockeadas deben poder ejecutarse sin backend ni PostgreSQL levantados.
+- Las pruebas con backend real deben documentar requisitos de datos, usuarios y servicios locales.
+- Conservar Karma/Jasmine para unit tests Angular; Playwright no los sustituye.
 
 ## Orden de Implementacion y Control de Avance
 
@@ -510,6 +526,7 @@ Estado operativo actual:
 - Sprint 10 Seguridad completado con JWT, roles, login, refresh, recuperacion de password, password temporal y gestion de usuarios.
 - Sprint 11 Frontend completado con backoffice operativo y APIs reales.
 - Sprint 12 completado como consolidacion de automatizaciones internas, configuracion ADMIN, Telegram, observabilidad IA y `/settings`.
+- Sprint 13 planificado para calidad E2E Playwright, empezando por integracion no intrusiva y pruebas smoke del backoffice.
 - `WF-02` a `WF-06` estan migrados a Spring Boot; no recrearlos en n8n salvo peticion explicita y decision arquitectonica documentada.
 - Pendientes no bloqueantes documentados: CI/CD, secretos productivos, despliegue Proxmox/Nginx, E2E versionado y normalizacion de mojibake documental.
 

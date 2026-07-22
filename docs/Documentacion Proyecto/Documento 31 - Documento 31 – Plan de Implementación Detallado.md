@@ -1105,6 +1105,149 @@ Dashboard métricas.
 
 ---
 
+# 15.1. [ ] Sprint 13
+
+# Calidad E2E Playwright
+
+---
+
+Objetivo:
+
+Versionar una suite E2E progresiva para validar el backoffice Angular y los flujos criticos del MVP sin sustituir las pruebas unitarias Angular ni las pruebas backend existentes.
+
+---
+
+Referencia:
+
+```text
+Pendiente 35 del roadmap recomendado: crear E2E minimo del flujo completo MVP.
+Documento 15: pruebas End-to-End Angular + Backend.
+Documento 30: Fase 11 Backoffice Angular y validacion transversal del MVP completado.
+```
+
+---
+
+## T13.1 [x]
+
+Planificar integracion Playwright y reglas operativas.
+
+Alcance:
+
+```text
+- Crear estrategia por fases para Playwright.
+- Actualizar AGENTS.md con reglas E2E.
+- Crear skill especifica sindicato-playwright-e2e.
+- Crear guia de uso docs/guia_playwright.md.
+- Registrar la intervencion en Docs_Asistentes.
+```
+
+Verificacion esperada:
+
+```text
+- Documento 31 contiene Sprint 13 y tareas T13.1..T13.6.
+- AGENTS.md referencia Playwright y la nueva skill.
+- Existe docs/guia_playwright.md.
+- Existe skills/sindicato-playwright-e2e/SKILL.md.
+```
+
+Nota posterior 2026-07-22: completada la fase documental de integracion Playwright. Se anade este Sprint 13 como backlog vivo de calidad E2E, se actualiza `AGENTS.md`, se crea la skill `sindicato-playwright-e2e` y se documenta la guia operativa `docs/guia_playwright.md`.
+
+---
+
+## T13.2 [ ]
+
+Integrar Playwright base en `frontend/`.
+
+Alcance:
+
+```text
+- Instalar @playwright/test como dependencia de desarrollo.
+- Crear playwright.config.ts.
+- Anadir scripts npm e2e, e2e:ui, e2e:headed y e2e:report.
+- Ignorar artefactos locales de Playwright.
+- Crear estructura frontend/e2e.
+```
+
+Verificacion esperada:
+
+```text
+npm.cmd run e2e
+```
+
+---
+
+## T13.3 [ ]
+
+Crear smoke tests E2E mockeados.
+
+Alcance:
+
+```text
+- Validar carga de login.
+- Validar login simulado con API mockeada.
+- Validar navegacion basica de dashboard, eventos, contenido y publicaciones.
+- Validar rutas ADMIN mockeadas cuando proceda.
+```
+
+Regla:
+
+```text
+No requiere backend ni PostgreSQL levantados.
+```
+
+---
+
+## T13.4 [ ]
+
+Crear suite E2E contra backend local.
+
+Alcance:
+
+```text
+- Definir usuario de pruebas seguro para E2E local.
+- Validar login real contra /api/v1/auth/login.
+- Validar rutas protegidas y roles ADMIN/EDITOR.
+- Validar lectura real de dashboard, eventos, contenido, publicaciones, fuentes, usuarios, audit y settings segun rol.
+```
+
+Regla:
+
+```text
+Usar stack local controlado. No versionar credenciales reales ni tokens.
+```
+
+---
+
+## T13.5 [ ]
+
+Cubrir flujo editorial MVP controlado.
+
+Alcance:
+
+```text
+- Validar flujo evento -> contenido -> revision humana.
+- Validar aprobar/rechazar contenido.
+- Validar programacion o publicacion simulada sin enviar a Telegram real.
+- Evitar ejecucion real de IA y Telegram salvo entorno seguro explicitamente preparado.
+```
+
+---
+
+## T13.6 [ ]
+
+Preparar ejecucion CI/CD futura.
+
+Alcance:
+
+```text
+- Documentar ejecucion headless para pipeline.
+- Configurar reportes HTML, trazas y screenshots en fallos.
+- Definir separacion entre suite mockeada rapida y suite con backend real.
+- Dejar preparada la integracion con el pendiente de CI/CD.
+```
+
+---
+
 # 16. Auditoria integral del estado del proyecto - 2026-06-12
 
 Esta seccion convierte este documento en la fuente unica de verdad del progreso operativo. La auditoria cruza requisitos documentados con codigo actual, migraciones, APIs, pantallas Angular, workflows n8n y tests disponibles. No sustituye los documentos de arquitectura, pero prevalece como estado de avance y pendientes.
@@ -1310,7 +1453,7 @@ Parcial o faltante:
 | Requisito | Estado actual | Prioridad | Orden |
 | --- | --- | --- | --- |
 | Tests frontend especificos | Completado el 2026-06-13: 45 tests Angular en ChromeHeadless. | Completed | - |
-| E2E del flujo completo | No hay suite E2E versionada para RSS -> evento -> contenido -> publicacion. | High | 35 |
+| E2E del flujo completo | Planificado en Sprint 13 con Playwright mediante tareas T13.1..T13.6; pendiente implementacion tecnica desde T13.2. | High | 35 |
 | Tests de workflows n8n | Validacion automatizada disponible mediante `n8n/validate-workflows.ps1`; WF-01..WF-06 tambien confirmados como importados en n8n local. | Completed | - |
 | Tests de APIs de lectura Sprint 11 | Anadidos tests focales para eventos, contenido, publicaciones y dashboard. Siguen pendientes merge/scheduling si se implementan. | Completed | - |
 | Pruebas manuales MailHog | Completado el 2026-06-13 durante aceptacion local: alta/reset temporal, cambio de password, bloqueo y desactivacion. | Completed | - |
@@ -1367,7 +1510,7 @@ Inconsistencias y deuda:
 32. Medium: versionar pipeline CI/CD basico.
 33. Medium: completar guia/automatizacion de despliegue Proxmox/Nginx.
 34. Medium: cerrar checklist de secretos productivos.
-35. High: crear E2E minimo del flujo completo MVP.
+35. High: crear E2E minimo del flujo completo MVP mediante Sprint 13 Playwright.
 36. Completed 2026-06-13: verificacion MailHog ejecutada y registrada.
 37. Low: normalizar codificacion de documentos historicos con mojibake.
 
