@@ -1205,7 +1205,7 @@ Nota posterior 2026-07-22: completados smoke tests E2E mockeados de Playwright. 
 
 ---
 
-## T13.4 [ ]
+## T13.4 [x]
 
 Crear suite E2E contra backend local.
 
@@ -1223,6 +1223,10 @@ Regla:
 ```text
 Usar stack local controlado. No versionar credenciales reales ni tokens.
 ```
+
+Nota posterior 2026-07-22: creada suite E2E opt-in contra backend local en `frontend/e2e/backend.local.spec.ts` y script `npm.cmd run e2e:backend`. La suite no versiona credenciales y solo se ejecuta contra backend real si se definen `E2E_BACKEND_ENABLED=true`, `E2E_BACKEND_EMAIL`, `E2E_BACKEND_PASSWORD` y `E2E_BACKEND_ROLE`. Cubre redireccion de rutas protegidas sin sesion, login real, rutas operativas comunes y validacion de rutas ADMIN segun rol. En la verificacion local automatica queda omitida por no disponer de credenciales/stack backend habilitado en variables de entorno, manteniendo la suite mockeada rapida operativa.
+
+Nota posterior 2026-07-22: estabilizada la ejecucion local de Playwright con un unico worker tras detectar timeouts intermitentes en `page.goto('/login')` durante la ejecucion paralela contra el servidor Angular. Verificado con `npm.cmd run build` OK, `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK con 152 tests, `npm.cmd run e2e` OK con 4 tests pasados y 4 omitidos por backend local no habilitado, y `npm.cmd run e2e:backend` OK con 4 tests omitidos en modo seguro sin variables `E2E_BACKEND_*`.
 
 ---
 

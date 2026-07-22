@@ -36,6 +36,7 @@ Los scripts disponibles desde `T13.2` son:
 ```powershell
 cd frontend
 npm.cmd run e2e
+npm.cmd run e2e:backend
 npm.cmd run e2e:ui
 npm.cmd run e2e:headed
 npm.cmd run e2e:report
@@ -51,6 +52,7 @@ npx.cmd playwright install chromium
 Uso esperado:
 
 - `e2e`: ejecuta la suite headless.
+- `e2e:backend`: ejecuta solo la suite contra backend local, si esta habilitada por variables de entorno.
 - `e2e:ui`: abre el modo interactivo de Playwright.
 - `e2e:headed`: ejecuta mostrando el navegador.
 - `e2e:report`: abre el ultimo informe HTML.
@@ -82,6 +84,33 @@ Requisitos previstos:
 - Datos semilla conocidos o preparacion previa controlada.
 
 No se deben versionar tokens ni passwords reales en los tests.
+
+Desde `T13.4`, la suite de backend real vive en:
+
+```text
+frontend/e2e/backend.local.spec.ts
+```
+
+Por seguridad, esta suite es opt-in. Si no se define `E2E_BACKEND_ENABLED=true`, queda omitida y no bloquea `npm.cmd run e2e`.
+
+Variables requeridas para ejecutarla:
+
+```powershell
+$env:E2E_BACKEND_ENABLED = 'true'
+$env:E2E_BACKEND_EMAIL = '<usuario-local>'
+$env:E2E_BACKEND_PASSWORD = '<password-local>'
+$env:E2E_BACKEND_ROLE = 'ADMIN'
+npm.cmd run e2e:backend
+```
+
+Valores permitidos de `E2E_BACKEND_ROLE`:
+
+```text
+ADMIN
+EDITOR
+```
+
+La suite valida login real, rutas protegidas y navegacion comun. Si el rol es `ADMIN`, valida tambien settings, fuentes, usuarios y auditoria. Si el rol es `EDITOR`, valida que las rutas ADMIN no aparecen y que `/users` redirige a `/dashboard`.
 
 ## Restricciones de seguridad
 
@@ -129,6 +158,8 @@ npm run start -- --host 127.0.0.1
 ```
 
 La suite base usa Chromium y `baseURL` en `http://127.0.0.1:4200`.
+
+Desde `T13.4`, Playwright usa un unico worker por defecto para evitar timeouts intermitentes al arrancar y servir Angular en entornos locales con recursos limitados.
 
 El primer test versionado es `frontend/e2e/app-startup.spec.ts`, que valida que la pantalla `/login` carga y muestra los controles basicos de acceso.
 

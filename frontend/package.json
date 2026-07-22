@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "0.0.29",
+  "version": "0.0.31",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
@@ -8,6 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "e2e": "playwright test",
+    "e2e:backend": "playwright test e2e/backend.local.spec.ts",
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
     "e2e:report": "playwright show-report"
