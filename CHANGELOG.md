@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend E2E: anadidas suites Playwright mockeadas para login, navegacion editorial y rutas ADMIN sin depender de backend ni PostgreSQL.
 - Frontend E2E: integrada la base de Playwright con configuracion, scripts npm, artefactos ignorados y una prueba minima de arranque del login.
 - Backend/Flyway: consolidado el seed inicial para pausar por defecto automatizaciones backend y proveedores IA en instalaciones limpias.
 - Infraestructura desarrollo: anadido `dev-start.ps1` para detener stacks Docker previos y levantar solo PostgreSQL, n8n y MailHog para desarrollo local.
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend version: subida la version del paquete frontend a `0.0.29`.
 - Frontend version: subida la version del paquete frontend a `0.0.28`.
 - Frontend version: subida la version del paquete frontend a `0.0.27`.
 - Frontend version: subida la version del paquete frontend a `0.0.26`.

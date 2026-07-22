@@ -1182,7 +1182,7 @@ Nota posterior 2026-07-22: resueltos los avisos `allow-scripts` de npm 11 antes 
 
 ---
 
-## T13.3 [ ]
+## T13.3 [x]
 
 Crear smoke tests E2E mockeados.
 
@@ -1200,6 +1200,8 @@ Regla:
 ```text
 No requiere backend ni PostgreSQL levantados.
 ```
+
+Nota posterior 2026-07-22: completados smoke tests E2E mockeados de Playwright. Se crea `frontend/e2e/support/mock-api.ts` para interceptar `/api/v1/**` sin backend, `frontend/e2e/smoke.mock.spec.ts` para login EDITOR y navegacion editorial principal, y `frontend/e2e/admin.mock.spec.ts` para rutas ADMIN. Verificado sin backend ni PostgreSQL con `npm.cmd run e2e`: 4 tests OK. Tambien se verifica `npm.cmd install`, `npm.cmd audit`, `npm.cmd approve-scripts --allow-scripts-pending`, `npm.cmd run build` y `npm.cmd test -- --watch=false --browsers=ChromeHeadless`.
 
 ---
 

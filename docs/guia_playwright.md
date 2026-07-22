@@ -132,6 +132,16 @@ La suite base usa Chromium y `baseURL` en `http://127.0.0.1:4200`.
 
 El primer test versionado es `frontend/e2e/app-startup.spec.ts`, que valida que la pantalla `/login` carga y muestra los controles basicos de acceso.
 
+Desde `T13.3` existen tambien suites mockeadas que interceptan `/api/v1/**` y no requieren backend ni PostgreSQL:
+
+```text
+frontend/e2e/support/mock-api.ts
+frontend/e2e/smoke.mock.spec.ts
+frontend/e2e/admin.mock.spec.ts
+```
+
+Estas suites cubren login simulado, navegacion editorial principal, ocultacion de rutas ADMIN para `EDITOR` y navegacion de pantallas ADMIN para `ADMIN`.
+
 ## Criterio de cierre por fase
 
 Cada fase debe quedar registrada en el Documento 31 y en `docs/Docs_Asistentes`, indicando comandos ejecutados y resultado.
