@@ -1176,6 +1176,8 @@ npm.cmd run e2e
 
 Nota posterior 2026-07-22: completada la integracion base de Playwright en `frontend/`. Se instala `@playwright/test`, se crea `playwright.config.ts`, se anaden scripts `e2e`, `e2e:ui`, `e2e:headed` y `e2e:report`, se ignoran artefactos locales y se crea `frontend/e2e/app-startup.spec.ts` como prueba minima verificable de carga de login. Verificado con `npm.cmd run e2e`: 1 test OK en Chromium. Fue necesario instalar el navegador local con `npx.cmd playwright install chromium`.
 
+Nota posterior 2026-07-22: antes de iniciar T13.3 se corrigen vulnerabilidades npm del frontend. `npm audit fix` elimina vulnerabilidades low/high/critical y se anade override de seguridad para `@hono/node-server@2.0.11`, evitando el downgrade forzado de `@angular/cli` propuesto por npm. Verificado con `npm.cmd audit` sin vulnerabilidades, `npm.cmd run build` OK, `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK con 152 tests y `npm.cmd run e2e` OK con 1 test.
+
 ---
 
 ## T13.3 [ ]
