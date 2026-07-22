@@ -1178,6 +1178,8 @@ Nota posterior 2026-07-22: completada la integracion base de Playwright en `fron
 
 Nota posterior 2026-07-22: antes de iniciar T13.3 se corrigen vulnerabilidades npm del frontend. `npm audit fix` elimina vulnerabilidades low/high/critical y se anade override de seguridad para `@hono/node-server@2.0.11`, evitando el downgrade forzado de `@angular/cli` propuesto por npm. Verificado con `npm.cmd audit` sin vulnerabilidades, `npm.cmd run build` OK, `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK con 152 tests y `npm.cmd run e2e` OK con 1 test.
 
+Nota posterior 2026-07-22: resueltos los avisos `allow-scripts` de npm 11 antes de T13.3. Se revisan los scripts de instalacion pendientes del toolchain Angular (`@parcel/watcher`, `esbuild`, `lmdb` y `msgpackr-extract`) y se aprueban de forma acotada mediante `allowScripts` con versiones concretas. Verificado con `npm.cmd approve-scripts --allow-scripts-pending`: no quedan paquetes sin revisar; `npm.cmd install` no muestra avisos `allow-scripts`; `npm.cmd audit`, build, unit tests y E2E siguen OK.
+
 ---
 
 ## T13.3 [ ]

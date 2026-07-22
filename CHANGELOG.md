@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend version: subida la version del paquete frontend a `0.0.28`.
 - Frontend version: subida la version del paquete frontend a `0.0.27`.
 - Frontend version: subida la version del paquete frontend a `0.0.26`.
 - Versionado backend actualizado a `0.0.106-SNAPSHOT`.
@@ -140,6 +141,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Frontend dependencias: aprobados de forma acotada los scripts de instalacion npm del toolchain Angular mediante `allowScripts` versionado, eliminando avisos `allow-scripts` sin permitir scripts arbitrarios.
 - Frontend dependencias: corregidas vulnerabilidades npm restantes con `npm audit fix` y override controlado de `@hono/node-server` a `2.0.11`, manteniendo Angular CLI en la rama 21.2.x.
 - Backend seguridad: al rotar la password bootstrap de cuentas default se revocan refresh tokens activos de `admin@sindicato.es`, `editor@sindicato.es` y `n8n@sindicato.es`.
 - Frontend dependencias: resueltas las 13 vulnerabilidades pendientes de `npm audit` con actualizacion no forzada del toolchain y overrides controlados para `@babel/core` y `undici`.
