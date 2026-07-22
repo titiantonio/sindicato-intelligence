@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend settings: corregidos los textos de eliminacion de credenciales para usar “API de IA” y “token del bot de Telegram” en modales, botones y mensajes.
+- Frontend version: subida la version del paquete frontend a `0.0.36`.
+- Frontend settings: las confirmaciones para eliminar API key IA y bot token Telegram usan un dialogo del backoffice en lugar de `window.confirm` del navegador.
+- Frontend version: subida la version del paquete frontend a `0.0.35`.
 - Versionado backend actualizado a `0.0.108-SNAPSHOT`.
 - Frontend settings: el selector de modelo IA carga automaticamente los modelos del proveedor seleccionado al abrirse, dejando el boton como recarga manual.
 - Versionado backend actualizado a `0.0.107-SNAPSHOT`.

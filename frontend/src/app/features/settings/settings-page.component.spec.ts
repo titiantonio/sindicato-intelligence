@@ -176,12 +176,19 @@ describe('SettingsPageComponent', () => {
     expect(aiObservabilityService.listProviderModels).toHaveBeenCalledOnceWith('gemini', null);
   });
 
-  it('clears ai provider api key after confirmation', () => {
+  it('clears ai provider API after confirmation', () => {
     const component = fixture.componentInstance as any;
-    spyOn(window, 'confirm').and.returnValue(true);
 
     component.setTab('automation');
-    component.clearAiProviderApiKey(aiProviders()[1]);
+    component.requestClearAiProviderApiKey(aiProviders()[1]);
+    fixture.detectChanges();
+
+    expect(component.pendingSecretDeletion()?.title).toBe('Eliminar API de IA');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Eliminar API de IA');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Cancelar');
+    expect(aiObservabilityService.updateProvider).not.toHaveBeenCalledWith('gemini', jasmine.objectContaining({ clearApiKey: true }));
+
+    component.confirmSecretDeletion();
 
     expect(aiObservabilityService.updateProvider).toHaveBeenCalledWith('gemini', {
       enabled: false,
@@ -190,9 +197,8 @@ describe('SettingsPageComponent', () => {
     });
   });
 
-  it('clears telegram bot token after confirmation', () => {
+  it('clears Telegram token using the frontend confirmation dialog', () => {
     const component = fixture.componentInstance as any;
-    spyOn(window, 'confirm').and.returnValue(true);
     applicationSettingsService.getTelegramSettings.and.returnValue(of({
       ...telegramSettings(),
       botTokenConfigured: true,
@@ -207,7 +213,15 @@ describe('SettingsPageComponent', () => {
     }));
 
     component.setTab('publication');
-    component.clearTelegramBotToken();
+    component.requestClearTelegramBotToken();
+    fixture.detectChanges();
+
+    expect(component.pendingSecretDeletion()?.title).toBe('Eliminar token del bot de Telegram');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Eliminar token');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Cancelar');
+    expect(applicationSettingsService.updateTelegramSettings).not.toHaveBeenCalledWith(jasmine.objectContaining({ clearBotToken: true }));
+
+    component.confirmSecretDeletion();
 
     expect(applicationSettingsService.updateTelegramSettings).toHaveBeenCalledWith({
       enabled: false,

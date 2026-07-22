@@ -228,7 +228,7 @@
             </label>
 
             <label>
-              Bot token
+              Token del bot
               <input
                 pInputText
                 type="password"
@@ -340,7 +340,7 @@
             </div>
 
             <button pButton type="submit" [label]="isTelegramSaving() ? 'Guardando...' : 'Guardar Telegram'" [loading]="isTelegramSaving()" [disabled]="isTelegramSaving()"></button>
-            <button pButton type="button" severity="danger" label="Eliminar bot token" (click)="clearTelegramBotToken()" [disabled]="isTelegramSaving() || !telegramSettings()?.botTokenConfigured"></button>
+            <button pButton type="button" severity="danger" label="Eliminar token" (click)="requestClearTelegramBotToken()" [disabled]="isTelegramSaving() || !telegramSettings()?.botTokenConfigured"></button>
           </form>
 
           @if (telegramSettings(); as telegram) {
@@ -608,7 +608,7 @@
               </header>
 
               <label>
-                API key
+                Clave API de IA
                 <input
                   pInputText
                   type="password"
@@ -623,13 +623,36 @@
               <footer>
                 <button pButton type="submit" [label]="busyAiProvider() === provider.providerCode ? 'Guardando...' : 'Guardar'" [loading]="busyAiProvider() === provider.providerCode" [disabled]="busyAiProvider() === provider.providerCode"></button>
                 <button pButton type="button" severity="secondary" [label]="busyModelProvider() === provider.providerCode ? 'Cargando...' : 'Recargar modelos'" (click)="loadModels(provider.providerCode, true)" [loading]="busyModelProvider() === provider.providerCode" [disabled]="busyModelProvider() === provider.providerCode"></button>
-                <button pButton type="button" severity="danger" label="Eliminar API key" (click)="clearAiProviderApiKey(provider)" [disabled]="busyAiProvider() === provider.providerCode || !provider.apiKeyConfigured"></button>
+                <button pButton type="button" severity="danger" label="Eliminar API de IA" (click)="requestClearAiProviderApiKey(provider)" [disabled]="busyAiProvider() === provider.providerCode || !provider.apiKeyConfigured"></button>
               </footer>
             </form>
           }
         </div>
       </section>
     }
+
+    <p-dialog
+      [visible]="pendingSecretDeletion() !== null"
+      [header]="pendingSecretDeletion()?.title ?? ''"
+      [modal]="true"
+      [draggable]="false"
+      [resizable]="false"
+      [style]="{ width: 'min(100vw - 2rem, 34rem)' }"
+      (visibleChange)="!$event && closeSecretDeletionConfirmation()"
+    >
+      @if (pendingSecretDeletion(); as deletion) {
+        <p>{{ deletion.message }}</p>
+
+        <div class="confirmation-actions">
+          <button pButton type="button" severity="danger" icon="pi pi-check" (click)="confirmSecretDeletion()">
+            {{ deletion.confirmLabel }}
+          </button>
+          <button pButton type="button" severity="secondary" icon="pi pi-times" (click)="closeSecretDeletionConfirmation()">
+            Cancelar
+          </button>
+        </div>
+      }
+    </p-dialog>
 
     @if (selectedErrorMetric(); as errorMetric) {
       <p-dialog

@@ -2575,6 +2575,9 @@ Resultado:
 - Anadido borrado explicito de bot token Telegram mediante `clearBotToken` en `PUT /api/v1/settings/telegram`.
 - Mantenido `null` como semantica de conservar secreto actual para evitar borrados accidentales.
 - La pantalla `/settings` permite a ADMIN eliminar API key IA y bot token Telegram con confirmacion previa.
+- Nota posterior 2026-07-22: la confirmacion previa se muestra mediante dialogo propio del backoffice, no con `window.confirm` del navegador.
+- Nota posterior 2026-07-22: los botones de confirmar y cancelar del dialogo de borrado se renderizan dentro del cuerpo del modal para asegurar visibilidad.
+- Nota posterior 2026-07-22: verificado con `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts` OK, 15 tests, y `npm.cmd run build` OK.
 - El selector de modelo IA carga modelos automaticamente al abrirse para el proveedor seleccionado del workflow, sin requerir el boton manual de carga.
 - El boton de modelos queda como recarga manual de respaldo.
 - Incrementado `backend/pom.xml` a `0.0.107-SNAPSHOT` y `frontend/package.json` a `0.0.34`.

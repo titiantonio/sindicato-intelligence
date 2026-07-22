@@ -22,6 +22,9 @@ type SettingsTab = 'metrics' | 'prompts' | 'automation' | 'publication';
 type SortDirection = 'asc' | 'desc';
 type PromptSortColumn = 'promptKey' | 'promptName' | 'module' | 'version' | 'checksum' | 'active' | 'createdAt';
 type MetricSortColumn = 'workflowCode' | 'operationType' | 'promptKey' | 'provider' | 'model' | 'status' | 'relatedEntityType' | 'latencyMs' | 'errorMessage' | 'createdAt';
+type PendingSecretDeletion =
+  | { type: 'ai-api-key'; provider: AiProviderSetting; title: string; message: string; confirmLabel: string }
+  | { type: 'telegram-bot-token'; title: string; message: string; confirmLabel: string };
 
 interface AutomationSettingForm {
   enabled: boolean;
@@ -108,6 +111,7 @@ export class SettingsPageComponent implements OnInit {
   protected readonly metricDate = signal(this.todayInputValue());
   protected readonly selectedErrorMetric = signal<WorkflowOperation | null>(null);
   protected readonly selectedMetricDetail = signal<WorkflowOperation | null>(null);
+  protected readonly pendingSecretDeletion = signal<PendingSecretDeletion | null>(null);
 
   protected readonly promptKeyFilter = signal('');
   protected readonly promptNameFilter = signal('');
@@ -428,10 +432,37 @@ export class SettingsPageComponent implements OnInit {
     });
   }
 
-  protected clearAiProviderApiKey(provider: AiProviderSetting): void {
-    if (!provider.apiKeyConfigured || !window.confirm(`Eliminar la API key de ${provider.displayName}?`)) {
+  protected requestClearAiProviderApiKey(provider: AiProviderSetting): void {
+    if (!provider.apiKeyConfigured) {
       return;
     }
+    this.pendingSecretDeletion.set({
+      type: 'ai-api-key',
+      provider,
+      title: 'Eliminar API de IA',
+      message: `Se eliminara la clave API de IA configurada para ${provider.displayName}. Las automatizaciones que usen este proveedor no podran listar modelos ni ejecutar IA hasta configurar una nueva clave.`,
+      confirmLabel: 'Eliminar API de IA'
+    });
+  }
+
+  protected closeSecretDeletionConfirmation(): void {
+    this.pendingSecretDeletion.set(null);
+  }
+
+  protected confirmSecretDeletion(): void {
+    const deletion = this.pendingSecretDeletion();
+    if (!deletion) {
+      return;
+    }
+    this.pendingSecretDeletion.set(null);
+    if (deletion.type === 'ai-api-key') {
+      this.clearAiProviderApiKey(deletion.provider);
+      return;
+    }
+    this.clearTelegramBotToken();
+  }
+
+  private clearAiProviderApiKey(provider: AiProviderSetting): void {
     this.busyAiProvider.set(provider.providerCode);
     this.errorMessage.set(null);
     this.successMessage.set(null);
@@ -441,7 +472,7 @@ export class SettingsPageComponent implements OnInit {
       clearApiKey: true
     }).subscribe({
       next: () => {
-        this.successMessage.set('API key de IA eliminada.');
+        this.successMessage.set('API de IA eliminada.');
         this.busyAiProvider.set(null);
         this.aiModelOptions.update((options) => {
           const { [provider.providerCode]: _removed, ...remaining } = options;
@@ -451,7 +482,7 @@ export class SettingsPageComponent implements OnInit {
         this.loadSettings(true);
       },
       error: (error: { error?: { error?: string } }) => {
-        this.errorMessage.set(error.error?.error ?? 'No se pudo eliminar la API key de IA.');
+        this.errorMessage.set(error.error?.error ?? 'No se pudo eliminar la API de IA.');
         this.busyAiProvider.set(null);
       }
     });
@@ -559,10 +590,19 @@ export class SettingsPageComponent implements OnInit {
     });
   }
 
-  protected clearTelegramBotToken(): void {
-    if (!this.telegramSettings()?.botTokenConfigured || !window.confirm('Eliminar el bot token de Telegram?')) {
+  protected requestClearTelegramBotToken(): void {
+    if (!this.telegramSettings()?.botTokenConfigured) {
       return;
     }
+    this.pendingSecretDeletion.set({
+      type: 'telegram-bot-token',
+      title: 'Eliminar token del bot de Telegram',
+      message: 'Se eliminara el token configurado del bot de Telegram. No se podran publicar mensajes en Telegram hasta configurar un nuevo token.',
+      confirmLabel: 'Eliminar token'
+    });
+  }
+
+  private clearTelegramBotToken(): void {
     const form = this.telegramForm();
     const destinations = form.destinations
       .map((destination) => ({
@@ -589,11 +629,11 @@ export class SettingsPageComponent implements OnInit {
       next: (settings) => {
         this.telegramSettings.set(settings);
         this.telegramForm.update((current) => ({ ...current, botToken: '' }));
-        this.successMessage.set('Bot token de Telegram eliminado.');
+        this.successMessage.set('Token del bot de Telegram eliminado.');
         this.isTelegramSaving.set(false);
       },
       error: (error: { error?: { error?: string } }) => {
-        this.errorMessage.set(error.error?.error ?? 'No se pudo eliminar el bot token de Telegram.');
+        this.errorMessage.set(error.error?.error ?? 'No se pudo eliminar el token del bot de Telegram.');
         this.isTelegramSaving.set(false);
       }
     });
