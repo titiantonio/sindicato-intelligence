@@ -14,10 +14,11 @@ La integracion prevista vive dentro de `frontend/`:
 frontend/
   playwright.config.ts
   e2e/
+    app-startup.spec.ts
     smoke.mock.spec.ts
     admin.mock.spec.ts
-    auth.backend.spec.ts
-    editorial.backend.spec.ts
+    editorial-flow.mock.spec.ts
+    backend.local.spec.ts
 ```
 
 ## Fases de integracion
@@ -36,7 +37,9 @@ Los scripts disponibles desde `T13.2` son:
 ```powershell
 cd frontend
 npm.cmd run e2e
+npm.cmd run e2e:mock
 npm.cmd run e2e:backend
+npm.cmd run e2e:ci
 npm.cmd run e2e:ui
 npm.cmd run e2e:headed
 npm.cmd run e2e:report
@@ -52,7 +55,9 @@ npx.cmd playwright install chromium
 Uso esperado:
 
 - `e2e`: ejecuta la suite headless.
+- `e2e:mock`: ejecuta solo suites mockeadas sin backend ni PostgreSQL.
 - `e2e:backend`: ejecuta solo la suite contra backend local, si esta habilitada por variables de entorno.
+- `e2e:ci`: alias de la suite mockeada rapida para integracion CI inicial.
 - `e2e:ui`: abre el modo interactivo de Playwright.
 - `e2e:headed`: ejecuta mostrando el navegador.
 - `e2e:report`: abre el ultimo informe HTML.
@@ -70,6 +75,15 @@ Reglas:
 - No depender de credenciales reales.
 
 Estas suites son las recomendadas para ejecucion rapida local y futura CI inicial.
+
+Desde `T13.6`, el comando recomendado para CI inicial es:
+
+```powershell
+cd frontend
+npm.cmd run e2e:ci
+```
+
+Este comando ejecuta solo `app-startup`, `smoke.mock`, `admin.mock` y `editorial-flow.mock`; no incluye `backend.local.spec.ts`.
 
 ## Suites con backend real
 
@@ -149,6 +163,14 @@ Playwright puede generar:
 
 Estos artefactos deben ignorarse en Git salvo decision explicita de versionar ejemplos documentales.
 
+Configuracion actual de diagnostico:
+
+- Informe HTML en `frontend/playwright-report`.
+- Resultados temporales en `frontend/test-results`.
+- Trazas en primer reintento.
+- Screenshot solo en fallo.
+- Video retenido solo en fallo.
+
 ## Configuracion base actual
 
 Desde `T13.2`, `frontend/playwright.config.ts` arranca Angular automaticamente con:
@@ -160,6 +182,8 @@ npm run start -- --host 127.0.0.1
 La suite base usa Chromium y `baseURL` en `http://127.0.0.1:4200`.
 
 Desde `T13.4`, Playwright usa un unico worker por defecto para evitar timeouts intermitentes al arrancar y servir Angular en entornos locales con recursos limitados.
+
+Desde `T13.6`, en CI Playwright usa reporter `list` mas HTML con `open: never`. La suite mockeada se ejecuta con `npm.cmd run e2e:ci`; la suite de backend real queda separada y sigue siendo opt-in.
 
 El primer test versionado es `frontend/e2e/app-startup.spec.ts`, que valida que la pantalla `/login` carga y muestra los controles basicos de acceso.
 

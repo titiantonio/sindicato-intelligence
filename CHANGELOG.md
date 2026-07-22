@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend E2E: anadidos scripts `e2e:mock` y `e2e:ci` para ejecutar la suite Playwright mockeada rapida sin backend en preparacion de CI/CD.
 - Frontend E2E: anadida suite Playwright mockeada de flujo editorial controlado para generar contenido desde evento, aprobar/rechazar y programar publicacion sin IA ni Telegram real.
 - Frontend E2E: anadida suite Playwright opt-in contra backend local mediante variables de entorno, separada de las pruebas mockeadas.
 - Frontend E2E: anadidas suites Playwright mockeadas para login, navegacion editorial y rutas ADMIN sin depender de backend ni PostgreSQL.
@@ -28,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend E2E: configurados reportes HTML, trazas en reintento, screenshots en fallo y videos retenidos en fallo para diagnostico CI/local.
+- Frontend version: subida la version del paquete frontend a `0.0.33`.
 - Frontend version: subida la version del paquete frontend a `0.0.32`.
 - Frontend E2E: Playwright se ejecuta con un unico worker para estabilizar la suite local frente a timeouts del servidor Angular en arranque.
 - Frontend version: subida la version del paquete frontend a `0.0.31`.

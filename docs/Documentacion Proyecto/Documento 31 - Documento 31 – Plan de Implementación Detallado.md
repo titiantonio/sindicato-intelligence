@@ -1105,7 +1105,7 @@ Dashboard métricas.
 
 ---
 
-# 15.1. [ ] Sprint 13
+# 15.1. [x] Sprint 13
 
 # Calidad E2E Playwright
 
@@ -1247,7 +1247,7 @@ Nota posterior 2026-07-22: completado el flujo editorial MVP controlado con la s
 
 ---
 
-## T13.6 [ ]
+## T13.6 [x]
 
 Preparar ejecucion CI/CD futura.
 
@@ -1259,6 +1259,8 @@ Alcance:
 - Definir separacion entre suite mockeada rapida y suite con backend real.
 - Dejar preparada la integracion con el pendiente de CI/CD.
 ```
+
+Nota posterior 2026-07-22: completada la preparacion CI/CD futura de Playwright. Se anaden scripts `npm.cmd run e2e:mock` y `npm.cmd run e2e:ci` para ejecutar solo suites mockeadas sin backend, manteniendo `npm.cmd run e2e:backend` como opt-in. `frontend/playwright.config.ts` configura reporter HTML, reporter `list` en CI, trazas en primer reintento, screenshots en fallo y videos retenidos en fallo. Verificado con `npm.cmd run build` OK, `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK con 152 tests, `npm.cmd audit` sin vulnerabilidades, `npm.cmd run e2e:mock` OK con 6 tests, `npm.cmd run e2e:ci` OK con 6 tests y `npm.cmd run e2e` OK con 6 tests pasados y 4 omitidos por backend local no habilitado. Sprint 13 queda completado al estar cerradas T13.1 a T13.6.
 
 ---
 
