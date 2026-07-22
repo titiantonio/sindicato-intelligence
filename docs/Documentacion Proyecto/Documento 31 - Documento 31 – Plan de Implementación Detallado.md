@@ -1154,7 +1154,7 @@ Nota posterior 2026-07-22: completada la fase documental de integracion Playwrig
 
 ---
 
-## T13.2 [ ]
+## T13.2 [x]
 
 Integrar Playwright base en `frontend/`.
 
@@ -1173,6 +1173,8 @@ Verificacion esperada:
 ```text
 npm.cmd run e2e
 ```
+
+Nota posterior 2026-07-22: completada la integracion base de Playwright en `frontend/`. Se instala `@playwright/test`, se crea `playwright.config.ts`, se anaden scripts `e2e`, `e2e:ui`, `e2e:headed` y `e2e:report`, se ignoran artefactos locales y se crea `frontend/e2e/app-startup.spec.ts` como prueba minima verificable de carga de login. Verificado con `npm.cmd run e2e`: 1 test OK en Chromium. Fue necesario instalar el navegador local con `npx.cmd playwright install chromium`.
 
 ---
 

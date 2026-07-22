@@ -29,9 +29,9 @@ frontend/
 5. `T13.5`: flujo editorial MVP controlado sin IA real ni Telegram real.
 6. `T13.6`: preparacion para CI/CD, reportes y trazas.
 
-## Comandos previstos
+## Comandos
 
-Los scripts se anadiran en `T13.2`. La convencion prevista es:
+Los scripts disponibles desde `T13.2` son:
 
 ```powershell
 cd frontend
@@ -39,6 +39,13 @@ npm.cmd run e2e
 npm.cmd run e2e:ui
 npm.cmd run e2e:headed
 npm.cmd run e2e:report
+```
+
+Si es la primera vez que se ejecuta Playwright en la maquina local, instala el navegador Chromium usado por la suite base:
+
+```powershell
+cd frontend
+npx.cmd playwright install chromium
 ```
 
 Uso esperado:
@@ -112,6 +119,18 @@ Playwright puede generar:
 - Resultados temporales.
 
 Estos artefactos deben ignorarse en Git salvo decision explicita de versionar ejemplos documentales.
+
+## Configuracion base actual
+
+Desde `T13.2`, `frontend/playwright.config.ts` arranca Angular automaticamente con:
+
+```text
+npm run start -- --host 127.0.0.1
+```
+
+La suite base usa Chromium y `baseURL` en `http://127.0.0.1:4200`.
+
+El primer test versionado es `frontend/e2e/app-startup.spec.ts`, que valida que la pantalla `/login` carga y muestra los controles basicos de acceso.
 
 ## Criterio de cierre por fase
 

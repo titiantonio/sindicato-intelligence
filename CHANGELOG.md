@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend E2E: integrada la base de Playwright con configuracion, scripts npm, artefactos ignorados y una prueba minima de arranque del login.
 - Backend/Flyway: consolidado el seed inicial para pausar por defecto automatizaciones backend y proveedores IA en instalaciones limpias.
 - Infraestructura desarrollo: anadido `dev-start.ps1` para detener stacks Docker previos y levantar solo PostgreSQL, n8n y MailHog para desarrollo local.
 - Infraestructura TFM: anadido `docker-compose.yml` raiz para levantar PostgreSQL, backend, frontend, n8n y MailHog en Docker.
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend version: subida la version del paquete frontend a `0.0.26`.
 - Versionado backend actualizado a `0.0.106-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.25`.
 - Frontend Docker: desactivado el inline critical CSS de Angular en produccion para evitar que la CSP de Nginx bloquee la carga completa de estilos.
