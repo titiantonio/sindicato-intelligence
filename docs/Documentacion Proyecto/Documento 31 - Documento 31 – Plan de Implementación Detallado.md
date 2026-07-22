@@ -2589,6 +2589,28 @@ Estado:
 
 ---
 
+## [x] T12.36
+
+Saneamiento de scripts operativos obsoletos.
+
+Resultado:
+- Conservados los scripts vigentes documentados: `dev-start.ps1`, `tfm-start.ps1`, `tfm-check.ps1`, `tfm-stop.ps1`, `tfm-reset.ps1`, `n8n/validate-workflows.ps1` y `set_ai_env.example.ps1`.
+- Retirado `dev-startup.ps1` y su documentacion `dev-startup.md` por duplicar `dev-start.ps1`, resetear volumenes y contener supuestos antiguos de Flyway.
+- Retirado `scripts/validate-sprint11-acceptance.ps1` por depender de credenciales bootstrap antiguas y de un flujo previo a las suites actuales.
+- Retirado `scripts/fake-telegram-server.ps1` al quedar ligado a la aceptacion antigua de Sprint 11 y no formar parte de los comandos operativos vigentes.
+- Eliminado el script local ignorado `set_ai_env.ps1`; se conserva solo la plantilla segura sin secretos.
+- Incrementado `backend/pom.xml` a `0.0.108-SNAPSHOT`.
+
+Verificacion:
+- Inventario final de scripts PowerShell: 7 scripts vigentes.
+- Sintaxis PowerShell validada mediante parser para `dev-start.ps1`, `tfm-start.ps1`, `tfm-check.ps1`, `tfm-stop.ps1`, `tfm-reset.ps1`, `n8n/validate-workflows.ps1` y `set_ai_env.example.ps1`: OK.
+- n8n: `powershell -ExecutionPolicy Bypass -File "n8n\\validate-workflows.ps1"` OK para `WF-01`.
+
+Estado:
+- Mantenimiento operativo posterior al Sprint 12. Los scripts versionados quedan alineados con README, guia TFM y arquitectura actual: n8n solo `WF-01`, automatizaciones restantes en Spring Boot.
+
+---
+
 ## 16.40 Descarte de noticias fuera de ambito antes de eventos - 2026-06-25
 
 Tarea de mantenimiento correctivo sobre Fases 6-7 y Sprint 12.

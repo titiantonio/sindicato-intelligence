@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.108-SNAPSHOT`.
 - Frontend settings: el selector de modelo IA carga automaticamente los modelos del proveedor seleccionado al abrirse, dejando el boton como recarga manual.
 - Versionado backend actualizado a `0.0.107-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.34`.
@@ -153,6 +154,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backend tests: estabilizados los tests API de clasificacion, analisis y contenido con proveedor IA determinista, y actualizado el slice de seguridad con dependencias de detalle de contenido.
 - Backoffice rendimiento: optimizadas las lecturas de `GET /api/v1/dashboard` y `GET /api/v1/events` con consultas agregadas, indices Flyway y carga Angular progresiva para reducir pantallas en blanco con "Cargando...".
 - Backend IA WF-04: endurecida la generacion de analisis con contexto de noticias acotado, prompt JSON mas estricto y parametros Gemini conservadores para reducir respuestas repetitivas, mixtas o sin cierre JSON.
+
+### Removed
+
+- Infraestructura scripts: retirados `dev-startup.ps1`, `dev-startup.md`, `scripts/validate-sprint11-acceptance.ps1` y `scripts/fake-telegram-server.ps1` por estar obsoletos frente a `dev-start.ps1`, los scripts `tfm-*` y las suites Playwright actuales.
+- Seguridad local: eliminado el script local ignorado `set_ai_env.ps1`; se conserva solo la plantilla segura `set_ai_env.example.ps1`.
 
 ### Security
 
