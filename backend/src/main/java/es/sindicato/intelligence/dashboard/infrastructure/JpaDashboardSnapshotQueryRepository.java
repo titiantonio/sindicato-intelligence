@@ -275,7 +275,21 @@ public class JpaDashboardSnapshotQueryRepository implements DashboardSnapshotQue
                     event.importance,
                     COUNT(event_news.news_id) AS news_count,
                     event.last_updated_at,
-                    event.status
+                    event.status,
+                    CASE
+                        WHEN EXISTS (
+                            SELECT 1
+                            FROM event_ai_analysis analysis
+                            WHERE analysis.event_id = event.id
+                              AND analysis.event_updated_at_snapshot >= event.updated_at
+                        ) THEN 'ANALYZED_PENDING_CONTENT'
+                        WHEN EXISTS (
+                            SELECT 1
+                            FROM event_ai_analysis analysis
+                            WHERE analysis.event_id = event.id
+                        ) THEN 'ANALYSIS_OUTDATED'
+                        ELSE 'PENDING_ANALYSIS'
+                    END AS editorial_status
                 FROM events event
                 JOIN event_news event_news ON event_news.event_id = event.id
                 WHERE %s
@@ -285,18 +299,27 @@ public class JpaDashboardSnapshotQueryRepository implements DashboardSnapshotQue
                   AND event.importance IN ('HIGH', 'CRITICAL')
                   AND NOT EXISTS (
                       SELECT 1
-                      FROM event_ai_analysis analysis
-                      WHERE analysis.event_id = event.id
-                  )
-                  AND NOT EXISTS (
-                      SELECT 1
                       FROM generated_content content
                       WHERE content.event_id = event.id
-                        AND content.status = 'PUBLISHED'
+                        AND content.status IN ('GENERATED', 'PENDING_REVIEW', 'APPROVED', 'PUBLISHED')
                   )
                 GROUP BY event.id
                 ORDER BY
                     CASE event.importance WHEN 'CRITICAL' THEN 0 ELSE 1 END ASC,
+                    CASE
+                        WHEN EXISTS (
+                            SELECT 1
+                            FROM event_ai_analysis analysis
+                            WHERE analysis.event_id = event.id
+                              AND analysis.event_updated_at_snapshot >= event.updated_at
+                        ) THEN 0
+                        WHEN EXISTS (
+                            SELECT 1
+                            FROM event_ai_analysis analysis
+                            WHERE analysis.event_id = event.id
+                        ) THEN 2
+                        ELSE 1
+                    END ASC,
                     COUNT(event_news.news_id) DESC,
                     event.last_updated_at DESC,
                     event.id DESC
@@ -320,7 +343,7 @@ public class JpaDashboardSnapshotQueryRepository implements DashboardSnapshotQue
                 number(row[4]).intValue(),
                 offsetDateTime(row[5]),
                 EventStatus.valueOf((String) row[6]),
-                EventEditorialStatus.PENDING_ANALYSIS
+                EventEditorialStatus.valueOf((String) row[7])
         );
     }
 

@@ -3878,3 +3878,40 @@ Completado en esta iteracion:
 
 Verificacion:
 - Backend focal WF-04/Gemini/scheduler: `mvn "-Dtest=RunAutomationWorkflowUseCaseTest,ProcessDueAutomationWorkflowsUseCaseTest,GeminiAnalysisAIProviderTest,ProcessPendingEventAnalysisUseCaseTest" test` OK, 18 tests.
+
+---
+
+## 19.51 Fallback JSON incompleto WF-04 evento 25 - 2026-07-24
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 12, integracion IA WF-04 y robustez operativa.
+
+Completado en esta iteracion:
+- [x] Diagnosticado `event_id=25`: evento `OPOSICIONES`, `CRITICAL`, con una noticia ANPE (`news_id=221`) y contexto capturado muy breve.
+- [x] Confirmado que no es fallo de PDF ni de adjunto: Gemini devuelve texto que empieza como JSON pero queda incompleto y repetitivo.
+- [x] Anadido fallback conservador para JSON incompleto tras reintento agotado, manteniendo error para respuestas que no contienen ningun JSON.
+- [x] Version backend subida a `0.0.115-SNAPSHOT`.
+
+Verificacion:
+- Backend focal WF-04/Gemini: `mvn "-Dtest=GeminiAnalysisAIProviderTest" test` OK, 6 tests.
+- Backend focal automatizaciones: `mvn "-Dtest=ProcessPendingEventAnalysisUseCaseTest,RunAutomationWorkflowUseCaseTest,ProcessDueAutomationWorkflowsUseCaseTest" test` OK, 13 tests.
+
+---
+
+## 19.52 Aviso editorial de eventos analizados pendientes de contenido - 2026-07-24
+
+Tarea de mantenimiento evolutivo posterior al Sprint 12 sobre Fase 11/12, dashboard backoffice y enlace operativo WF-04 -> WF-05.
+
+Completado en esta iteracion:
+- [x] Anadido estado editorial `ANALYZED_PENDING_CONTENT` para eventos importantes con analisis IA vigente y sin contenido activo.
+- [x] Ajustada la consulta `GET /api/v1/dashboard` para incluir eventos `HIGH` o `CRITICAL` pendientes de analisis, con analisis obsoleto o con analisis vigente pendiente de generar contenido.
+- [x] Excluidos del aviso los eventos con contenido activo `GENERATED`, `PENDING_REVIEW`, `APPROVED` o `PUBLISHED`, evitando duplicar trabajo editorial.
+- [x] Anadido aviso visible en el dashboard Angular con contador de eventos importantes analizados pendientes de contenido.
+- [x] Anadida accion directa desde dashboard para generar contenido `TELEGRAM_POST` informativo mediante WF-05 y navegar al contenido generado para revision.
+- [x] Version backend subida a `0.0.116-SNAPSHOT` y frontend a `0.0.39`.
+
+Verificacion:
+- Frontend TypeScript: `npx.cmd tsc -p tsconfig.app.json --noEmit` OK.
+- Frontend focal dashboard: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/dashboard/dashboard-page.component.spec.ts` OK, 9 tests.
+- Backend limpio: `mvnw.cmd clean test-compile` OK.
+- Backend focal dashboard: `mvnw.cmd "-Dtest=DashboardControllerTest" test` OK, 3 tests.
+- Backend focal detalle evento: `mvnw.cmd "-Dtest=EventControllerTest#exposesEditorialStatusForAnalyzedAndPublishedEvents" test` OK, 1 test.

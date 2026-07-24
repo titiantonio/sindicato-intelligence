@@ -235,7 +235,7 @@ class EventControllerTest {
 
         mockMvc.perform(get("/api/v1/events/{id}", analyzedEvent.getId()).with(adminJwt()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.editorialStatus").value("ANALYZED"));
+                .andExpect(jsonPath("$.editorialStatus").value("ANALYZED_PENDING_CONTENT"));
 
         mockMvc.perform(get("/api/v1/events/{id}", publishedEvent.getId()).with(adminJwt()))
                 .andExpect(status().isOk())

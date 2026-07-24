@@ -98,6 +98,30 @@
   padding: 1.25rem 1.5rem;
 }
 
+.editorial-alert {
+  align-items: center;
+  background: var(--color-warning-soft);
+  border: 1px solid var(--color-warning-strong);
+  border-radius: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+}
+
+.editorial-alert h2 {
+  color: var(--color-text);
+  font-size: 1.1rem;
+  margin: 0.3rem 0 0.25rem;
+}
+
+.editorial-alert p {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
 .automation-panel h2 {
   color: var(--color-text);
   margin: 0.35rem 0 0;
@@ -110,6 +134,7 @@
 }
 
 .automation-actions button,
+.editorial-alert button,
 .row-action {
   background: var(--color-primary);
   border: 0;
@@ -121,6 +146,7 @@
 }
 
 .automation-actions button:disabled,
+.editorial-alert button:disabled,
 .row-action:disabled {
   cursor: not-allowed;
   opacity: 0.6;

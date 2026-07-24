@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
@@ -10,13 +10,14 @@ import { MetricCardComponent } from '../../shared/components/metric-card/metric-
 import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { AutomationService } from '../../core/services/automation.service';
+import { ContentService } from '../../core/services/content.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AutomationRunResult } from '../../core/models/automation.models';
 import { MetricCard, PriorityEvent } from '../../core/models/dashboard.models';
 
-type PriorityEventSortColumn = 'title' | 'category' | 'importance' | 'relatedNews' | 'updatedAt' | 'status';
+type PriorityEventSortColumn = 'title' | 'category' | 'importance' | 'relatedNews' | 'updatedAt' | 'status' | 'editorialStatus';
 type SortDirection = 'asc' | 'desc';
-type AutomationAction = 'classifications' | 'events' | 'analysis' | `analysis-${number}`;
+type AutomationAction = 'classifications' | 'events' | 'analysis' | `analysis-${number}` | `content-${number}`;
 
 @Component({
   selector: 'app-dashboard-page',
@@ -36,7 +37,9 @@ type AutomationAction = 'classifications' | 'events' | 'analysis' | `analysis-${
 })
 export class DashboardPageComponent implements OnInit {
   private readonly automationService = inject(AutomationService);
+  private readonly contentService = inject(ContentService);
   private readonly dashboardService = inject(DashboardService);
+  private readonly router = inject(Router);
 
   protected readonly metricCards = signal<MetricCard[]>([]);
   protected readonly priorityEvents = signal<PriorityEvent[]>([]);
@@ -58,6 +61,9 @@ export class DashboardPageComponent implements OnInit {
   protected readonly pageSizeOptions = [5, 10, 25, 50];
   protected readonly importanceOptions = ['CRITICAL', 'HIGH'];
   protected readonly statusOptions = computed(() => this.uniqueOptions((event) => event.status));
+  protected readonly analyzedPendingContentEvents = computed(() =>
+    this.priorityEvents().filter((event) => event.editorialStatus === 'ANALYZED_PENDING_CONTENT')
+  );
   protected readonly displayedPriorityEvents = computed(() => this.sortEvents(this.filterEvents(this.priorityEvents())));
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.displayedPriorityEvents().length / this.pageSize())));
   protected readonly paginatedPriorityEvents = computed(() => {
@@ -105,12 +111,49 @@ export class DashboardPageComponent implements OnInit {
     this.runAutomation(`analysis-${eventId}`, this.automationService.runAnalysis(eventId));
   }
 
+  protected runPriorityEventAction(event: Event, item: PriorityEvent): void {
+    event.stopPropagation();
+    if (item.editorialStatus === 'ANALYZED_PENDING_CONTENT') {
+      this.generateContent(item.id);
+      return;
+    }
+    this.runEventAnalysis(event, item.id);
+  }
+
+  protected priorityEventActionLabel(event: PriorityEvent): string {
+    if (this.runningAutomation() === `content-${event.id}`) {
+      return 'Generando...';
+    }
+    if (this.isRunningEventAnalysis(event.id)) {
+      return 'Analizando...';
+    }
+    if (event.editorialStatus === 'ANALYZED_PENDING_CONTENT') {
+      return 'Generar contenido';
+    }
+    if (event.editorialStatus === 'ANALYSIS_OUTDATED') {
+      return 'Regenerar analisis';
+    }
+    return 'Analizar';
+  }
+
+  protected priorityEventActionIcon(event: PriorityEvent): string {
+    return event.editorialStatus === 'ANALYZED_PENDING_CONTENT' ? 'pi pi-send' : 'pi pi-sparkles';
+  }
+
+  protected isRunningPriorityEventAction(event: PriorityEvent): boolean {
+    return this.isRunningEventAnalysis(event.id) || this.isRunningContentGeneration(event.id);
+  }
+
   protected isRunningAutomation(action: AutomationAction): boolean {
     return this.runningAutomation() === action;
   }
 
   protected isRunningEventAnalysis(eventId: number): boolean {
     return this.runningAutomation() === `analysis-${eventId}`;
+  }
+
+  protected isRunningContentGeneration(eventId: number): boolean {
+    return this.runningAutomation() === `content-${eventId}`;
   }
 
   protected formatDate(value: string): string {
@@ -180,6 +223,9 @@ export class DashboardPageComponent implements OnInit {
       const importanceComparison = this.importanceScore(left.importance) - this.importanceScore(right.importance);
       return importanceComparison !== 0 ? importanceComparison : left.relatedNews - right.relatedNews;
     }
+    if (column === 'editorialStatus') {
+      return this.editorialStatusScore(left.editorialStatus) - this.editorialStatusScore(right.editorialStatus);
+    }
     return left[column].localeCompare(right[column], 'es', { sensitivity: 'base' });
   }
 
@@ -204,6 +250,43 @@ export class DashboardPageComponent implements OnInit {
       CRITICAL: 4
     };
     return scores[importance] ?? 0;
+  }
+
+  private editorialStatusScore(status: string): number {
+    const scores: Record<string, number> = {
+      ANALYZED_PENDING_CONTENT: 4,
+      PENDING_ANALYSIS: 3,
+      ANALYSIS_OUTDATED: 2,
+      ANALYZED: 1
+    };
+    return scores[status] ?? 0;
+  }
+
+  private generateContent(eventId: number): void {
+    const action: AutomationAction = `content-${eventId}`;
+    this.runningAutomation.set(action);
+    this.automationMessage.set(null);
+    this.automationError.set(null);
+
+    this.contentService.generateContent({
+      eventId,
+      analysisId: null,
+      channel: 'TELEGRAM',
+      tone: 'INFORMATIVO',
+      contentType: 'TELEGRAM_POST',
+      length: 'STANDARD'
+    }).subscribe({
+      next: (content) => {
+        this.automationMessage.set(`Contenido #${content.id} generado y pendiente de revision.`);
+        this.runningAutomation.set(null);
+        this.loadDashboard();
+        void this.router.navigate(['/content', content.id]);
+      },
+      error: (error: { error?: { error?: string } }) => {
+        this.automationError.set(error.error?.error ?? 'No se pudo generar el contenido.');
+        this.runningAutomation.set(null);
+      }
+    });
   }
 
   private runAutomation(action: AutomationAction, request: ReturnType<AutomationService['runClassifications']>): void {

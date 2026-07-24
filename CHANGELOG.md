@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend IA WF-04: anadido fallback conservador para respuestas Gemini que empiezan como JSON pero quedan incompletas tras reintento, evitando bloqueos de eventos con contexto breve.
 - Backend automatizaciones: WF-02 y WF-03 ya no se reprograman inmediatamente tras lote completo si hay otro workflow vencido, evitando que WF-04 quede retrasado por el cooldown IA compartido.
 - Backend IA WF-04: anadido fallback conservador cuando Gemini bloquea por `RECITATION` y el reintento reducido sigue sin devolver JSON completo.
 - Backend IA WF-04: el reintento por `RECITATION` usa un prompt operativo reducido que evita reenviar titulos oficiales literales duplicados y conserva URL/metadatos del documento.
@@ -17,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Backend automatizaciones WF-04: corregida la consulta del ultimo analisis de evento para evitar `ResultSet is closed` antes de ejecutar la generacion IA.
 
 ### Added
+
+- Backend/Frontend dashboard: los eventos `HIGH` o `CRITICAL` con analisis IA vigente y sin contenido activo aparecen como `ANALYZED_PENDING_CONTENT`, con aviso editorial y accion directa para generar contenido desde el dashboard.
 
 - Frontend accesibilidad: actualizado `docs/accessibility.md` con el objetivo WCAG 2.2 AA, criterios por componente, método de verificación y definición de terminado sin sobredeclarar conformidad global.
 - Frontend eventos: creado el piloto visual accesible de `/events` con nueva jerarquía, métricas, búsqueda, tabla, herramienta progresiva de fusión y diálogo verificable por teclado.
@@ -41,6 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.116-SNAPSHOT`.
+- Frontend version: subida la version del paquete frontend a `0.0.39`.
+
+- Versionado backend actualizado a `0.0.115-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.114-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.113-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.112-SNAPSHOT`.

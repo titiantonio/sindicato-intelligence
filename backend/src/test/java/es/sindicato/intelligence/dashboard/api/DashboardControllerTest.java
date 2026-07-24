@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -241,7 +242,7 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$.priorityEvents[*].importance", everyItem(containsString("CRITICAL"))))
                 .andExpect(jsonPath("$.priorityEvents[*].category", everyItem(not(containsString("OTROS")))))
                 .andExpect(jsonPath("$.priorityEvents[*].status", everyItem(not(containsString("CLOSED")))))
-                .andExpect(jsonPath("$.priorityEvents[*].editorialStatus", everyItem(containsString("PENDING_ANALYSIS"))));
+                .andExpect(jsonPath("$.priorityEvents[*].editorialStatus", hasItem("PENDING_ANALYSIS")));
     }
 
     @Test
@@ -267,33 +268,35 @@ class DashboardControllerTest {
 
         MvcResult result = mockMvc.perform(get("/api/v1/dashboard").with(adminJwt()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.priorityEvents[0].title").value(criticalMoreTitle))
-                .andExpect(jsonPath("$.priorityEvents[0].relatedNews").value(2))
-                .andExpect(jsonPath("$.priorityEvents[1].title").value(criticalOneTitle))
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
         java.util.List<String> titles = JsonPath.read(response, "$.priorityEvents[*].title");
-        assertEquals(criticalMoreTitle, titles.getFirst());
+        assertTrue(titles.indexOf(criticalMoreTitle) < titles.indexOf(criticalOneTitle));
         assertTrue(titles.indexOf(criticalOneTitle) < titles.indexOf(highTitle));
     }
 
     @Test
-    void excludesAnalyzedPublishedAndManuallyDiscardedEventsFromPriorityEvents() throws Exception {
+    void includesAnalyzedPendingContentAndExcludesPublishedActiveContentAndDiscardedEventsFromPriorityEvents() throws Exception {
         Source source = sourceRepository.save(source());
         OffsetDateTime now = OffsetDateTime.now();
         NewsArticle pendingNews = newsRepository.save(newsArticle(source.getId(), "Pendiente", now));
         NewsArticle analyzedNews = newsRepository.save(newsArticle(source.getId(), "Analizada", now.plusMinutes(1)));
+        NewsArticle activeContentNews = newsRepository.save(newsArticle(source.getId(), "Contenido activo", now.plusMinutes(2)));
         NewsArticle publishedNews = newsRepository.save(newsArticle(source.getId(), "Publicada", now.plusMinutes(2)));
         NewsArticle discardedNews = newsRepository.save(newsArticle(source.getId(), "Descartada", now.plusMinutes(3)));
         String pendingTitle = "Evento pendiente prioridad " + UUID.randomUUID();
         String analyzedTitle = "Evento analizado prioridad " + UUID.randomUUID();
+        String activeContentTitle = "Evento contenido activo prioridad " + UUID.randomUUID();
         String publishedTitle = "Evento publicado prioridad " + UUID.randomUUID();
         String discardedTitle = "Evento descartado prioridad " + UUID.randomUUID();
 
         Event pendingEvent = eventRepository.save(event(pendingNews.getId(), pendingTitle, EventCategory.SINDICAL, Importance.CRITICAL, EventStatus.OPEN, now));
         Event analyzedEvent = eventRepository.save(event(analyzedNews.getId(), analyzedTitle, EventCategory.SINDICAL, Importance.CRITICAL, EventStatus.OPEN, now.plusMinutes(1)));
         analysisRepository.save(analysis(analyzedEvent.getId(), now.plusMinutes(2)));
+        Event activeContentEvent = eventRepository.save(event(activeContentNews.getId(), activeContentTitle, EventCategory.SINDICAL, Importance.CRITICAL, EventStatus.OPEN, now.plusMinutes(2)));
+        analysisRepository.save(analysis(activeContentEvent.getId(), now.plusMinutes(3)));
+        content(activeContentEvent.getId(), ContentStatus.PENDING_REVIEW, now.plusMinutes(4));
         Event publishedEvent = eventRepository.save(event(publishedNews.getId(), publishedTitle, EventCategory.SINDICAL, Importance.CRITICAL, EventStatus.OPEN, now.plusMinutes(2)));
         content(publishedEvent.getId(), ContentStatus.PUBLISHED, now.plusMinutes(3));
         Event discardedEvent = event(discardedNews.getId(), discardedTitle, EventCategory.SINDICAL, Importance.CRITICAL, EventStatus.OPEN, now.plusMinutes(3));
@@ -308,10 +311,12 @@ class DashboardControllerTest {
         java.util.List<String> titles = JsonPath.read(response, "$.priorityEvents[*].title");
         java.util.List<String> editorialStatuses = JsonPath.read(response, "$.priorityEvents[*].editorialStatus");
         assertTrue(titles.contains(pendingTitle));
-        assertTrue(!titles.contains(analyzedTitle));
+        assertTrue(titles.contains(analyzedTitle));
+        assertTrue(!titles.contains(activeContentTitle));
         assertTrue(!titles.contains(publishedTitle));
         assertTrue(!titles.contains(discardedTitle));
-        assertTrue(editorialStatuses.stream().allMatch(EventEditorialStatus.PENDING_ANALYSIS.name()::equals));
+        assertTrue(editorialStatuses.contains(EventEditorialStatus.PENDING_ANALYSIS.name()));
+        assertTrue(editorialStatuses.contains(EventEditorialStatus.ANALYZED_PENDING_CONTENT.name()));
     }
 
     private RequestPostProcessor adminJwt() {

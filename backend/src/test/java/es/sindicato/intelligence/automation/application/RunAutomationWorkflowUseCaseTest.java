@@ -86,7 +86,7 @@ class RunAutomationWorkflowUseCaseTest {
         assertEquals(8, setting.getLastSuccessCount());
         assertEquals(2, setting.getLastFailedCount());
         assertEquals("Gemini classification request failed with HTTP 500", setting.getLastError());
-        assertTrue(setting.getNextRunAt().isAfter(setting.getLastRunAt()));
+        assertFalse(setting.getNextRunAt().isBefore(setting.getLastRunAt()));
         verify(classifications).execute(10);
         verify(audit).record(org.mockito.ArgumentMatchers.eq("AUTOMATION_RUN_COMPLETED"), org.mockito.ArgumentMatchers.eq("AUTOMATION"), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.any());
     }

@@ -22,6 +22,25 @@
   <p class="page-alert">Actualizando dashboard...</p>
 }
 
+@if (analyzedPendingContentEvents().length > 0) {
+  <section class="editorial-alert" aria-live="polite">
+    <div>
+      <span class="page-header__eyebrow">Aviso editorial</span>
+      <h2>{{ analyzedPendingContentEvents().length }} eventos importantes analizados pendientes de contenido</h2>
+      <p>Hay eventos con analisis IA vigente y sin contenido activo para revision.</p>
+    </div>
+    <button
+      pButton
+      type="button"
+      icon="pi pi-send"
+      [label]="isRunningContentGeneration(analyzedPendingContentEvents()[0].id) ? 'Generando...' : 'Generar primer contenido'"
+      [loading]="isRunningContentGeneration(analyzedPendingContentEvents()[0].id)"
+      [disabled]="runningAutomation() !== null"
+      (click)="runPriorityEventAction($event, analyzedPendingContentEvents()[0])"
+    ></button>
+  </section>
+}
+
 <section class="metric-grid">
   @for (metric of metricCards(); track metric.label) {
     <app-metric-card [card]="metric" />
@@ -59,7 +78,7 @@
 
   <app-standard-table
     [rows]="paginatedPriorityEvents()"
-    [columnCount]="7"
+    [columnCount]="8"
     [totalItems]="displayedPriorityEvents().length"
     totalLabel="eventos filtrados"
     [pageSize]="pageSize()"
@@ -80,6 +99,7 @@
           <th scope="col"><button class="sort-button" type="button" (click)="changeSort('relatedNews')">Noticias {{ sortLabel('relatedNews') }}</button></th>
           <th scope="col"><button class="sort-button" type="button" (click)="changeSort('updatedAt')">Actualizacion {{ sortLabel('updatedAt') }}</button></th>
           <th scope="col"><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('editorialStatus')">Tarea {{ sortLabel('editorialStatus') }}</button></th>
           <th scope="col">Accion</th>
         </tr>
       </ng-template>
@@ -96,6 +116,7 @@
             <p-select [options]="statusOptions()" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar eventos prioritarios por estado" />
           </th>
           <th scope="col"></th>
+          <th scope="col"></th>
         </tr>
       </ng-template>
       <ng-template #tableRow let-event>
@@ -106,14 +127,15 @@
             <td class="table-cell-nowrap">{{ event.relatedNews }}</td>
             <td class="table-cell-nowrap">{{ formatDate(event.updatedAt) }}</td>
             <td class="table-cell-nowrap"><app-status-badge [value]="event.status" /></td>
+            <td class="table-cell-nowrap"><app-status-badge [value]="event.editorialStatus" /></td>
             <td class="table-cell-nowrap">
-              <button pButton class="row-action" type="button" icon="pi pi-sparkles" [label]="isRunningEventAnalysis(event.id) ? 'Analizando...' : 'Analizar'" (click)="runEventAnalysis($event, event.id)" [loading]="isRunningEventAnalysis(event.id)" [disabled]="runningAutomation() !== null"></button>
+              <button pButton class="row-action" type="button" [icon]="priorityEventActionIcon(event)" [label]="priorityEventActionLabel(event)" (click)="runPriorityEventAction($event, event)" [loading]="isRunningPriorityEventAction(event)" [disabled]="runningAutomation() !== null"></button>
             </td>
           </tr>
       </ng-template>
       <ng-template #tableEmpty>
         <tr>
-          <td colspan="7">No hay eventos prioritarios que requieran atencion inmediata.</td>
+          <td colspan="8">No hay eventos prioritarios que requieran atencion inmediata.</td>
         </tr>
       </ng-template>
   </app-standard-table>

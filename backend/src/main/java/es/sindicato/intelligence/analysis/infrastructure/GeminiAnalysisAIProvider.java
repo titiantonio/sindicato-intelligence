@@ -93,6 +93,11 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                     log.warn("Gemini analysis fallback used after RECITATION retry failed: reason={}", exception.getMessage());
                     return conservativeRecitationFallback(currentRequest, resolvedModel);
                 }
+                if (attempt >= MAX_ANALYSIS_ATTEMPTS && isIncompleteJsonFailure(exception)) {
+                    log.warn("Gemini analysis fallback used after incomplete JSON retry failed: eventId={}, reason={}",
+                            currentRequest.eventId(), exception.getMessage());
+                    return conservativeIncompleteJsonFallback(currentRequest, resolvedModel);
+                }
                 if (attempt >= MAX_ANALYSIS_ATTEMPTS || !isRetryable(exception)) {
                     throw exception;
                 }
@@ -239,7 +244,12 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
         int firstBrace = text.indexOf('{');
         int lastBrace = text.lastIndexOf('}');
 
-        if (firstBrace < 0 || lastBrace <= firstBrace) {
+        if (firstBrace >= 0 && lastBrace <= firstBrace) {
+            log.warn("Gemini analysis response contains incomplete JSON object. responseSnippet='{}'", abbreviate(text));
+            throw new AnalysisAIProviderException("Gemini response contains an incomplete JSON object");
+        }
+
+        if (firstBrace < 0) {
             log.warn("Gemini analysis response does not contain JSON object. responseSnippet='{}'", abbreviate(text));
             throw new AnalysisAIProviderException("Gemini response does not contain a JSON object");
         }
@@ -255,12 +265,17 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
 
         return message.startsWith("Gemini response is empty")
                 || message.startsWith("Gemini response does not contain")
+                || message.startsWith("Gemini response contains an incomplete JSON object")
                 || message.startsWith("Gemini response is not valid analysis JSON")
                 || message.startsWith("Gemini response field '");
     }
 
     private boolean isRecitationFailure(AnalysisAIProviderException exception) {
         return exception.getMessage() != null && exception.getMessage().contains(RECITATION_FINISH_REASON);
+    }
+
+    private boolean isIncompleteJsonFailure(AnalysisAIProviderException exception) {
+        return exception.getMessage() != null && exception.getMessage().startsWith("Gemini response contains an incomplete JSON object");
     }
 
     private boolean isRecitationFallbackRequest(AnalysisAIRequest request) {
@@ -278,6 +293,20 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                 affectedGroupsFor(request),
                 List.of("Revisar el PDF oficial enlazado y confirmar plazos, colectivos y requisitos antes de publicar."),
                 resolvedModel + ":conservative-recitation-fallback"
+        );
+    }
+
+    private AnalysisAIResponse conservativeIncompleteJsonFallback(AnalysisAIRequest request, String resolvedModel) {
+        String topic = recitationSafeTopic(request);
+        return new AnalysisAIResponse(
+                "Analisis limitado porque el proveedor IA devolvio un JSON incompleto; se trabaja con la informacion disponible del evento.",
+                "Conviene validar la informacion en la fuente enlazada antes de fijar posicionamiento o contenido definitivo.",
+                List.of(topic, "La informacion disponible es breve y requiere verificacion editorial."),
+                List.of("El contexto capturado puede ser insuficiente para identificar todos los plazos, sedes o colectivos afectados."),
+                List.of("Usar el enlace de la noticia como punto de partida para seguimiento sindical y comunicacion a personas afectadas."),
+                affectedGroupsFor(request),
+                List.of("Revisar la fuente enlazada y confirmar detalles operativos antes de publicar."),
+                resolvedModel + ":conservative-json-fallback"
         );
     }
 
@@ -365,6 +394,9 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
         }
         if (containsIgnoreCase(title, "boja") || containsIgnoreCase(title, "resolucion")) {
             return "Resolucion oficial relacionada con " + request.category() + ".";
+        }
+        if (containsIgnoreCase(title, "oposiciones") && containsIgnoreCase(title, "calificaciones")) {
+            return "Publicacion de calificaciones de oposiciones docentes.";
         }
         if (!title.isBlank() && title.length() <= 140) {
             return title;

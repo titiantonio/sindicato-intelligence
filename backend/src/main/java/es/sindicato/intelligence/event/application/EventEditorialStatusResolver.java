@@ -37,6 +37,13 @@ public class EventEditorialStatusResolver {
         }
 
         if (latestAnalysis.isPresent()) {
+            boolean hasActiveContent = contentRepository.findByEventId(event.getId()).stream()
+                    .anyMatch(content -> content.getStatus() == ContentStatus.GENERATED
+                            || content.getStatus() == ContentStatus.PENDING_REVIEW
+                            || content.getStatus() == ContentStatus.APPROVED);
+            if (!hasActiveContent) {
+                return EventEditorialStatus.ANALYZED_PENDING_CONTENT;
+            }
             return EventEditorialStatus.ANALYZED;
         }
 
