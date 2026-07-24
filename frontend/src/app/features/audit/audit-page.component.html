@@ -23,9 +23,9 @@
 }
 
 <section class="panel">
-  <div class="audit-tabs">
-    <button pButton type="button" severity="secondary" [class.audit-tabs__button--active]="activeTab() === 'users'" (click)="setTab('users')">Usuarios</button>
-    <button pButton type="button" severity="secondary" [class.audit-tabs__button--active]="activeTab() === 'editorial'" (click)="setTab('editorial')">Editorial</button>
+  <div class="audit-tabs" aria-label="Tipos de auditoría">
+    <button pButton type="button" severity="secondary" [class.audit-tabs__button--active]="activeTab() === 'users'" [attr.aria-pressed]="activeTab() === 'users'" (click)="setTab('users')">Usuarios</button>
+    <button pButton type="button" severity="secondary" [class.audit-tabs__button--active]="activeTab() === 'editorial'" [attr.aria-pressed]="activeTab() === 'editorial'" (click)="setTab('editorial')">Editorial</button>
   </div>
 
   @if (activeTab() === 'users') {
@@ -45,11 +45,11 @@
     >
         <ng-template #tableHeader>
           <tr>
-            <th scope="col"><button class="sort-button" type="button" (click)="setUserSort('createdAt')">Fecha {{ userSortLabel('createdAt') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="setUserSort('action')">Accion {{ userSortLabel('action') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="setUserSort('userId')">Usuario {{ userSortLabel('userId') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="setUserSort('actorEmail')">Actor {{ userSortLabel('actorEmail') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="setUserSort('details')">Detalle {{ userSortLabel('details') }}</button></th>
+            <th scope="col" [attr.aria-sort]="userSortAriaValue('createdAt')"><button class="sort-button" type="button" (click)="setUserSort('createdAt')">Fecha {{ userSortLabel('createdAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="userSortAriaValue('action')"><button class="sort-button" type="button" (click)="setUserSort('action')">Accion {{ userSortLabel('action') }}</button></th>
+            <th scope="col" [attr.aria-sort]="userSortAriaValue('userId')"><button class="sort-button" type="button" (click)="setUserSort('userId')">Usuario {{ userSortLabel('userId') }}</button></th>
+            <th scope="col" [attr.aria-sort]="userSortAriaValue('actorEmail')"><button class="sort-button" type="button" (click)="setUserSort('actorEmail')">Actor {{ userSortLabel('actorEmail') }}</button></th>
+            <th scope="col" [attr.aria-sort]="userSortAriaValue('details')"><button class="sort-button" type="button" (click)="setUserSort('details')">Detalle {{ userSortLabel('details') }}</button></th>
           </tr>
         </ng-template>
         <ng-template #tableFilters>
@@ -95,11 +95,11 @@
     >
         <ng-template #tableHeader>
           <tr>
-            <th scope="col"><button class="sort-button" type="button" (click)="setEditorialSort('createdAt')">Fecha {{ editorialSortLabel('createdAt') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="setEditorialSort('action')">Accion {{ editorialSortLabel('action') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="setEditorialSort('entityType')">Entidad {{ editorialSortLabel('entityType') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="setEditorialSort('userId')">Usuario {{ editorialSortLabel('userId') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="setEditorialSort('newValues')">Detalle {{ editorialSortLabel('newValues') }}</button></th>
+            <th scope="col" [attr.aria-sort]="editorialSortAriaValue('createdAt')"><button class="sort-button" type="button" (click)="setEditorialSort('createdAt')">Fecha {{ editorialSortLabel('createdAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="editorialSortAriaValue('action')"><button class="sort-button" type="button" (click)="setEditorialSort('action')">Accion {{ editorialSortLabel('action') }}</button></th>
+            <th scope="col" [attr.aria-sort]="editorialSortAriaValue('entityType')"><button class="sort-button" type="button" (click)="setEditorialSort('entityType')">Entidad {{ editorialSortLabel('entityType') }}</button></th>
+            <th scope="col" [attr.aria-sort]="editorialSortAriaValue('userId')"><button class="sort-button" type="button" (click)="setEditorialSort('userId')">Usuario {{ editorialSortLabel('userId') }}</button></th>
+            <th scope="col" [attr.aria-sort]="editorialSortAriaValue('newValues')"><button class="sort-button" type="button" (click)="setEditorialSort('newValues')">Detalle {{ editorialSortLabel('newValues') }}</button></th>
           </tr>
         </ng-template>
         <ng-template #tableFilters>
@@ -133,9 +133,15 @@
 
 @if (selectedAuditDetail(); as detail) {
   <p-dialog
+    [appDialogFocusReturn]="selectedAuditDetail() !== null"
     [modal]="true"
     [visible]="selectedAuditDetail() !== null"
     (visibleChange)="!$event && closeAuditDetail()"
+    [draggable]="false"
+    [resizable]="false"
+    [focusOnShow]="true"
+    [focusTrap]="true"
+    closeAriaLabel="Cerrar detalle de auditoría"
     [style]="{ width: 'min(760px, 96vw)' }"
     [breakpoints]="{ '768px': '96vw' }"
     styleClass="audit-modal"

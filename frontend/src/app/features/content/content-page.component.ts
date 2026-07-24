@@ -11,6 +11,7 @@ import { ContentService } from '../../core/services/content.service';
 import { PublicationService } from '../../core/services/publication.service';
 import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { DialogFocusReturnDirective } from '../../shared/directives/dialog-focus-return.directive';
 
 type ContentSortColumn = 'channel' | 'title' | 'status' | 'generatedAt' | 'approvedAt';
 type SortDirection = 'asc' | 'desc';
@@ -18,7 +19,7 @@ type ModalMode = 'view' | 'edit';
 
 @Component({
   selector: 'app-content-page',
-  imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, MessageModule, RouterLink, StandardTableComponent, StatusBadgeComponent],
+  imports: [ButtonModule, DialogFocusReturnDirective, DialogModule, FormsModule, InputTextModule, MessageModule, RouterLink, StandardTableComponent, StatusBadgeComponent],
   templateUrl: './content-page.component.html',
   styleUrl: './content-page.component.scss'
 })
@@ -237,6 +238,12 @@ export class ContentPageComponent implements OnInit {
 
   protected sortLabel(column: ContentSortColumn): string {
     return this.sortColumn() === column ? this.sortDirection().toUpperCase() : '';
+  }
+
+  protected sortAriaValue(column: ContentSortColumn): 'ascending' | 'descending' | 'none' {
+    return this.sortColumn() === column
+      ? (this.sortDirection() === 'asc' ? 'ascending' : 'descending')
+      : 'none';
   }
 
   protected setPageSize(value: string): void {

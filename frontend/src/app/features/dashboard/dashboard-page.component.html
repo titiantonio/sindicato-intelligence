@@ -93,13 +93,13 @@
   >
       <ng-template #tableHeader>
         <tr>
-          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
-          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('category')">Categoria {{ sortLabel('category') }}</button></th>
-          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('importance')">Impacto {{ sortLabel('importance') }}</button></th>
-          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('relatedNews')">Noticias {{ sortLabel('relatedNews') }}</button></th>
-          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('updatedAt')">Actualizacion {{ sortLabel('updatedAt') }}</button></th>
-          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
-          <th scope="col"><button class="sort-button" type="button" (click)="changeSort('editorialStatus')">Tarea {{ sortLabel('editorialStatus') }}</button></th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('title')"><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('category')"><button class="sort-button" type="button" (click)="changeSort('category')">Categoria {{ sortLabel('category') }}</button></th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('importance')"><button class="sort-button" type="button" (click)="changeSort('importance')">Impacto {{ sortLabel('importance') }}</button></th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('relatedNews')"><button class="sort-button" type="button" (click)="changeSort('relatedNews')">Noticias {{ sortLabel('relatedNews') }}</button></th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('updatedAt')"><button class="sort-button" type="button" (click)="changeSort('updatedAt')">Actualizacion {{ sortLabel('updatedAt') }}</button></th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('status')"><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+          <th scope="col" [attr.aria-sort]="sortAriaValue('editorialStatus')"><button class="sort-button" type="button" (click)="changeSort('editorialStatus')">Tarea {{ sortLabel('editorialStatus') }}</button></th>
           <th scope="col">Accion</th>
         </tr>
       </ng-template>

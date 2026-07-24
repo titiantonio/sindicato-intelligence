@@ -7,12 +7,13 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeToggleComponent } from '../../../shared/components/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-forgot-password-page',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ButtonModule, InputTextModule, MessageModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ButtonModule, InputTextModule, MessageModule, ThemeToggleComponent],
   templateUrl: './forgot-password-page.component.html',
-  styleUrl: './forgot-password-page.component.scss'
+  styleUrls: ['./forgot-password-page.component.scss', '../auth-modern.component.scss']
 })
 export class ForgotPasswordPageComponent {
   private readonly formBuilder = inject(FormBuilder);

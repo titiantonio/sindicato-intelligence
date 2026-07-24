@@ -1,0 +1,498 @@
+html:root {
+  --color-page: #f2f7f6;
+  --color-page-accent: #e5f5f2;
+  --color-page-accent-strong: #edf7f5;
+  --color-surface: #ffffff;
+  --color-muted-surface: #f7faf9;
+  --color-raised-surface: #ffffff;
+  --color-sidebar: #071827;
+  --color-sidebar-alt: #0b2f3a;
+  --color-sidebar-text: #f8fafc;
+  --color-sidebar-muted: #c5d4dc;
+  --color-text: #132331;
+  --color-text-muted: #526173;
+  --color-text-soft: #64748b;
+  --color-field-text: #233445;
+  --color-border: #d4e1de;
+  --color-border-soft: #e2ebe9;
+  --color-input-border: #64748b;
+  --color-primary: #0f766e;
+  --color-primary-strong: #115e59;
+  --color-primary-soft: #ccfbf1;
+  --color-primary-muted: #99f6e4;
+  --color-primary-contrast: #ffffff;
+  --color-secondary: #2563eb;
+  --color-secondary-soft: #dbeafe;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --shadow-soft: 0 14px 34px rgba(15, 23, 42, 0.07);
+  --shadow-card: 0 18px 42px rgba(15, 23, 42, 0.1);
+  --shadow-elevated: 0 28px 70px rgba(7, 24, 39, 0.2);
+  --shell-background:
+    radial-gradient(circle at 100% 0, rgba(45, 212, 191, 0.08), transparent 28rem),
+    linear-gradient(180deg, #eef6f5 0%, #f4f8f7 52%, #edf6f3 100%);
+  --auth-page-background:
+    radial-gradient(circle at 90% 10%, rgba(45, 212, 191, 0.18), transparent 24rem),
+    linear-gradient(145deg, #071827 0%, #0b2f3a 44%, #f2f7f6 44%, #f2f7f6 100%);
+  --login-page-background:
+    radial-gradient(circle at 22% 16%, rgba(45, 212, 191, 0.2), transparent 24rem),
+    linear-gradient(135deg, #071827 0%, #0b2f3a 45%, #f2f7f6 45%, #f2f7f6 100%);
+  --focus-ring: 0 0 0 3px rgba(15, 118, 110, 0.28);
+}
+
+html:root[data-theme='dark'],
+html:root.theme-dark {
+  --color-page: #080f1c;
+  --color-page-accent: #102b2d;
+  --color-page-accent-strong: #122a31;
+  --color-surface: #111827;
+  --color-muted-surface: #0d1727;
+  --color-raised-surface: #172033;
+  --color-sidebar: #020712;
+  --color-sidebar-alt: #0b2029;
+  --color-sidebar-text: #f8fafc;
+  --color-sidebar-muted: #cbd5e1;
+  --color-text: #f8fafc;
+  --color-text-muted: #cbd5e1;
+  --color-text-soft: #a8b5c7;
+  --color-field-text: #edf2f7;
+  --color-border: #334155;
+  --color-border-soft: #253449;
+  --color-input-border: #64748b;
+  --color-primary: #5eead4;
+  --color-primary-strong: #99f6e4;
+  --color-primary-soft: #123c3a;
+  --color-primary-muted: #99f6e4;
+  --color-primary-contrast: #071827;
+  --color-secondary: #93c5fd;
+  --color-secondary-soft: #172554;
+  --shadow-soft: 0 16px 38px rgba(0, 0, 0, 0.27);
+  --shadow-card: 0 20px 48px rgba(0, 0, 0, 0.32);
+  --shadow-elevated: 0 30px 76px rgba(0, 0, 0, 0.5);
+  --shell-background:
+    radial-gradient(circle at 100% 0, rgba(45, 212, 191, 0.08), transparent 28rem),
+    linear-gradient(180deg, #050b16 0%, #080f1c 54%, #0c1726 100%);
+  --auth-page-background:
+    radial-gradient(circle at 88% 8%, rgba(45, 212, 191, 0.14), transparent 24rem),
+    linear-gradient(145deg, #020712 0%, #0b2029 44%, #080f1c 44%, #080f1c 100%);
+  --login-page-background:
+    radial-gradient(circle at 22% 16%, rgba(45, 212, 191, 0.18), transparent 24rem),
+    linear-gradient(135deg, #020712 0%, #0b2029 45%, #080f1c 45%, #080f1c 100%);
+  --focus-ring: 0 0 0 3px rgba(94, 234, 212, 0.32);
+}
+
+html,
+body {
+  background: var(--color-page);
+}
+
+body {
+  color: var(--color-text);
+}
+
+app-dashboard-page,
+app-event-detail-page,
+app-news-page,
+app-news-detail-page,
+app-content-page,
+app-content-detail-page,
+app-publications-page,
+app-publication-detail-page,
+app-sources-page,
+app-users-page,
+app-settings-page,
+app-audit-page {
+  display: grid;
+  gap: 1rem;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.shell .shell__main .page-header,
+.shell .shell__main .news-page__header,
+.shell .shell__main .sources-page__header,
+.shell .shell__main .users-page__header {
+  align-items: end;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(45, 212, 191, 0.2), transparent 30%),
+    linear-gradient(135deg, #0f172a 0%, #164e63 100%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  color: #f8fafc;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  justify-content: space-between;
+  margin: 0;
+  min-height: 11rem;
+  overflow: hidden;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  position: relative;
+}
+
+.shell .shell__main .page-header::after,
+.shell .shell__main .news-page__header::after,
+.shell .shell__main .sources-page__header::after,
+.shell .shell__main .users-page__header::after {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  content: '';
+  height: 17rem;
+  pointer-events: none;
+  position: absolute;
+  right: -7rem;
+  top: -10rem;
+  width: 17rem;
+}
+
+.shell .shell__main .page-header > *,
+.shell .shell__main .news-page__header > *,
+.shell .shell__main .sources-page__header > *,
+.shell .shell__main .users-page__header > * {
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.shell .shell__main .page-header h1,
+.shell .shell__main .news-page__header h1,
+.shell .shell__main .sources-page__header h1,
+.shell .shell__main .users-page__header h1 {
+  color: #f8fafc !important;
+  font-size: clamp(2rem, 4vw, 3.15rem);
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  margin: 0.65rem 0 0.5rem;
+}
+
+.shell .shell__main .page-header p,
+.shell .shell__main .news-page__header p,
+.shell .shell__main .sources-page__header p,
+.shell .shell__main .users-page__header p {
+  color: #cbd5e1 !important;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 48rem;
+}
+
+.shell .shell__main .page-header__eyebrow {
+  align-items: center;
+  color: #99f6e4;
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 900;
+  gap: 0.45rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.shell .shell__main .page-header__actions,
+.shell .shell__main .page-header__actions label {
+  color: #e2e8f0;
+}
+
+.shell .shell__main .page-header .p-button,
+.shell .shell__main .news-page__header .p-button,
+.shell .shell__main .sources-page__header .p-button,
+.shell .shell__main .users-page__header .p-button {
+  background: #ccfbf1;
+  border-color: #99f6e4;
+  color: #115e59;
+}
+
+.shell .shell__main .page-header input,
+.shell .shell__main .news-page__header input {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: #94a3b8;
+  color: #172033;
+}
+
+.shell .shell__main .panel,
+.shell .shell__main .table-panel,
+.shell .shell__main .form-panel,
+.shell .shell__main .detail-panel,
+.shell .shell__main .content-card,
+.shell .shell__main .news-page__card,
+.shell .shell__main .sources-page__card,
+.shell .shell__main .users-page__card,
+.shell .shell__main .publication-card,
+.shell .shell__main .automation-panel,
+.shell .shell__main .workflow-panel,
+.shell .shell__main .telegram-panel,
+.shell .shell__main .ai-provider-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+}
+
+.shell .shell__main .content-page > .panel,
+.shell .shell__main .settings-page > .panel {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  display: grid;
+  gap: 1rem;
+  overflow: visible;
+  padding: 0;
+}
+
+.shell .shell__main .settings-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+  margin: 0;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.shell .shell__main .section-header {
+  align-items: end;
+  border-bottom: 1px solid var(--color-border-soft);
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+}
+
+.shell .shell__main .section-header h2,
+.shell .shell__main .panel h2 {
+  color: var(--color-text);
+  letter-spacing: -0.025em;
+}
+
+.shell .shell__main .summary-grid {
+  gap: 0.85rem;
+}
+
+.shell .shell__main .metric-tile,
+.shell .shell__main .summary-card,
+.shell .shell__main .workflow-subpanel {
+  background: var(--color-muted-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+.shell .shell__main .back-link {
+  align-items: center;
+  background: var(--color-primary-soft);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 36%, var(--color-border));
+  border-radius: 999px;
+  color: var(--color-primary-strong);
+  display: inline-flex;
+  font-size: 0.85rem;
+  font-weight: 850;
+  gap: 0.4rem;
+  justify-self: start;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.85rem;
+  text-decoration: none;
+}
+
+.shell .shell__main a:not(.p-button):not(.shell__nav-link) {
+  text-underline-offset: 0.18em;
+}
+
+body .p-button,
+body button[pButton] {
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  min-height: 2.5rem;
+}
+
+body .p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-success):not(.p-button-warn) {
+  --p-button-primary-background: var(--color-primary);
+  --p-button-primary-border-color: var(--color-primary);
+  --p-button-primary-hover-background: var(--color-primary-strong);
+  --p-button-primary-hover-border-color: var(--color-primary-strong);
+}
+
+body .p-inputtext,
+body .p-select,
+body textarea,
+body input:not([type='checkbox']):not([type='radio']),
+body select {
+  background: var(--color-surface);
+  border-color: var(--color-input-border);
+  border-radius: var(--radius-md);
+  color: var(--color-field-text);
+  min-height: 2.65rem;
+}
+
+body .p-inputtext:focus,
+body .p-select:focus-within,
+body textarea:focus,
+body input:focus,
+body select:focus {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+  outline: 0;
+}
+
+body .p-message {
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+body .p-dialog-mask {
+  backdrop-filter: blur(5px);
+  background: rgba(2, 7, 18, 0.64);
+  padding: 1rem;
+}
+
+body .p-dialog {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-elevated);
+  color: var(--color-text);
+  max-height: calc(100dvh - 2rem);
+  overflow: hidden;
+}
+
+body .p-dialog .p-dialog-header {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary-soft) 42%, var(--color-surface)), var(--color-surface));
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: 1.15rem 1.25rem;
+}
+
+body .p-dialog .p-dialog-title {
+  color: var(--color-text);
+  font-size: 1.15rem;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+body .p-dialog .p-dialog-content {
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 1.25rem;
+}
+
+body .p-dialog .p-dialog-footer {
+  background: var(--color-muted-surface);
+  border-top: 1px solid var(--color-border);
+  gap: 0.65rem;
+  padding: 1rem 1.25rem;
+}
+
+body .p-dialog .p-dialog-close-button {
+  border-radius: 50%;
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+}
+
+body .p-tooltip .p-tooltip-text {
+  background: #071827;
+  border-radius: var(--radius-md);
+  color: #f8fafc;
+  font-size: 0.8rem;
+}
+
+.shell .shell__main .settings-tabs,
+.shell .shell__main .audit-tabs {
+  background: var(--color-muted-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.4rem;
+}
+
+.shell .shell__main .settings-tab,
+.shell .shell__main .audit-tabs button {
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  min-height: 2.65rem;
+}
+
+.shell .shell__main .settings-tab--active,
+.shell .shell__main .audit-tabs__button--active {
+  background: var(--color-primary-soft) !important;
+  border-color: color-mix(in srgb, var(--color-primary) 36%, var(--color-border));
+  color: var(--color-primary-strong) !important;
+}
+
+.shell .shell__main .publication-card--link,
+.shell .shell__main .event-row,
+.shell .shell__main .content-row,
+.shell .shell__main .metric-row {
+  transition:
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease,
+    transform var(--duration-fast) ease;
+}
+
+.shell .shell__main .publication-card--link:hover,
+.shell .shell__main .publication-card--link:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: 0 18px 38px color-mix(in srgb, var(--color-primary) 12%, transparent);
+  transform: translateY(-2px);
+}
+
+.shell .shell__main .editorial-alert {
+  background: color-mix(in srgb, var(--color-warning-soft) 72%, var(--color-surface));
+  border: 1px solid var(--color-warning-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.shell .shell__main .automation-panel {
+  border-left: 4px solid var(--color-primary);
+}
+
+@media (max-width: 760px) {
+  .shell .shell__main .page-header,
+  .shell .shell__main .news-page__header,
+  .shell .shell__main .sources-page__header,
+  .shell .shell__main .users-page__header {
+    align-items: stretch;
+    display: grid;
+    min-height: 0;
+    padding: 1.35rem;
+  }
+
+  .shell .shell__main .page-header h1,
+  .shell .shell__main .news-page__header h1,
+  .shell .shell__main .sources-page__header h1,
+  .shell .shell__main .users-page__header h1 {
+    font-size: clamp(1.85rem, 10vw, 2.5rem);
+  }
+
+  .shell .shell__main .page-header__actions,
+  .shell .shell__main .page-header__actions > *,
+  .shell .shell__main .page-header .p-button,
+  .shell .shell__main .news-page__header .p-button,
+  .shell .shell__main .sources-page__header .p-button,
+  .shell .shell__main .users-page__header .p-button {
+    width: 100%;
+  }
+
+  body .p-dialog {
+    width: min(100%, calc(100vw - 1rem)) !important;
+  }
+
+  body .p-dialog .p-dialog-footer {
+    display: grid;
+  }
+
+  body .p-dialog .p-dialog-footer .p-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

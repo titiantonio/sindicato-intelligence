@@ -97,6 +97,17 @@ async function handleApiRoute(route: Route, state: MockApiState): Promise<void> 
     return;
   }
 
+  if (method === 'GET' && path === '/api/v1/news/page') {
+    await json(route, newsPageResponse());
+    return;
+  }
+
+  const newsDetailMatch = path.match(/^\/api\/v1\/news\/(\d+)$/);
+  if (method === 'GET' && newsDetailMatch) {
+    await json(route, newsDetailResponse(Number(newsDetailMatch[1])));
+    return;
+  }
+
   if (method === 'POST' && path === '/api/v1/content/generate') {
     const body = request.postDataJSON() as { eventId: number; analysisId: number | null; tone: string; contentType: string; length: string };
     const item = generatedContentItem(state.nextContentId++, body);
@@ -149,6 +160,27 @@ async function handleApiRoute(route: Route, state: MockApiState): Promise<void> 
 
   if (method === 'GET' && path === '/api/v1/publications') {
     await json(route, publicationsResponse(state));
+    return;
+  }
+
+  if (method === 'GET' && path === '/api/v1/publications/telegram-destinations') {
+    await json(route, [{ id: 1, name: 'Canal principal E2E', defaultSelected: true }]);
+    return;
+  }
+
+  const publicationDetailMatch = path.match(/^\/api\/v1\/publications\/(\d+)\/detail$/);
+  if (method === 'GET' && publicationDetailMatch) {
+    const publication = state.publications.find((item) => item.id === Number(publicationDetailMatch[1]));
+    if (!publication) {
+      await json(route, { error: 'Publicacion mock no encontrada' }, 404);
+      return;
+    }
+    const content = publication.contentId === null ? null : findContent(state, publication.contentId);
+    await json(route, {
+      publication,
+      content,
+      event: content ? eventDetailResponse(content.eventId, state) : null
+    });
     return;
   }
 
@@ -302,6 +334,60 @@ function eventsResponse(state: MockApiState) {
       updatedAt: now
     }
   ];
+}
+
+function newsPageResponse() {
+  const item = newsDetailResponse(1001);
+  return {
+    items: [{
+      id: item.id,
+      sourceId: item.sourceId,
+      sourceName: item.sourceName,
+      title: item.title,
+      url: item.url,
+      processingStatus: item.processingStatus,
+      eventId: item.eventId,
+      category: item.classification?.category ?? null,
+      publishedAt: item.publishedAt,
+      capturedAt: item.capturedAt
+    }],
+    page: 1,
+    pageSize: 10,
+    totalItems: 1,
+    totalPages: 1
+  };
+}
+
+function newsDetailResponse(newsId: number) {
+  return {
+    id: newsId,
+    sourceId: 501,
+    sourceName: 'BOJA Educacion',
+    title: 'Convocatoria extraordinaria de oposiciones docentes',
+    url: 'https://example.test/noticias/oposiciones',
+    summary: 'Informacion consolidada sobre la convocatoria docente.',
+    content: 'Contenido completo simulado para la prueba visual.',
+    hash: 'mock-news-hash',
+    publishedAt: now,
+    capturedAt: now,
+    processingStatus: 'EVENT_MATCHED',
+    createdAt: now,
+    updatedAt: now,
+    eventId: 101,
+    classification: {
+      id: 901,
+      newsId,
+      category: 'OPOSICIONES',
+      subcategory: null,
+      relevanceScore: 0.91,
+      urgencyLevel: 'HIGH',
+      sentiment: 'NEUTRAL',
+      geographicScope: 'ANDALUCIA',
+      keyEntities: ['Consejeria de Desarrollo Educativo'],
+      summary: 'Convocatoria docente relevante.',
+      classifiedAt: now
+    }
+  };
 }
 
 function eventDetailResponse(eventId: number, state: MockApiState) {

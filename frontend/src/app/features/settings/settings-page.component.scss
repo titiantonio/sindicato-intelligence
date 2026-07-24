@@ -55,7 +55,7 @@
   display: grid;
   gap: 1rem;
   grid-auto-rows: 1fr;
-  grid-template-columns: repeat(4, minmax(min(100%, 17rem), 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   min-width: 0;
 }
 
@@ -196,7 +196,7 @@ code {
   }
 
   .metric-grid {
-    grid-template-columns: repeat(2, minmax(min(100%, 17rem), 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
 }

@@ -183,6 +183,12 @@ export class DashboardPageComponent implements OnInit {
     return this.sortColumn() === column ? this.sortDirection().toUpperCase() : '';
   }
 
+  protected sortAriaValue(column: PriorityEventSortColumn): 'ascending' | 'descending' | 'none' {
+    return this.sortColumn() === column
+      ? (this.sortDirection() === 'asc' ? 'ascending' : 'descending')
+      : 'none';
+  }
+
   protected setPageSize(value: string): void {
     this.pageSize.set(Number(value));
     this.currentPage.set(1);

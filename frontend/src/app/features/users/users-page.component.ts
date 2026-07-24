@@ -11,6 +11,7 @@ import { UserRole } from '../../core/models/auth.models';
 import { UserAdminResponse, UserStatus } from '../../core/models/user-admin.models';
 import { UserAdminService } from '../../core/services/user-admin.service';
 import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
+import { DialogFocusReturnDirective } from '../../shared/directives/dialog-focus-return.directive';
 
 type UserSortColumn =
   | 'id'
@@ -26,7 +27,7 @@ type UserFormMode = 'create' | 'edit';
 
 @Component({
   selector: 'app-users-page',
-  imports: [ButtonModule, CommonModule, DialogModule, FormsModule, InputTextModule, MessageModule, ReactiveFormsModule, SelectModule, StandardTableComponent],
+  imports: [ButtonModule, CommonModule, DialogFocusReturnDirective, DialogModule, FormsModule, InputTextModule, MessageModule, ReactiveFormsModule, SelectModule, StandardTableComponent],
   templateUrl: './users-page.component.html',
   styleUrl: './users-page.component.scss'
 })
@@ -326,6 +327,12 @@ export class UsersPageComponent implements OnInit {
     }
 
     return this.sortDirection() === 'asc' ? 'ASC' : 'DESC';
+  }
+
+  protected sortAriaValue(column: UserSortColumn): 'ascending' | 'descending' | 'none' {
+    return this.sortColumn() === column
+      ? (this.sortDirection() === 'asc' ? 'ascending' : 'descending')
+      : 'none';
   }
 
   protected setPageSize(value: string): void {

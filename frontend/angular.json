@@ -35,7 +35,8 @@
             "styles": [
               "node_modules/primeicons/primeicons.css",
               "src/tailwind.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/styles/design-system.scss"
             ]
           },
           "configurations": {
@@ -51,7 +52,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "535kB",
+                  "maximumWarning": "550kB",
                   "maximumError": "1MB"
                 },
                 {
@@ -107,7 +108,8 @@
             "styles": [
               "node_modules/primeicons/primeicons.css",
               "src/tailwind.css",
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/styles/design-system.scss"
             ]
           }
         }

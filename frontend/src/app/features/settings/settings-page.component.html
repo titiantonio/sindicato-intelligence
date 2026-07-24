@@ -1,9 +1,11 @@
 <section class="settings-page">
   <article class="panel">
     <header class="page-header">
-      <span class="page-header__eyebrow">ADMIN</span>
-      <h1>Configuracion</h1>
-      <p>Centro unico para administrar metricas IA, prompts, automatizaciones y publicacion.</p>
+      <div>
+        <span class="page-header__eyebrow">ADMIN</span>
+        <h1>Configuracion</h1>
+        <p>Centro unico para administrar metricas IA, prompts, automatizaciones y publicacion.</p>
+      </div>
     </header>
 
     @if (errorMessage()) {
@@ -19,16 +21,16 @@
     }
 
     <nav class="settings-tabs" aria-label="Areas de configuracion">
-      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'metrics'" (click)="setTab('metrics')">
+      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'metrics'" [attr.aria-pressed]="activeTab() === 'metrics'" (click)="setTab('metrics')">
         Metricas IA
       </button>
-      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'prompts'" (click)="setTab('prompts')">
+      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'prompts'" [attr.aria-pressed]="activeTab() === 'prompts'" (click)="setTab('prompts')">
         Prompts IA
       </button>
-      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'automation'" (click)="setTab('automation')">
+      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'automation'" [attr.aria-pressed]="activeTab() === 'automation'" (click)="setTab('automation')">
         Automatizaciones
       </button>
-      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'publication'" (click)="setTab('publication')">
+      <button pButton type="button" severity="secondary" class="settings-tab" [class.settings-tab--active]="activeTab() === 'publication'" [attr.aria-pressed]="activeTab() === 'publication'" (click)="setTab('publication')">
         Publicacion
       </button>
     </nav>
@@ -75,16 +77,16 @@
         >
             <ng-template #tableHeader>
               <tr>
-                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('createdAt')">Fecha {{ metricSortLabel('createdAt') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('workflowCode')">WF {{ metricSortLabel('workflowCode') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('operationType')">Operacion {{ metricSortLabel('operationType') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('promptKey')">Prompt {{ metricSortLabel('promptKey') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('provider')">Proveedor {{ metricSortLabel('provider') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('model')">Modelo {{ metricSortLabel('model') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('status')">Estado {{ metricSortLabel('status') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('relatedEntityType')">Entidad {{ metricSortLabel('relatedEntityType') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('latencyMs')">Latencia {{ metricSortLabel('latencyMs') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changeMetricSort('errorMessage')">Error {{ metricSortLabel('errorMessage') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('createdAt')"><button type="button" class="sort-button" (click)="changeMetricSort('createdAt')">Fecha {{ metricSortLabel('createdAt') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('workflowCode')"><button type="button" class="sort-button" (click)="changeMetricSort('workflowCode')">WF {{ metricSortLabel('workflowCode') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('operationType')"><button type="button" class="sort-button" (click)="changeMetricSort('operationType')">Operacion {{ metricSortLabel('operationType') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('promptKey')"><button type="button" class="sort-button" (click)="changeMetricSort('promptKey')">Prompt {{ metricSortLabel('promptKey') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('provider')"><button type="button" class="sort-button" (click)="changeMetricSort('provider')">Proveedor {{ metricSortLabel('provider') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('model')"><button type="button" class="sort-button" (click)="changeMetricSort('model')">Modelo {{ metricSortLabel('model') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('status')"><button type="button" class="sort-button" (click)="changeMetricSort('status')">Estado {{ metricSortLabel('status') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('relatedEntityType')"><button type="button" class="sort-button" (click)="changeMetricSort('relatedEntityType')">Entidad {{ metricSortLabel('relatedEntityType') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('latencyMs')"><button type="button" class="sort-button" (click)="changeMetricSort('latencyMs')">Latencia {{ metricSortLabel('latencyMs') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('errorMessage')"><button type="button" class="sort-button" (click)="changeMetricSort('errorMessage')">Error {{ metricSortLabel('errorMessage') }}</button></th>
               </tr>
             </ng-template>
             <ng-template #tableFilters>
@@ -155,13 +157,13 @@
         >
             <ng-template #tableHeader>
               <tr>
-                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('promptKey')">Clave {{ promptSortLabel('promptKey') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('promptName')">Prompt {{ promptSortLabel('promptName') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('module')">Modulo {{ promptSortLabel('module') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('version')">Version {{ promptSortLabel('version') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('checksum')">Checksum {{ promptSortLabel('checksum') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('active')">Estado {{ promptSortLabel('active') }}</button></th>
-                <th scope="col"><button type="button" class="sort-button" (click)="changePromptSort('createdAt')">Creado {{ promptSortLabel('createdAt') }}</button></th>
+                <th scope="col" [attr.aria-sort]="promptSortAriaValue('promptKey')"><button type="button" class="sort-button" (click)="changePromptSort('promptKey')">Clave {{ promptSortLabel('promptKey') }}</button></th>
+                <th scope="col" [attr.aria-sort]="promptSortAriaValue('promptName')"><button type="button" class="sort-button" (click)="changePromptSort('promptName')">Prompt {{ promptSortLabel('promptName') }}</button></th>
+                <th scope="col" [attr.aria-sort]="promptSortAriaValue('module')"><button type="button" class="sort-button" (click)="changePromptSort('module')">Modulo {{ promptSortLabel('module') }}</button></th>
+                <th scope="col" [attr.aria-sort]="promptSortAriaValue('version')"><button type="button" class="sort-button" (click)="changePromptSort('version')">Version {{ promptSortLabel('version') }}</button></th>
+                <th scope="col" [attr.aria-sort]="promptSortAriaValue('checksum')"><button type="button" class="sort-button" (click)="changePromptSort('checksum')">Checksum {{ promptSortLabel('checksum') }}</button></th>
+                <th scope="col" [attr.aria-sort]="promptSortAriaValue('active')"><button type="button" class="sort-button" (click)="changePromptSort('active')">Estado {{ promptSortLabel('active') }}</button></th>
+                <th scope="col" [attr.aria-sort]="promptSortAriaValue('createdAt')"><button type="button" class="sort-button" (click)="changePromptSort('createdAt')">Creado {{ promptSortLabel('createdAt') }}</button></th>
               </tr>
             </ng-template>
             <ng-template #tableFilters>
@@ -632,11 +634,16 @@
     }
 
     <p-dialog
+      [appDialogFocusReturn]="pendingSecretDeletion() !== null"
       [visible]="pendingSecretDeletion() !== null"
       [header]="pendingSecretDeletion()?.title ?? ''"
       [modal]="true"
       [draggable]="false"
       [resizable]="false"
+      [focusOnShow]="true"
+      [focusTrap]="true"
+      closeAriaLabel="Cerrar confirmación de eliminación"
+      role="alertdialog"
       [style]="{ width: 'min(100vw - 2rem, 34rem)' }"
       (visibleChange)="!$event && closeSecretDeletionConfirmation()"
     >
@@ -656,9 +663,15 @@
 
     @if (selectedErrorMetric(); as errorMetric) {
       <p-dialog
+        [appDialogFocusReturn]="selectedErrorMetric() !== null"
         [modal]="true"
         [visible]="selectedErrorMetric() !== null"
         (visibleChange)="!$event && closeMetricError()"
+        [draggable]="false"
+        [resizable]="false"
+        [focusOnShow]="true"
+        [focusTrap]="true"
+        closeAriaLabel="Cerrar detalle del error"
         [style]="{ width: 'min(760px, 96vw)' }"
         [breakpoints]="{ '768px': '96vw' }"
         styleClass="metric-modal"
@@ -697,9 +710,15 @@
 
     @if (selectedMetricDetail(); as detailMetric) {
       <p-dialog
+        [appDialogFocusReturn]="selectedMetricDetail() !== null"
         [modal]="true"
         [visible]="selectedMetricDetail() !== null"
         (visibleChange)="!$event && closeMetricDetail()"
+        [draggable]="false"
+        [resizable]="false"
+        [focusOnShow]="true"
+        [focusTrap]="true"
+        closeAriaLabel="Cerrar detalle de operación"
         [style]="{ width: 'min(860px, 96vw)' }"
         [breakpoints]="{ '768px': '96vw' }"
         styleClass="metric-modal"

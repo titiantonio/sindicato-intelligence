@@ -17,6 +17,7 @@ import { ApplicationSettingsService } from '../../core/services/application-sett
 import { AutomationService } from '../../core/services/automation.service';
 import { MetricCardComponent } from '../../shared/components/metric-card/metric-card.component';
 import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
+import { DialogFocusReturnDirective } from '../../shared/directives/dialog-focus-return.directive';
 
 type SettingsTab = 'metrics' | 'prompts' | 'automation' | 'publication';
 type SortDirection = 'asc' | 'desc';
@@ -59,7 +60,7 @@ interface AiWorkflowForm {
 
 @Component({
   selector: 'app-settings-page',
-  imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, MessageModule, MetricCardComponent, RouterLink, SelectModule, StandardTableComponent],
+  imports: [ButtonModule, DialogFocusReturnDirective, DialogModule, FormsModule, InputTextModule, MessageModule, MetricCardComponent, RouterLink, SelectModule, StandardTableComponent],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss'
 })
@@ -763,6 +764,18 @@ export class SettingsPageComponent implements OnInit {
 
   protected metricSortLabel(column: MetricSortColumn): string {
     return this.metricSortColumn() === column ? (this.metricSortDirection() === 'asc' ? 'ASC' : 'DESC') : '';
+  }
+
+  protected promptSortAriaValue(column: PromptSortColumn): 'ascending' | 'descending' | 'none' {
+    return this.promptSortColumn() === column
+      ? (this.promptSortDirection() === 'asc' ? 'ascending' : 'descending')
+      : 'none';
+  }
+
+  protected metricSortAriaValue(column: MetricSortColumn): 'ascending' | 'descending' | 'none' {
+    return this.metricSortColumn() === column
+      ? (this.metricSortDirection() === 'asc' ? 'ascending' : 'descending')
+      : 'none';
   }
 
   protected changePromptSort(column: PromptSortColumn): void {

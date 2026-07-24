@@ -30,7 +30,9 @@ test('cubre flujo evento contenido aprobacion y programacion simulada', async ({
   await expect(generatedRow).toContainText('APPROVED');
 
   await generatedRow.getByText('Resumen breve E2E de oposiciones').click();
-  await page.getByLabel('Programar publicacion').fill('2026-07-23T10:00');
+  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const scheduledAt = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}T10:00`;
+  await page.getByLabel('Programar publicacion').fill(scheduledAt);
   await page.getByRole('button', { name: 'Programar' }).click();
 
   await expect(page.getByText('Publicacion programada correctamente.')).toBeVisible();

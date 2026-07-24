@@ -133,6 +133,12 @@ export class EventDetailPageComponent implements OnInit {
     return this.newsSortColumn() === column ? this.newsSortDirection().toUpperCase() : '';
   }
 
+  protected newsSortAriaValue(column: EventNewsSortColumn): 'ascending' | 'descending' | 'none' {
+    return this.newsSortColumn() === column
+      ? (this.newsSortDirection() === 'asc' ? 'ascending' : 'descending')
+      : 'none';
+  }
+
   protected setNewsPageSize(value: string): void {
     this.newsPageSize.set(Number(value));
     this.newsCurrentPage.set(1);

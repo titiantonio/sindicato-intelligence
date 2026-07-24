@@ -8,6 +8,7 @@ import { MessageModule } from 'primeng/message';
 import { EditorialAuditLogItem, UserAuditLogItem } from '../../core/models/audit.models';
 import { AuditService } from '../../core/services/audit.service';
 import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
+import { DialogFocusReturnDirective } from '../../shared/directives/dialog-focus-return.directive';
 
 type AuditTab = 'users' | 'editorial';
 type SortDirection = 'asc' | 'desc';
@@ -26,7 +27,7 @@ type AuditDetailSelection = {
 
 @Component({
   selector: 'app-audit-page',
-  imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, MessageModule, StandardTableComponent],
+  imports: [ButtonModule, DialogFocusReturnDirective, DialogModule, FormsModule, InputTextModule, MessageModule, StandardTableComponent],
   templateUrl: './audit-page.component.html',
   styleUrl: './audit-page.component.scss'
 })
@@ -204,6 +205,18 @@ export class AuditPageComponent implements OnInit {
 
   protected editorialSortLabel(column: EditorialAuditSortColumn): string {
     return this.editorialSortColumn() === column ? this.editorialSortDirection().toUpperCase() : '';
+  }
+
+  protected userSortAriaValue(column: UserAuditSortColumn): 'ascending' | 'descending' | 'none' {
+    return this.userSortColumn() === column
+      ? (this.userSortDirection() === 'asc' ? 'ascending' : 'descending')
+      : 'none';
+  }
+
+  protected editorialSortAriaValue(column: EditorialAuditSortColumn): 'ascending' | 'descending' | 'none' {
+    return this.editorialSortColumn() === column
+      ? (this.editorialSortDirection() === 'asc' ? 'ascending' : 'descending')
+      : 'none';
   }
 
   protected setUserDateFilter(value: string): void { this.userDateFilter.set(value); this.userCurrentPage.set(1); }

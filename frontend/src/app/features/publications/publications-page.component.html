@@ -21,7 +21,7 @@
 
 <section class="timeline-grid">
   @for (publication of publications(); track publication.id) {
-    <article class="publication-card publication-card--link" [routerLink]="['/publications', publication.id]" tabindex="0">
+    <a class="publication-card publication-card--link" [routerLink]="['/publications', publication.id]">
       <div class="publication-card__top">
         <strong>#{{ publication.id }} · {{ publication.channel }}</strong>
         <app-status-badge [value]="publication.status" />
@@ -33,7 +33,7 @@
         <span class="publication-card__date">{{ publicationAuthor(publication) }}</span>
         <p>{{ publicationResult(publication) }}</p>
       </div>
-    </article>
+    </a>
   } @empty {
     <article class="publication-card">
       <div class="publication-card__body">
@@ -44,10 +44,16 @@
 </section>
 
 <p-dialog
+  [appDialogFocusReturn]="manualDialogVisible()"
   header="Mensaje manual Telegram"
   [modal]="true"
   [visible]="manualDialogVisible()"
   (visibleChange)="setManualDialogVisible($event)"
+  [draggable]="false"
+  [resizable]="false"
+  [focusOnShow]="true"
+  [focusTrap]="true"
+  closeAriaLabel="Cerrar editor de mensaje manual"
   [style]="{ width: 'min(56rem, 96vw)' }"
 >
   <form class="manual-form" (submit)="$event.preventDefault(); sendManualPublication()">

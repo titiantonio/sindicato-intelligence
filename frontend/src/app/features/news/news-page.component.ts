@@ -243,6 +243,12 @@ export class NewsPageComponent implements OnInit {
     return this.sortDirection() === 'asc' ? 'ASC' : 'DESC';
   }
 
+  protected sortAriaValue(column: NewsSortColumn): 'ascending' | 'descending' | 'none' {
+    return this.sortColumn() === column
+      ? (this.sortDirection() === 'asc' ? 'ascending' : 'descending')
+      : 'none';
+  }
+
   protected setPageSize(value: string): void {
     this.pageSize.set(Number(value));
     this.loadNewsPage(1);

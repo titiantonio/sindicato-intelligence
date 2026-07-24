@@ -1,3 +1,14 @@
 .status-badge {
   display: inline-flex;
 }
+
+:host ::ng-deep .p-tag {
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.025em;
+  line-height: 1.1;
+  padding: 0.35rem 0.65rem;
+  text-transform: uppercase;
+}

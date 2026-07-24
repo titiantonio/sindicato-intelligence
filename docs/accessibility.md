@@ -1,6 +1,6 @@
 # Accesibilidad del frontend
 
-Fecha de actualización: 2026-07-22
+Fecha de actualización: 2026-07-24
 
 ## Objetivo y estado de conformidad
 
@@ -179,7 +179,47 @@ Evidencia técnica cerrada el 2026-07-22:
 - Contrastes calculados en los tokens principales: texto del hero `8.71:1` o superior; texto normal `16.27:1` o superior; texto secundario `6.33:1` o superior; acento `7.58:1` o superior; borde de controles `3.73:1` o superior.
 - Evidencia visual revisada en escritorio claro, escritorio oscuro y móvil.
 
-La conformidad del resto de rutas continúa pendiente hasta extender y verificar el sistema visual aprobado. También queda pendiente la validación humana de esta dirección visual y, para el cierre global, el recorrido manual con lector de pantalla y zoom del frontend completo.
+La dirección visual del piloto fue aprobada por el usuario el 2026-07-24 y se utilizó como referencia para la modernización integral.
+
+## Evidencia final de la modernización integral
+
+El Sprint 14 extiende el sistema visual a todas las rutas declaradas por el router, al shell y a los 10 diálogos existentes. Esta evidencia demuestra el cierre técnico de la modernización, pero no constituye una certificación externa de conformidad.
+
+Cobertura por ruta:
+
+| Área | Rutas verificadas | Evidencia |
+| --- | --- | --- |
+| Autenticación | `/login`, `/forgot-password`, `/reset-password`, `/change-password` | Suite Angular, smoke Playwright del login e inspección visual del patrón compartido |
+| Operación | `/dashboard` | Angular, Playwright, claro/oscuro, responsive e inspección visual |
+| Eventos | `/events`, `/events/:id` | Angular, suite específica de teclado/WCAG, diálogo y responsive |
+| Noticias | `/news`, `/news/:id` | Angular, navegación mockeada, tabla con `aria-sort` y detalle |
+| Contenido | `/content`, `/content/:id` | Angular, flujo editorial E2E, editor en diálogo y detalle |
+| Publicaciones | `/publications`, `/publications/:id` | Flujo E2E, enlace semántico, editor manual y detalle |
+| Administración | `/sources`, `/users`, `/audit`, `/settings` | Angular, navegación ADMIN, tablas, pestañas, formularios y diálogos |
+
+Mejoras transversales verificadas:
+
+- Tokens navy/teal coherentes para color, superficie, borde, espaciado, radio, elevación y foco.
+- Temas claro y oscuro persistentes, con nombres y estados accesibles en sus selectores.
+- Shell responsive con enlace de salto, landmark principal, navegación nombrada, ruta actual y menú móvil.
+- Un único `h1` visible en cada ruta autenticada y título de documento específico.
+- Tablas con scroll local, `scope="col"`, filtros nombrados y `aria-sort` en todas las columnas ordenables.
+- Diálogos modales sin arrastre, con foco inicial/contenido, cierre con `Escape`, nombre de cierre y retorno al disparador.
+- Confirmaciones destructivas expuestas como `alertdialog`.
+- Pestañas internas con estado `aria-pressed`.
+- Tarjetas navegables implementadas como enlaces reales.
+- Respeto de `prefers-reduced-motion`.
+- Sin overflow horizontal global en las rutas E2E a `320 CSS px`; las tablas complejas conservan scroll local.
+
+Evidencia técnica cerrada el 2026-07-24:
+
+- Suite Angular completa: `160 SUCCESS`.
+- Build de producción: correcto. El umbral preventivo del bundle inicial se recalibró de `535 kB` a `550 kB` para absorber la hoja visual global sin relajar el límite de error de `1 MB`.
+- Suite Playwright mockeada completa: `14 passed`.
+- La nueva suite `visual-system.mock.spec.ts` recorre 13 rutas autenticadas, verifica un `h1`, ausencia de overflow global, persistencia de tema, cuatro flujos de diálogo y shell móvil a `320 CSS px`.
+- Flujo editorial mockeado corregido para programar siempre en una fecha futura y mantener la prueba estable.
+- Revisión visual manual realizada sobre login, dashboard, eventos, settings y diálogo de fuente móvil, incluyendo temas claro y oscuro.
+- No se ejecutó la suite opt-in con backend real porque el cambio no altera contratos ni integraciones y la comprobación visual no debe invocar IA, Telegram ni servicios productivos.
 
 ## Estado transversal conocido
 
@@ -192,9 +232,9 @@ Ya existen en el frontend:
 - Foco visible global.
 - Componentes compartidos PrimeNG para mensajes, botones, selects, tablas, tags y diálogos.
 
-Pendientes globales:
+Validaciones complementarias aún recomendadas antes de publicar una declaración formal de conformidad:
 
-- Auditar y modernizar todas las rutas restantes con esta definición de terminado.
-- Completar revisión manual con lector de pantalla.
-- Verificar de forma sistemática contraste real de ambos temas.
-- Incorporar una herramienta automática especializada solo si se aprueba como dependencia del proyecto.
+- Recorrido humano completo con lector de pantalla en al menos una combinación Windows/NVDA y una combinación adicional compatible con el entorno objetivo.
+- Repetir zoom al `200 %` y `400 %` en los navegadores oficialmente soportados, además de la equivalencia responsive automatizada a `320 CSS px`.
+- Auditoría especializada de contraste sobre todos los estados procedentes de datos reales.
+- Incorporar una herramienta automática especializada solo si se aprueba previamente como dependencia del proyecto.

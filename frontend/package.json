@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "0.0.39",
+  "version": "0.0.40",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "e2e": "playwright test",
-    "e2e:mock": "playwright test e2e/app-startup.spec.ts e2e/smoke.mock.spec.ts e2e/admin.mock.spec.ts e2e/editorial-flow.mock.spec.ts e2e/events-pilot.mock.spec.ts",
+    "e2e:mock": "playwright test e2e/app-startup.spec.ts e2e/smoke.mock.spec.ts e2e/admin.mock.spec.ts e2e/editorial-flow.mock.spec.ts e2e/events-pilot.mock.spec.ts e2e/visual-system.mock.spec.ts",
     "e2e:backend": "playwright test e2e/backend.local.spec.ts",
     "e2e:ci": "npm run e2e:mock",
     "e2e:ui": "playwright test --ui",

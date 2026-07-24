@@ -52,14 +52,14 @@
     >
         <ng-template #tableHeader>
           <tr>
-            <th scope="col"><button class="users-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
-            <th scope="col"><button class="users-page__sort" type="button" (click)="changeSort('name')">Nombre {{ sortLabel('name') }}</button></th>
-            <th scope="col"><button class="users-page__sort" type="button" (click)="changeSort('email')">Email {{ sortLabel('email') }}</button></th>
-            <th scope="col"><button class="users-page__sort" type="button" (click)="changeSort('role')">Rol {{ sortLabel('role') }}</button></th>
-            <th scope="col"><button class="users-page__sort" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
-            <th scope="col"><button class="users-page__sort" type="button" (click)="changeSort('lastLoginAt')">Ultimo login {{ sortLabel('lastLoginAt') }}</button></th>
-            <th scope="col"><button class="users-page__sort" type="button" (click)="changeSort('lastPasswordChangeAt')">Cambio password {{ sortLabel('lastPasswordChangeAt') }}</button></th>
-            <th scope="col"><button class="users-page__sort" type="button" (click)="changeSort('temporaryPasswordExpiresAt')">Expira temporal {{ sortLabel('temporaryPasswordExpiresAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('id')"><button class="users-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('name')"><button class="users-page__sort" type="button" (click)="changeSort('name')">Nombre {{ sortLabel('name') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('email')"><button class="users-page__sort" type="button" (click)="changeSort('email')">Email {{ sortLabel('email') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('role')"><button class="users-page__sort" type="button" (click)="changeSort('role')">Rol {{ sortLabel('role') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('status')"><button class="users-page__sort" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('lastLoginAt')"><button class="users-page__sort" type="button" (click)="changeSort('lastLoginAt')">Ultimo login {{ sortLabel('lastLoginAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('lastPasswordChangeAt')"><button class="users-page__sort" type="button" (click)="changeSort('lastPasswordChangeAt')">Cambio password {{ sortLabel('lastPasswordChangeAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('temporaryPasswordExpiresAt')"><button class="users-page__sort" type="button" (click)="changeSort('temporaryPasswordExpiresAt')">Expira temporal {{ sortLabel('temporaryPasswordExpiresAt') }}</button></th>
             <th scope="col">Acciones</th>
           </tr>
         </ng-template>
@@ -134,9 +134,15 @@
 
   @if (isUserModalOpen()) {
     <p-dialog
+      [appDialogFocusReturn]="isUserModalOpen()"
       [modal]="true"
       [visible]="isUserModalOpen()"
       (visibleChange)="!$event && closeUserModal()"
+      [draggable]="false"
+      [resizable]="false"
+      [focusOnShow]="true"
+      [focusTrap]="true"
+      closeAriaLabel="Cerrar formulario de usuario"
       [header]="formMode() === 'create' ? 'Alta de usuario' : 'Editar usuario'"
       [style]="{ width: 'min(680px, 96vw)' }"
       [breakpoints]="{ '768px': '96vw' }"
@@ -174,9 +180,16 @@
 
   @if (deletingUser(); as user) {
     <p-dialog
+      [appDialogFocusReturn]="deletingUser() !== null"
       [modal]="true"
       [visible]="deletingUser() !== null"
       (visibleChange)="!$event && closeDeleteModal()"
+      [draggable]="false"
+      [resizable]="false"
+      [focusOnShow]="true"
+      [focusTrap]="true"
+      closeAriaLabel="Cerrar confirmación de eliminación"
+      role="alertdialog"
       header="Eliminar usuario"
       [style]="{ width: 'min(640px, 96vw)' }"
       [breakpoints]="{ '768px': '96vw' }"

@@ -7,12 +7,13 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeToggleComponent } from '../../../shared/components/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-login-page',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ButtonModule, InputTextModule, MessageModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ButtonModule, InputTextModule, MessageModule, ThemeToggleComponent],
   templateUrl: './login-page.component.html',
-  styleUrl: './login-page.component.scss'
+  styleUrls: ['./login-page.component.scss', '../auth-modern.component.scss']
 })
 export class LoginPageComponent {
   private readonly formBuilder = inject(FormBuilder);

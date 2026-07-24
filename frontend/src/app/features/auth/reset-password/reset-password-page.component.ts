@@ -7,13 +7,14 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeToggleComponent } from '../../../shared/components/theme-toggle/theme-toggle.component';
 import { PASSWORD_PATTERN } from '../password-pattern';
 
 @Component({
   selector: 'app-reset-password-page',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ButtonModule, InputTextModule, MessageModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ButtonModule, InputTextModule, MessageModule, ThemeToggleComponent],
   templateUrl: './reset-password-page.component.html',
-  styleUrl: './reset-password-page.component.scss'
+  styleUrls: ['./reset-password-page.component.scss', '../auth-modern.component.scss']
 })
 export class ResetPasswordPageComponent {
   private readonly formBuilder = inject(FormBuilder);

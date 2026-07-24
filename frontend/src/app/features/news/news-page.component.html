@@ -44,14 +44,14 @@
     >
         <ng-template #tableHeader>
           <tr>
-            <th scope="col"><button class="news-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
-            <th scope="col"><button class="news-page__sort" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
-            <th scope="col"><button class="news-page__sort" type="button" (click)="changeSort('sourceId')">Fuente {{ sortLabel('sourceId') }}</button></th>
-            <th scope="col"><button class="news-page__sort" type="button" (click)="changeSort('processingStatus')">Estado {{ sortLabel('processingStatus') }}</button></th>
-            <th scope="col"><button class="news-page__sort" type="button" (click)="changeSort('eventId')">Evento {{ sortLabel('eventId') }}</button></th>
-            <th scope="col"><button class="news-page__sort" type="button" (click)="changeSort('category')">Categoria IA {{ sortLabel('category') }}</button></th>
-            <th scope="col"><button class="news-page__sort" type="button" (click)="changeSort('publishedAt')">Publicada {{ sortLabel('publishedAt') }}</button></th>
-            <th scope="col"><button class="news-page__sort" type="button" (click)="changeSort('capturedAt')">Capturada {{ sortLabel('capturedAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('id')"><button class="news-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('title')"><button class="news-page__sort" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('sourceId')"><button class="news-page__sort" type="button" (click)="changeSort('sourceId')">Fuente {{ sortLabel('sourceId') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('processingStatus')"><button class="news-page__sort" type="button" (click)="changeSort('processingStatus')">Estado {{ sortLabel('processingStatus') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('eventId')"><button class="news-page__sort" type="button" (click)="changeSort('eventId')">Evento {{ sortLabel('eventId') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('category')"><button class="news-page__sort" type="button" (click)="changeSort('category')">Categoria IA {{ sortLabel('category') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('publishedAt')"><button class="news-page__sort" type="button" (click)="changeSort('publishedAt')">Publicada {{ sortLabel('publishedAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('capturedAt')"><button class="news-page__sort" type="button" (click)="changeSort('capturedAt')">Capturada {{ sortLabel('capturedAt') }}</button></th>
             <th scope="col">Acciones</th>
           </tr>
         </ng-template>

@@ -64,12 +64,12 @@
     >
         <ng-template #tableHeader>
           <tr>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeNewsSort('id')">ID {{ newsSortLabel('id') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeNewsSort('title')">Titulo {{ newsSortLabel('title') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeNewsSort('processingStatus')">Estado {{ newsSortLabel('processingStatus') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeNewsSort('category')">Categoria {{ newsSortLabel('category') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeNewsSort('urgencyLevel')">Urgencia {{ newsSortLabel('urgencyLevel') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeNewsSort('capturedAt')">Capturada {{ newsSortLabel('capturedAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="newsSortAriaValue('id')"><button class="sort-button" type="button" (click)="changeNewsSort('id')">ID {{ newsSortLabel('id') }}</button></th>
+            <th scope="col" [attr.aria-sort]="newsSortAriaValue('title')"><button class="sort-button" type="button" (click)="changeNewsSort('title')">Titulo {{ newsSortLabel('title') }}</button></th>
+            <th scope="col" [attr.aria-sort]="newsSortAriaValue('processingStatus')"><button class="sort-button" type="button" (click)="changeNewsSort('processingStatus')">Estado {{ newsSortLabel('processingStatus') }}</button></th>
+            <th scope="col" [attr.aria-sort]="newsSortAriaValue('category')"><button class="sort-button" type="button" (click)="changeNewsSort('category')">Categoria {{ newsSortLabel('category') }}</button></th>
+            <th scope="col" [attr.aria-sort]="newsSortAriaValue('urgencyLevel')"><button class="sort-button" type="button" (click)="changeNewsSort('urgencyLevel')">Urgencia {{ newsSortLabel('urgencyLevel') }}</button></th>
+            <th scope="col" [attr.aria-sort]="newsSortAriaValue('capturedAt')"><button class="sort-button" type="button" (click)="changeNewsSort('capturedAt')">Capturada {{ newsSortLabel('capturedAt') }}</button></th>
           </tr>
         </ng-template>
         <ng-template #tableFilters>

@@ -10,6 +10,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { OperationalTelegramDestination, PublicationListItem } from '../../core/models/publication.models';
 import { PublicationService } from '../../core/services/publication.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { DialogFocusReturnDirective } from '../../shared/directives/dialog-focus-return.directive';
 import { formatPublicationResult } from './publication-result.formatter';
 
 type EditorPanel = 'link' | 'telegram' | 'blocks' | 'emotes';
@@ -18,7 +19,7 @@ type TelegramBlockTag = 'pre' | 'blockquote' | 'expandable-blockquote';
 
 @Component({
   selector: 'app-publications-page',
-  imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, MessageModule, RouterLink, StatusBadgeComponent, TooltipModule],
+  imports: [ButtonModule, DialogFocusReturnDirective, DialogModule, FormsModule, InputTextModule, MessageModule, RouterLink, StatusBadgeComponent, TooltipModule],
   templateUrl: './publications-page.component.html',
   styleUrl: './publications-page.component.scss'
 })

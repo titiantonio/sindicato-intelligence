@@ -1,0 +1,10 @@
+<button
+  type="button"
+  class="theme-toggle"
+  [attr.aria-pressed]="themeService.theme() === 'dark'"
+  [attr.aria-label]="themeService.theme() === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+  [title]="themeService.theme() === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+  (click)="toggleTheme()"
+>
+  <i aria-hidden="true" [class]="themeService.theme() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"></i>
+</button>

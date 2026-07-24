@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Frontend accesibilidad: los 10 dialogos conservan foco contenido y devuelven el foco al disparador; las confirmaciones destructivas exponen semantica `alertdialog`.
+- Frontend tablas: todas las columnas ordenables fuera del piloto anuncian ahora su estado mediante `aria-sort`.
+- Frontend publicaciones: las tarjetas del historico son enlaces nativos operables con teclado.
+- Frontend E2E: la fecha de programacion editorial mockeada se calcula en el futuro para evitar fallos dependientes del calendario.
 - Backend IA WF-04: anadido fallback conservador para respuestas Gemini que empiezan como JSON pero quedan incompletas tras reintento, evitando bloqueos de eventos con contexto breve.
 - Backend automatizaciones: WF-02 y WF-03 ya no se reprograman inmediatamente tras lote completo si hay otro workflow vencido, evitando que WF-04 quede retrasado por el cooldown IA compartido.
 - Backend IA WF-04: anadido fallback conservador cuando Gemini bloquea por `RECITATION` y el reintento reducido sigue sin devolver JSON completo.
@@ -19,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Frontend sistema visual: consolidado un tema navy/teal compartido con tokens de color, superficies, foco, radios, elevacion, tablas, formularios, badges, estados y dialogos para claro y oscuro.
+- Frontend E2E: anadida `visual-system.mock.spec.ts` para recorrer las rutas autenticadas, verificar temas, retorno de foco, shell movil y ausencia de overflow global a `320 CSS px`.
+- Frontend shell/autenticacion: incorporado selector de tema reutilizable y nueva composicion responsive en login, recuperacion, reset y cambio de password.
 - Backend/Frontend dashboard: los eventos `HIGH` o `CRITICAL` con analisis IA vigente y sin contenido activo aparecen como `ANALYZED_PENDING_CONTENT`, con aviso editorial y accion directa para generar contenido desde el dashboard.
 
 - Frontend accesibilidad: actualizado `docs/accessibility.md` con el objetivo WCAG 2.2 AA, criterios por componente, método de verificación y definición de terminado sin sobredeclarar conformidad global.
@@ -44,6 +51,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend version: subida la version del paquete frontend a `0.0.40`.
+- Frontend: extendido el sistema visual aprobado en `/events` a dashboard, detalles, noticias, contenido, publicaciones, fuentes, usuarios, auditoria, settings, shell y autenticacion.
+- Frontend componentes compartidos: modernizadas tarjetas metricas, tabla estandar, estados vacios y badges con responsive y `prefers-reduced-motion`.
 - Versionado backend actualizado a `0.0.116-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.39`.
 

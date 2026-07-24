@@ -10,6 +10,7 @@ import { SelectModule } from 'primeng/select';
 import { SourceResponse } from '../../core/models/source.models';
 import { SourceService } from '../../core/services/source.service';
 import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
+import { DialogFocusReturnDirective } from '../../shared/directives/dialog-focus-return.directive';
 
 type SourceSortColumn = 'id' | 'name' | 'url' | 'type' | 'priority' | 'active' | 'createdAt' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
@@ -17,7 +18,7 @@ type SourceFormMode = 'create' | 'edit';
 
 @Component({
   selector: 'app-sources-page',
-  imports: [ButtonModule, CommonModule, DialogModule, FormsModule, InputTextModule, MessageModule, ReactiveFormsModule, SelectModule, StandardTableComponent],
+  imports: [ButtonModule, CommonModule, DialogFocusReturnDirective, DialogModule, FormsModule, InputTextModule, MessageModule, ReactiveFormsModule, SelectModule, StandardTableComponent],
   templateUrl: './sources-page.component.html',
   styleUrl: './sources-page.component.scss'
 })
@@ -210,6 +211,12 @@ export class SourcesPageComponent implements OnInit {
     }
 
     return this.sortDirection() === 'asc' ? '↑' : '↓';
+  }
+
+  protected sortAriaValue(column: SourceSortColumn): 'ascending' | 'descending' | 'none' {
+    return this.sortColumn() === column
+      ? (this.sortDirection() === 'asc' ? 'ascending' : 'descending')
+      : 'none';
   }
 
   protected formatDate(value: string): string {

@@ -1,9 +1,11 @@
 <section class="content-page">
   <article class="panel">
     <header class="page-header">
-    <span class="page-header__eyebrow">Contenido</span>
-    <h1>Bandeja editorial</h1>
-    <p>Revision humana del contenido generado por IA antes de publicacion.</p>
+      <div>
+        <span class="page-header__eyebrow">Contenido</span>
+        <h1>Bandeja editorial</h1>
+        <p>Revision humana del contenido generado por IA antes de publicacion.</p>
+      </div>
     </header>
 
     @if (errorMessage()) {
@@ -33,11 +35,11 @@
     >
         <ng-template #tableHeader>
           <tr>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeSort('channel')">Canal {{ sortLabel('channel') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeSort('generatedAt')">Creado {{ sortLabel('generatedAt') }}</button></th>
-            <th scope="col"><button class="sort-button" type="button" (click)="changeSort('approvedAt')">Aprobado {{ sortLabel('approvedAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('channel')"><button class="sort-button" type="button" (click)="changeSort('channel')">Canal {{ sortLabel('channel') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('title')"><button class="sort-button" type="button" (click)="changeSort('title')">Titulo {{ sortLabel('title') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('status')"><button class="sort-button" type="button" (click)="changeSort('status')">Estado {{ sortLabel('status') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('generatedAt')"><button class="sort-button" type="button" (click)="changeSort('generatedAt')">Creado {{ sortLabel('generatedAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('approvedAt')"><button class="sort-button" type="button" (click)="changeSort('approvedAt')">Aprobado {{ sortLabel('approvedAt') }}</button></th>
             <th scope="col">Acciones</th>
           </tr>
         </ng-template>
@@ -76,9 +78,15 @@
 
   @if (modalItem(); as selected) {
     <p-dialog
+      [appDialogFocusReturn]="modalItem() !== null"
       [modal]="true"
       [visible]="modalItem() !== null"
       (visibleChange)="!$event && closeModal()"
+      [draggable]="false"
+      [resizable]="false"
+      [focusOnShow]="true"
+      [focusTrap]="true"
+      closeAriaLabel="Cerrar detalle de contenido"
       [style]="{ width: 'min(960px, 96vw)' }"
       [breakpoints]="{ '768px': '96vw' }"
       styleClass="editor-modal"

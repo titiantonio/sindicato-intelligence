@@ -52,14 +52,14 @@
     >
         <ng-template #tableHeader>
           <tr>
-            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
-            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('name')">Nombre {{ sortLabel('name') }}</button></th>
-            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('url')">URL {{ sortLabel('url') }}</button></th>
-            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('type')">Tipo {{ sortLabel('type') }}</button></th>
-            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('priority')">Prioridad {{ sortLabel('priority') }}</button></th>
-            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('active')">Estado {{ sortLabel('active') }}</button></th>
-            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('createdAt')">Creada {{ sortLabel('createdAt') }}</button></th>
-            <th scope="col"><button class="sources-page__sort" type="button" (click)="changeSort('updatedAt')">Actualizada {{ sortLabel('updatedAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('id')"><button class="sources-page__sort" type="button" (click)="changeSort('id')">ID {{ sortLabel('id') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('name')"><button class="sources-page__sort" type="button" (click)="changeSort('name')">Nombre {{ sortLabel('name') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('url')"><button class="sources-page__sort" type="button" (click)="changeSort('url')">URL {{ sortLabel('url') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('type')"><button class="sources-page__sort" type="button" (click)="changeSort('type')">Tipo {{ sortLabel('type') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('priority')"><button class="sources-page__sort" type="button" (click)="changeSort('priority')">Prioridad {{ sortLabel('priority') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('active')"><button class="sources-page__sort" type="button" (click)="changeSort('active')">Estado {{ sortLabel('active') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('createdAt')"><button class="sources-page__sort" type="button" (click)="changeSort('createdAt')">Creada {{ sortLabel('createdAt') }}</button></th>
+            <th scope="col" [attr.aria-sort]="sortAriaValue('updatedAt')"><button class="sources-page__sort" type="button" (click)="changeSort('updatedAt')">Actualizada {{ sortLabel('updatedAt') }}</button></th>
             <th scope="col">Acciones</th>
           </tr>
         </ng-template>
@@ -123,19 +123,20 @@
 
   @if (isModalOpen()) {
     <p-dialog
+      [appDialogFocusReturn]="isModalOpen()"
       [modal]="true"
       [visible]="isModalOpen()"
       (visibleChange)="!$event && closeModal()"
+      [draggable]="false"
+      [resizable]="false"
+      [focusOnShow]="true"
+      [focusTrap]="true"
+      closeAriaLabel="Cerrar formulario de fuente"
       [header]="formMode() === 'create' ? 'Anadir fuente' : 'Editar fuente'"
       [style]="{ width: 'min(680px, 96vw)' }"
       [breakpoints]="{ '768px': '96vw' }"
       styleClass="sources-page__modal"
     >
-        <ng-container>
-          <h2>{{ formMode() === 'create' ? 'Añadir fuente' : 'Editar fuente' }}</h2>
-          <button class="sources-page__icon-button" type="button" aria-label="Cerrar modal" (click)="closeModal()">×</button>
-        </ng-container>
-
         <form class="sources-page__form" [formGroup]="sourceForm" (ngSubmit)="submit()">
           <label>
             Nombre

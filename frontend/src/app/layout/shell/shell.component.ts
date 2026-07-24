@@ -17,7 +17,7 @@ interface NavigationItem {
   selector: 'app-shell',
   imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './shell.component.html',
-  styleUrl: './shell.component.scss'
+  styleUrls: ['./shell.component.scss', './shell-modern.component.scss']
 })
 export class ShellComponent {
   private readonly authService = inject(AuthService);

@@ -6,13 +6,14 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeToggleComponent } from '../../../shared/components/theme-toggle/theme-toggle.component';
 import { PASSWORD_PATTERN } from '../password-pattern';
 
 @Component({
   selector: 'app-change-password-page',
-  imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule, MessageModule],
+  imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule, MessageModule, ThemeToggleComponent],
   templateUrl: './change-password-page.component.html',
-  styleUrl: './change-password-page.component.scss'
+  styleUrls: ['./change-password-page.component.scss', '../auth-modern.component.scss']
 })
 export class ChangePasswordPageComponent {
   private readonly authService = inject(AuthService);
