@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Backend IA WF-04: el proveedor Gemini reintenta con contexto reducido cuando la respuesta se corta por `RECITATION`, evitando fallos por reproducir cuerpo largo de noticias.
+- Backend automatizaciones WF-04: corregida la consulta del ultimo analisis de evento para evitar `ResultSet is closed` antes de ejecutar la generacion IA.
+
 ### Added
 
 - Frontend accesibilidad: actualizado `docs/accessibility.md` con el objetivo WCAG 2.2 AA, criterios por componente, método de verificación y definición de terminado sin sobredeclarar conformidad global.
@@ -32,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.110-SNAPSHOT`.
+- Versionado backend actualizado a `0.0.109-SNAPSHOT`.
 - Frontend version: subida la versión del paquete frontend a `0.0.38`.
 - Frontend accesibilidad: definido el idioma español y títulos de documento específicos para todas las rutas; el diálogo de eventos devuelve el foco al control que lo abrió.
 - Frontend E2E: ampliado el piloto de eventos con comprobaciones de título, idioma, contención y retorno del foco, espaciado de texto y ausencia de controles textuales recortados.

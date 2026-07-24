@@ -62,7 +62,26 @@ class JpaEventAIAnalysisRepositoryTest {
         assertEquals(List.of("Oportunidad"), foundByEvent.getFirst().getOpportunities());
     }
 
+    @Test
+    void findsLatestAnalysisByEventId() {
+        Source source = sourceRepository.save(source());
+        NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId()));
+        Event event = eventRepository.save(event(newsArticle.getId()));
+
+        analysisRepository.save(analysis(event.getId(), OffsetDateTime.parse("2026-06-08T10:00:00Z")));
+        EventAIAnalysis latest = analysisRepository.save(analysis(event.getId(), OffsetDateTime.parse("2026-06-08T11:00:00Z")));
+
+        Optional<EventAIAnalysis> found = analysisRepository.findLatestByEventId(event.getId());
+
+        assertTrue(found.isPresent());
+        assertEquals(latest.getId(), found.get().getId());
+    }
+
     private EventAIAnalysis analysis(Long eventId) {
+        return analysis(eventId, OffsetDateTime.parse("2026-06-08T10:00:00Z"));
+    }
+
+    private EventAIAnalysis analysis(Long eventId, OffsetDateTime generatedAt) {
         return new EventAIAnalysis(
                 null,
                 eventId,
@@ -72,7 +91,7 @@ class JpaEventAIAnalysisRepositoryTest {
                 List.of("Riesgo"),
                 List.of("Oportunidad"),
                 "deterministic-analysis",
-                OffsetDateTime.parse("2026-06-08T10:00:00Z")
+                generatedAt
         );
     }
 

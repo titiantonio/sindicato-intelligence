@@ -42,7 +42,8 @@ public class JpaEventAIAnalysisRepository implements EventAIAnalysisRepository {
                         EventAIAnalysisEntity.class
                 )
                 .setParameter("eventId", eventId)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -55,7 +56,8 @@ public class JpaEventAIAnalysisRepository implements EventAIAnalysisRepository {
                 )
                 .setParameter("eventId", eventId)
                 .setMaxResults(1)
-                .getResultStream()
+                .getResultList()
+                .stream()
                 .findFirst()
                 .map(this::toDomain);
     }

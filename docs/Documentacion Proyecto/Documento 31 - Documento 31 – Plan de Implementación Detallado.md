@@ -3812,3 +3812,34 @@ T14.7.4 [ ] Ejecutar Playwright mockeado y E2E local controlado cuando proceda
 T14.7.5 [ ] Completar revision manual WCAG 2.2 AA y responsive
 T14.7.6 [ ] Actualizar accessibility.md con evidencia final por ruta
 ```
+
+---
+
+## 19.47 Correccion ResultSet cerrado WF-04 - 2026-07-24
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 12, automatizaciones internas y observabilidad IA.
+
+Completado en esta iteracion:
+- [x] Diagnosticado fallo de `WF04_ANALYSIS` antes de ejecutar IA por `ResultSet is closed` en `JpaEventAIAnalysisRepository.findLatestByEventId`.
+- [x] Materializadas las consultas de `event_ai_analysis` con `getResultList()` antes de mapear a dominio para evitar cursores JPA abiertos durante el pipeline de candidatos.
+- [x] Anadida prueba de repositorio para verificar que `findLatestByEventId` devuelve el analisis mas reciente.
+- [x] Version backend subida a `0.0.109-SNAPSHOT`.
+
+Verificacion:
+- Backend focal WF-04: `mvn "-Dtest=JpaEventAIAnalysisRepositoryTest,ProcessPendingEventAnalysisUseCaseTest" test` OK, 7 tests.
+
+---
+
+## 19.48 Correccion RECITATION WF-04 Gemini - 2026-07-24
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 12, automatizaciones internas WF-04 e integracion IA.
+
+Completado en esta iteracion:
+- [x] Diagnosticado fallo de `WF04_ANALYSIS` durante la llamada IA por respuesta Gemini sin texto y `finishReason=RECITATION`.
+- [x] Anadido reintento especifico con contexto de noticias reducido, omitiendo el cuerpo completo `contenido` cuando Gemini bloquea por recitacion.
+- [x] Conservados titulo, fuente, URL, resumen y fecha para mantener el analisis basado en datos sin reproducir fragmentos extensos.
+- [x] Anadida prueba del proveedor Gemini para verificar que el segundo intento elimina el contenido largo y permite respuesta JSON valida.
+- [x] Version backend subida a `0.0.110-SNAPSHOT`.
+
+Verificacion:
+- Backend focal WF-04/Gemini: `mvn "-Dtest=GeminiAnalysisAIProviderTest,ProcessPendingEventAnalysisUseCaseTest" test` OK, 9 tests.

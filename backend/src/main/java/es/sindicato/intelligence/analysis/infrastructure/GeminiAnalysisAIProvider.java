@@ -30,6 +30,7 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
     private static final int MAX_ANALYSIS_ATTEMPTS = 2;
     private static final double MAX_EFFECTIVE_ANALYSIS_TEMPERATURE = 0.1;
     private static final int MIN_EFFECTIVE_ANALYSIS_OUTPUT_TOKENS = 2_048;
+    private static final String RECITATION_FINISH_REASON = "finishReason=RECITATION";
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
@@ -73,10 +74,11 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
 
     private AnalysisAIResponse generate(AnalysisAIRequest request, String resolvedApiKey, String resolvedModel, double resolvedTemperature, int resolvedMaxOutputTokens) {
         AnalysisAIProviderException lastException = null;
+        AnalysisAIRequest currentRequest = request;
         for (int attempt = 1; attempt <= MAX_ANALYSIS_ATTEMPTS; attempt++) {
             try {
                 JsonNode response = callGemini(
-                        request,
+                        currentRequest,
                         resolvedApiKey,
                         resolvedModel,
                         effectiveTemperature(resolvedTemperature),
@@ -90,6 +92,9 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                     throw exception;
                 }
 
+                if (isRecitationFailure(exception)) {
+                    currentRequest = recitationSafeRequest(currentRequest);
+                }
                 log.warn("Gemini analysis response invalid, retrying: attempt={}, maxAttempts={}, reason={}", attempt, MAX_ANALYSIS_ATTEMPTS, exception.getMessage());
             }
         }
@@ -187,8 +192,9 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
 
         JsonNode textNode = response.at("/candidates/0/content/parts/0/text");
         if (!textNode.isTextual() || textNode.asText().isBlank()) {
-            log.warn("Gemini analysis response does not contain text. diagnostics='{}'", geminiDiagnostics(response));
-            throw new AnalysisAIProviderException("Gemini response does not contain candidates[0].content.parts[0].text");
+            String diagnostics = geminiDiagnostics(response);
+            log.warn("Gemini analysis response does not contain text. diagnostics='{}'", diagnostics);
+            throw new AnalysisAIProviderException("Gemini response does not contain candidates[0].content.parts[0].text; " + diagnostics);
         }
 
         return textNode.asText();
@@ -246,6 +252,35 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                 || message.startsWith("Gemini response does not contain")
                 || message.startsWith("Gemini response is not valid analysis JSON")
                 || message.startsWith("Gemini response field '");
+    }
+
+    private boolean isRecitationFailure(AnalysisAIProviderException exception) {
+        return exception.getMessage() != null && exception.getMessage().contains(RECITATION_FINISH_REASON);
+    }
+
+    private AnalysisAIRequest recitationSafeRequest(AnalysisAIRequest request) {
+        return new AnalysisAIRequest(
+                request.eventId(),
+                request.eventTitle(),
+                request.eventDescription(),
+                request.category(),
+                request.importance(),
+                request.analysisType(),
+                request.news(),
+                request.systemPrompt(),
+                stripNewsContent(request.userPrompt())
+        );
+    }
+
+    private String stripNewsContent(String userPrompt) {
+        if (userPrompt == null || userPrompt.isBlank()) {
+            return userPrompt;
+        }
+
+        return userPrompt.replaceAll(
+                "(?m)^  contenido:.*$",
+                "  contenido: omitido en reintento por bloqueo RECITATION del proveedor IA."
+        );
     }
 
     private String geminiDiagnostics(JsonNode response) {

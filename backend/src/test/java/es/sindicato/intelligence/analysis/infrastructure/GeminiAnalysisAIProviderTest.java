@@ -91,6 +91,38 @@ class GeminiAnalysisAIProviderTest {
         server.verify();
     }
 
+    @Test
+    void retriesRecitationWithNewsContentStripped() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        GeminiAnalysisAIProvider provider = provider(builder, "test-key");
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent"))
+                .andExpect(header("x-goog-api-key", "test-key"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("contenido: texto largo de noticia")))
+                .andRespond(withSuccess(geminiRecitationResponse(), MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent"))
+                .andExpect(header("x-goog-api-key", "test-key"))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("contenido: texto largo de noticia"))))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("contenido: omitido en reintento por bloqueo RECITATION")))
+                .andRespond(withSuccess(geminiResponse("""
+                        {
+                          "executiveSummary": "Resumen ejecutivo",
+                          "unionSummary": "Resumen sindical",
+                          "keyPoints": ["Punto clave"],
+                          "risks": [],
+                          "opportunities": [],
+                          "affectedGroups": [],
+                          "recommendedMonitoring": ["Fuente oficial"]
+                        }
+                        """), MediaType.APPLICATION_JSON));
+
+        AnalysisAIResponse response = provider.generate(requestWithNewsContent());
+
+        assertEquals("Resumen ejecutivo", response.executiveSummary());
+        assertEquals(List.of("Fuente oficial"), response.recommendedMonitoring());
+        server.verify();
+    }
+
     private GeminiAnalysisAIProvider provider(RestClient.Builder builder, String apiKey) {
         return new GeminiAnalysisAIProvider(builder, new ObjectMapper(), apiKey, "models/gemma-4-31b-it", 0.2, 1024);
     }
@@ -105,6 +137,27 @@ class GeminiAnalysisAIProviderTest {
                 List.of(),
                 "system",
                 "EVENTO: Evento sindical"
+        );
+    }
+
+    private AnalysisAIRequest requestWithNewsContent() {
+        return new AnalysisAIRequest(
+                10L,
+                "Evento sindical",
+                "Descripcion",
+                EventCategory.SINDICAL,
+                Importance.MEDIUM,
+                List.of(),
+                "system",
+                """
+                        EVENTO: Evento sindical
+
+                        NOTICIAS:
+                        - id: 1
+                          titulo: Noticia
+                          contenido: texto largo de noticia
+                          publicado: 2026-07-24T10:00:00Z
+                        """
         );
     }
 
@@ -124,6 +177,18 @@ class GeminiAnalysisAIProviderTest {
                   ]
                 }
                 """.formatted(toJsonString(text));
+    }
+
+    private String geminiRecitationResponse() {
+        return """
+                {
+                  "candidates": [
+                    {
+                      "finishReason": "RECITATION"
+                    }
+                  ]
+                }
+                """;
     }
 
     private String toJsonString(String value) {
