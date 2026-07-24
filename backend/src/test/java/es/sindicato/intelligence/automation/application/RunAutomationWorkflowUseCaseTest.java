@@ -157,6 +157,30 @@ class RunAutomationWorkflowUseCaseTest {
     }
 
     @Test
+    void doesNotRescheduleClassificationImmediatelyWhenAnotherWorkflowIsDue() {
+        AutomationWorkflowSettingRepository repository = mock(AutomationWorkflowSettingRepository.class);
+        ProcessPendingClassificationsUseCase classifications = mock(ProcessPendingClassificationsUseCase.class);
+        ProcessPendingEventDetectionUseCase eventDetection = mock(ProcessPendingEventDetectionUseCase.class);
+        ProcessPendingEventAnalysisUseCase analysis = mock(ProcessPendingEventAnalysisUseCase.class);
+        RecordAuditLogUseCase audit = mock(RecordAuditLogUseCase.class);
+        AiModelExecutionCoordinator coordinator = coordinator();
+        TransactionOperations transactionOperations = transactionOperations();
+        AutomationWorkflowSetting setting = setting(AutomationWorkflowCode.WF02_CLASSIFICATION, 3);
+        AutomationWorkflowSetting dueAnalysis = setting(AutomationWorkflowCode.WF04_ANALYSIS, 1);
+
+        when(repository.findByCode(AutomationWorkflowCode.WF02_CLASSIFICATION)).thenReturn(Optional.of(setting));
+        when(repository.save(setting)).thenReturn(setting);
+        when(repository.findDue(any())).thenReturn(List.of(dueAnalysis));
+        when(classifications.execute(3)).thenReturn(new AutomationRunResult(3, 3, 0, 0, List.of()));
+
+        new RunAutomationWorkflowUseCase(repository, classifications, eventDetection, analysis, audit, transactionOperations, coordinator)
+                .execute(AutomationWorkflowCode.WF02_CLASSIFICATION);
+
+        assertTrue(setting.getNextRunAt().isAfter(setting.getUpdatedAt()));
+        verify(classifications).execute(3);
+    }
+
+    @Test
     void doesNotRescheduleClassificationImmediatelyWhenFullBatchIsOnlySkipped() {
         AutomationWorkflowSettingRepository repository = mock(AutomationWorkflowSettingRepository.class);
         ProcessPendingClassificationsUseCase classifications = mock(ProcessPendingClassificationsUseCase.class);

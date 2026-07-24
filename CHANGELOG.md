@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend automatizaciones: WF-02 y WF-03 ya no se reprograman inmediatamente tras lote completo si hay otro workflow vencido, evitando que WF-04 quede retrasado por el cooldown IA compartido.
+- Backend IA WF-04: anadido fallback conservador cuando Gemini bloquea por `RECITATION` y el reintento reducido sigue sin devolver JSON completo.
+- Backend IA WF-04: el reintento por `RECITATION` usa un prompt operativo reducido que evita reenviar titulos oficiales literales duplicados y conserva URL/metadatos del documento.
+- Backend WF-05: las noticias cuya URL principal es un PDF/documento oficial permitido se pasan como enlace relevante al prompt de generacion editorial.
 - Backend IA WF-04: el proveedor Gemini reintenta con contexto reducido cuando la respuesta se corta por `RECITATION`, evitando fallos por reproducir cuerpo largo de noticias.
 - Backend automatizaciones WF-04: corregida la consulta del ultimo analisis de evento para evitar `ResultSet is closed` antes de ejecutar la generacion IA.
 
@@ -37,6 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.114-SNAPSHOT`.
+- Versionado backend actualizado a `0.0.113-SNAPSHOT`.
+- Versionado backend actualizado a `0.0.112-SNAPSHOT`.
+- Versionado backend actualizado a `0.0.111-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.110-SNAPSHOT`.
 - Versionado backend actualizado a `0.0.109-SNAPSHOT`.
 - Frontend version: subida la versión del paquete frontend a `0.0.38`.

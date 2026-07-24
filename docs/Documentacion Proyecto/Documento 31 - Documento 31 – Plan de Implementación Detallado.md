@@ -3843,3 +3843,38 @@ Completado en esta iteracion:
 
 Verificacion:
 - Backend focal WF-04/Gemini: `mvn "-Dtest=GeminiAnalysisAIProviderTest,ProcessPendingEventAnalysisUseCaseTest" test` OK, 9 tests.
+
+---
+
+## 19.49 Enlace PDF oficial directo WF-05 - 2026-07-24
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 12, generacion editorial WF-05 y enlaces relevantes oficiales.
+
+Completado en esta iteracion:
+- [x] Comprobado el caso real `event_id=17` / `news_id=44`: la noticia apunta directamente a un PDF BOJA oficial y no tiene `content` capturado.
+- [x] Confirmado que WF-04 no adjunta PDFs a la IA; envia evento, noticia, resumen, URL y contenido textual disponible.
+- [x] Corregido WF-05 para incluir como enlace relevante la URL principal de una noticia cuando ya es un documento oficial permitido.
+- [x] Anadida prueba con URL directa PDF de BOJA equivalente al caso `news_id=44`.
+- [x] Version backend subida a `0.0.111-SNAPSHOT`.
+
+Verificacion:
+- Backend focal WF-05/enlaces: `mvn "-Dtest=HttpRelevantContentLinkExtractorTest,GenerateContentUseCaseTest" test` OK, 10 tests.
+
+---
+
+## 19.50 Desbloqueo WF-02 y prompt reducido RECITATION WF-04 - 2026-07-24
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 12, scheduler de automatizaciones e integracion IA WF-04.
+
+Completado en esta iteracion:
+- [x] Comprobado que `WF02_CLASSIFICATION` estaba bloqueado en `running=true` desde `2026-07-24 16:49:21 UTC`.
+- [x] Desbloqueado operativamente `WF02_CLASSIFICATION` en PostgreSQL dejando `running=false` y `next_run_at=now()`.
+- [x] Confirmado que `WF04_ANALYSIS` no estaba en `running=true`, pero fallaba repetidamente para `event_id=17` con `finishReason=RECITATION`.
+- [x] Confirmado que WF-04 recibe URL y metadatos/resumen de la noticia PDF BOJA, pero no adjunta ni extrae el binario PDF.
+- [x] Reforzado el reintento `RECITATION` de WF-04 para no reenviar titulos oficiales literales duplicados y usar un prompt operativo reducido con URL/metadatos.
+- [x] Anadido fallback conservador si el reintento reducido de Gemini sigue sin devolver JSON completo.
+- [x] Corregida la reprogramacion inmediata de `WF02_CLASSIFICATION` y `WF03_EVENT_DETECTION` para ceder turno cuando existe otro workflow vencido, evitando retrasar `WF04_ANALYSIS` por cooldown IA compartido.
+- [x] Version backend subida a `0.0.114-SNAPSHOT`.
+
+Verificacion:
+- Backend focal WF-04/Gemini/scheduler: `mvn "-Dtest=RunAutomationWorkflowUseCaseTest,ProcessDueAutomationWorkflowsUseCaseTest,GeminiAnalysisAIProviderTest,ProcessPendingEventAnalysisUseCaseTest" test` OK, 18 tests.

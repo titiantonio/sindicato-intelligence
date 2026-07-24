@@ -73,6 +73,10 @@ public class HttpRelevantContentLinkExtractor implements RelevantContentLinkExtr
             return List.of();
         }
 
+        if (isRelevantAllowedLink(sourceUri, newsArticle.getTitle())) {
+            return List.of(new RelevantContentLink(newsArticle.getId(), fallbackLabel(newsArticle.getTitle(), sourceUri), sourceUri.toString()));
+        }
+
         List<RelevantContentLink> fromStoredContent = extractFromHtml(newsArticle.getId(), sourceUri, newsArticle.getContent());
         if (!fromStoredContent.isEmpty()) {
             return fromStoredContent;

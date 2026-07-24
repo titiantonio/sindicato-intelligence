@@ -18,6 +18,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,10 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                 return parseAnalysisResponse(responseText, resolvedModel);
             } catch (AnalysisAIProviderException exception) {
                 lastException = exception;
+                if (attempt >= MAX_ANALYSIS_ATTEMPTS && isRecitationFallbackRequest(currentRequest)) {
+                    log.warn("Gemini analysis fallback used after RECITATION retry failed: reason={}", exception.getMessage());
+                    return conservativeRecitationFallback(currentRequest, resolvedModel);
+                }
                 if (attempt >= MAX_ANALYSIS_ATTEMPTS || !isRetryable(exception)) {
                     throw exception;
                 }
@@ -258,6 +263,35 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
         return exception.getMessage() != null && exception.getMessage().contains(RECITATION_FINISH_REASON);
     }
 
+    private boolean isRecitationFallbackRequest(AnalysisAIRequest request) {
+        return request.userPrompt() != null && request.userPrompt().contains("bloqueado el intento anterior por RECITATION");
+    }
+
+    private AnalysisAIResponse conservativeRecitationFallback(AnalysisAIRequest request, String resolvedModel) {
+        String topic = recitationSafeTopic(request);
+        return new AnalysisAIResponse(
+                "Analisis limitado por bloqueo del proveedor IA; se trabaja con metadatos y URL oficial del evento.",
+                "Conviene revisar la resolucion oficial antes de elaborar posicionamiento o contenido definitivo.",
+                List.of(topic, "La noticia procede de una fuente con enlace oficial disponible."),
+                List.of("No se dispone del texto completo extraido del PDF en el contexto del analisis."),
+                List.of("Usar la URL oficial como referencia para la revision humana y el seguimiento sindical."),
+                affectedGroupsFor(request),
+                List.of("Revisar el PDF oficial enlazado y confirmar plazos, colectivos y requisitos antes de publicar."),
+                resolvedModel + ":conservative-recitation-fallback"
+        );
+    }
+
+    private List<String> affectedGroupsFor(AnalysisAIRequest request) {
+        if (request.category() == null) {
+            return List.of();
+        }
+        return switch (request.category()) {
+            case INTERINOS -> List.of("Personal interino o aspirante vinculado a bolsas");
+            case OPOSICIONES -> List.of("Aspirantes a procesos selectivos");
+            default -> List.of();
+        };
+    }
+
     private AnalysisAIRequest recitationSafeRequest(AnalysisAIRequest request) {
         return new AnalysisAIRequest(
                 request.eventId(),
@@ -268,19 +302,87 @@ public class GeminiAnalysisAIProvider implements AnalysisAIProvider {
                 request.analysisType(),
                 request.news(),
                 request.systemPrompt(),
-                stripNewsContent(request.userPrompt())
+                recitationSafeUserPrompt(request)
         );
     }
 
-    private String stripNewsContent(String userPrompt) {
-        if (userPrompt == null || userPrompt.isBlank()) {
-            return userPrompt;
+    private String recitationSafeUserPrompt(AnalysisAIRequest request) {
+        StringBuilder newsContext = new StringBuilder();
+        if (request.news() == null || request.news().isEmpty()) {
+            newsContext.append("Sin noticias asociadas.");
+        } else {
+            for (var item : request.news().stream().limit(5).toList()) {
+                newsContext.append("- id: ").append(item.id()).append('\n')
+                        .append("  fuente: ").append(safe(item.sourceName())).append('\n')
+                        .append("  url: ").append(safe(item.url())).append('\n')
+                        .append("  resumen_disponible: ").append(safe(item.summary())).append('\n')
+                        .append("  publicado: ").append(item.publishedAt()).append("\n\n");
+            }
         }
 
-        return userPrompt.replaceAll(
-                "(?m)^  contenido:.*$",
-                "  contenido: omitido en reintento por bloqueo RECITATION del proveedor IA."
+        return """
+                EVENTO:
+                id: %s
+                tema_operativo: %s
+                categoria: %s
+                importancia: %s
+                tipo_analisis: %s
+
+                NOTICIAS:
+                %s
+
+                Genera un objeto JSON con exactamente esta estructura:
+                {
+                  "executiveSummary": "",
+                  "unionSummary": "",
+                  "keyPoints": [],
+                  "risks": [],
+                  "opportunities": [],
+                  "affectedGroups": [],
+                  "recommendedMonitoring": []
+                }
+
+                Reglas especificas para este reintento:
+                - El proveedor ha bloqueado el intento anterior por RECITATION.
+                - No reproduzcas literalmente titulos oficiales, fragmentos normativos ni texto de documentos.
+                - Usa solo el tema operativo, los metadatos disponibles y las URL oficiales.
+                - Si falta el texto completo del documento, declaralo como limitacion.
+                - Mantente prudente y orientado a seguimiento sindical.
+                """.formatted(
+                request.eventId(),
+                recitationSafeTopic(request),
+                request.category(),
+                request.importance(),
+                request.analysisType(),
+                newsContext.toString().trim()
         );
+    }
+
+    private String recitationSafeTopic(AnalysisAIRequest request) {
+        String title = safe(request.eventTitle());
+        if (containsIgnoreCase(title, "bolsa") && containsIgnoreCase(title, "unica") && containsIgnoreCase(title, "plazo")) {
+            return "Resolucion oficial BOJA sobre ampliacion de plazo de solicitudes para actualizar la Bolsa Unica Comun.";
+        }
+        if (containsIgnoreCase(title, "boja") || containsIgnoreCase(title, "resolucion")) {
+            return "Resolucion oficial relacionada con " + request.category() + ".";
+        }
+        if (!title.isBlank() && title.length() <= 140) {
+            return title;
+        }
+        return "Evento informativo relacionado con " + request.category() + ".";
+    }
+
+    private boolean containsIgnoreCase(String value, String fragment) {
+        return normalizeForSearch(value).contains(normalizeForSearch(fragment));
+    }
+
+    private String normalizeForSearch(String value) {
+        String normalized = Normalizer.normalize(value == null ? "" : value, Normalizer.Form.NFD);
+        return normalized.replaceAll("\\p{M}", "").toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 
     private String geminiDiagnostics(JsonNode response) {

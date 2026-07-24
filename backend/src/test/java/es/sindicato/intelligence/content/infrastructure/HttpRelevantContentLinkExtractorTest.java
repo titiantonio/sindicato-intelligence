@@ -1,10 +1,13 @@
 package es.sindicato.intelligence.content.infrastructure;
 
 import es.sindicato.intelligence.content.application.RelevantContentLink;
+import es.sindicato.intelligence.news.domain.NewsArticle;
+import es.sindicato.intelligence.news.domain.NewsStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,6 +31,22 @@ class HttpRelevantContentLinkExtractorTest {
         assertEquals("Resolucion oficial", links.get(0).label());
         assertEquals("https://www.juntadeandalucia.es/educacion/documentos/resolucion.pdf", links.get(0).url());
         assertEquals("https://www.juntadeandalucia.es/educacion/consulta/listado", links.get(1).url());
+    }
+
+    @Test
+    void includesOfficialDocumentWhenNewsUrlIsDirectPdf() {
+        HttpRelevantContentLinkExtractor extractor = extractor();
+        NewsArticle newsArticle = newsArticle(
+                "Resolución de 22 de julio de 2026 de la Junta de Andalucía",
+                "http://www.juntadeandalucia.es/boja/2026/214001/BOJA26-214001-00002-9998-01_00341229.pdf"
+        );
+
+        List<RelevantContentLink> links = extractor.extract(List.of(newsArticle));
+
+        assertEquals(1, links.size());
+        assertEquals(44L, links.getFirst().newsId());
+        assertEquals("Resolución de 22 de julio de 2026 de la Junta de Andalucía", links.getFirst().label());
+        assertEquals("http://www.juntadeandalucia.es/boja/2026/214001/BOJA26-214001-00002-9998-01_00341229.pdf", links.getFirst().url());
     }
 
     @Test
@@ -65,6 +84,24 @@ class HttpRelevantContentLinkExtractorTest {
                 100,
                 "ccoo.es,anpe.es,csif.es,ustea.es,ugt.es",
                 "juntadeandalucia.es,gob.es,boe.es"
+        );
+    }
+
+    private NewsArticle newsArticle(String title, String url) {
+        OffsetDateTime now = OffsetDateTime.parse("2026-07-24T10:00:00Z");
+        return new NewsArticle(
+                44L,
+                4L,
+                title,
+                url,
+                "Resumen",
+                "",
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                now,
+                now,
+                NewsStatus.EVENT_MATCHED,
+                now,
+                now
         );
     }
 }

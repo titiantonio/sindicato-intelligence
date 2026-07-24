@@ -130,7 +130,14 @@ public class RunAutomationWorkflowUseCase {
         return (workflowCode == AutomationWorkflowCode.WF02_CLASSIFICATION || workflowCode == AutomationWorkflowCode.WF03_EVENT_DETECTION)
                 && result.processedCount() >= setting.getBatchSize()
                 && result.processedCount() > result.skippedCount()
-                && setting.getNextRunAt().isAfter(completedAt);
+                && setting.getNextRunAt().isAfter(completedAt)
+                && !hasOtherDueWorkflows(setting, completedAt);
+    }
+
+    private boolean hasOtherDueWorkflows(AutomationWorkflowSetting completedSetting, OffsetDateTime now) {
+        return repository.findDue(now)
+                .stream()
+                .anyMatch(candidate -> candidate.getWorkflowCode() != completedSetting.getWorkflowCode());
     }
 
     private void markFailed(

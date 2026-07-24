@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import es.sindicato.intelligence.analysis.application.AnalysisAIProviderException;
 import es.sindicato.intelligence.analysis.application.AnalysisAIRequest;
 import es.sindicato.intelligence.analysis.application.AnalysisAIResponse;
+import es.sindicato.intelligence.analysis.application.AnalysisNewsItem;
 import es.sindicato.intelligence.event.domain.EventCategory;
 import es.sindicato.intelligence.event.domain.Importance;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -103,7 +105,9 @@ class GeminiAnalysisAIProviderTest {
         server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent"))
                 .andExpect(header("x-goog-api-key", "test-key"))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("contenido: texto largo de noticia"))))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("contenido: omitido en reintento por bloqueo RECITATION")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("tema_operativo")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Bolsa Unica Comun")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("El proveedor ha bloqueado el intento anterior por RECITATION")))
                 .andRespond(withSuccess(geminiResponse("""
                         {
                           "executiveSummary": "Resumen ejecutivo",
@@ -123,6 +127,23 @@ class GeminiAnalysisAIProviderTest {
         server.verify();
     }
 
+    @Test
+    void fallsBackConservativelyWhenRecitationRetryStillHasInvalidJson() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        GeminiAnalysisAIProvider provider = provider(builder, "test-key");
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent"))
+                .andRespond(withSuccess(geminiRecitationResponse(), MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent"))
+                .andRespond(withSuccess(geminiResponse("{\"executiveSummary\":\"texto incompleto\""), MediaType.APPLICATION_JSON));
+
+        AnalysisAIResponse response = provider.generate(requestWithNewsContent());
+
+        assertEquals("models/gemma-4-31b-it:conservative-recitation-fallback", response.modelUsed());
+        assertEquals(List.of("Revisar el PDF oficial enlazado y confirmar plazos, colectivos y requisitos antes de publicar."), response.recommendedMonitoring());
+        server.verify();
+    }
+
     private GeminiAnalysisAIProvider provider(RestClient.Builder builder, String apiKey) {
         return new GeminiAnalysisAIProvider(builder, new ObjectMapper(), apiKey, "models/gemma-4-31b-it", 0.2, 1024);
     }
@@ -130,7 +151,7 @@ class GeminiAnalysisAIProviderTest {
     private AnalysisAIRequest request() {
         return new AnalysisAIRequest(
                 10L,
-                "Evento sindical",
+                "Resolución de 22 de julio de 2026, por la que se amplía el plazo de solicitudes para actualizar la Bolsa Única Común.",
                 "Descripcion",
                 EventCategory.SINDICAL,
                 Importance.MEDIUM,
@@ -143,11 +164,20 @@ class GeminiAnalysisAIProviderTest {
     private AnalysisAIRequest requestWithNewsContent() {
         return new AnalysisAIRequest(
                 10L,
-                "Evento sindical",
+                "Resolución de 22 de julio de 2026, por la que se amplía el plazo de solicitudes para actualizar la Bolsa Única Común.",
                 "Descripcion",
                 EventCategory.SINDICAL,
                 Importance.MEDIUM,
-                List.of(),
+                List.of(new AnalysisNewsItem(
+                        44L,
+                        "UGT Enseñanza",
+                        4,
+                        "Resolución de 22 de julio de 2026, por la que se amplía el plazo de solicitudes para actualizar la Bolsa Única Común.",
+                        "http://www.juntadeandalucia.es/boja/2026/214001/BOJA26-214001-00002-9998-01_00341229.pdf",
+                        "Boletín: BOJA Extraordinario nº 213501 de 2026",
+                        "",
+                        OffsetDateTime.parse("2026-07-24T10:00:00Z")
+                )),
                 "system",
                 """
                         EVENTO: Evento sindical
