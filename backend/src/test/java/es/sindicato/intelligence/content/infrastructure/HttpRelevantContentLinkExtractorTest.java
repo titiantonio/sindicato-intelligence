@@ -77,6 +77,21 @@ class HttpRelevantContentLinkExtractorTest {
         assertEquals(List.of(), links);
     }
 
+    @Test
+    void skipsMalformedSharingLinksAndContinuesExtractingOfficialLinks() {
+        HttpRelevantContentLinkExtractor extractor = extractor();
+        String html = """
+                <a href="https://twitter.com/share?text=Oposiciones docentes 2026 de acceso al subgrupo A1 en Andalucia baremo provisional de la fase de concurso">Compartir</a>
+                <a href="https://www.juntadeandalucia.es/educacion/baremo-provisional.pdf">Baremo provisional</a>
+                """;
+
+        List<RelevantContentLink> links = extractor.extractFromHtml(127L, URI.create("https://www.juntadeandalucia.es/educacion/noticia"), html);
+
+        assertEquals(1, links.size());
+        assertEquals("Baremo provisional", links.getFirst().label());
+        assertEquals("https://www.juntadeandalucia.es/educacion/baremo-provisional.pdf", links.getFirst().url());
+    }
+
     private HttpRelevantContentLinkExtractor extractor() {
         return new HttpRelevantContentLinkExtractor(
                 RestClient.builder(),

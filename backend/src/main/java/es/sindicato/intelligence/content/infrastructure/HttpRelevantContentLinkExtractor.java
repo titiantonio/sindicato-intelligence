@@ -177,7 +177,12 @@ public class HttpRelevantContentLinkExtractor implements RelevantContentLinkExtr
             return Optional.empty();
         }
 
-        URI resolved = sourceUri.resolve(trimmed);
+        URI resolved;
+        try {
+            resolved = sourceUri.resolve(trimmed);
+        } catch (IllegalArgumentException exception) {
+            return Optional.empty();
+        }
         if (!isSafeHttpUriWithoutDns(resolved)) {
             return Optional.empty();
         }

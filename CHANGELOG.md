@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend WF-05: los enlaces `href` malformados en HTML de noticias se descartan al extraer enlaces relevantes, evitando que URLs sociales sin codificar bloqueen la generacion de contenido.
 - Frontend settings: simplificada y reordenada la tabla de operaciones IA eliminando las columnas redundantes `WF` y `Operacion`.
 - Backend automatizaciones WF-03: anadida cuarentena temporal por fallos IA repetidos y lookahead de noticias clasificadas para evitar bucles de HTTP 429 en la cabecera del lote.
 - Frontend settings: la tabla de operaciones IA ya no se ensancha por nombres de modelo largos; la columna `Modelo` parte identificadores extensos y evita overflow horizontal global.
@@ -55,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.119-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.42`.
 - Versionado backend actualizado a `0.0.118-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.41`.

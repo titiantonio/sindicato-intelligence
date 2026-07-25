@@ -746,6 +746,8 @@ Nota posterior 2026-06-09: Sprint 8 completado con T8.1, T8.2, T8.3 y T8.4 verif
 
 Nota posterior 2026-06-09: cierre verificado con suite completa backend `mvn test`: 133 tests ejecutados, 0 fallos, 0 errores.
 
+Nota posterior 2026-07-25: corregido mantenimiento WF-05 en `HttpRelevantContentLinkExtractor` para descartar enlaces `href` malformados del HTML de noticias, como URLs sociales con query sin codificar, y continuar extrayendo enlaces oficiales relevantes. Verificado con `mvnw.cmd "-Dtest=HttpRelevantContentLinkExtractorTest" test`: 5 tests OK.
+
 ---
 
 # 12. Sprint 9 [x]
