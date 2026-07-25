@@ -128,8 +128,8 @@ public class RunAutomationWorkflowUseCase {
             OffsetDateTime completedAt
     ) {
         return (workflowCode == AutomationWorkflowCode.WF02_CLASSIFICATION || workflowCode == AutomationWorkflowCode.WF03_EVENT_DETECTION)
-                && result.processedCount() >= setting.getBatchSize()
-                && result.processedCount() > result.skippedCount()
+                && result.failedCount() == 0
+                && result.processedCount() - result.skippedCount() >= setting.getBatchSize()
                 && setting.getNextRunAt().isAfter(completedAt)
                 && !hasOtherDueWorkflows(setting, completedAt);
     }

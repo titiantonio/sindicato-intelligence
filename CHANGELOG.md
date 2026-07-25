@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend automatizaciones WF-03: reducida a 2 horas la ventana de cuarentena por fallos IA repetidos para reintentar noticias recientes antes de que pierdan actualidad.
+- Backend automatizaciones IA: WF-02 y WF-03 dejan de reprogramarse inmediatamente cuando un lote completo incluye fallos del proveedor, evitando amplificar errores Gemini `HTTP 429`.
 - Backend WF-05: los enlaces `href` malformados en HTML de noticias se descartan al extraer enlaces relevantes, evitando que URLs sociales sin codificar bloqueen la generacion de contenido.
 - Frontend settings: simplificada y reordenada la tabla de operaciones IA eliminando las columnas redundantes `WF` y `Operacion`.
 - Backend automatizaciones WF-03: anadida cuarentena temporal por fallos IA repetidos y lookahead de noticias clasificadas para evitar bucles de HTTP 429 en la cabecera del lote.

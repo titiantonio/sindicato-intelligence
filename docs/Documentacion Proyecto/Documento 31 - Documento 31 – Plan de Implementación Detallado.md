@@ -3971,12 +3971,30 @@ Completado en esta iteracion:
 - [x] Diagnosticado que `news_id=506`, `news_id=507` y `news_id=508` seguian en `CLASSIFIED` y acumulaban fallos repetidos de `WF03_EVENT_MATCHING` con `HTTP 429` hasta 46, 43 y 43 fallos respectivamente mientras el backend local seguia ejecutando el codigo anterior.
 - [x] Confirmado que el lote operativo de `WF03_EVENT_DETECTION` era 3, por lo que las mismas tres noticias quedaban al inicio del lote y se reintentaban repetidamente.
 - [x] Anadida cuarentena temporal en `ProcessPendingEventDetectionUseCase` basada en `ai_operation_metrics` para saltar noticias con fallos recientes repetidos de WF-03.
+- [x] Ajustada la ventana por defecto de cuarentena WF-03 a 2 horas para que las noticias recientes no queden retenidas durante un dia completo.
 - [x] Anadido lookahead de noticias clasificadas para que las noticias saltadas por cuarentena no consuman cupo de llamadas IA del lote.
 - [x] Version backend subida a `0.0.118-SNAPSHOT`.
 
 Verificacion:
 - Backend focal WF-03/scheduler: `mvnw.cmd "-Dtest=ProcessPendingEventDetectionUseCaseTest,RunAutomationWorkflowUseCaseTest" test` OK segun reports Surefire, 11 tests, 0 fallos, 0 errores. La llamada del wrapper supero el timeout externo tras generar reports.
 - Backend compilacion: `mvnw.cmd -q test-compile` OK.
+
+---
+
+## 19.56 Contencion de reprogramacion inmediata ante 429 Gemini - 2026-07-25
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 12, automatizaciones internas WF-02/WF-03 e integracion IA.
+
+Completado en esta iteracion:
+- [x] Diagnosticado que los nuevos fallos de `WF03_EVENT_MATCHING` ya no estaban limitados a `news_id=506`, `507` y `508`; tambien afectaban a otras noticias como `511` y `526`.
+- [x] Confirmado que `WF02_CLASSIFICATION`, `WF03_EVENT_MATCHING`, `WF04_ANALYSIS` y `WF05_CONTENT` usan el mismo modelo `models/gemma-4-31b-it` con cooldown de 60 segundos.
+- [x] Confirmado que `WF03_EVENT_DETECTION` registro `last_processed_count=6`, `last_skipped_count=3`, `last_failed_count=2` con `batch_size=3`, quedando reprogramado de forma rapida pese a fallos Gemini `HTTP 429`.
+- [x] Ajustado `RunAutomationWorkflowUseCase` para no reprogramar inmediatamente `WF-02` ni `WF-03` cuando el lote contiene fallos del proveedor.
+- [x] La continuacion inmediata queda limitada a lotes completos con trabajo real y sin fallos, respetando el intervalo ordinario cuando Gemini indica saturacion/cuota.
+- [x] Version backend mantenida en `0.0.119-SNAPSHOT`.
+
+Verificacion:
+- Backend focal WF-03/scheduler: `mvnw.cmd "-Dtest=ProcessPendingEventDetectionUseCaseTest,RunAutomationWorkflowUseCaseTest" test` OK, 12 tests, 0 fallos, 0 errores.
 
 ---
 

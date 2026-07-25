@@ -34,6 +34,7 @@ Contadores observados en `ai_operation_metrics`:
 
 - Se reutiliza el patron ya aplicado en WF-02: cuarentena temporal por fallos recientes consultando `ai_operation_metrics`.
 - La cuarentena no cambia el estado de la noticia y no descarta contenido.
+- La ventana por defecto de WF-03 queda en 2 horas para reintentar noticias recientes antes de que pierdan actualidad.
 - Las noticias saltadas por cuarentena no consumen cupo de llamadas IA del lote.
 - Se anade lookahead para que WF-03 pueda procesar otras noticias `CLASSIFIED` mientras las fallidas quedan temporalmente en espera.
 

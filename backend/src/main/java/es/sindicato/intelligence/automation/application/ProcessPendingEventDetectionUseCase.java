@@ -37,7 +37,7 @@ public class ProcessPendingEventDetectionUseCase {
             AiOperationMetricRepository aiOperationMetricRepository,
             @Value("${app.automation.event-detection.batch-size:10}") int defaultLimit,
             @Value("${app.automation.event-detection.repeated-failure-threshold:5}") int repeatedFailureThreshold,
-            @Value("${app.automation.event-detection.repeated-failure-window-hours:24}") int repeatedFailureWindowHours,
+            @Value("${app.automation.event-detection.repeated-failure-window-hours:2}") int repeatedFailureWindowHours,
             @Value("${app.automation.event-detection.lookahead-multiplier:3}") int lookaheadMultiplier
     ) {
         this.newsRepository = newsRepository;

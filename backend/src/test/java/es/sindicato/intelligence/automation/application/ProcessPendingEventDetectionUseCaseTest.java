@@ -30,7 +30,7 @@ class ProcessPendingEventDetectionUseCaseTest {
         NewsRepository newsRepository = mock(NewsRepository.class);
         DetectEventUseCase detectEventUseCase = mock(DetectEventUseCase.class);
         AiOperationMetricRepository metricRepository = mock(AiOperationMetricRepository.class);
-        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 10, 5, 24, 1);
+        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 10, 5, 2, 1);
         NewsArticle first = newsArticle(1L);
         NewsArticle second = newsArticle(2L);
 
@@ -54,7 +54,7 @@ class ProcessPendingEventDetectionUseCaseTest {
         NewsRepository newsRepository = mock(NewsRepository.class);
         DetectEventUseCase detectEventUseCase = mock(DetectEventUseCase.class);
         AiOperationMetricRepository metricRepository = mock(AiOperationMetricRepository.class);
-        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 10, 5, 24, 1);
+        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 10, 5, 2, 1);
 
         when(newsRepository.findByStatus(NewsStatus.CLASSIFIED, 10)).thenReturn(List.of());
 
@@ -71,7 +71,7 @@ class ProcessPendingEventDetectionUseCaseTest {
         NewsRepository newsRepository = mock(NewsRepository.class);
         DetectEventUseCase detectEventUseCase = mock(DetectEventUseCase.class);
         AiOperationMetricRepository metricRepository = mock(AiOperationMetricRepository.class);
-        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 10, 5, 24, 1);
+        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 10, 5, 2, 1);
         NewsArticle newsArticle = newsArticle(1L);
 
         when(newsRepository.findByStatus(NewsStatus.CLASSIFIED, 10)).thenReturn(List.of(newsArticle));
@@ -91,7 +91,7 @@ class ProcessPendingEventDetectionUseCaseTest {
         NewsRepository newsRepository = mock(NewsRepository.class);
         DetectEventUseCase detectEventUseCase = mock(DetectEventUseCase.class);
         AiOperationMetricRepository metricRepository = mock(AiOperationMetricRepository.class);
-        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 1, 5, 24, 3);
+        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 1, 5, 2, 3);
         NewsArticle quarantined = newsArticle(1L);
         NewsArticle processable = newsArticle(2L);
 
