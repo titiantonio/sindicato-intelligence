@@ -62,6 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend login: aclarado el panel introductorio en modo claro con una superficie menta suave, texto oscuro y tarjetas translúcidas; el modo oscuro conserva su variante navy.
+- Frontend version: subida la version del paquete frontend a `0.0.47`.
 - Frontend version: subida la version del paquete frontend a `0.0.46`.
 - Frontend version: subida la version del paquete frontend a `0.0.45`.
 - Frontend version: subida la version del paquete frontend a `0.0.44`.

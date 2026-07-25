@@ -238,3 +238,19 @@ Validaciones complementarias aún recomendadas antes de publicar una declaració
 - Repetir zoom al `200 %` y `400 %` en los navegadores oficialmente soportados, además de la equivalencia responsive automatizada a `320 CSS px`.
 - Auditoría especializada de contraste sobre todos los estados procedentes de datos reales.
 - Incorporar una herramienta automática especializada solo si se aprueba previamente como dependencia del proyecto.
+
+## Evidencia adicional del login claro - 2026-07-25
+
+Se ha sustituido el panel introductorio navy del login en modo claro por una superficie menta suave. El modo oscuro conserva su variante profunda y no se han modificado la semántica, el orden de foco ni los controles del formulario.
+
+Contrastes calculados sobre los extremos claros del degradado:
+
+- Titular `#102f36`: entre `12.37:1` y `13.59:1`.
+- Texto descriptivo `#405b63`: entre `6.33:1` y `6.96:1`.
+- Etiqueta de sección `#115e59`: entre `6.62:1` y `7.27:1`.
+
+Evidencia técnica:
+
+- Build de producción correcto.
+- Suite Playwright focal del login: `2 passed`.
+- Inspección visual en escritorio claro y oscuro a `1440 × 900`.

@@ -11,16 +11,41 @@
 }
 
 .login-page {
+  --login-intro-background:
+    radial-gradient(circle at 16% 12%, rgba(15, 118, 110, 0.16), transparent 18rem),
+    radial-gradient(circle at 92% 88%, rgba(37, 99, 235, 0.08), transparent 22rem),
+    linear-gradient(145deg, #dff4ef 0%, #eef8f5 55%, #f7fbfa 100%);
+  --login-intro-border: #bddbd4;
+  --login-intro-card-background: rgba(255, 255, 255, 0.72);
+  --login-intro-card-border: #b6d6cf;
+  --login-intro-copy: #405b63;
+  --login-intro-eyebrow: #115e59;
+  --login-intro-heading: #102f36;
+  --login-intro-shadow: 0 1rem 3rem rgba(15, 118, 110, 0.08);
+
   background: var(--color-page);
   min-height: 100dvh;
   position: relative;
 }
 
-.login-page__intro {
-  background:
+:host-context(.theme-dark) .login-page {
+  --login-intro-background:
     radial-gradient(circle at 18% 10%, rgba(45, 212, 191, 0.2), transparent 22rem),
     linear-gradient(145deg, #071827 0%, #0b2f3a 100%);
+  --login-intro-border: rgba(153, 246, 228, 0.14);
+  --login-intro-card-background: rgba(255, 255, 255, 0.07);
+  --login-intro-card-border: rgba(153, 246, 228, 0.17);
+  --login-intro-copy: #cbd5e1;
+  --login-intro-eyebrow: #99f6e4;
+  --login-intro-heading: #f8fafc;
+  --login-intro-shadow: none;
+}
+
+.login-page__intro {
+  background: var(--login-intro-background);
+  border: 1px solid var(--login-intro-border);
   border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+  box-shadow: var(--login-intro-shadow);
   gap: 1.35rem;
   margin-block: 1rem;
   min-height: calc(100dvh - 2rem);
@@ -30,7 +55,7 @@
 .login-page__eyebrow,
 .auth-side-page__eyebrow {
   align-items: center;
-  color: #99f6e4;
+  color: var(--login-intro-eyebrow);
   display: inline-flex;
   font-size: 0.72rem;
   font-weight: 850;
@@ -40,7 +65,7 @@
 }
 
 .login-page__intro h1 {
-  color: #f8fafc;
+  color: var(--login-intro-heading);
   font-size: clamp(2.5rem, 5vw, 4.8rem);
   letter-spacing: -0.055em;
   line-height: 0.98;
@@ -48,7 +73,7 @@
 }
 
 .login-page__intro p {
-  color: #cbd5e1;
+  color: var(--login-intro-copy);
   line-height: 1.65;
   max-width: 42rem;
 }
@@ -58,18 +83,18 @@
 }
 
 .login-page__highlights div {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(153, 246, 228, 0.17);
+  background: var(--login-intro-card-background);
+  border: 1px solid var(--login-intro-card-border);
   border-radius: 0.875rem;
   padding: 1rem;
 }
 
 .login-page__highlights strong {
-  color: #f8fafc;
+  color: var(--login-intro-heading);
 }
 
 .login-page__highlights span {
-  color: #cbd5e1;
+  color: var(--login-intro-copy);
   line-height: 1.45;
 }
 

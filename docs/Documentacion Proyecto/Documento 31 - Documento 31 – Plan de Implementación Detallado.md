@@ -4081,3 +4081,23 @@ Completado en esta iteracion:
 
 Verificacion:
 - Frontend build: `npm.cmd run build` OK.
+
+---
+
+## 19.61 Aclarado del panel introductorio del login - 2026-07-25
+
+Tarea de mantenimiento visual posterior al Sprint 14 sobre Fase 11, autenticacion del backoffice Angular y objetivo WCAG 2.2 AA.
+
+Completado en esta iteracion:
+- [x] Sustituido en modo claro el panel introductorio navy por una superficie menta suave con degradado discreto.
+- [x] Ajustados titular, texto descriptivo, etiqueta y tarjetas informativas a colores oscuros con contraste AA.
+- [x] Conservada sin cambios visuales la variante navy del modo oscuro.
+- [x] Anadida regresion Playwright que fija el tema claro y evita recuperar el fondo oscuro anterior.
+- [x] Actualizada la evidencia de accesibilidad y revisadas visualmente ambas variantes de tema.
+- [x] Frontend version subido a `0.0.47`.
+
+Verificacion:
+- Frontend build: `npm.cmd run build` OK.
+- Playwright focal login: `npx.cmd playwright test e2e/app-startup.spec.ts --reporter=list` OK, 2 tests.
+- Contraste del texto claro verificado entre `6.33:1` y `13.59:1`.
+- Inspeccion visual del login claro y oscuro a `1440 x 900`.
