@@ -47,6 +47,29 @@ describe('MetricCardComponent', () => {
     expect(compiled.textContent).toContain('Ultima actualizacion:');
     expect(compiled.textContent).toContain('+350');
     expect(compiled.textContent).toContain('32.585');
+    expect(compiled.querySelector('.metric-card__header > .metric-card__badge')?.textContent?.trim()).toBe('Hoy');
+    expect(compiled.querySelector('.metric-card__summary')?.textContent).toContain('350');
+    expect(compiled.querySelector('.metric-card__trend')?.textContent).toContain('+350');
+    expect(compiled.querySelectorAll('.metric-card__item').length).toBe(3);
     expect(compiled.querySelectorAll('.pi').length).toBeGreaterThan(0);
+  });
+
+  it('keeps long values inside the metric card structure', () => {
+    fixture.componentRef.setInput('card', {
+      ...card,
+      value: '1.234.567.890 ms',
+      trend: '+987.654',
+      items: [
+        { label: 'Modelo conservador con fallback', value: 1234567890, tone: 'warning', icon: 'trend', signed: false },
+        { label: 'Diferencia media acumulada', value: 987654, tone: 'danger', icon: 'alert', signed: true }
+      ]
+    });
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('.metric-card__summary')?.textContent).toContain('1.234.567.890 ms');
+    expect(compiled.querySelector('.metric-card__item-value')?.textContent).toContain('1.234.567.890');
+    expect(compiled.querySelector('.metric-card__item-label')?.textContent).toContain('Modelo conservador con fallback');
   });
 });

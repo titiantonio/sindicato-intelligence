@@ -41,6 +41,14 @@ export class MetricCardComponent {
     return item.tone;
   }
 
+  protected trendTone(): string {
+    if (this.card().difference === 0) {
+      return 'neutral';
+    }
+
+    return this.card().tone;
+  }
+
   protected formattedLastUpdatedAt(): string {
     return this.timeFormatter.format(new Date(this.card().lastUpdatedAt));
   }

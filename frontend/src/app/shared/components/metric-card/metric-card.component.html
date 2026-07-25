@@ -10,12 +10,19 @@
     <span class="metric-card__badge">{{ card().badgeLabel }}</span>
   </header>
 
+  <section class="metric-card__summary" aria-label="Resumen principal">
+    <strong>{{ card().value }}</strong>
+    <span [class]="'metric-card__trend metric-card__trend--' + trendTone()">{{ card().trend }}</span>
+  </section>
+
   <div class="metric-card__body">
     @for (item of card().items; track item.label) {
       <section class="metric-card__item">
-        <span class="metric-card__item-label">{{ item.label }}</span>
-        <div class="metric-card__item-value" [class]="'metric-card__item-value metric-card__item-value--' + valueTone(item)">
+        <span class="metric-card__item-label">
           <i [class]="iconClass(item.icon)" aria-hidden="true"></i>
+          {{ item.label }}
+        </span>
+        <div class="metric-card__item-value" [class]="'metric-card__item-value metric-card__item-value--' + valueTone(item)">
           <strong>{{ formattedValue(item) }}</strong>
         </div>
       </section>

@@ -4012,3 +4012,22 @@ Completado en esta iteracion:
 Verificacion:
 - Frontend focal settings: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts` OK, 17 tests.
 - Frontend build: `npm.cmd run build` OK.
+
+---
+
+## 19.57 Redisenio de metric cards en settings - 2026-07-25
+
+Tarea de mantenimiento correctivo posterior al Sprint 14 sobre Fase 11/12, backoffice Angular y pantalla ADMIN `/settings`.
+
+Completado en esta iteracion:
+- [x] Redisenadas las tarjetas metricas compartidas para separar valor principal, tendencia y datos secundarios.
+- [x] Movidas las etiquetas de estado de las metric cards a la cabecera derecha en escritorio, junto al titulo.
+- [x] Reorganizados los datos secundarios en filas compactas para evitar columnas internas descuadradas.
+- [x] Mantenida la rejilla de metricas IA en `/settings` con cuatro tarjetas en la misma linea de escritorio, igual que dashboard, y reduccion responsive a dos/una columna.
+- [x] Anadida prueba de regresion para valores largos dentro de `app-metric-card`.
+- [x] Frontend version subido a `0.0.43`.
+
+Verificacion:
+- Frontend focal metric cards/settings: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/shared/components/metric-card/metric-card.component.spec.ts --include=src/app/features/settings/settings-page.component.spec.ts` OK, 19 tests.
+- Frontend build: `npm.cmd run build` OK.
+- Playwright visual mockeado: `npx.cmd playwright test e2e/visual-system.mock.spec.ts` OK, 4 tests.
