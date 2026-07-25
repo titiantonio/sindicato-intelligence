@@ -3926,3 +3926,19 @@ Verificacion:
 - Backend limpio: `mvnw.cmd clean test-compile` OK.
 - Backend focal dashboard: `mvnw.cmd "-Dtest=DashboardControllerTest" test` OK, 3 tests.
 - Backend focal detalle evento: `mvnw.cmd "-Dtest=EventControllerTest#exposesEditorialStatusForAnalyzedAndPublishedEvents" test` OK, 1 test.
+
+---
+
+## 19.53 Limpieza de avisos de arranque backend en desarrollo - 2026-07-25
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 1 backend base, seguridad y configuracion de desarrollo.
+
+Completado en esta iteracion:
+- [x] Configurado explicitamente `spring.jpa.open-in-view=true` para mantener el comportamiento efectivo previo y eliminar el aviso de valor por defecto.
+- [x] Reducido a `ERROR` el logger del aviso esperado de Spring Security por `DaoAuthenticationProvider` manual.
+- [x] No se han cambiado filtros, endpoints, roles, transacciones ni contratos REST.
+- [x] Version backend subida a `0.0.117-SNAPSHOT`.
+
+Verificacion:
+- Backend compilacion: `mvnw.cmd -q test-compile` OK.
+- Backend contexto: `mvnw.cmd -q "-Dtest=IntelligenceApplicationTests" test` OK. El arranque ya no muestra los `WARN` de `InitializeUserDetailsBeanManagerConfigurer` ni `spring.jpa.open-in-view`; se conserva el `INFO` esperado del `DaoAuthenticationProvider`.

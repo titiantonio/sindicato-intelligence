@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend arranque desarrollo: configurado explicitamente `spring.jpa.open-in-view=true` y reducido a `ERROR` el aviso esperado de Spring Security por `DaoAuthenticationProvider` manual, manteniendo el comportamiento efectivo previo.
 - Frontend accesibilidad: los 10 dialogos conservan foco contenido y devuelven el foco al disparador; las confirmaciones destructivas exponen semantica `alertdialog`.
 - Frontend tablas: todas las columnas ordenables fuera del piloto anuncian ahora su estado mediante `aria-sort`.
 - Frontend publicaciones: las tarjetas del historico son enlaces nativos operables con teclado.
@@ -51,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Versionado backend actualizado a `0.0.117-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.40`.
 - Frontend: extendido el sistema visual aprobado en `/events` a dashboard, detalles, noticias, contenido, publicaciones, fuentes, usuarios, auditoria, settings, shell y autenticacion.
 - Frontend componentes compartidos: modernizadas tarjetas metricas, tabla estandar, estados vacios y badges con responsive y `prefers-reduced-motion`.
