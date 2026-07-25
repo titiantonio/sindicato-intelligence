@@ -4031,3 +4031,53 @@ Verificacion:
 - Frontend focal metric cards/settings: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/shared/components/metric-card/metric-card.component.spec.ts --include=src/app/features/settings/settings-page.component.spec.ts` OK, 19 tests.
 - Frontend build: `npm.cmd run build` OK.
 - Playwright visual mockeado: `npx.cmd playwright test e2e/visual-system.mock.spec.ts` OK, 4 tests.
+
+---
+
+## 19.58 Scroll del menu lateral movil - 2026-07-25
+
+Tarea de mantenimiento correctivo posterior al Sprint 14 sobre Fase 11, shell del backoffice Angular y navegacion movil.
+
+Completado en esta iteracion:
+- [x] Diagnosticado que el drawer lateral movil usaba `overflow: hidden` sobre un `aside` fijo de alto completo, impidiendo subir o bajar el menu en pantallas bajas.
+- [x] Habilitado scroll vertical contenido en el sidebar movil con altura dinamica `100dvh`, `overflow-y: auto`, `overscroll-behavior: contain` y desplazamiento tactil.
+- [x] Ajustada la hoja moderna del shell para no pisar el alto dinamico en movil.
+- [x] Anadida prueba Playwright mockeada para viewport `320x360`, comprobando contenido desbordado y `scrollTop` efectivo.
+- [x] Frontend version subido a `0.0.44`.
+
+Verificacion:
+- Frontend build: `npm.cmd run build` OK.
+- Playwright visual mockeado: `npx.cmd playwright test e2e/visual-system.mock.spec.ts --reporter=list` OK, 5 tests.
+
+---
+
+## 19.59 Mejora visual del dialogo de mensaje manual Telegram - 2026-07-25
+
+Tarea de mantenimiento visual posterior al Sprint 14 sobre Fase 11, pantalla de publicaciones y dialogo operativo de envio manual a Telegram.
+
+Completado en esta iteracion:
+- [x] Anadida cabecera contextual al dialogo de mensaje manual Telegram.
+- [x] Actualizado el boton de entrada a la accion manual con icono `pi pi-send`.
+- [x] Mejorada la jerarquia visual del editor, destinos, adjuntos y acciones del formulario.
+- [x] Mantenidos los contratos y la logica existente de envio manual sin cambios.
+- [x] Frontend version subido a `0.0.45`.
+
+Verificacion:
+- Frontend build: `npm.cmd run build` OK.
+
+---
+
+## 19.60 Ajuste compacto del dialogo manual Telegram - 2026-07-25
+
+Tarea de mantenimiento visual posterior al Sprint 14 sobre Fase 11, pantalla de publicaciones y dialogo operativo de envio manual a Telegram.
+
+Completado en esta iteracion:
+- [x] Eliminado el scroll vertical interno del contenido del dialogo.
+- [x] Compactado el formulario para que los adjuntos queden visibles dentro del mismo dialogo.
+- [x] Corregida la alineacion de cada checkbox junto al nombre del destino en la misma fila.
+- [x] Dejadas las herramientas del editor en una sola linea horizontal.
+- [x] Eliminadas las etiquetas visibles `Texto` y `Telegram` de la toolbar del editor.
+- [x] Frontend version subido a `0.0.46`.
+
+Verificacion:
+- Frontend build: `npm.cmd run build` OK.

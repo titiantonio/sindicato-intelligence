@@ -99,3 +99,21 @@ test('mantiene shell, contenido y dialogos operables a 320 px', async ({ page })
   await expect(page.getByRole('dialog', { name: 'Anadir fuente' })).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
+
+test('permite desplazar el menu lateral en moviles con poca altura', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 360 });
+  await page.goto('/dashboard');
+
+  await page.locator('.shell__menu-button').click();
+  const sidebar = page.locator('#main-navigation');
+
+  await expect(sidebar).toBeVisible();
+  await expect.poll(() => sidebar.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+
+  await sidebar.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
+
+  await expect.poll(() => sidebar.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  await expect(page.getByRole('link', { name: 'Auditoria', exact: true })).toBeVisible();
+});

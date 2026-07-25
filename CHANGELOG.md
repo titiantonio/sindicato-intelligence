@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Frontend publicaciones: ajustado el dialogo de mensaje manual Telegram para eliminar el scroll interno, mantener adjuntos visibles, alinear checkbox y destino en la misma fila y dejar la toolbar del editor en una sola linea sin etiquetas visibles.
+- Frontend publicaciones: mejorada la apariencia del dialogo de mensaje manual Telegram con cabecera contextual, boton con icono, paneles mas legibles, destinos tipo tarjeta y acciones fijas.
+- Frontend shell movil: el menu lateral permite desplazamiento vertical en pantallas bajas y queda cubierto por una regresion Playwright mockeada.
 - Frontend metric cards: redisenadas las tarjetas para separar valor principal y datos secundarios en filas; las etiquetas de estado quedan en la cabecera derecha y `/settings` mantiene cuatro tarjetas en una linea de escritorio como dashboard.
 - Backend automatizaciones WF-03: reducida a 2 horas la ventana de cuarentena por fallos IA repetidos para reintentar noticias recientes antes de que pierdan actualidad.
 - Backend automatizaciones IA: WF-02 y WF-03 dejan de reprogramarse inmediatamente cuando un lote completo incluye fallos del proveedor, evitando amplificar errores Gemini `HTTP 429`.
@@ -59,6 +62,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend version: subida la version del paquete frontend a `0.0.46`.
+- Frontend version: subida la version del paquete frontend a `0.0.45`.
+- Frontend version: subida la version del paquete frontend a `0.0.44`.
 - Frontend version: subida la version del paquete frontend a `0.0.43`.
 - Versionado backend actualizado a `0.0.119-SNAPSHOT`.
 - Frontend version: subida la version del paquete frontend a `0.0.42`.

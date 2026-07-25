@@ -4,7 +4,7 @@
     <h1>Historico operativo del canal</h1>
     <p>Publicaciones registradas por el backend para Telegram.</p>
   </div>
-  <button pButton type="button" (click)="openManualDialog()">Mensaje manual</button>
+  <button pButton type="button" icon="pi pi-send" label="Mensaje manual" (click)="openManualDialog()"></button>
 </section>
 
 @if (errorMessage()) {
@@ -45,7 +45,6 @@
 
 <p-dialog
   [appDialogFocusReturn]="manualDialogVisible()"
-  header="Mensaje manual Telegram"
   [modal]="true"
   [visible]="manualDialogVisible()"
   (visibleChange)="setManualDialogVisible($event)"
@@ -54,14 +53,29 @@
   [focusOnShow]="true"
   [focusTrap]="true"
   closeAriaLabel="Cerrar editor de mensaje manual"
-  [style]="{ width: 'min(56rem, 96vw)' }"
+  styleClass="manual-telegram-dialog"
+  [style]="{ width: 'min(68rem, 96vw)' }"
+  [breakpoints]="{ '900px': '96vw', '640px': '100vw' }"
 >
+  <ng-template pTemplate="header">
+    <div class="manual-dialog-header">
+      <span class="manual-dialog-header__icon" aria-hidden="true">
+        <i class="pi pi-send"></i>
+      </span>
+      <div>
+        <span class="manual-dialog-header__eyebrow">Telegram</span>
+        <h2>Mensaje manual</h2>
+        <p>Redacta, formatea y envia una comunicacion directa a los destinos activos.</p>
+      </div>
+    </div>
+  </ng-template>
+
   <form class="manual-form" (submit)="$event.preventDefault(); sendManualPublication()">
     @if (manualErrorMessage() && !attachmentErrorMessage()) {
       <p-message severity="error" [text]="manualErrorMessage() ?? ''" />
     }
 
-    <label>
+    <label class="manual-form__title">
       <span class="editor-label">
         Titulo
         <span>{{ titleCharacterCount() }} caracteres</span>
@@ -77,10 +91,9 @@
       ></div>
     </label>
 
-    <section class="editor-surface" aria-label="Editor WYSIWYG Telegram">
+    <section class="editor-surface manual-form__tools" aria-label="Editor WYSIWYG Telegram">
       <div class="editor-tools">
         <div class="editor-toolbar" aria-label="Formato del mensaje">
-          <span class="toolbar-section">Texto</span>
           <button pButton type="button" class="format-button" pTooltip="Negrita: resalta el texto seleccionado" tooltipPosition="top" (click)="applyFormat('bold')" aria-label="Negrita"><strong>B</strong></button>
           <button pButton type="button" class="format-button" pTooltip="Cursiva: aplica enfasis al texto seleccionado" tooltipPosition="top" (click)="applyFormat('italic')" aria-label="Cursiva"><em>I</em></button>
           <button pButton type="button" class="format-button" pTooltip="Subrayado: marca el texto seleccionado" tooltipPosition="top" (click)="applyFormat('underline')" aria-label="Subrayado"><u>U</u></button>
@@ -90,7 +103,6 @@
         </div>
 
         <div class="editor-toolbar" aria-label="Entidades Telegram">
-          <span class="toolbar-section">Telegram</span>
           <button pButton type="button" icon="pi pi-link" pTooltip="Enlaces y menciones: URL, email, telefono o mencion por ID de Telegram" tooltipPosition="top" (click)="toggleEditorPanel('link')" aria-label="Enlaces y menciones"></button>
           <button pButton type="button" icon="pi pi-clock" pTooltip="Entidades Telegram: custom emoji premium y fecha/hora dinamica" tooltipPosition="top" (click)="toggleEditorPanel('telegram')" aria-label="Emoji premium y tiempo"></button>
           <button pButton type="button" icon="pi pi-align-left" pTooltip="Bloques: codigo, citas, listas y separadores" tooltipPosition="top" (click)="toggleEditorPanel('blocks')" aria-label="Bloques"></button>
@@ -187,7 +199,7 @@
       }
     </section>
 
-    <label>
+    <label class="manual-form__message">
       <span class="editor-label">
         Mensaje
         <span>{{ messageCharacterCount() }} caracteres</span>
@@ -205,7 +217,7 @@
       </div>
     </label>
 
-    <fieldset class="destination-list">
+    <fieldset class="destination-list manual-form__destinations">
       <legend>Destinos</legend>
       @for (destination of destinations(); track destination.id) {
         <label class="destination-option">
@@ -222,7 +234,7 @@
     </fieldset>
 
     <label class="manual-form__field" [class.manual-form__field--invalid]="attachmentErrorMessage()">
-      Adjuntos
+      <span class="manual-form__field-title">Adjuntos</span>
       <input
         #manualFileInput
         type="file"
