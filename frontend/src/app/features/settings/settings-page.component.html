@@ -62,15 +62,16 @@
         </header>
 
         <app-standard-table
+          class="metric-operations-table"
           [rows]="paginatedMetrics()"
-          [columnCount]="10"
+          [columnCount]="8"
           [totalItems]="displayedMetrics().length"
           totalLabel="metricas"
           [pageSize]="metricPageSize()"
           [currentPage]="metricDisplayPage()"
           [totalPages]="metricTotalPages()"
           [pageSizeOptions]="pageSizeOptions"
-          minWidth="84rem"
+          minWidth="100%"
           (pageSizeChange)="setMetricPageSize($event)"
           (previousPage)="previousMetricPage()"
           (nextPage)="nextMetricPage()"
@@ -78,12 +79,10 @@
             <ng-template #tableHeader>
               <tr>
                 <th scope="col" [attr.aria-sort]="metricSortAriaValue('createdAt')"><button type="button" class="sort-button" (click)="changeMetricSort('createdAt')">Fecha {{ metricSortLabel('createdAt') }}</button></th>
-                <th scope="col" [attr.aria-sort]="metricSortAriaValue('workflowCode')"><button type="button" class="sort-button" (click)="changeMetricSort('workflowCode')">WF {{ metricSortLabel('workflowCode') }}</button></th>
-                <th scope="col" [attr.aria-sort]="metricSortAriaValue('operationType')"><button type="button" class="sort-button" (click)="changeMetricSort('operationType')">Operacion {{ metricSortLabel('operationType') }}</button></th>
                 <th scope="col" [attr.aria-sort]="metricSortAriaValue('promptKey')"><button type="button" class="sort-button" (click)="changeMetricSort('promptKey')">Prompt {{ metricSortLabel('promptKey') }}</button></th>
-                <th scope="col" [attr.aria-sort]="metricSortAriaValue('provider')"><button type="button" class="sort-button" (click)="changeMetricSort('provider')">Proveedor {{ metricSortLabel('provider') }}</button></th>
-                <th scope="col" [attr.aria-sort]="metricSortAriaValue('model')"><button type="button" class="sort-button" (click)="changeMetricSort('model')">Modelo {{ metricSortLabel('model') }}</button></th>
                 <th scope="col" [attr.aria-sort]="metricSortAriaValue('status')"><button type="button" class="sort-button" (click)="changeMetricSort('status')">Estado {{ metricSortLabel('status') }}</button></th>
+                <th scope="col" [attr.aria-sort]="metricSortAriaValue('provider')"><button type="button" class="sort-button" (click)="changeMetricSort('provider')">Proveedor {{ metricSortLabel('provider') }}</button></th>
+                <th scope="col" class="metric-model-column" [attr.aria-sort]="metricSortAriaValue('model')"><button type="button" class="sort-button" (click)="changeMetricSort('model')">Modelo {{ metricSortLabel('model') }}</button></th>
                 <th scope="col" [attr.aria-sort]="metricSortAriaValue('relatedEntityType')"><button type="button" class="sort-button" (click)="changeMetricSort('relatedEntityType')">Entidad {{ metricSortLabel('relatedEntityType') }}</button></th>
                 <th scope="col" [attr.aria-sort]="metricSortAriaValue('latencyMs')"><button type="button" class="sort-button" (click)="changeMetricSort('latencyMs')">Latencia {{ metricSortLabel('latencyMs') }}</button></th>
                 <th scope="col" [attr.aria-sort]="metricSortAriaValue('errorMessage')"><button type="button" class="sort-button" (click)="changeMetricSort('errorMessage')">Error {{ metricSortLabel('errorMessage') }}</button></th>
@@ -92,14 +91,12 @@
             <ng-template #tableFilters>
               <tr class="column-filters">
                 <th scope="col"><input pInputText type="search" aria-label="Filtrar fecha de metrica" [ngModel]="metricCreatedAtFilter()" (ngModelChange)="setMetricCreatedAtFilter($event)" /></th>
-                <th scope="col"><input pInputText type="search" aria-label="Filtrar workflow de metrica" [ngModel]="metricOperationFilter()" (ngModelChange)="setMetricOperationFilter($event)" /></th>
-                <th scope="col"><input pInputText type="search" aria-label="Filtrar operacion de metrica" [ngModel]="metricOperationFilter()" (ngModelChange)="setMetricOperationFilter($event)" /></th>
                 <th scope="col"><input pInputText type="search" aria-label="Filtrar prompt de metrica" [ngModel]="metricPromptFilter()" (ngModelChange)="setMetricPromptFilter($event)" /></th>
-                <th scope="col"><input pInputText type="search" aria-label="Filtrar proveedor de metrica" [ngModel]="metricProviderFilter()" (ngModelChange)="setMetricProviderFilter($event)" /></th>
-                <th scope="col"><input pInputText type="search" aria-label="Filtrar modelo de metrica" [ngModel]="metricModelFilter()" (ngModelChange)="setMetricModelFilter($event)" /></th>
                 <th scope="col">
                   <p-select [options]="['Correcta', 'Fallida']" [ngModel]="metricStatusFilter()" (ngModelChange)="setMetricStatusFilter($event ?? '')" placeholder="Todos" [showClear]="true" [appendTo]="'body'" aria-label="Filtrar estado de metrica" />
                 </th>
+                <th scope="col"><input pInputText type="search" aria-label="Filtrar proveedor de metrica" [ngModel]="metricProviderFilter()" (ngModelChange)="setMetricProviderFilter($event)" /></th>
+                <th scope="col" class="metric-model-column"><input pInputText type="search" aria-label="Filtrar modelo de metrica" [ngModel]="metricModelFilter()" (ngModelChange)="setMetricModelFilter($event)" /></th>
                 <th scope="col"><input pInputText type="search" aria-label="Filtrar entidad de metrica" [ngModel]="metricRelatedEntityTypeFilter()" (ngModelChange)="setMetricRelatedEntityTypeFilter($event)" /></th>
                 <th scope="col"><input pInputText type="search" aria-label="Filtrar latencia de metrica" [ngModel]="metricLatencyFilter()" (ngModelChange)="setMetricLatencyFilter($event)" /></th>
                 <th scope="col"><input pInputText type="search" aria-label="Filtrar error de metrica" [ngModel]="metricErrorFilter()" (ngModelChange)="setMetricErrorFilter($event)" /></th>
@@ -108,12 +105,10 @@
             <ng-template #tableRow let-metric>
                 <tr class="metric-row" [class.metric-row--failed]="metric.status === 'FAILED'" (click)="openMetricDetail(metric)" tabindex="0">
                   <td class="table-cell-nowrap">{{ formatDate(metric.createdAt) }}</td>
-                  <td class="table-cell-nowrap">{{ workflowLabelForOperation(metric) }}</td>
-                  <td class="table-cell-nowrap">{{ metric.operationType }}</td>
                   <td class="table-cell-nowrap"><code>{{ metric.promptKey || '-' }}</code></td>
-                  <td class="table-cell-nowrap">{{ metric.provider || '-' }}</td>
-                  <td class="table-cell-nowrap">{{ metric.model || '-' }}</td>
                   <td class="table-cell-nowrap">{{ metricStatusLabel(metric.status) }}</td>
+                  <td class="table-cell-nowrap">{{ metric.provider || '-' }}</td>
+                  <td class="table-cell-break metric-model-column metric-model-cell" [title]="metric.model || '-'">{{ metric.model || '-' }}</td>
                   <td class="table-cell-nowrap">{{ metric.relatedEntityType || '-' }}</td>
                   <td class="table-cell-nowrap">{{ metric.latencyMs === null ? '-' : metric.latencyMs + ' ms' }}</td>
                   <td class="table-cell-nowrap">
@@ -127,7 +122,7 @@
             </ng-template>
             <ng-template #tableEmpty>
                 <tr>
-                  <td colspan="10" class="empty-cell">No hay operaciones que coincidan con los filtros.</td>
+                  <td colspan="8" class="empty-cell">No hay operaciones que coincidan con los filtros.</td>
                 </tr>
             </ng-template>
         </app-standard-table>

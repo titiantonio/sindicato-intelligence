@@ -71,13 +71,40 @@ describe('SettingsPageComponent', () => {
     expect(compiled.textContent).toContain('Metricas IA');
     expect(compiled.textContent).toContain('Metricas diarias');
     expect(compiled.textContent).toContain('Operaciones del dia');
-    expect(compiled.textContent).toContain('WF-02');
+    expect(compiled.textContent).toContain('WF02_CLASSIFICATION');
     expect(compiled.textContent).toContain('GeminiAIProvider');
     expect(compiled.textContent).toContain('gemini-1.5-flash');
     expect(compiled.textContent).not.toContain('Prompts versionados');
     expect(compiled.textContent).not.toContain('Proveedores IA');
     expect(compiled.textContent).not.toContain('Guardar Telegram');
     expect(aiObservabilityService.listDailyMetrics).toHaveBeenCalled();
+  });
+
+  it('renders metric table without redundant workflow and operation columns', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const headers = Array.from(compiled.querySelectorAll('.metric-operations-table thead tr:first-child th'))
+      .map((header) => header.textContent?.replace(/\s+/g, ' ').trim());
+
+    expect(headers).toEqual(['Fecha DESC', 'Prompt', 'Estado', 'Proveedor', 'Modelo', 'Entidad', 'Latencia', 'Error']);
+    expect(headers).not.toContain('WF');
+    expect(headers).not.toContain('Operacion');
+  });
+
+  it('renders long model names in a wrapping metric table cell', () => {
+    automationService.listOperations.and.returnValue(of([
+      {
+        ...operations()[0],
+        model: 'models/gemma-4-31b-it:conservative-recitation-fallback'
+      }
+    ]));
+
+    const localFixture = TestBed.createComponent(SettingsPageComponent);
+    localFixture.detectChanges();
+    const compiled = localFixture.nativeElement as HTMLElement;
+    const modelCell = compiled.querySelector('.metric-model-cell');
+
+    expect(modelCell?.textContent).toContain('models/gemma-4-31b-it:conservative-recitation-fallback');
+    expect(modelCell?.classList).toContain('table-cell-break');
   });
 
   it('renders prompts, publication and automation configuration in separate tabs', () => {

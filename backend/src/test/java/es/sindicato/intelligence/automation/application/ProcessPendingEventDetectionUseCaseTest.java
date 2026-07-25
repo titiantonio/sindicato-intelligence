@@ -1,5 +1,7 @@
 package es.sindicato.intelligence.automation.application;
 
+import es.sindicato.intelligence.ai.domain.AiMetricStatus;
+import es.sindicato.intelligence.ai.domain.AiOperationMetricRepository;
 import es.sindicato.intelligence.event.application.DetectEventCommand;
 import es.sindicato.intelligence.event.application.DetectEventUseCase;
 import es.sindicato.intelligence.news.domain.NewsArticle;
@@ -13,6 +15,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -26,11 +29,13 @@ class ProcessPendingEventDetectionUseCaseTest {
     void processesClassifiedNewsAndReportsFailures() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         DetectEventUseCase detectEventUseCase = mock(DetectEventUseCase.class);
-        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, 10);
+        AiOperationMetricRepository metricRepository = mock(AiOperationMetricRepository.class);
+        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 10, 5, 24, 1);
         NewsArticle first = newsArticle(1L);
         NewsArticle second = newsArticle(2L);
 
         when(newsRepository.findByStatus(NewsStatus.CLASSIFIED, 10)).thenReturn(List.of(first, second));
+        when(metricRepository.countByPromptKeyAndRelatedEntityAndStatusSince(eq("WF03_EVENT_MATCHING"), eq("NEWS"), any(), eq(AiMetricStatus.FAILED), any())).thenReturn(0L);
         doThrow(new IllegalArgumentException("event detection failed")).when(detectEventUseCase).execute(new DetectEventCommand(second.getId()));
 
         AutomationRunResult result = useCase.execute();
@@ -48,7 +53,8 @@ class ProcessPendingEventDetectionUseCaseTest {
     void onlyLoadsClassifiedNewsLeavingDiscardedNewsOutOfEventDetection() {
         NewsRepository newsRepository = mock(NewsRepository.class);
         DetectEventUseCase detectEventUseCase = mock(DetectEventUseCase.class);
-        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, 10);
+        AiOperationMetricRepository metricRepository = mock(AiOperationMetricRepository.class);
+        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 10, 5, 24, 1);
 
         when(newsRepository.findByStatus(NewsStatus.CLASSIFIED, 10)).thenReturn(List.of());
 
@@ -58,6 +64,48 @@ class ProcessPendingEventDetectionUseCaseTest {
         verify(newsRepository, never()).findByStatus(NewsStatus.DISCARDED, 10);
         verify(detectEventUseCase, never()).execute(any(DetectEventCommand.class));
         assertEquals(0, result.processedCount());
+    }
+
+    @Test
+    void skipsNewsWithRepeatedRecentEventMatchingFailures() {
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        DetectEventUseCase detectEventUseCase = mock(DetectEventUseCase.class);
+        AiOperationMetricRepository metricRepository = mock(AiOperationMetricRepository.class);
+        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 10, 5, 24, 1);
+        NewsArticle newsArticle = newsArticle(1L);
+
+        when(newsRepository.findByStatus(NewsStatus.CLASSIFIED, 10)).thenReturn(List.of(newsArticle));
+        when(metricRepository.countByPromptKeyAndRelatedEntityAndStatusSince(eq("WF03_EVENT_MATCHING"), eq("NEWS"), eq(newsArticle.getId()), eq(AiMetricStatus.FAILED), any())).thenReturn(5L);
+
+        AutomationRunResult result = useCase.execute();
+
+        verify(detectEventUseCase, never()).execute(any(DetectEventCommand.class));
+        assertEquals(1, result.processedCount());
+        assertEquals(0, result.successCount());
+        assertEquals(0, result.failedCount());
+        assertEquals(1, result.skippedCount());
+    }
+
+    @Test
+    void repeatedFailureQuarantineDoesNotConsumeAiBatchSlot() {
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        DetectEventUseCase detectEventUseCase = mock(DetectEventUseCase.class);
+        AiOperationMetricRepository metricRepository = mock(AiOperationMetricRepository.class);
+        ProcessPendingEventDetectionUseCase useCase = new ProcessPendingEventDetectionUseCase(newsRepository, detectEventUseCase, metricRepository, 1, 5, 24, 3);
+        NewsArticle quarantined = newsArticle(1L);
+        NewsArticle processable = newsArticle(2L);
+
+        when(newsRepository.findByStatus(NewsStatus.CLASSIFIED, 3)).thenReturn(List.of(quarantined, processable));
+        when(metricRepository.countByPromptKeyAndRelatedEntityAndStatusSince(eq("WF03_EVENT_MATCHING"), eq("NEWS"), eq(quarantined.getId()), eq(AiMetricStatus.FAILED), any())).thenReturn(5L);
+        when(metricRepository.countByPromptKeyAndRelatedEntityAndStatusSince(eq("WF03_EVENT_MATCHING"), eq("NEWS"), eq(processable.getId()), eq(AiMetricStatus.FAILED), any())).thenReturn(0L);
+
+        AutomationRunResult result = useCase.execute();
+
+        verify(detectEventUseCase).execute(new DetectEventCommand(processable.getId()));
+        assertEquals(2, result.processedCount());
+        assertEquals(1, result.successCount());
+        assertEquals(0, result.failedCount());
+        assertEquals(1, result.skippedCount());
     }
 
     private NewsArticle newsArticle(Long id) {

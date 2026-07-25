@@ -3942,3 +3942,53 @@ Completado en esta iteracion:
 Verificacion:
 - Backend compilacion: `mvnw.cmd -q test-compile` OK.
 - Backend contexto: `mvnw.cmd -q "-Dtest=IntelligenceApplicationTests" test` OK. El arranque ya no muestra los `WARN` de `InitializeUserDetailsBeanManagerConfigurer` ni `spring.jpa.open-in-view`; se conserva el `INFO` esperado del `DaoAuthenticationProvider`.
+
+---
+
+## 19.54 Ajuste responsive de modelo largo en settings - 2026-07-25
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 11/12, backoffice Angular y pantalla ADMIN `/settings`.
+
+Completado en esta iteracion:
+- [x] Ajustada la tabla de operaciones IA para no forzar `84rem` de ancho minimo.
+- [x] La columna `Modelo` permite partir identificadores largos como `models/gemma-4-31b-it:conservative-recitation-fallback`.
+- [x] Anadida prueba de regresion para modelos largos en la tabla de metricas.
+- [x] Frontend version subido a `0.0.41`.
+
+Verificacion:
+- Frontend focal settings: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts` OK, 16 tests.
+- Frontend build: `npm.cmd run build` OK.
+
+---
+
+## 19.55 Cuarentena de fallos repetidos WF-03 Gemini 429 - 2026-07-25
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 12, automatizaciones internas WF-03 e integracion IA.
+
+Completado en esta iteracion:
+- [x] Diagnosticado que `news_id=506`, `news_id=507` y `news_id=508` seguian en `CLASSIFIED` y acumulaban fallos repetidos de `WF03_EVENT_MATCHING` con `HTTP 429` hasta 46, 43 y 43 fallos respectivamente mientras el backend local seguia ejecutando el codigo anterior.
+- [x] Confirmado que el lote operativo de `WF03_EVENT_DETECTION` era 3, por lo que las mismas tres noticias quedaban al inicio del lote y se reintentaban repetidamente.
+- [x] Anadida cuarentena temporal en `ProcessPendingEventDetectionUseCase` basada en `ai_operation_metrics` para saltar noticias con fallos recientes repetidos de WF-03.
+- [x] Anadido lookahead de noticias clasificadas para que las noticias saltadas por cuarentena no consuman cupo de llamadas IA del lote.
+- [x] Version backend subida a `0.0.118-SNAPSHOT`.
+
+Verificacion:
+- Backend focal WF-03/scheduler: `mvnw.cmd "-Dtest=ProcessPendingEventDetectionUseCaseTest,RunAutomationWorkflowUseCaseTest" test` OK segun reports Surefire, 11 tests, 0 fallos, 0 errores. La llamada del wrapper supero el timeout externo tras generar reports.
+- Backend compilacion: `mvnw.cmd -q test-compile` OK.
+
+---
+
+## 19.56 Reordenacion de tabla de operaciones IA en settings - 2026-07-25
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 11/12, backoffice Angular y pantalla ADMIN `/settings`.
+
+Completado en esta iteracion:
+- [x] Eliminadas las columnas visibles `WF` y `Operacion` de la tabla de operaciones IA.
+- [x] Reordenadas las columnas como `Fecha`, `Prompt`, `Estado`, `Proveedor`, `Modelo`, `Entidad`, `Latencia` y `Error`.
+- [x] Retirados los filtros visuales redundantes de workflow y operacion.
+- [x] Anadida prueba de regresion para verificar que la tabla no vuelve a mostrar columnas redundantes.
+- [x] Frontend version subido a `0.0.42`.
+
+Verificacion:
+- Frontend focal settings: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts` OK, 17 tests.
+- Frontend build: `npm.cmd run build` OK.

@@ -170,6 +170,22 @@ code {
   overflow-wrap: anywhere;
 }
 
+:host ::ng-deep .metric-operations-table .p-datatable-table {
+  table-layout: auto;
+}
+
+:host ::ng-deep .metric-operations-table .metric-model-column {
+  max-width: 14rem;
+  min-width: 9rem;
+  white-space: normal;
+}
+
+:host ::ng-deep .metric-operations-table .metric-model-cell {
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .settings-page button:not([pButton]) {
   background: var(--color-primary);
   border: 0;
