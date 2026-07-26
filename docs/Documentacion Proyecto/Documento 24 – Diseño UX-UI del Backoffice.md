@@ -634,6 +634,13 @@ Prompt versión
 
 ---
 
+El proveedor `Determinista local` no requiere credenciales ni catálogo de
+modelos. En `/settings` su tarjeta permite únicamente activarlo o pausarlo y
+guardar ese estado; las opciones de clave API y recarga de modelos se reservan
+para proveedores externos.
+
+---
+
 # 20. Flujo Principal del Editor
 
 ```text

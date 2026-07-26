@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Frontend settings: el proveedor IA `Determinista local` queda limitado a activacion o pausa; ya no muestra ni permite guardar/eliminar claves API ni recargar modelos.
 - Backend IA WF-03: recortado el contexto enviado a Gemini para matching de eventos y omitido el contenido duplicado del resumen, reduciendo tokens por llamada y riesgo de `HTTP 429`.
 - Slides TFM: intercambiado el orden de arquitectura y modelo de dominio para
   que las slides 03 y 04 coincidan con el guion del vídeo; reexportados PPTX,
@@ -82,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Frontend version: subida la version del paquete frontend a `0.0.49`.
 - Versionado backend actualizado a `0.0.121-SNAPSHOT`.
 - Entrega TFM: actualizados README, guion, informe, checklist y backlog con la
   URL pública verificada de las slides en GitHub Pages.

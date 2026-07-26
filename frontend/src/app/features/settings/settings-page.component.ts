@@ -407,6 +407,10 @@ export class SettingsPageComponent implements OnInit {
     return this.aiProviderForms()[providerCode] ?? { enabled: false, apiKey: '' };
   }
 
+  protected providerSupportsCredentialsAndModels(providerCode: string): boolean {
+    return providerCode !== 'deterministic';
+  }
+
   protected aiWorkflowFormFor(workflowCode: string): AiWorkflowForm {
     return this.aiWorkflowForms()[workflowCode] ?? { providerCode: 'deterministic', modelName: '', temperature: 0.2, maxOutputTokens: 1024, cooldownSeconds: 60 };
   }
@@ -434,7 +438,7 @@ export class SettingsPageComponent implements OnInit {
   }
 
   protected requestClearAiProviderApiKey(provider: AiProviderSetting): void {
-    if (!provider.apiKeyConfigured) {
+    if (!this.providerSupportsCredentialsAndModels(provider.providerCode) || !provider.apiKeyConfigured) {
       return;
     }
     this.pendingSecretDeletion.set({
@@ -498,6 +502,9 @@ export class SettingsPageComponent implements OnInit {
   }
 
   protected loadModels(providerCode: string, force = false): void {
+    if (!this.providerSupportsCredentialsAndModels(providerCode)) {
+      return;
+    }
     if (!force && this.modelsFor(providerCode).length > 0) {
       return;
     }

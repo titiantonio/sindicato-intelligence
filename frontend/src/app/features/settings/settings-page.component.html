@@ -582,7 +582,7 @@
       <section class="settings-section">
         <header class="section-header">
           <span>Proveedores IA</span>
-          <h2>Credenciales y modelos</h2>
+          <h2>Activacion, credenciales y modelos</h2>
         </header>
 
         <div class="ai-provider-grid">
@@ -591,7 +591,11 @@
               <header>
                 <div>
                   <strong>{{ provider.displayName }}</strong>
-                  <span>{{ provider.apiKeyConfigured ? provider.apiKeyPreview : 'Sin clave configurada' }}</span>
+                  @if (providerSupportsCredentialsAndModels(provider.providerCode)) {
+                    <span>{{ provider.apiKeyConfigured ? provider.apiKeyPreview : 'Sin clave configurada' }}</span>
+                  } @else {
+                    <span>Proveedor local sin clave API ni gestion de modelos</span>
+                  }
                 </div>
                 <label class="switch">
                   <input
@@ -604,24 +608,30 @@
                 </label>
               </header>
 
-              <label>
-                Clave API de IA
-                <input
-                  pInputText
-                  type="password"
-                  autocomplete="new-password"
-                  placeholder="Mantener clave actual"
-                  [ngModel]="aiProviderFormFor(provider.providerCode).apiKey"
-                  (ngModelChange)="updateAiProviderForm(provider.providerCode, { apiKey: $event })"
-                  [name]="provider.providerCode + 'ApiKey'"
-                />
-              </label>
+              @if (providerSupportsCredentialsAndModels(provider.providerCode)) {
+                <label>
+                  Clave API de IA
+                  <input
+                    pInputText
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="Mantener clave actual"
+                    [ngModel]="aiProviderFormFor(provider.providerCode).apiKey"
+                    (ngModelChange)="updateAiProviderForm(provider.providerCode, { apiKey: $event })"
+                    [name]="provider.providerCode + 'ApiKey'"
+                  />
+                </label>
 
-              <footer>
-                <button pButton type="submit" [label]="busyAiProvider() === provider.providerCode ? 'Guardando...' : 'Guardar'" [loading]="busyAiProvider() === provider.providerCode" [disabled]="busyAiProvider() === provider.providerCode"></button>
-                <button pButton type="button" severity="secondary" [label]="busyModelProvider() === provider.providerCode ? 'Cargando...' : 'Recargar modelos'" (click)="loadModels(provider.providerCode, true)" [loading]="busyModelProvider() === provider.providerCode" [disabled]="busyModelProvider() === provider.providerCode"></button>
-                <button pButton type="button" severity="danger" label="Eliminar API de IA" (click)="requestClearAiProviderApiKey(provider)" [disabled]="busyAiProvider() === provider.providerCode || !provider.apiKeyConfigured"></button>
-              </footer>
+                <footer>
+                  <button pButton type="submit" [label]="busyAiProvider() === provider.providerCode ? 'Guardando...' : 'Guardar'" [loading]="busyAiProvider() === provider.providerCode" [disabled]="busyAiProvider() === provider.providerCode"></button>
+                  <button pButton type="button" severity="secondary" [label]="busyModelProvider() === provider.providerCode ? 'Cargando...' : 'Recargar modelos'" (click)="loadModels(provider.providerCode, true)" [loading]="busyModelProvider() === provider.providerCode" [disabled]="busyModelProvider() === provider.providerCode"></button>
+                  <button pButton type="button" severity="danger" label="Eliminar API de IA" (click)="requestClearAiProviderApiKey(provider)" [disabled]="busyAiProvider() === provider.providerCode || !provider.apiKeyConfigured"></button>
+                </footer>
+              } @else {
+                <footer>
+                  <button pButton type="submit" [label]="busyAiProvider() === provider.providerCode ? 'Guardando...' : 'Guardar estado'" [loading]="busyAiProvider() === provider.providerCode" [disabled]="busyAiProvider() === provider.providerCode"></button>
+                </footer>
+              }
             </form>
           }
         </div>

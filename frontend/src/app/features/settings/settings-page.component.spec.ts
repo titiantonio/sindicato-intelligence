@@ -130,7 +130,7 @@ describe('SettingsPageComponent', () => {
     fixture.detectChanges();
 
     expect(compiled.textContent).toContain('WF02 - Clasificacion');
-    expect(compiled.textContent).toContain('Credenciales y modelos');
+    expect(compiled.textContent).toContain('Activacion, credenciales y modelos');
     expect(compiled.textContent).toContain('Guardar IA');
     expect(compiled.textContent).toContain('Cooldown modelo (seg)');
     expect(compiled.textContent).toContain('Google Gemini');
@@ -190,6 +190,40 @@ describe('SettingsPageComponent', () => {
       enabled: true,
       apiKey: 'test-key'
     });
+  });
+
+  it('limits the deterministic local provider to activation state changes', () => {
+    const component = fixture.componentInstance as any;
+
+    component.setTab('automation');
+    fixture.detectChanges();
+
+    const providerCards = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.ai-provider-form')
+    );
+    const deterministicCard = providerCards.find((card) => card.querySelector('strong')?.textContent?.trim() === 'Determinista local');
+    const geminiCard = providerCards.find((card) => card.querySelector('strong')?.textContent?.trim() === 'Google Gemini');
+
+    expect(deterministicCard).toBeDefined();
+    expect(deterministicCard?.textContent).toContain('Proveedor local sin clave API ni gestion de modelos');
+    expect(deterministicCard?.textContent).toContain('Guardar estado');
+    expect(deterministicCard?.querySelector('input[type="password"]')).toBeNull();
+    expect(deterministicCard?.textContent).not.toContain('Recargar modelos');
+    expect(deterministicCard?.textContent).not.toContain('Eliminar API de IA');
+    expect(geminiCard?.querySelector('input[type="password"]')).not.toBeNull();
+    expect(geminiCard?.textContent).toContain('Recargar modelos');
+
+    component.updateAiProviderForm('deterministic', { enabled: false });
+    component.saveAiProvider(aiProviders()[0]);
+    component.loadModels('deterministic', true);
+    component.requestClearAiProviderApiKey({ ...aiProviders()[0], apiKeyConfigured: true });
+
+    expect(aiObservabilityService.updateProvider).toHaveBeenCalledWith('deterministic', {
+      enabled: false,
+      apiKey: null
+    });
+    expect(aiObservabilityService.listProviderModels).not.toHaveBeenCalledWith('deterministic', jasmine.anything());
+    expect(component.pendingSecretDeletion()).toBeNull();
   });
 
   it('loads workflow models when the model selector is opened', () => {

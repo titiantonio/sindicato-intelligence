@@ -4121,6 +4121,27 @@ Verificacion:
 
 ---
 
+## 19.62 Simplificacion del proveedor IA determinista en settings - 2026-07-26
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 11/12,
+backoffice Angular y configuracion ADMIN de proveedores IA.
+
+Completado en esta iteracion:
+- [x] Identificada la correspondencia con T12.32 y T12.35 de configuracion de proveedores IA.
+- [x] Limitada la tarjeta `Determinista local` a activacion/pausa y guardado de estado.
+- [x] Ocultados para el proveedor determinista el campo de clave API, el borrado de clave y la recarga de modelos.
+- [x] Mantenidas sin cambios las opciones de credenciales y modelos para proveedores externos.
+- [x] Anadidas defensas en el componente para no solicitar modelos ni abrir el borrado de credenciales para `deterministic`.
+- [x] Anadida prueba de regresion Angular especifica.
+- [x] Frontend version subido a `0.0.49`.
+
+Verificacion:
+- Frontend focal settings: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts` OK, 18 tests.
+- Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 164 tests.
+- Frontend build: `npm.cmd run build` OK.
+
+---
+
 # 20. [ ] Sprint 15 - Preparación de entrega TFM
 
 **Fecha:** 25/07/2026
