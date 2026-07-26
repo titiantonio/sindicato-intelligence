@@ -50,6 +50,8 @@ el 26/07/2026.
 - HTML verificado con 10 slides, JavaScript válido y assets presentes.
 - 10 slides renderizadas mediante PowerPoint.
 - inspección visual individual.
+- orden narrativo verificado: arquitectura en la slide 03 y modelo de dominio
+  en la slide 04.
 - 0 objetos fuera del lienzo según el layout exportado.
 - 10 bloques de notas con fuentes.
 - capturas embebidas en PowerPoint.

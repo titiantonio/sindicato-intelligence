@@ -501,6 +501,21 @@ Publication</p>
       <span class="slide-number">02</span>
     </section>
 
+    <section class="slide" aria-hidden="true" data-title="Arquitectura">
+      <p class="eyebrow">Arquitectura</p>
+      <h2>Spring Boot concentra el dominio y limita cada integración</h2>
+      <div class="rule"></div>
+      <div class="architecture">
+        <div class="architecture__side"><p class="blue strong">ENTRADA</p><p>Fuentes RSS<br><br>n8n · WF-01<br>Captura XML<br><br>POST /news/bulk</p></div>
+        <div class="arrow">→</div>
+        <div class="architecture__core"><p class="strong">SPRING BOOT · MONOLITO MODULAR</p><p>domain · application · infrastructure · api</p><hr style="width:90%;border-color:#526076"><p>Reglas de negocio<br>Casos de uso<br>JWT y roles<br>IA y validación<br>Automatizaciones<br>Telegram y auditoría</p></div>
+        <div class="arrow">→</div>
+        <div class="architecture__side"><p class="accent strong">SALIDAS</p><p>Angular<br>PostgreSQL<br>Gemini opcional<br>Telegram<br>MailHog</p></div>
+      </div>
+      <p class="accent strong" style="text-align:center;margin-top:3%">DDD · Clean Architecture · PostgreSQL + Flyway</p>
+      <span class="slide-number">03</span>
+    </section>
+
     <section class="slide" aria-hidden="true" data-title="Dominio">
       <p class="eyebrow">Modelo de dominio</p>
       <h2>El flujo transforma noticias en decisiones publicables</h2>
@@ -517,21 +532,6 @@ Publication</p>
         <div><div class="domain-node">PUBLICATION</div><div class="domain-caption">Envío aprobado<br>y trazable</div></div>
       </div>
       <p class="accent strong" style="text-align:center;margin-top:5%">La IA propone. El dominio valida. Una persona aprueba.</p>
-      <span class="slide-number">03</span>
-    </section>
-
-    <section class="slide" aria-hidden="true" data-title="Arquitectura">
-      <p class="eyebrow">Arquitectura</p>
-      <h2>Spring Boot concentra el dominio y limita cada integración</h2>
-      <div class="rule"></div>
-      <div class="architecture">
-        <div class="architecture__side"><p class="blue strong">ENTRADA</p><p>Fuentes RSS<br><br>n8n · WF-01<br>Captura XML<br><br>POST /news/bulk</p></div>
-        <div class="arrow">→</div>
-        <div class="architecture__core"><p class="strong">SPRING BOOT · MONOLITO MODULAR</p><p>domain · application · infrastructure · api</p><hr style="width:90%;border-color:#526076"><p>Reglas de negocio<br>Casos de uso<br>JWT y roles<br>IA y validación<br>Automatizaciones<br>Telegram y auditoría</p></div>
-        <div class="arrow">→</div>
-        <div class="architecture__side"><p class="accent strong">SALIDAS</p><p>Angular<br>PostgreSQL<br>Gemini opcional<br>Telegram<br>MailHog</p></div>
-      </div>
-      <p class="accent strong" style="text-align:center;margin-top:3%">DDD · Clean Architecture · PostgreSQL + Flyway</p>
       <span class="slide-number">04</span>
     </section>
 

@@ -84,13 +84,15 @@ No leas las slides. Úsalas como apoyo mientras explicas.
 
 ### 1:10–1:45 — Arquitectura
 
-**Muestra:** slide de arquitectura y flujo.
+**Muestra:** slide 3 de arquitectura.
 
 **Di:**
 
 > La solución utiliza Angular para el backoffice, Spring Boot para toda la lógica de negocio y PostgreSQL para persistencia. La arquitectura del backend sigue DDD, Clean Architecture y un monolito modular.
 
 > n8n tiene una responsabilidad limitada: el workflow WF-01 captura RSS o XML y envía las noticias al backend. La clasificación, la detección de eventos, el análisis, el contenido y Telegram se ejecutan en Spring Boot.
+
+**Haz:** avanza a la slide 4, modelo de dominio.
 
 > El flujo de dominio es noticia, evento, análisis, contenido y publicación. Event es el aggregate root principal.
 

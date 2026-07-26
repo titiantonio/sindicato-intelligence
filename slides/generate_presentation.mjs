@@ -233,11 +233,11 @@ const settingsBytes = await imageBytes("settings.png");
   );
 }
 
-// 03 — Flujo del dominio, adaptación del timeline Codex Grid slide-17.
-{
+// Modelo de dominio, invocado como slide 04.
+function addDomainSlide(number) {
   const slide = presentation.slides.add();
   slide.background.fill = C.canvas;
-  addSlideTitle(slide, "El flujo transforma noticias en decisiones publicables", 3, "MODELO DE DOMINIO");
+  addSlideTitle(slide, "El flujo transforma noticias en decisiones publicables", number, "MODELO DE DOMINIO");
 
   const xs = [64, 286, 524, 774, 1018];
   const widths = [150, 174, 180, 180, 194];
@@ -297,7 +297,7 @@ const settingsBytes = await imageBytes("settings.png");
   addText(slide, "La IA propone. El dominio valida. Una persona aprueba.", {
     left: 240, top: 586, width: 800, height: 42,
   }, { fontSize: 28, bold: true, color: C.accent, alignment: "center" });
-  addFooter(slide, 3);
+  addFooter(slide, number);
   addNotes(
     slide,
     "Recorrer News, Event, Analysis, Content y Publication. Reforzar que Event es el aggregate root principal.",
@@ -308,11 +308,11 @@ const settingsBytes = await imageBytes("settings.png");
   );
 }
 
-// 04 — Arquitectura.
-{
+// Arquitectura, invocada como slide 03.
+function addArchitectureSlide(number) {
   const slide = presentation.slides.add();
   slide.background.fill = C.canvas;
-  addSlideTitle(slide, "Spring Boot concentra el dominio y limita cada integración", 4, "ARQUITECTURA");
+  addSlideTitle(slide, "Spring Boot concentra el dominio y limita cada integración", number, "ARQUITECTURA");
 
   // Conectores primero.
   addShape(slide, "rightArrow", { left: 272, top: 342, width: 70, height: 34 }, C.rule);
@@ -349,7 +349,7 @@ const settingsBytes = await imageBytes("settings.png");
   addText(slide, "DDD · Clean Architecture · PostgreSQL + Flyway", {
     left: 342, top: 574, width: 558, height: 38,
   }, { fontSize: 23, bold: true, color: C.accent, alignment: "center" });
-  addFooter(slide, 4);
+  addFooter(slide, number);
   addNotes(
     slide,
     "Explicar que n8n solo captura. Toda regla, scheduler, IA, seguridad y publicación vive en Spring Boot.",
@@ -359,6 +359,9 @@ const settingsBytes = await imageBytes("settings.png");
     ],
   );
 }
+
+addArchitectureSlide(3);
+addDomainSlide(4);
 
 // 05 — Producto real, adaptación del half-image Codex Grid slide-08.
 {

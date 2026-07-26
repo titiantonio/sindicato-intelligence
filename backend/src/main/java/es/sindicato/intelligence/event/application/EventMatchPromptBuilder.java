@@ -8,6 +8,13 @@ import java.util.stream.Collectors;
 @Component
 public class EventMatchPromptBuilder {
 
+    private static final int MAX_NEWS_TITLE_LENGTH = 220;
+    private static final int MAX_NEWS_SUMMARY_LENGTH = 900;
+    private static final int MAX_NEWS_CONTENT_LENGTH = 1_800;
+    private static final int MAX_CANDIDATE_TITLE_LENGTH = 180;
+    private static final int MAX_CANDIDATE_DESCRIPTION_LENGTH = 360;
+    private static final int MAX_RECENT_NEWS_TITLE_LENGTH = 140;
+
     private static final String SYSTEM_PROMPT = """
             Eres un analista especializado en seguimiento informativo.
 
@@ -47,7 +54,12 @@ public class EventMatchPromptBuilder {
                   "confidence": 95,
                   "reason": ""
                 }
-                """.formatted(safe(newsTitle), safe(newsSummary), safe(newsContent), formatCandidates(candidates));
+                """.formatted(
+                abbreviate(newsTitle, MAX_NEWS_TITLE_LENGTH),
+                abbreviate(newsSummary, MAX_NEWS_SUMMARY_LENGTH),
+                compactContent(newsSummary, newsContent),
+                formatCandidates(candidates)
+        );
 
         return new EventMatchPrompt(SYSTEM_PROMPT, userPrompt);
     }
@@ -74,8 +86,8 @@ public class EventMatchPromptBuilder {
                         }
                         """.formatted(
                         candidate.eventId(),
-                        escape(candidate.title()),
-                        escape(candidate.description()),
+                        escape(abbreviate(candidate.title(), MAX_CANDIDATE_TITLE_LENGTH)),
+                        escape(abbreviate(candidate.description(), MAX_CANDIDATE_DESCRIPTION_LENGTH)),
                         candidate.category(),
                         safeEnum(candidate.status()),
                         safe(candidate.firstDetectedAt() == null ? null : candidate.firstDetectedAt().toString()),
@@ -89,8 +101,31 @@ public class EventMatchPromptBuilder {
     private String formatStringArray(List<String> values) {
         List<String> safeValues = values == null ? List.of() : values;
         return safeValues.stream()
-                .map(value -> "\"" + escape(value) + "\"")
+                .map(value -> "\"" + escape(abbreviate(value, MAX_RECENT_NEWS_TITLE_LENGTH)) + "\"")
                 .collect(Collectors.joining(", ", "[", "]"));
+    }
+
+    private String compactContent(String summary, String content) {
+        String safeContent = normalized(content);
+        if (safeContent.isBlank()) {
+            return "";
+        }
+        if (!normalized(summary).isBlank() && normalized(summary).equals(safeContent)) {
+            return "[omitido: coincide con el resumen]";
+        }
+        return abbreviate(safeContent, MAX_NEWS_CONTENT_LENGTH);
+    }
+
+    private String abbreviate(String value, int maxLength) {
+        String normalized = normalized(value);
+        if (normalized.length() <= maxLength) {
+            return normalized;
+        }
+        return normalized.substring(0, Math.max(0, maxLength - 13)).trim() + " [recortado]";
+    }
+
+    private String normalized(String value) {
+        return safe(value).replaceAll("\\s+", " ").trim();
     }
 
     private String safe(String value) {

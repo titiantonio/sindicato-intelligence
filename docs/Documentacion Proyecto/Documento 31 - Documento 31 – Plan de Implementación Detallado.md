@@ -3998,6 +3998,23 @@ Verificacion:
 
 ---
 
+## 19.57 Reduccion de contexto WF-03 para Gemini 429 - 2026-07-26
+
+Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 12, automatizaciones internas WF-03 e integracion IA.
+
+Completado en esta iteracion:
+- [x] Diagnosticado que `news_id=507`, `news_id=511` y `news_id=888` tienen contexto largo o muy largo en `summary`/`content`.
+- [x] Confirmado que el error operativo sigue siendo `Gemini event matching request failed with HTTP 429`, compatible con cuota/rate limit del proveedor.
+- [x] Confirmado que el prompt WF-03 enviaba resumen, contenido y candidatos completos pese a que el prompt oficial no exige cuerpo completo.
+- [x] Recortado el contexto de noticia y candidatos en `EventMatchPromptBuilder`.
+- [x] Omitido el contenido cuando coincide literalmente con el resumen para evitar duplicar tokens.
+- [x] Version backend subida a `0.0.121-SNAPSHOT`.
+
+Verificacion:
+- Backend focal WF-03: `mvnw.cmd "-Dtest=EventMatchPromptBuilderTest,DetectEventUseCaseTest,ProcessPendingEventDetectionUseCaseTest,RunAutomationWorkflowUseCaseTest" test` OK, 22 tests, 0 fallos, 0 errores.
+
+---
+
 ## 19.56 Reordenacion de tabla de operaciones IA en settings - 2026-07-25
 
 Tarea de mantenimiento correctivo posterior al Sprint 12 sobre Fase 11/12, backoffice Angular y pantalla ADMIN `/settings`.
@@ -4152,6 +4169,8 @@ Verificacion:
 - [x] Renderizadas e inspeccionadas visualmente las 10 slides.
 - [x] Corregida la rotulación del flujo `WF-02` a `WF-04` y reexportadas las
   variantes PPTX, PDF, HTML y vista previa.
+- [x] Sincronizado el orden narrativo del guion: arquitectura en la slide 03 y
+  modelo de dominio en la slide 04.
 - [x] Enlazadas las slides desde README.
 
 ## T15.5 [ ] Completar acciones externas de entrega
