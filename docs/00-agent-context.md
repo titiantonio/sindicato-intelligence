@@ -47,8 +47,10 @@ Módulos principales: `source`, `news`, `classification`, `event`, `analysis`,
 - Versiones actuales: backend `0.0.120-SNAPSHOT` y frontend `0.0.48`.
 - Repositorio público verificado el 26/07/2026.
 - Fecha límite efectiva confirmada por el autor: 24/08/2026.
-- Pendientes de entrega externos: publicar los cambios locales, habilitar la URL
-  pública de slides, grabar y publicar el vídeo y enviar el formulario.
+- Slides publicadas y verificadas en GitHub Pages el 26/07/2026:
+  `https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html`.
+- Pendientes de entrega externos: grabar y publicar el vídeo, registrar su URL
+  definitiva y enviar el formulario.
 - Checklist operativa de cierre disponible en
   `docs/Documentacion_Final/2026_07_26_checklist_cierre_entrega_tfm.md`.
 

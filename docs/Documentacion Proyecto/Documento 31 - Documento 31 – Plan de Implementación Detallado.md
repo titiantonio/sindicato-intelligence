@@ -4113,7 +4113,6 @@ Verificacion:
 
 - [x] Revisado íntegramente `Documentacion-TFM-Fundae-1.pdf`.
 - [x] Identificados los cinco entregables: README, repositorio, despliegue recomendado, slides y vídeo obligatorio.
-- [x] Revisado el formato documental y de presentación del repositorio de referencia del compañero.
 - [x] Corregida la fecha límite efectiva confirmada por el autor: 24/08/2026.
 
 ## T15.2 [x] Auditar y verificar el proyecto completo
@@ -4159,9 +4158,9 @@ Verificacion:
 
 - [x] Preparada checklist operativa de publicación, vídeo y formulario.
 - [x] Repositorio público y accesible sin sesión verificado el 26/07/2026.
-- [ ] Confirmar y subir los cambios locales de preparación de entrega.
-- [ ] Subir las slides y registrar su URL pública; el enlace al PDF del
-  repositorio público es suficiente y GitHub Pages queda como mejora opcional.
+- [x] Confirmados y subidos los cambios de preparación en el commit `00e6fd4`.
+- [x] Slides publicadas y verificadas mediante GitHub Pages:
+  `https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html`.
 - [ ] Grabar el vídeo de 5 a 10 minutos con voz y captura de pantalla.
 - [ ] Publicar el vídeo y registrar su URL pública.
 - [ ] Decidir si se ofrece despliegue público y, si existe, verificar su URL.

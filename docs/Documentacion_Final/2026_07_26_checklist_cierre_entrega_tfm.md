@@ -12,9 +12,9 @@ Rellena esta tabla cuando cada URL responda desde una ventana privada:
 | Entregable | URL definitiva | Verificado sin sesión |
 | --- | --- | --- |
 | Repositorio | <https://github.com/titiantonio/sindicato-intelligence> | [x] |
-| Slides, PDF o HTML | `PENDIENTE` | [ ] |
+| Slides, PDF o HTML | <https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html> | [x] |
 | Vídeo | `PENDIENTE` | [ ] |
-| Aplicación desplegada, si se ofrece | `NO APLICA` | [ ] |
+| Aplicación desplegada, si se ofrece | `NO APLICA` | [x] |
 
 ## 2. Fecha límite
 
@@ -33,13 +33,13 @@ La fecha límite efectiva confirmada por el autor es el **24/08/2026**.
   `dist`, adjuntos, dumps ni datos personales.
 - [ ] Confirmar que las credenciales visibles son únicamente las cuentas de
   demostración exigidas para la evaluación.
-- [ ] Crear un commit de entrega.
-- [ ] Subir `main` al remoto.
+- [x] Commit base de preparación `00e6fd4` publicado en `main`.
+- [ ] Crear y subir un commit adicional con esta actualización de enlaces.
 
 Mensaje de commit propuesto:
 
 ```text
-docs: preparar entrega final del TFM
+docs: actualizar enlaces públicos de entrega
 ```
 
 No uses `git add` ni publiques los cambios hasta haber revisado visualmente el
@@ -52,9 +52,10 @@ Estado verificado el 26/07/2026 mediante GitHub y acceso HTTP sin sesión.
 - [x] Repositorio con visibilidad pública.
 - [x] URL accesible sin iniciar sesión:
   `https://github.com/titiantonio/sindicato-intelligence`.
-- [ ] Publicar el commit con todos los cambios locales de entrega.
+- [x] Publicar el commit con los materiales de entrega.
+- [ ] Publicar la actualización documental de enlaces.
 - [ ] Activar el secret scanning disponible para el repositorio.
-- [ ] Confirmar que README, código y slides son visibles.
+- [x] Confirmar que README, código y slides son visibles.
 
 ## 5. Obtener una URL pública para las slides
 
@@ -65,27 +66,23 @@ La opción mínima, una vez publicado el commit, es verificar el PDF versionado:
 https://github.com/titiantonio/sindicato-intelligence/blob/main/slides/sindicato_intelligence_tfm.pdf
 ```
 
-- [ ] Publicar el commit que contiene `slides/sindicato_intelligence_tfm.pdf`.
-- [ ] Abrir la URL anterior en una ventana privada.
-- [ ] Comprobar que GitHub muestra o permite descargar las 10 diapositivas.
-- [ ] Copiar esa URL a la tabla de la sección 1.
+- [x] Publicar el commit que contiene `slides/sindicato_intelligence_tfm.pdf`.
+- [x] Abrir la URL anterior sin sesión.
+- [x] Comprobar que GitHub muestra o permite descargar las 10 diapositivas.
+- [x] Registrar una URL pública de slides en la tabla de la sección 1.
 
 ### Opción adicional: presentación HTML con GitHub Pages
 
-- [ ] Abrir `Settings > Pages`.
-- [ ] Seleccionar `Deploy from a branch`.
-- [ ] Elegir la rama `main` y la carpeta `/ (root)`.
-- [ ] Guardar y esperar a que termine la publicación.
-- [ ] Abrir en una ventana privada:
+- [x] GitHub Pages habilitado desde la rama `main`.
+- [x] Publicación completada.
+- [x] URL pública abierta y verificada:
 
 ```text
 https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html
 ```
 
-- [ ] Avanzar por las 10 slides.
-- [ ] Comprobar capturas, textos, teclado y pantalla completa.
-- [ ] Si se prefiere esta versión, sustituir la URL del PDF de la tabla por la
-  URL HTML verificada.
+- [x] Comprobar la presentación de 10 slides y sus capturas.
+- [x] Registrar la URL HTML verificada como enlace principal.
 
 GitHub Pages no es obligatorio si el PDF ya está públicamente accesible desde
 el repositorio.
@@ -148,16 +145,16 @@ duplicados en eventos, genera análisis consolidados y prepara contenido para
 revisión humana y publicación en Telegram.
 
 Repositorio: https://github.com/titiantonio/sindicato-intelligence
-Slides: [URL]
+Slides: https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html
 ```
 
 ## 7. Actualizar el README
 
 - [x] Reflejar que el repositorio ya es público.
-- [ ] Añadir la URL pública de las slides.
+- [x] Añadir la URL pública de las slides.
 - [ ] Añadir la URL pública del vídeo.
 - [ ] Añadir la URL de despliegue solo si está realmente operativa.
-- [ ] Eliminar la frase que indica que slides y vídeo siguen pendientes.
+- [x] Eliminar la frase que indica que las slides siguen pendientes.
 - [ ] Comprobar que las credenciales de demostración siguen visibles y
   funcionan.
 
@@ -167,7 +164,7 @@ No añadas URL previstas o privadas: solo enlaces ya comprobados sin sesión.
 
 - [x] Repositorio accesible por el evaluador.
 - [ ] README legible y con todos los enlaces.
-- [ ] Slides accesibles y completas.
+- [x] Slides accesibles y completas.
 - [ ] Vídeo reproducible y con voz.
 - [ ] Credenciales de demostración correctas.
 - [ ] Guía Docker reproducible.

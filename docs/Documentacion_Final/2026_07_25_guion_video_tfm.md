@@ -276,7 +276,7 @@ demostración del flujo News -> Event -> Analysis -> Content -> Publication,
 seguridad, pruebas y conclusiones.
 
 Repositorio: https://github.com/titiantonio/sindicato-intelligence
-Slides: [AÑADIR URL PÚBLICA]
+Slides: https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html
 ```
 
 Publica el vídeo como público u oculto accesible mediante enlace, según permita la entrega. Comprueba el enlace desde una ventana privada.

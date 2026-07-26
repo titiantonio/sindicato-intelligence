@@ -3,8 +3,9 @@
 Plataforma interna de inteligencia informativa para un sindicato docente de Andalucía. Automatiza la captura y el seguimiento de noticias educativas, consolida publicaciones duplicadas en eventos, genera análisis asistidos por IA y prepara contenidos para revisión humana y publicación en Telegram.
 
 > Estado de entrega TFM actualizado el 26/07/2026. La aplicación y sus pruebas
-> están verificadas localmente y el repositorio es público. Antes de enviar el
-> formulario todavía deben publicarse estos cambios, las slides y el vídeo.
+> están verificadas localmente, el repositorio es público y las slides están
+> publicadas. Antes de enviar el formulario todavía debe grabarse y publicarse
+> el vídeo.
 
 ## Enlaces de entrega
 
@@ -12,12 +13,12 @@ Plataforma interna de inteligencia informativa para un sindicato docente de Anda
 | --- | --- | --- |
 | Código fuente | Público y verificado el 26/07/2026 | <https://github.com/titiantonio/sindicato-intelligence> |
 | Aplicación desplegada | No disponible públicamente | Ejecución local reproducible con Docker |
-| Slides | Incluidas en el repositorio | [`PPTX`](slides/sindicato_intelligence_tfm.pptx), [`PDF`](slides/sindicato_intelligence_tfm.pdf) y [`HTML`](slides/tfm_presentacion.html) |
+| Slides | Públicas y verificadas el 26/07/2026 | [Presentación web](https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html), [PDF](https://github.com/titiantonio/sindicato-intelligence/blob/main/slides/sindicato_intelligence_tfm.pdf) y [`PPTX`](slides/sindicato_intelligence_tfm.pptx) |
 | Vídeo explicativo | Pendiente de grabar y publicar | Guion en [`docs/Documentacion_Final/2026_07_25_guion_video_tfm.md`](docs/Documentacion_Final/2026_07_25_guion_video_tfm.md) |
 | Informe de preparación | Disponible | [`docs/Documentacion_Final/2026_07_25_informe_preparacion_entrega_tfm.md`](docs/Documentacion_Final/2026_07_25_informe_preparacion_entrega_tfm.md) |
 | Checklist de cierre | Disponible | [`docs/Documentacion_Final/2026_07_26_checklist_cierre_entrega_tfm.md`](docs/Documentacion_Final/2026_07_26_checklist_cierre_entrega_tfm.md) |
 
-Cuando las slides y el vídeo estén publicados, sustituye los estados anteriores por sus URL públicas antes de entregar.
+Cuando el vídeo esté publicado, añade su URL pública antes de entregar.
 
 ![Vista previa de las diez slides del TFM](slides/sindicato_intelligence_tfm_preview.png)
 

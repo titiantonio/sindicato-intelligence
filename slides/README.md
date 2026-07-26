@@ -27,30 +27,21 @@ Controles:
 
 ## Publicación con GitHub Pages
 
-El PDF y el PPTX están adjuntos al código, por lo que, una vez publicado el
-commit, la página pública del PDF en GitHub ya permite cumplir el requisito de
-acceso a las slides:
+El PDF y el PPTX están adjuntos al código. La página pública del PDF en GitHub
+está disponible en:
 
 ```text
 https://github.com/titiantonio/sindicato-intelligence/blob/main/slides/sindicato_intelligence_tfm.pdf
 ```
 
-GitHub Pages es una opción adicional para visualizar la variante HTML. Todavía
-no está habilitado: la URL prevista devolvía HTTP 404 el 26/07/2026. Para
-publicarla:
-
-1. abre `Settings > Pages`;
-2. selecciona despliegue desde una rama;
-3. elige `main` y la carpeta raíz;
-4. guarda la configuración;
-5. comprueba:
+La variante HTML está publicada mediante GitHub Pages:
 
 ```text
 https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html
 ```
 
-No añadas ninguna de las URL al README hasta verificarla desde una ventana
-privada después de publicar el commit.
+Ambas URL devolvían HTTP 200 y la presentación web fue comprobada por el autor
+el 26/07/2026.
 
 ## Verificación realizada
 

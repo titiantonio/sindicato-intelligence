@@ -8,19 +8,19 @@
 
 ## 1. Veredicto ejecutivo
 
-**El proyecto está técnicamente verificado y el repositorio ya es público, pero
-todavía no está listo para enviar el formulario de entrega.**
+**El proyecto está técnicamente verificado, el repositorio ya es público y las
+slides están publicadas, pero todavía no está listo para enviar el formulario
+de entrega.**
 
 Bloqueos obligatorios:
 
-1. los cambios locales de entrega deben confirmarse y publicarse en `main`;
-2. el vídeo obligatorio todavía debe grabarse y publicarse;
-3. las URL definitivas deben incorporarse al README y al formulario.
+1. el vídeo obligatorio todavía debe grabarse y publicarse;
+2. su URL definitiva debe incorporarse al README y al formulario;
+3. debe enviarse el formulario de entrega.
 
-Las slides ya cumplen materialmente el requisito al estar preparadas como
-PPTX y PDF dentro del repositorio. Cuando se publique el commit, la página del
-PDF en GitHub podrá utilizarse como URL pública; GitHub Pages es una mejora
-opcional para visualizar la variante HTML.
+Las slides cumplen el requisito como PPTX y PDF dentro del repositorio y como
+presentación HTML pública en GitHub Pages:
+<https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html>.
 
 El despliegue en una URL pública es recomendable, no obligatorio según el documento recibido. La ejecución local con Docker está documentada y es reproducible.
 
@@ -33,10 +33,10 @@ La fecha límite efectiva confirmada por el autor es el **24/08/2026**.
 | README completo | descripción, stack, instalación, estructura, funcionalidades y credenciales | Cumplido |
 | Código accesible | repositorio público verificado el 26/07/2026 | Cumplido |
 | Aplicación desplegada | no hay URL pública verificada; existe Docker local | Recomendado pendiente |
-| Slides | PPTX, PDF y HTML en `slides/`; el PDF tendrá URL pública al subir el commit | Cumplido localmente; pendiente publicar cambios |
+| Slides | PPTX y PDF en el repositorio; HTML público en GitHub Pages | Cumplido y verificado |
 | Vídeo con voz y pantalla | guion preparado; falta grabación y URL | Bloqueante |
 | Credenciales de prueba | `admin@sindicato.es` / `Admin@12345` y `editor@sindicato.es` / `Admin@12345` | Cumplido |
-| Enlaces en documentación | README preparado para centralizarlos | Parcial hasta disponer de URL |
+| Enlaces en documentación | README con repositorio y slides públicas | Parcial hasta disponer de la URL del vídeo |
 
 ### Desglose exacto del PDF de requisitos
 
@@ -58,28 +58,10 @@ La fecha límite efectiva confirmada por el autor es el **24/08/2026**.
 | Formulario | checklist preparada; nombre, email y URL finales debe completarlos el autor |
 
 El repositorio devuelve HTTP 200 sin sesión y GitHub informa visibilidad
-`public`. El commit remoto `main` coincide con el `HEAD` local previo a la
-auditoría, por lo que los cambios actuales todavía deben confirmarse y subirse.
+`public`. El commit de preparación `00e6fd4` está publicado en `main`. La
+presentación de GitHub Pages y el PDF público devolvían HTTP 200 el 26/07/2026.
 
-## 3. Comparación con el TFM de referencia
-
-El repositorio de referencia del compañero usa un patrón correcto y fácil de evaluar:
-
-- README como portada de la entrega;
-- enlaces visibles a slides y vídeo al comienzo;
-- presentación HTML versionada;
-- GitHub Pages para servir la presentación;
-- explicación de problema, solución, arquitectura, IA, pruebas, seguridad e instalación.
-
-La entrega de Sindicato Intelligence adopta ese formato sin copiar contenido:
-
-- README actualizado como punto de entrada;
-- slides PowerPoint editables;
-- variante HTML apta para GitHub Pages;
-- guion específico de vídeo;
-- índice que separa documentación vigente de histórica.
-
-## 4. Estado técnico auditado
+## 3. Estado técnico auditado
 
 ### Backend
 
@@ -134,7 +116,7 @@ Verificaciones realizadas:
 - no hay despliegue público verificado;
 - CI/CD, TLS, secretos productivos y backups probados siguen pendientes de producción.
 
-## 5. Documentación actualizada
+## 4. Documentación actualizada
 
 - `README.md`;
 - `docs/00-agent-context.md`;
@@ -152,7 +134,7 @@ Verificaciones realizadas:
 - checklist operativa de publicación y cierre;
 - presentación editable, PDF y HTML.
 
-## 6. Qué retirar
+## 5. Qué retirar
 
 ### Retirado
 
@@ -187,15 +169,13 @@ No se recomienda borrar ahora documentación histórica porque explica la evoluc
 
 `docs/Docs_Asistentes/` contiene registros exigidos por el proyecto. Debe mantenerse mientras siga vigente `AGENTS.md`, aunque no sea documentación principal del evaluador.
 
-## 7. Qué falta añadir o completar
+## 6. Qué falta añadir o completar
 
 ### Obligatorio
 
-- Publicar en el repositorio público los cambios locales de preparación.
-- Verificar la URL pública del PDF de slides en GitHub o, alternativamente,
-  habilitar GitHub Pages para la versión HTML.
 - vídeo de 5 a 10 minutos con voz y captura de pantalla.
 - URL pública del vídeo.
+- incorporar la URL del vídeo al README.
 - envío del formulario.
 
 ### Recomendado
@@ -208,7 +188,7 @@ No se recomienda borrar ahora documentación histórica porque explica la evoluc
 La licencia no debe añadirse sin decidir antes si la publicación es solo
 académica o de código abierto.
 
-## 8. Seguridad antes de publicar los cambios finales
+## 7. Seguridad antes de publicar los cambios finales
 
 1. ejecutar un escaneo final de secretos en archivos rastreados;
 2. mantener activo el secret scanning de GitHub como complemento al escaneo
@@ -219,21 +199,18 @@ académica o de código abierto.
 6. revisar settings, Swagger y n8n antes de grabar;
 7. rotar cualquier secreto que haya estado expuesto.
 
-## 9. Orden recomendado para cerrar la entrega
+## 8. Orden recomendado para cerrar la entrega
 
-1. revisar y confirmar los cambios con `git diff`;
+1. confirmar y subir esta actualización documental de enlaces;
 2. decidir la política de licencia;
-3. crear y subir el commit con los materiales finales;
-4. verificar la URL pública del PDF de slides y, opcionalmente, habilitar
-   GitHub Pages para `slides/tfm_presentacion.html`;
-5. grabar el vídeo siguiendo el guion;
-6. subir el vídeo como público u oculto accesible por enlace;
-7. añadir las URL definitivas al README;
-8. crear un tag o release final;
-9. verificar todo antes del 24/08/2026;
-10. rellenar y enviar el formulario.
+3. grabar el vídeo siguiendo el guion;
+4. subir el vídeo como público u oculto accesible por enlace;
+5. añadir la URL definitiva del vídeo al README;
+6. crear un tag o release final;
+7. verificar todo antes del 24/08/2026;
+8. rellenar y enviar el formulario.
 
-## 10. Tabla final de verificación
+## 9. Tabla final de verificación
 
 | Verificación | Resultado |
 | --- | --- |
@@ -250,12 +227,12 @@ académica o de código abierto.
 | Enlaces locales de entrega | Correctos |
 | PPTX / PDF / HTML | 10 slides verificadas |
 | Repositorio público | Sí; verificado el 26/07/2026 |
-| Slides públicas | No |
+| Slides públicas | Sí; GitHub Pages verificado el 26/07/2026 |
 | Vídeo público | No |
 
-## 11. Decisión de entrega
+## 10. Decisión de entrega
 
-El código, la documentación y los materiales locales son candidatos de entrega:
-todas las verificaciones técnicas previstas están en verde. La entrega formal
-solo estará lista cuando los cambios locales estén publicados y existan URL
-públicas verificadas de slides y vídeo.
+El código, la documentación y las slides están publicados y todas las
+verificaciones técnicas previstas están en verde. La entrega formal solo estará
+lista cuando el vídeo esté publicado, su URL se incorpore al README y se
+complete el formulario.

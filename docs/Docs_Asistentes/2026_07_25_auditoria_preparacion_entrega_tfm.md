@@ -27,10 +27,6 @@ la documentación, preparar las slides y redactar el guion del vídeo de entrega
 - Vídeo obligatorio con voz y captura de pantalla.
 - Fecha límite efectiva corregida posteriormente por el autor a 24/08/2026.
 
-También se revisó el repositorio de referencia
-`archocron/TFMBIGschool` para adoptar su patrón de presentación, sin copiar su
-contenido.
-
 ## Incidencias encontradas y decisiones
 
 1. El repositorio remoto estaba privado durante la auditoría inicial. El
