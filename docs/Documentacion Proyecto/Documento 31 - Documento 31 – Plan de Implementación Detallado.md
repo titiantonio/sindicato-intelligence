@@ -4101,3 +4101,70 @@ Verificacion:
 - Playwright focal login: `npx.cmd playwright test e2e/app-startup.spec.ts --reporter=list` OK, 2 tests.
 - Contraste del texto claro verificado entre `6.33:1` y `13.59:1`.
 - Inspeccion visual del login claro y oscuro a `1440 x 900`.
+
+---
+
+# 20. [ ] Sprint 15 - Preparación de entrega TFM
+
+**Fecha:** 25/07/2026
+**Correspondencia Documento 30:** cierre transversal de las fases 0 a 12 y preparación académica.
+
+## T15.1 [x] Analizar los requisitos formales de entrega
+
+- [x] Revisado íntegramente `Documentacion-TFM-Fundae-1.pdf`.
+- [x] Identificados los cinco entregables: README, repositorio, despliegue recomendado, slides y vídeo obligatorio.
+- [x] Revisado el formato documental y de presentación del repositorio de referencia del compañero.
+- [x] Corregida la fecha límite efectiva confirmada por el autor: 24/08/2026.
+
+## T15.2 [x] Auditar y verificar el proyecto completo
+
+- [x] Inventariados backend, frontend, Flyway, n8n, Docker, scripts y documentación.
+- [x] Validado `docker compose config`.
+- [x] Validado `WF-01` mediante `n8n/validate-workflows.ps1`.
+- [x] Validados sintácticamente los scripts PowerShell.
+- [x] Corregido el aislamiento de pruebas backend frente a datos PostgreSQL preexistentes.
+- [x] Corregido el nombre accesible del diálogo de mensaje manual Telegram.
+- [x] Actualizadas dependencias frontend compatibles y auditada la producción sin vulnerabilidades.
+- [x] Ejecutada la batería backend completa: 347 pruebas, 0 fallos.
+- [x] Ejecutada la batería frontend completa: 163 pruebas unitarias, 0 fallos,
+  y build de producción correcto.
+- [x] Ejecutada la suite Playwright mock completa: 16 pruebas, 0 fallos.
+- [x] Estabilizados los recorridos E2E extensos con un presupuesto temporal
+  explícito de 60 segundos, sin relajar ninguna aserción funcional.
+- [x] Ejecutado smoke reproducible del stack Docker completo.
+
+## T15.3 [x] Sincronizar la documentación
+
+- [x] Reescrito el README con descripción, stack, instalación, estructura, funcionalidades y credenciales.
+- [x] Actualizada la guía de ejecución del TFM.
+- [x] Actualizado el manual operativo con todas las rutas actuales.
+- [x] Actualizados los Documentos 12, 13, 14 y 15.
+- [x] Actualizado el estado de ejecución del Documento 30.
+- [x] Creado un índice de documentación canónica e histórica.
+- [x] Creado el informe fechado de preparación de entrega.
+- [x] Creado el guion fechado del vídeo.
+- [x] Completado el registro de intervención en `docs/Docs_Asistentes`.
+
+## T15.4 [x] Preparar la presentación
+
+- [x] Capturadas pantallas actuales de login, dashboard, eventos y settings.
+- [x] Creadas slides editables en formato PowerPoint y variante PDF.
+- [x] Creada variante HTML apta para GitHub Pages.
+- [x] Renderizadas e inspeccionadas visualmente las 10 slides.
+- [x] Corregida la rotulación del flujo `WF-02` a `WF-04` y reexportadas las
+  variantes PPTX, PDF, HTML y vista previa.
+- [x] Enlazadas las slides desde README.
+
+## T15.5 [ ] Completar acciones externas de entrega
+
+- [x] Preparada checklist operativa de publicación, vídeo y formulario.
+- [x] Repositorio público y accesible sin sesión verificado el 26/07/2026.
+- [ ] Confirmar y subir los cambios locales de preparación de entrega.
+- [ ] Subir las slides y registrar su URL pública; el enlace al PDF del
+  repositorio público es suficiente y GitHub Pages queda como mejora opcional.
+- [ ] Grabar el vídeo de 5 a 10 minutos con voz y captura de pantalla.
+- [ ] Publicar el vídeo y registrar su URL pública.
+- [ ] Decidir si se ofrece despliegue público y, si existe, verificar su URL.
+- [ ] Rellenar y enviar el formulario de entrega.
+
+El Sprint 15 no puede marcarse completo hasta que las acciones externas anteriores estén realizadas y verificadas.

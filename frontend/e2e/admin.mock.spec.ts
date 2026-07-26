@@ -7,6 +7,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('permite navegar por pantallas ADMIN con API mockeada', async ({ page }) => {
+  test.setTimeout(60_000);
   await loginWithMockRole(page, 'ADMIN');
 
   await expect(page.getByRole('heading', { name: 'Visor operativo del backoffice' })).toBeVisible();

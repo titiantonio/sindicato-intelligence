@@ -57,14 +57,14 @@
   [style]="{ width: 'min(68rem, 96vw)' }"
   [breakpoints]="{ '900px': '96vw', '640px': '100vw' }"
 >
-  <ng-template pTemplate="header">
+  <ng-template pTemplate="header" let-ariaLabelledBy="ariaLabelledBy">
     <div class="manual-dialog-header">
       <span class="manual-dialog-header__icon" aria-hidden="true">
         <i class="pi pi-send"></i>
       </span>
       <div>
         <span class="manual-dialog-header__eyebrow">Telegram</span>
-        <h2>Mensaje manual</h2>
+        <h2 [id]="ariaLabelledBy">Mensaje manual</h2>
         <p>Redacta, formatea y envia una comunicacion directa a los destinos activos.</p>
       </div>
     </div>

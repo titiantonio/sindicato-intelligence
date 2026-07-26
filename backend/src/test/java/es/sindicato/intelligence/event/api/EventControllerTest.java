@@ -91,6 +91,13 @@ class EventControllerTest {
     @BeforeEach
     void useDeterministicEventMatchingProvider() {
         OffsetDateTime now = OffsetDateTime.now();
+        eventRepository.findAll().stream()
+                .filter(event -> event.getStatus() != EventStatus.ARCHIVED)
+                .forEach(event -> {
+                    event.archive(now);
+                    eventRepository.save(event);
+                });
+
         AiProviderSetting provider = providerSettingRepository.findByCode("deterministic")
                 .orElse(new AiProviderSetting("deterministic", "Deterministic", true, null, now, now));
         provider.update(true, null, false, now);

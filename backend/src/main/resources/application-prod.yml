@@ -23,7 +23,7 @@ springdoc:
 app:
   openapi:
     public-access: ${OPENAPI_PUBLIC_ACCESS:false}
-    version: ${OPENAPI_VERSION:0.0.106-SNAPSHOT}
+    version: ${OPENAPI_VERSION:0.0.120-SNAPSHOT}
 
   security:
     jwt:

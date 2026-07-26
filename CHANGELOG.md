@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Frontend accesibilidad: el diálogo de mensaje manual Telegram recibe un
+  nombre accesible mediante el identificador de cabecera que expone PrimeNG.
+- Frontend E2E: ampliado el timeout de los recorridos completos ADMIN y del
+  sistema visual, y sincronizada la aserción del diálogo manual con su nombre
+  accesible real.
+- Backend testing: aislados los eventos persistidos previamente en las pruebas de dashboard y API de eventos para que el orden, la deteccion y el limite de prioridades no dependan de la base local.
+- Frontend dependencias: actualizados `postcss` y la rama moderna de `brace-expansion`; la rama 1.x usada solo por Karma queda documentada como riesgo transitorio de desarrollo porque forzar 5.x rompe el runner.
 - Frontend publicaciones: ajustado el dialogo de mensaje manual Telegram para eliminar el scroll interno, mantener adjuntos visibles, alinear checkbox y destino en la misma fila y dejar la toolbar del editor en una sola linea sin etiquetas visibles.
 - Frontend publicaciones: mejorada la apariencia del dialogo de mensaje manual Telegram con cabecera contextual, boton con icono, paneles mas legibles, destinos tipo tarjeta y acciones fijas.
 - Frontend shell movil: el menu lateral permite desplazamiento vertical en pantallas bajas y queda cubierto por una regresion Playwright mockeada.
@@ -34,6 +41,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Entrega TFM: añadidas presentaciones PPTX, PDF y HTML, capturas actuales,
+  vista previa, fuente reproducible y notas con fuentes.
+- Entrega TFM: añadidos informe de preparación, guion de vídeo de 5 a 10
+  minutos e índice de documentación vigente e histórica.
+- Entrega TFM: añadida checklist operativa para publicación del repositorio,
+  obtención de una URL pública para las slides, grabación del vídeo,
+  actualización de URL y envío del formulario.
+- Frontend E2E: documentadas la suite mockeada reproducible y la suite opt-in
+  contra backend local.
 - Frontend sistema visual: consolidado un tema navy/teal compartido con tokens de color, superficies, foco, radios, elevacion, tablas, formularios, badges, estados y dialogos para claro y oscuro.
 - Frontend E2E: anadida `visual-system.mock.spec.ts` para recorrer las rutas autenticadas, verificar temas, retorno de foco, shell movil y ausencia de overflow global a `320 CSS px`.
 - Frontend shell/autenticacion: incorporado selector de tema reutilizable y nueva composicion responsive en login, recuperacion, reset y cambio de password.
@@ -62,6 +78,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Documentación TFM: actualizado el README, la guía de ejecución, el manual
+  operativo y los Documentos 12, 13, 14, 15, 30 y 31 al estado verificable del
+  proyecto.
+- Documentación TFM: corregida la fecha límite efectiva a 24/08/2026 y
+  registrado el repositorio como público tras verificar acceso sin sesión.
+- Entrega TFM: aclarado que el PDF versionado en el repositorio público cumple
+  el requisito de material de presentación; GitHub Pages queda como opción de
+  visualización adicional.
+- Slides TFM: corregida la rotulación del flujo Spring de `WF-02` a `WF-04` y
+  reexportadas las variantes PPTX, PDF, HTML y vista previa.
+- Backend OpenAPI: sincronizada la versión publicada por defecto con
+  `0.0.120-SNAPSHOT`.
+- Versionado backend actualizado a `0.0.120-SNAPSHOT`.
+- Frontend version: subida la version del paquete frontend a `0.0.48`.
 - Frontend login: aclarado el panel introductorio en modo claro con una superficie menta suave, texto oscuro y tarjetas translúcidas; el modo oscuro conserva su variante navy.
 - Frontend version: subida la version del paquete frontend a `0.0.47`.
 - Frontend version: subida la version del paquete frontend a `0.0.46`.
@@ -223,11 +253,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Repositorio: eliminado `backend/backend-startup.log`, un log local generado
+  por un arranque antiguo fallido, y excluidos futuros `*.log` y `tmp/`.
 - Infraestructura scripts: retirados `dev-startup.ps1`, `dev-startup.md`, `scripts/validate-sprint11-acceptance.ps1` y `scripts/fake-telegram-server.ps1` por estar obsoletos frente a `dev-start.ps1`, los scripts `tfm-*` y las suites Playwright actuales.
 - Seguridad local: eliminado el script local ignorado `set_ai_env.ps1`; se conserva solo la plantilla segura `set_ai_env.example.ps1`.
 
 ### Security
 
+- Frontend dependencias: verificadas sin vulnerabilidades las dependencias de
+  producción mediante `npm audit --omit=dev`.
+- Entrega TFM: comprobados los archivos actuales versionados sin patrones de
+  secretos de alta entropía y ejecutado un escaneo dirigido del historial
+  `main` para claves Google/Gemini, OpenAI, GitHub, AWS y Telegram.
 - Backend/frontend settings: ADMIN puede eliminar explicitamente API keys IA y el bot token de Telegram sin exponer secretos completos ni confundir campos vacios con conservar credenciales.
 - Frontend dependencias: aprobados de forma acotada los scripts de instalacion npm del toolchain Angular mediante `allowScripts` versionado, eliminando avisos `allow-scripts` sin permitir scripts arbitrarios.
 - Frontend dependencias: corregidas vulnerabilidades npm restantes con `npm audit fix` y override controlado de `@hono/node-server` a `2.0.11`, manteniendo Angular CLI en la rama 21.2.x.

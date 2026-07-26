@@ -1,38 +1,67 @@
 # Contexto rápido para agentes
 
-Este proyecto es una plataforma interna para un sindicato de docentes de Andalucía.
+## Propósito
 
-MVP:
+Plataforma interna de inteligencia informativa para un sindicato de docentes de
+Andalucía. Captura noticias educativas, las clasifica, las agrupa en eventos,
+genera análisis y contenido editorial y permite su revisión y publicación.
 
-RSS/n8n -> Spring Boot -> PostgreSQL -> IA -> Eventos -> Telegram.
+## Flujo vigente
 
-Entidad central:
+```text
+RSS/XML
+  -> WF-01 n8n
+  -> Spring Boot / PostgreSQL
+  -> WF-02 clasificación IA
+  -> WF-03 detección de eventos
+  -> WF-04 análisis IA
+  -> WF-05 contenido bajo demanda
+  -> revisión humana
+  -> WF-06 publicación Telegram
+```
 
-Event.
+`Event` es el aggregate root principal. No se genera ni publica contenido desde
+noticias individuales. `WF-01` es el único workflow que permanece en n8n;
+`WF-02` a `WF-06` residen en Spring Boot.
 
-No publicar desde noticias individuales.
+## Arquitectura y tecnología
 
-Backend:
+- Backend: Java 21, Spring Boot 3.x, DDD, Clean Architecture y monolito modular.
+- Base package: `es.sindicato.intelligence`.
+- Frontend: Angular, backoffice responsive y E2E con Playwright.
+- Persistencia: PostgreSQL y migraciones Flyway.
+- Infraestructura local: Docker Compose, MailHog y n8n.
+- Seguridad: JWT, roles `ADMIN` y `EDITOR`, auditoría y cambio obligatorio de
+  contraseña temporal.
 
-Java 21, Spring Boot 3.x, Clean Architecture, DDD, Flyway.
+Módulos principales: `source`, `news`, `classification`, `event`, `analysis`,
+`content`, `publication`, `user`, `auth`, `automation`, `ai`, `audit`,
+`dashboard`, `health` y `core`.
 
-Base package:
+## Estado operativo a 26/07/2026
 
-es.sindicato.intelligence
+- Fases 0 a 12 y Sprints 10 a 12 completados.
+- Sprint 13 de calidad E2E implementado con suites mockeadas y opt-in real.
+- Sprint 14 de consolidación visual y accesibilidad completado.
+- Sprint 15 de preparación de entrega TFM en curso.
+- Versiones actuales: backend `0.0.120-SNAPSHOT` y frontend `0.0.48`.
+- Repositorio público verificado el 26/07/2026.
+- Fecha límite efectiva confirmada por el autor: 24/08/2026.
+- Pendientes de entrega externos: publicar los cambios locales, habilitar la URL
+  pública de slides, grabar y publicar el vídeo y enviar el formulario.
+- Checklist operativa de cierre disponible en
+  `docs/Documentacion_Final/2026_07_26_checklist_cierre_entrega_tfm.md`.
 
-Módulos:
+## Documentos principales
 
-source, news, classification, event, analysis, content, publication, user.
+- `Documento 17`: modelo de dominio DDD.
+- `Documento 18`: estructura Spring Boot.
+- `Documento 19`: casos de uso.
+- `Documento 20`: ERD y Flyway.
+- `Documento 21`: convenciones de desarrollo.
+- `Documento 23`: catálogo de prompts IA.
+- `Documento 30`: MVP técnico ejecutable y secuencia de fases.
+- `Documento 31`: backlog operativo y control de avance.
 
-Documentos principales:
-
-- 03D Modelo de Datos
-- 06 Arquitectura Backend
-- 09 Workflows n8n
-- 17 DDD
-- 18 Estructura Spring
-- 19 Casos de Uso
-- 20 ERD + Flyway
-- 21 Convenciones
-- 23 Prompts IA
-- 30 MVP Técnico Ejecutable
+La entrada documental recomendada para evaluadores es
+`docs/indice_documentacion.md`.

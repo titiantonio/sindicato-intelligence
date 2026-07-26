@@ -1,6 +1,29 @@
-Versión: 1.0
+# Documento 30 – MVP Técnico Ejecutable
 
-Estado: Plan Maestro de Implementación
+**Versión:** 1.1
+**Estado:** plan maestro ejecutado y consolidado
+**Última revisión:** 25/07/2026
+
+---
+
+## Estado de ejecución
+
+Las fases 0 a 12 del MVP están implementadas. El estado vigente es:
+
+- backend Spring Boot con DDD, Clean Architecture y monolito modular;
+- esquema PostgreSQL consolidado mediante Flyway;
+- `WF-01-Capture-News` como único workflow n8n;
+- `WF-02` a `WF-04` como automatizaciones internas configurables;
+- `WF-05` y `WF-06` bajo demanda o programación en Spring Boot;
+- backoffice Angular operativo;
+- JWT, roles, usuarios y auditoría;
+- configuración ADMIN, observabilidad IA y Telegram;
+- pruebas unitarias, integración y Playwright.
+
+La preparación de entrega TFM se controla como Sprint 15 en el Documento 31.
+El repositorio ya es público; los únicos pendientes obligatorios de entrega son
+externos al código: publicar los cambios locales, habilitar las slides públicas
+y grabar/publicar el vídeo.
 
 ---
 
@@ -44,32 +67,27 @@ El objetivo es validar que podemos:
 
 ---
 
-# 3. Arquitectura MVP
+# 3. Arquitectura MVP vigente
 
 ```text
 Fuentes RSS
-     │
-     ▼
-n8n
-     │
-     ▼
-Spring Boot API
-     │
-     ▼
-PostgreSQL
-     │
-     ▼
-IA
-     │
-     ▼
-Eventos
-     │
-     ▼
-Contenido
-     │
-     ▼
-Telegram
+  -> WF-01 n8n Captura Noticias
+  -> Spring Boot / PostgreSQL
+  -> Automatización Clasificación IA
+  -> Automatización Agrupación Eventos
+  -> Automatización Análisis IA
+  -> Generación Contenido bajo demanda
+  -> Revisión Humana
+  -> Publicación Telegram inmediata o programada
 ```
+
+Flujo de dominio:
+
+```text
+News -> Event -> Analysis -> Content -> Publication
+```
+
+`Event` es el aggregate root principal. n8n no contiene reglas de negocio.
 
 ---
 

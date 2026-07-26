@@ -21,6 +21,7 @@ import es.sindicato.intelligence.publication.domain.PublicationRepository;
 import es.sindicato.intelligence.publication.domain.PublicationStatus;
 import es.sindicato.intelligence.source.domain.Source;
 import es.sindicato.intelligence.source.domain.SourceRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -85,6 +86,17 @@ class DashboardControllerTest {
 
     @Autowired
     private PublicationRepository publicationRepository;
+
+    @BeforeEach
+    void isolateEventsFromLocalDatabase() {
+        OffsetDateTime archivedAt = OffsetDateTime.now();
+        eventRepository.findAll().stream()
+                .filter(event -> event.getStatus() != EventStatus.ARCHIVED)
+                .forEach(event -> {
+                    event.archive(archivedAt);
+                    eventRepository.save(event);
+                });
+    }
 
     @Test
     void returnsDashboardSnapshotWithDailyMetricsAndPriorityEvents() throws Exception {

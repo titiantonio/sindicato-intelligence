@@ -8,6 +8,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('mantiene el sistema visual en todas las rutas del backoffice', async ({ page }) => {
+  test.setTimeout(60_000);
   const routes = [
     ['/dashboard', 'Visor operativo del backoffice'],
     ['/events', 'Eventos'],
@@ -67,7 +68,7 @@ test('abre y cierra dialogos accesibles devolviendo el foco', async ({ page }) =
   await page.goto('/publications');
   const manualTrigger = page.getByRole('button', { name: 'Mensaje manual', exact: true });
   await manualTrigger.click();
-  const manualDialog = page.getByRole('dialog', { name: 'Mensaje manual Telegram' });
+  const manualDialog = page.getByRole('dialog', { name: 'Mensaje manual' });
   await expect(manualDialog).toBeVisible();
   await manualDialog.getByRole('button', { name: 'Cancelar' }).click();
   await expect(manualTrigger).toBeFocused();

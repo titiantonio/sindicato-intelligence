@@ -11,3 +11,7 @@ docs/Docs_Asistentes/2026_07_20_contrasenas_proyecto_local.md
 
 # Local publication attachments
 backend/data/
+
+# Generated logs and temporary audit artifacts
+*.log
+tmp/

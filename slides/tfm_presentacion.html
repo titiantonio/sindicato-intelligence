@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Presentación TFM de Sindicato Intelligence">
+  <title>Sindicato Intelligence · Presentación TFM</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --canvas: #fbfcfd;
+      --ink: #0a0f18;
+      --muted: #576071;
+      --panel: #eceff2;
+      --rule: #b8c0ca;
+      --accent: #0d766e;
+      --accent-soft: #d9f0eb;
+      --blue: #3d8dff;
+      --blue-soft: #dcebff;
+      --navy: #0b1323;
+      --orange: #c65d32;
+      --orange-soft: #f7e1d7;
+      --good: #12805c;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #111827;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button, a { font: inherit; }
+
+    .deck {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+    }
+
+    .slide {
+      display: none;
+      position: relative;
+      width: min(calc(100vw - 56px), calc((100vh - 56px) * 16 / 9));
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      padding: 4.2% 4.4%;
+      background: var(--canvas);
+      box-shadow: 0 24px 70px rgb(0 0 0 / 0.35);
+    }
+
+    .slide[aria-hidden="false"] { display: block; }
+    .slide--dark { background: var(--navy); color: white; }
+
+    .eyebrow {
+      margin: 0 0 2.3%;
+      color: var(--accent);
+      font-size: clamp(10px, 1.05vw, 17px);
+      font-weight: 800;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    .slide--dark .eyebrow { color: var(--accent-soft); }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      font-size: clamp(42px, 6.4vw, 92px);
+      line-height: 1.03;
+      letter-spacing: -.04em;
+    }
+
+    h2 {
+      margin-bottom: 2.2%;
+      font-size: clamp(25px, 3.4vw, 50px);
+      line-height: 1.08;
+      letter-spacing: -.025em;
+    }
+
+    h3 {
+      margin-bottom: 1.2em;
+      font-size: clamp(16px, 1.75vw, 26px);
+    }
+
+    p, li {
+      font-size: clamp(14px, 1.6vw, 24px);
+      line-height: 1.35;
+    }
+
+    .muted { color: var(--muted); }
+    .accent { color: var(--accent); }
+    .blue { color: var(--blue); }
+    .orange { color: var(--orange); }
+    .good { color: var(--good); }
+    .strong { font-weight: 800; }
+
+    .rule {
+      height: 1px;
+      margin-bottom: 3.7%;
+      background: var(--rule);
+    }
+
+    .slide-number {
+      position: absolute;
+      right: 4.4%;
+      bottom: 3.5%;
+      color: var(--muted);
+      font-size: clamp(9px, .85vw, 13px);
+    }
+
+    .cover {
+      padding-right: 32%;
+    }
+
+    .cover h1 { margin: 8% 0 9%; }
+
+    .cover__rail {
+      position: absolute;
+      inset: 0 0 0 auto;
+      width: 28%;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 5%;
+      background: var(--navy);
+      color: white;
+      text-align: center;
+    }
+
+    .event-orb {
+      width: 42%;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 900;
+      font-size: clamp(16px, 2vw, 30px);
+    }
+
+    .cover__flow { white-space: pre-line; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: .85fr 1.15fr;
+      gap: 5%;
+      align-items: center;
+    }
+
+    .merge {
+      display: grid;
+      grid-template-columns: 1fr auto 1.35fr auto 1fr;
+      gap: 2.2%;
+      align-items: center;
+    }
+
+    .sources {
+      display: grid;
+      gap: 6%;
+    }
+
+    .source {
+      padding: 6% 10%;
+      border-radius: 8px;
+      background: var(--panel);
+      text-align: center;
+      font-size: clamp(10px, 1vw, 16px);
+    }
+
+    .arrow {
+      color: var(--rule);
+      font-size: clamp(24px, 3vw, 44px);
+      font-weight: 900;
+    }
+
+    .arrow--accent { color: var(--accent); }
+
+    .merge-box {
+      padding: 15% 8%;
+      border-radius: 12px;
+      background: var(--orange-soft);
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .merge-event {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .domain-flow {
+      display: grid;
+      grid-template-columns: 1fr .25fr 1.18fr .25fr 1.15fr .25fr 1.15fr .25fr 1.25fr;
+      align-items: center;
+      margin-top: 7%;
+    }
+
+    .domain-node {
+      min-height: 7.8em;
+      display: grid;
+      place-items: center;
+      padding: 10%;
+      border-radius: 10px;
+      background: var(--panel);
+      text-align: center;
+      font-size: clamp(12px, 1.35vw, 20px);
+      font-weight: 900;
+    }
+
+    .domain-node--event {
+      aspect-ratio: 1;
+      min-height: 0;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+    }
+
+    .domain-caption {
+      margin-top: 2.4%;
+      text-align: center;
+      color: var(--muted);
+      font-size: clamp(9px, .9vw, 14px);
+      line-height: 1.25;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: .8fr auto 2fr auto .9fr;
+      gap: 2%;
+      align-items: center;
+    }
+
+    .architecture__side, .architecture__core {
+      min-height: 20em;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      padding: 8%;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .architecture__side:first-child { background: var(--blue-soft); }
+    .architecture__side:last-child { background: var(--accent-soft); }
+    .architecture__core { background: var(--navy); color: white; }
+
+    .screenshot-layout {
+      display: grid;
+      grid-template-columns: .64fr 1.36fr;
+      gap: 4%;
+      align-items: center;
+    }
+
+    .screen {
+      width: 100%;
+      display: block;
+      border: 7px solid var(--navy);
+      border-radius: 14px;
+    }
+
+    .screen-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3%;
+    }
+
+    .screen-pair figure { margin: 0; }
+    figcaption { margin-top: 2%; font-size: clamp(11px, 1vw, 16px); }
+
+    .phases {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5%;
+      margin-top: 3%;
+    }
+
+    .phase {
+      min-height: 19em;
+      padding: 7%;
+      border-radius: 12px;
+      background: var(--panel);
+    }
+
+    .phase:first-child { background: var(--blue-soft); }
+    .phase:last-child { background: var(--accent-soft); }
+    .phase small {
+      display: block;
+      margin-bottom: 2.5em;
+      font-weight: 900;
+    }
+
+    .phase-line {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 3%;
+      border-top: 2px solid var(--rule);
+    }
+
+    .phase-line strong { padding-top: 1.2em; }
+
+    .security {
+      display: grid;
+      grid-template-columns: .82fr 1.18fr;
+      gap: 7%;
+      align-items: center;
+    }
+
+    .security__rule {
+      padding: 7%;
+      border-radius: 12px;
+      background: #151f33;
+      text-align: center;
+    }
+
+    .approval {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 2%;
+      align-items: center;
+      margin: 8% 0;
+    }
+
+    .approval strong { font-size: clamp(10px, 1.15vw, 18px); }
+    .approval__final {
+      padding: 13% 6%;
+      border-radius: 8px;
+      background: var(--accent);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5%;
+      margin-top: 4%;
+    }
+
+    .metric {
+      padding: 9%;
+      border-radius: 12px;
+      background: var(--accent-soft);
+    }
+
+    .metric:nth-child(2) { background: var(--blue-soft); }
+    .metric:nth-child(3) { background: var(--orange-soft); }
+    .metric strong {
+      display: block;
+      margin-bottom: 8%;
+      font-size: clamp(38px, 5.5vw, 82px);
+      line-height: .9;
+    }
+
+    .checks {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4%;
+      margin-top: 5%;
+      color: var(--good);
+      font-weight: 800;
+    }
+
+    .closing h2 {
+      max-width: 85%;
+      margin: 8% 0;
+      font-size: clamp(42px, 6vw, 86px);
+    }
+
+    .closing__line {
+      width: 62%;
+      height: 4px;
+      margin-bottom: 4%;
+      background: var(--accent);
+    }
+
+    .closing__badge {
+      position: absolute;
+      right: 4.4%;
+      bottom: 14%;
+      width: 23%;
+      padding: 3%;
+      border-radius: 12px;
+      background: var(--navy);
+      color: white;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .controls {
+      position: fixed;
+      right: 24px;
+      bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .controls button {
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgb(255 255 255 / .32);
+      border-radius: 50%;
+      background: rgb(11 19 35 / .88);
+      color: white;
+      cursor: pointer;
+    }
+
+    .counter {
+      min-width: 74px;
+      color: white;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .help {
+      position: fixed;
+      left: 24px;
+      bottom: 22px;
+      color: rgb(255 255 255 / .72);
+      font-size: 13px;
+    }
+
+    @media (max-width: 760px) {
+      .deck { padding: 8px; }
+      .slide { width: min(calc(100vw - 16px), calc((100vh - 16px) * 16 / 9)); }
+      .controls { right: 10px; bottom: 8px; }
+      .help { display: none; }
+    }
+
+    @media print {
+      html, body { height: auto; overflow: visible; background: white; }
+      .deck { display: block; padding: 0; }
+      .slide {
+        display: block !important;
+        width: 100%;
+        page-break-after: always;
+        box-shadow: none;
+      }
+      .controls, .help { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-live="polite">
+    <section class="slide cover" aria-hidden="false" data-title="Portada">
+      <p class="eyebrow">TFM · Inteligencia aplicada</p>
+      <h1>Sindicato<br>Intelligence</h1>
+      <p class="muted">La noticia es materia prima.<br>El evento es la unidad de decisión.</p>
+      <aside class="cover__rail" aria-label="Flujo de dominio">
+        <div class="event-orb">EVENT</div>
+        <p class="cover__flow">News
+↓
+Analysis
+↓
+Content
+↓
+Publication</p>
+      </aside>
+    </section>
+
+    <section class="slide" aria-hidden="true" data-title="Problema">
+      <p class="eyebrow">El problema</p>
+      <h2>Muchos medios pueden contar un solo hecho</h2>
+      <div class="rule"></div>
+      <div class="two-col">
+        <div>
+          <h3>Seguimiento manual</h3>
+          <p class="muted">Revisar RSS, detectar duplicados, clasificar y redactar consume tiempo y fragmenta la visión del asunto.</p>
+          <p class="orange strong">La consecuencia</p>
+          <p>5 noticias similares pueden acabar en 5 decisiones y 5 publicaciones.</p>
+        </div>
+        <div>
+          <div class="merge">
+            <div class="sources">
+              <div class="source">Medio 1</div><div class="source">Medio 2</div>
+              <div class="source">Medio 3</div><div class="source">Medio 4</div>
+              <div class="source">Medio 5</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="merge-box">Duplicados<br>+ contexto<br>disperso</div>
+            <div class="arrow arrow--accent">→</div>
+            <div class="merge-event">1<br>EVENTO</div>
+          </div>
+          <p class="accent strong" style="text-align:right">La plataforma consolida antes de decidir.</p>
+        </div>
+      </div>
+      <span class="slide-number">02</span>
+    </section>
+
+    <section class="slide" aria-hidden="true" data-title="Dominio">
+      <p class="eyebrow">Modelo de dominio</p>
+      <h2>El flujo transforma noticias en decisiones publicables</h2>
+      <div class="rule"></div>
+      <div class="domain-flow">
+        <div><div class="domain-node">NEWS</div><div class="domain-caption">Materia prima<br>capturada</div></div>
+        <div class="arrow arrow--accent">→</div>
+        <div><div class="domain-node domain-node--event">EVENT</div><div class="domain-caption">Hecho consolidado<br>aggregate root</div></div>
+        <div class="arrow">→</div>
+        <div><div class="domain-node">ANALYSIS</div><div class="domain-caption">Lectura IA<br>con contexto</div></div>
+        <div class="arrow">→</div>
+        <div><div class="domain-node">CONTENT</div><div class="domain-caption">Borrador sujeto<br>a revisión</div></div>
+        <div class="arrow">→</div>
+        <div><div class="domain-node">PUBLICATION</div><div class="domain-caption">Envío aprobado<br>y trazable</div></div>
+      </div>
+      <p class="accent strong" style="text-align:center;margin-top:5%">La IA propone. El dominio valida. Una persona aprueba.</p>
+      <span class="slide-number">03</span>
+    </section>
+
+    <section class="slide" aria-hidden="true" data-title="Arquitectura">
+      <p class="eyebrow">Arquitectura</p>
+      <h2>Spring Boot concentra el dominio y limita cada integración</h2>
+      <div class="rule"></div>
+      <div class="architecture">
+        <div class="architecture__side"><p class="blue strong">ENTRADA</p><p>Fuentes RSS<br><br>n8n · WF-01<br>Captura XML<br><br>POST /news/bulk</p></div>
+        <div class="arrow">→</div>
+        <div class="architecture__core"><p class="strong">SPRING BOOT · MONOLITO MODULAR</p><p>domain · application · infrastructure · api</p><hr style="width:90%;border-color:#526076"><p>Reglas de negocio<br>Casos de uso<br>JWT y roles<br>IA y validación<br>Automatizaciones<br>Telegram y auditoría</p></div>
+        <div class="arrow">→</div>
+        <div class="architecture__side"><p class="accent strong">SALIDAS</p><p>Angular<br>PostgreSQL<br>Gemini opcional<br>Telegram<br>MailHog</p></div>
+      </div>
+      <p class="accent strong" style="text-align:center;margin-top:3%">DDD · Clean Architecture · PostgreSQL + Flyway</p>
+      <span class="slide-number">04</span>
+    </section>
+
+    <section class="slide" aria-hidden="true" data-title="Dashboard">
+      <p class="eyebrow">Producto operativo</p>
+      <h2>El dashboard convierte datos dispersos en prioridades</h2>
+      <div class="rule"></div>
+      <div class="screenshot-layout">
+        <div>
+          <h3>Una lectura rápida para decidir qué necesita atención hoy.</h3>
+          <p class="muted">• métricas del día<br>• avisos editoriales<br>• eventos críticos<br>• automatizaciones manuales<br>• acceso por rol</p>
+          <p class="accent strong">La UI no decide: expone contexto y acciones de dominio.</p>
+        </div>
+        <img class="screen" src="assets/dashboard.png" alt="Dashboard actual de Sindicato Intelligence">
+      </div>
+      <span class="slide-number">05</span>
+    </section>
+
+    <section class="slide" aria-hidden="true" data-title="Backoffice">
+      <p class="eyebrow">Backoffice</p>
+      <h2>Eventos y configuración cubren decisión y operación</h2>
+      <div class="rule"></div>
+      <div class="screen-pair">
+        <figure>
+          <img class="screen" src="assets/events.png" alt="Listado actual de eventos">
+          <figcaption><strong class="accent">EVENTOS</strong><br>Filtros, impacto, noticias vinculadas y estado editorial.</figcaption>
+        </figure>
+        <figure>
+          <img class="screen" src="assets/settings.png" alt="Pantalla actual de métricas IA">
+          <figcaption><strong class="blue">SETTINGS</strong><br>Métricas IA, prompts, automatizaciones y Telegram.</figcaption>
+        </figure>
+      </div>
+      <span class="slide-number">06</span>
+    </section>
+
+    <section class="slide" aria-hidden="true" data-title="IA">
+      <p class="eyebrow">Automatización e IA</p>
+      <h2>La IA acelera el flujo sin sustituir la revisión</h2>
+      <div class="phases">
+        <article class="phase"><small class="blue">01 · CAPTURA</small><p>n8n · WF-01</p><p>RSS/XML<br>Normalización<br>Alta masiva</p></article>
+        <article class="phase"><small>02 · INTELIGENCIA</small><p>Spring · WF-02 a WF-04</p><p>Clasificar<br>Agrupar eventos<br>Analizar</p></article>
+        <article class="phase"><small class="accent">03 · DECISIÓN</small><p>Spring · WF-05/06</p><p>Generar<br>Revisar y aprobar<br>Publicar</p></article>
+      </div>
+      <div class="phase-line"><strong>● Entrada externa</strong><strong>● Reglas + validación</strong><strong>● Control humano</strong></div>
+      <p class="muted" style="text-align:center;margin-top:3%">Prompts versionados · respuesta JSON validada · métricas por operación</p>
+      <span class="slide-number">07</span>
+    </section>
+
+    <section class="slide slide--dark" aria-hidden="true" data-title="Seguridad">
+      <p class="eyebrow">Seguridad y gobierno</p>
+      <h2>Automatizar no significa perder el control</h2>
+      <div class="rule" style="background:#41506a"></div>
+      <div class="security">
+        <div>
+          <h3 style="color:var(--accent-soft)">CONTROLES TÉCNICOS</h3>
+          <p>JWT de 15 min<br>Refresh de 7 días<br>Roles ADMIN / EDITOR<br>Rate limiting de autenticación<br>Secretos fuera de Git<br>Auditoría de acciones</p>
+        </div>
+        <div class="security__rule">
+          <h3 style="color:var(--orange-soft)">REGLA EDITORIAL</h3>
+          <div class="approval"><strong>GENERATED</strong><span class="arrow">→</span><strong>REVIEW</strong><span class="arrow arrow--accent">→</span><strong class="approval__final">APPROVED</strong></div>
+          <h3 style="color:var(--accent-soft)">Solo después puede publicarse</h3>
+          <p>La IA nunca aprueba ni publica por sí sola.</p>
+        </div>
+      </div>
+      <span class="slide-number" style="color:var(--rule)">08</span>
+    </section>
+
+    <section class="slide" aria-hidden="true" data-title="Calidad">
+      <p class="eyebrow">Calidad</p>
+      <h2>La entrega se apoya en evidencia reproducible</h2>
+      <div class="rule"></div>
+      <p class="muted">Baterías automatizadas + build + validadores + Docker.</p>
+      <div class="metrics">
+        <div class="metric"><strong class="accent">347</strong><h3>pruebas backend</h3></div>
+        <div class="metric"><strong class="blue">163</strong><h3>pruebas frontend</h3></div>
+        <div class="metric"><strong class="orange">16</strong><h3>pruebas E2E mock</h3></div>
+      </div>
+      <div class="checks"><span>✓ Angular production build</span><span>✓ 0 vulnerabilidades de producción</span><span>✓ Compose, PowerShell y WF-01</span></div>
+      <p style="text-align:center;margin-top:4%"><strong>.\tfm-start.ps1</strong> &nbsp;→&nbsp; <strong>.\tfm-check.ps1</strong></p>
+      <span class="slide-number">09</span>
+    </section>
+
+    <section class="slide closing" aria-hidden="true" data-title="Conclusión">
+      <p class="eyebrow">Conclusión</p>
+      <h2>Automatizar lo repetitivo.<br>Mantener humana la decisión.</h2>
+      <div class="closing__line"></div>
+      <p class="muted" style="max-width:68%">Sindicato Intelligence convierte noticias dispersas en eventos trazables, análisis consolidados y contenido listo para revisión.</p>
+      <div class="closing__badge">MVP ejecutable<br>Docker · API · Backoffice<br>IA · Telegram · Auditoría</div>
+      <p class="accent" style="position:absolute;left:4.4%;bottom:5%">github.com/titiantonio/sindicato-intelligence</p>
+    </section>
+  </main>
+
+  <div class="help">← → navegar · F pantalla completa</div>
+  <nav class="controls" aria-label="Navegación de la presentación">
+    <button type="button" id="previous" aria-label="Slide anterior">←</button>
+    <output class="counter" id="counter" aria-live="polite">1 / 10</output>
+    <button type="button" id="next" aria-label="Slide siguiente">→</button>
+  </nav>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    const counter = document.getElementById('counter');
+    let current = Math.max(0, Math.min(slides.length - 1, Number(location.hash.slice(1) || 1) - 1));
+
+    function show(index) {
+      current = (index + slides.length) % slides.length;
+      slides.forEach((slide, position) => slide.setAttribute('aria-hidden', String(position !== current)));
+      counter.value = `${current + 1} / ${slides.length}`;
+      document.title = `${slides[current].dataset.title} · Sindicato Intelligence`;
+      history.replaceState(null, '', `#${current + 1}`);
+    }
+
+    document.getElementById('previous').addEventListener('click', () => show(current - 1));
+    document.getElementById('next').addEventListener('click', () => show(current + 1));
+    addEventListener('keydown', (event) => {
+      if (['ArrowRight', 'PageDown', ' '].includes(event.key)) { event.preventDefault(); show(current + 1); }
+      if (['ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); show(current - 1); }
+      if (event.key === 'Home') show(0);
+      if (event.key === 'End') show(slides.length - 1);
+      if (event.key.toLowerCase() === 'f' && document.fullscreenEnabled) document.documentElement.requestFullscreen();
+    });
+    addEventListener('hashchange', () => show(Number(location.hash.slice(1) || 1) - 1));
+    show(current);
+  </script>
+</body>
+</html>
