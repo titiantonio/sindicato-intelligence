@@ -54,7 +54,7 @@ Estado verificado el 26/07/2026 mediante GitHub y acceso HTTP sin sesión.
   `https://github.com/titiantonio/sindicato-intelligence`.
 - [x] Publicar el commit con los materiales de entrega.
 - [ ] Publicar la actualización documental de enlaces.
-- [ ] Activar el secret scanning disponible para el repositorio.
+- [x] `Secret Protection` y `Push protection` activados en GitHub.
 - [x] Confirmar que README, código y slides son visibles.
 
 ## 5. Obtener una URL pública para las slides

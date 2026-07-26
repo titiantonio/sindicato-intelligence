@@ -191,8 +191,9 @@ académica o de código abierto.
 ## 7. Seguridad antes de publicar los cambios finales
 
 1. ejecutar un escaneo final de secretos en archivos rastreados;
-2. mantener activo el secret scanning de GitHub como complemento al escaneo
-   dirigido ya realizado sobre el historial de `main`;
+2. mantener activos `Secret Protection` y `Push protection`, habilitados en
+   GitHub el 26/07/2026, como complemento al escaneo dirigido ya realizado
+   sobre el historial de `main`;
 3. confirmar que `.env` no está rastreado;
 4. mantener solo credenciales claramente identificadas como demostración;
 5. comprobar que screenshots y vídeos no muestran tokens;

@@ -46,6 +46,8 @@ Módulos principales: `source`, `news`, `classification`, `event`, `analysis`,
 - Sprint 15 de preparación de entrega TFM en curso.
 - Versiones actuales: backend `0.0.120-SNAPSHOT` y frontend `0.0.48`.
 - Repositorio público verificado el 26/07/2026.
+- `Secret Protection` y `Push protection` activos en GitHub desde el
+  26/07/2026.
 - Fecha límite efectiva confirmada por el autor: 24/08/2026.
 - Slides publicadas y verificadas en GitHub Pages el 26/07/2026:
   `https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html`.

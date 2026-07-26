@@ -4161,6 +4161,7 @@ Verificacion:
 - [x] Confirmados y subidos los cambios de preparación en el commit `00e6fd4`.
 - [x] Slides publicadas y verificadas mediante GitHub Pages:
   `https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html`.
+- [x] `Secret Protection` y `Push protection` activados en GitHub.
 - [ ] Grabar el vídeo de 5 a 10 minutos con voz y captura de pantalla.
 - [ ] Publicar el vídeo y registrar su URL pública.
 - [ ] Decidir si se ofrece despliegue público y, si existe, verificar su URL.

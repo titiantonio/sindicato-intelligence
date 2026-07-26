@@ -80,6 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Entrega TFM: actualizados README, guion, informe, checklist y backlog con la
   URL pública verificada de las slides en GitHub Pages.
+- Entrega TFM: registrado el estado activo de `Secret Protection` y
+  `Push protection` en la checklist, el informe y el backlog.
 - Documentación TFM: actualizado el README, la guía de ejecución, el manual
   operativo y los Documentos 12, 13, 14, 15, 30 y 31 al estado verificable del
   proyecto.

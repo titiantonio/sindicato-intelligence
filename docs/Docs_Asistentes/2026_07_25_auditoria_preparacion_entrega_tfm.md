@@ -120,7 +120,8 @@ El stack Docker se detuvo de forma controlada después del smoke.
 - Confirmar y subir al repositorio público los cambios locales de entrega.
 - Publicar y verificar la URL de las slides.
 - Grabar, publicar y enlazar el vídeo.
-- Activar el secret scanning de GitHub como control continuo.
+- Mantener activos `Secret Protection` y `Push protection` en GitHub como
+  controles continuos.
 - Añadir las URL finales al README y enviar el formulario.
 
 ## Resultado
