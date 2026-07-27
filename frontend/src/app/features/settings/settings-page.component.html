@@ -689,8 +689,8 @@
           </ng-template>
           <dl class="workflow-status">
             <div>
-              <dt>Operacion</dt>
-              <dd>{{ errorMetric.operationType }}</dd>
+              <dt>Operación</dt>
+              <dd>{{ operationTypeLabel(errorMetric) }}</dd>
             </div>
             <div>
               <dt>Workflow</dt>
@@ -730,7 +730,7 @@
       >
           <ng-template pTemplate="header">
             <div>
-              <span>Operacion IA</span>
+              <span>Operación IA</span>
               <h2 id="metric-detail-title">{{ metricDetailTitle(detailMetric) }}</h2>
             </div>
           </ng-template>
@@ -761,7 +761,7 @@
             </div>
             <div>
               <dt>Entidad</dt>
-              <dd>{{ detailMetric.relatedEntityType || '-' }} {{ detailMetric.relatedEntityId ?? '' }}</dd>
+              <dd>{{ relatedEntityLabel(detailMetric) }} {{ detailMetric.relatedEntityId ?? '' }}</dd>
             </div>
             <div>
               <dt>Latencia</dt>

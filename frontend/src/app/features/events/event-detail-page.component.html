@@ -17,7 +17,12 @@
     <div>
       <span class="page-header__eyebrow">Evento #{{ item.id }}</span>
       <h1>{{ item.title }}</h1>
-      <p>{{ item.description || 'Sin descripcion registrada.' }}</p>
+      <app-expandable-text
+        class="event-description"
+        [text]="item.description || 'Sin descripción registrada.'"
+        [maxLines]="4"
+        [label]="'descripción del evento #' + item.id"
+      />
     </div>
 
     <div class="event-status">
@@ -196,7 +201,12 @@
           <span>#{{ content.id }} · {{ content.channel }} · {{ content.tone }} · {{ content.contentType }} · {{ content.length }}</span>
           <h3><a [routerLink]="['/content', content.id]">{{ content.title }}</a></h3>
           <p>Analisis: {{ content.analysisId ? '#' + content.analysisId : 'No registrado' }}</p>
-          <p>{{ content.content }}</p>
+          <app-expandable-text
+            class="generated-content-preview"
+            [text]="content.content"
+            [maxLines]="4"
+            [label]="'contenido generado #' + content.id"
+          />
           <app-status-badge [value]="content.status" />
         </article>
       } @empty {

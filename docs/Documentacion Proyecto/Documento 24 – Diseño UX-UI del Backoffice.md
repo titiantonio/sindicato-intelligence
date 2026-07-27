@@ -866,3 +866,20 @@ La modernizacion visual adopta PrimeNG + Tailwind como base de interfaz sin camb
 - El modo claro/oscuro se mantiene como requisito transversal.
 - La interfaz debe ser responsive para movil, tablet, laptop, desktop y ultrawide, evitando scroll horizontal salvo tablas complejas justificadas.
 - La accesibilidad objetivo es WCAG 2.2 AA en navegacion por teclado, foco visible, contraste, formularios, tablas y dialogos.
+
+---
+
+# Actualización 2026-07-27 - Rotulación de detalles operativos
+
+Los diálogos de detalle de operaciones y errores de `/settings` deben presentar
+en español las claves técnicas recibidas desde `operationDetails`.
+
+Reglas UX aplicables:
+
+- Las claves conocidas de `WF-02` a `WF-06` tienen una etiqueta funcional
+  explícita.
+- Ninguna clave futura en `camelCase`, `snake_case` o `kebab-case` se muestra
+  como una palabra técnica concatenada.
+- Los valores booleanos se presentan como `Sí` o `No`.
+- Los tipos de operación y entidad se muestran con su denominación legible sin
+  modificar el contrato JSON de la API.

@@ -28,6 +28,24 @@ test('permite explorar, ordenar y limpiar eventos con nombres accesibles', async
   await expect(page.locator('th[aria-sort="ascending"]')).toContainText('Título');
 });
 
+test('resume eventos extensos y decodifica sus entidades HTML', async ({ page }) => {
+  await page.goto('/events/166');
+
+  await expect(page.getByRole('heading', { name: '"Ahora o nunca": movilización educativa andaluza' })).toBeVisible();
+  await expect(page.locator('main')).toContainText('La educación pública andaluza');
+  await expect(page.locator('main')).not.toContainText('&oacute;');
+
+  const expandButton = page.getByRole('button', { name: 'Mostrar más: descripción del evento #166' });
+  await expect(expandButton).toBeVisible();
+  await expect(expandButton).toHaveAttribute('aria-expanded', 'false');
+  await expandButton.click();
+
+  const collapseButton = page.getByRole('button', { name: 'Mostrar menos: descripción del evento #166' });
+  await expect(collapseButton).toHaveAttribute('aria-expanded', 'true');
+  await collapseButton.click();
+  await expect(expandButton).toHaveAttribute('aria-expanded', 'false');
+});
+
 test('mantiene la fusion operable por teclado y confirma en un dialogo accesible', async ({ page }) => {
   await page.getByText('Fusionar eventos duplicados', { exact: true }).click();
 

@@ -10,6 +10,7 @@ import { SelectModule } from 'primeng/select';
 
 import { EventListItem } from '../../core/models/event.models';
 import { EventService } from '../../core/services/event.service';
+import { ExpandableTextComponent } from '../../shared/components/expandable-text/expandable-text.component';
 import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
@@ -22,7 +23,7 @@ type PendingConfirmation =
 
 @Component({
   selector: 'app-events-page',
-  imports: [ButtonModule, DialogModule, FormsModule, InputTextModule, MessageModule, RouterLink, SelectModule, StandardTableComponent, StatusBadgeComponent],
+  imports: [ButtonModule, DialogModule, ExpandableTextComponent, FormsModule, InputTextModule, MessageModule, RouterLink, SelectModule, StandardTableComponent, StatusBadgeComponent],
   templateUrl: './events-page.component.html',
   styleUrls: [
     './events-page.component.scss',

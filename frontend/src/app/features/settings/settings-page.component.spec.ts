@@ -388,14 +388,109 @@ describe('SettingsPageComponent', () => {
 
     component.openMetricDetail(failedMetric);
     fixture.detectChanges();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Detalle de publicacion Telegram');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Detalle de publicación Telegram');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Abrir evento relacionado');
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Publicacion');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Publicación');
 
     component.closeMetricDetail();
     component.openMetricError(new Event('click'), failedMetric);
     fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Publicación en Telegram');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Telegram publication failed');
+  });
+
+  it('renders readable labels for every operative detail emitted by the workflows', () => {
+    const component = fixture.componentInstance as any;
+    const detailKeys = [
+      'newsTitle',
+      'prioritySignals',
+      'urlEnriched',
+      'reducedContextRetry',
+      'fallbackUsed',
+      'recoveryReason',
+      'providerResponseWithoutText',
+      'educationScopeSignals',
+      'category',
+      'subcategory',
+      'relevance',
+      'impact',
+      'urgency',
+      'keywords',
+      'entities',
+      'aiSummary',
+      'classificationReason',
+      'finalNewsStatus',
+      'discardReason',
+      'candidateCount',
+      'candidateEventIds',
+      'initialAiSuggestedEventId',
+      'initialConfidence',
+      'confidence',
+      'automaticMatchThreshold',
+      'reviewRecommendedThreshold',
+      'decision',
+      'matchDecision',
+      'secondVerification',
+      'finalEventId',
+      'eventStatus',
+      'reason',
+      'newsCount',
+      'analysisId',
+      'analysisType',
+      'generationTrigger',
+      'eventUpdatedAtSnapshot',
+      'contextNewsCount',
+      'contextTruncated',
+      'executiveSummary',
+      'unionSummary',
+      'keyPoints',
+      'risks',
+      'opportunities',
+      'affectedGroups',
+      'recommendedMonitoring',
+      'contentId',
+      'channel',
+      'tone',
+      'contentType',
+      'length',
+      'title',
+      'excerpt',
+      'hashtags',
+      'relevantLinks',
+      'editorialStatus',
+      'publicationId',
+      'publicationStatus',
+      'triggerType',
+      'externalId',
+      'scheduledAt',
+      'publishedAt',
+      'auditDetail',
+      'error',
+      'futureDiagnosticFlag'
+    ];
+    const metric = {
+      ...operations()[0],
+      details: Object.fromEntries(detailKeys.map((key) => [
+        key,
+        key === 'candidateEventIds' ? [12, 34] : key === 'reducedContextRetry' ? true : 'valor'
+      ]))
+    };
+
+    const entries = component.operationDetailEntries(metric) as { label: string; value: string }[];
+    const labelsByKey = Object.fromEntries(
+      detailKeys.map((key, index) => [key, entries[index]?.label])
+    );
+
+    expect(entries.length).toBe(detailKeys.length);
+    expect(labelsByKey['candidateEventIds']).toBe('IDs de eventos candidatos');
+    expect(labelsByKey['reducedContextRetry']).toBe('Reintento con contexto reducido');
+    expect(labelsByKey['analysisType']).toBe('Tipo de análisis');
+    expect(labelsByKey['relevantLinks']).toBe('Enlaces relevantes');
+    expect(labelsByKey['auditDetail']).toBe('Detalle de auditoría');
+    expect(labelsByKey['futureDiagnosticFlag']).toBe('Future diagnostic flag');
+    expect(entries.find((entry) => entry.label === 'Reintento con contexto reducido')?.value).toBe('Sí');
+    expect(entries.some((entry) => detailKeys.includes(entry.label))).toBeFalse();
+    expect(entries.some((entry) => /[a-záéíóúñ][A-ZÁÉÍÓÚÑ]/.test(entry.label))).toBeFalse();
   });
 
   function setting(): AutomationWorkflowSetting {

@@ -4142,6 +4142,73 @@ Verificacion:
 
 ---
 
+## 19.63 Resumen expandible y decodificacion HTML en eventos - 2026-07-27
+
+Tarea de mantenimiento correctivo posterior al Sprint 14 sobre Fase 11,
+correspondiente a T11.5/T11.6, listado y detalle de eventos del backoffice
+Angular.
+
+Completado en esta iteracion:
+- [x] Las descripciones extensas se limitan inicialmente a dos lineas en el
+  listado y cuatro lineas en el detalle del evento.
+- [x] Anadido control accesible `Mostrar mas/menos`, visible solo cuando el
+  texto desborda el numero de lineas configurado.
+- [x] Aplicada la misma previsualizacion de cuatro lineas a los contenidos
+  generados dentro del detalle del evento.
+- [x] Decodificadas de forma segura las entidades HTML de eventos, noticias,
+  analisis y contenidos relacionados sin renderizar HTML en la vista.
+- [x] Anadidas regresiones Angular y Playwright para el caso largo y codificado
+  del evento 166.
+- [x] Frontend version subido a `0.0.50`.
+
+Verificacion:
+- Frontend focal eventos: `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/shared/components/expandable-text/expandable-text.component.spec.ts --include=src/app/core/services/event.service.spec.ts --include=src/app/features/events/events-page.component.spec.ts --include=src/app/features/events/event-detail-page.component.spec.ts` OK, 19 tests.
+- Frontend completo: `npm.cmd test -- --watch=false --browsers=ChromeHeadless`
+  OK, 168 tests.
+- Frontend build: `npm.cmd run build` OK.
+- Playwright focal eventos:
+  `npx.cmd playwright test e2e/events-pilot.mock.spec.ts --reporter=list` OK,
+  5 tests.
+- Verificacion visual real en `/events/166`: previsualizacion reducida de
+  1408 px a 102 px, expansion/contraccion operativa y ausencia de
+  `&oacute;` en el texto visible.
+
+---
+
+## 19.64 Rotulación legible de diálogos de detalle en settings - 2026-07-27
+
+Tarea de mantenimiento correctivo posterior a los Sprints 12 y 14 sobre Fases
+11/12, correspondiente a T12.24/T12.35 y T14.6/T14.7, observabilidad IA,
+configuración ADMIN y revisión transversal de diálogos.
+
+Completado en esta iteración:
+
+- [x] Auditadas las claves de detalle emitidas por `WF-02` a `WF-06`.
+- [x] Añadidas etiquetas funcionales en español para las 64 claves visibles y
+  conservadas ocultas las 15 claves internas existentes.
+- [x] Corregidas expresamente `candidateEventIds`, `reducedContextRetry` y el
+  resto de claves técnicas que se mostraban sin espacios.
+- [x] Añadido un fallback que separa automáticamente futuras claves
+  `camelCase`, `snake_case` o `kebab-case`.
+- [x] Presentados los booleanos como `Sí/No` y traducidos los tipos de
+  operación y entidad en los diálogos de detalle y error.
+- [x] Añadida prueba de regresión Angular para todas las claves visibles
+  actuales y para una clave futura desconocida.
+- [x] Versión del frontend subida a `0.0.51`.
+
+Verificación:
+
+- Cruce backend/frontend: 79 claves únicas, 64 visibles etiquetadas, 15
+  internas ocultas y 0 claves visibles sin etiqueta.
+- Frontend focal settings:
+  `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts`
+  OK, 19 tests.
+- Frontend completo:
+  `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 169 tests.
+- Frontend build: `npm.cmd run build` OK. Bundle inicial: `542.80 kB`.
+
+---
+
 # 20. [ ] Sprint 15 - Preparación de entrega TFM
 
 **Fecha:** 25/07/2026

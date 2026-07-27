@@ -391,7 +391,17 @@ function newsDetailResponse(newsId: number) {
 }
 
 function eventDetailResponse(eventId: number, state: MockApiState) {
-  const baseEvent = eventsResponse(state).find((event) => event.id === eventId) ?? eventsResponse(state)[0];
+  const baseEvent = eventId === 166
+    ? {
+        ...eventsResponse(state)[0],
+        id: 166,
+        title: '"Ahora o nunca": movilización educativa andaluza',
+        description: (
+          'La educaci&oacute;n p&uacute;blica andaluza prepara una movilizaci&oacute;n com&uacute;n. '
+          + 'Sindicatos, familias y estudiantes coordinan un calendario de seguimiento para el pr&oacute;ximo curso. '
+        ).repeat(16)
+      }
+    : eventsResponse(state).find((event) => event.id === eventId) ?? eventsResponse(state)[0];
   return {
     ...baseEvent,
     createdAt: now,

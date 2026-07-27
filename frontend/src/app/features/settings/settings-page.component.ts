@@ -27,6 +27,91 @@ type PendingSecretDeletion =
   | { type: 'ai-api-key'; provider: AiProviderSetting; title: string; message: string; confirmLabel: string }
   | { type: 'telegram-bot-token'; title: string; message: string; confirmLabel: string };
 
+const OPERATION_DETAIL_LABELS: Readonly<Record<string, string>> = {
+  newsTitle: 'Noticia',
+  prioritySignals: 'Señales prioritarias',
+  urlEnriched: 'URL enriquecida',
+  reducedContextRetry: 'Reintento con contexto reducido',
+  fallbackUsed: 'Recuperación alternativa utilizada',
+  recoveryReason: 'Motivo de recuperación',
+  providerResponseWithoutText: 'Respuesta del proveedor sin texto',
+  educationScopeSignals: 'Señales de ámbito educativo',
+  category: 'Categoría',
+  subcategory: 'Subcategoría',
+  relevance: 'Relevancia',
+  impact: 'Impacto',
+  urgency: 'Urgencia',
+  keywords: 'Palabras clave',
+  entities: 'Entidades',
+  aiSummary: 'Resumen IA',
+  classificationReason: 'Motivo de clasificación',
+  finalNewsStatus: 'Estado de la noticia',
+  discardReason: 'Motivo del descarte',
+  candidateCount: 'Eventos candidatos',
+  candidateEventIds: 'IDs de eventos candidatos',
+  initialAiSuggestedEventId: 'Evento sugerido inicialmente por IA',
+  initialConfidence: 'Confianza inicial',
+  confidence: 'Confianza final',
+  automaticMatchThreshold: 'Umbral de matching automático',
+  reviewRecommendedThreshold: 'Umbral de revisión recomendado',
+  decision: 'Decisión',
+  matchDecision: 'Decisión de matching',
+  secondVerification: 'Segunda verificación',
+  finalEventId: 'Evento final',
+  eventStatus: 'Estado del evento',
+  reason: 'Motivo de la IA',
+  newsCount: 'Noticias analizadas',
+  analysisId: 'Análisis',
+  analysisType: 'Tipo de análisis',
+  generationTrigger: 'Origen de la generación',
+  eventUpdatedAtSnapshot: 'Actualización del evento utilizada',
+  contextNewsCount: 'Noticias usadas como contexto',
+  contextTruncated: 'Contexto recortado',
+  executiveSummary: 'Resumen ejecutivo',
+  unionSummary: 'Resumen sindical',
+  keyPoints: 'Puntos clave',
+  risks: 'Riesgos',
+  opportunities: 'Oportunidades',
+  affectedGroups: 'Colectivos afectados',
+  recommendedMonitoring: 'Seguimiento recomendado',
+  contentId: 'Contenido',
+  channel: 'Canal',
+  tone: 'Tono',
+  contentType: 'Tipo de contenido',
+  length: 'Longitud',
+  title: 'Título',
+  excerpt: 'Extracto',
+  hashtags: 'Hashtags',
+  relevantLinks: 'Enlaces relevantes',
+  editorialStatus: 'Estado editorial',
+  publicationId: 'Publicación',
+  publicationStatus: 'Estado de la publicación',
+  triggerType: 'Tipo de ejecución',
+  externalId: 'ID de mensaje externo',
+  scheduledAt: 'Programada',
+  publishedAt: 'Publicada',
+  auditDetail: 'Detalle de auditoría',
+  error: 'Error'
+};
+
+const HIDDEN_OPERATION_DETAIL_KEYS = new Set([
+  'workflowCode',
+  'newsId',
+  'eventId',
+  'createdBy',
+  'auditAction',
+  'discarded',
+  'aiMatch',
+  'aiSuggestedEventId',
+  'created',
+  'matched',
+  'eventTitle',
+  'eventCategory',
+  'eventImportance',
+  'modelUsed',
+  'contentTitle'
+]);
+
 interface AutomationSettingForm {
   enabled: boolean;
   intervalMinutes: number;
@@ -851,13 +936,34 @@ export class SettingsPageComponent implements OnInit {
 
   protected metricDetailTitle(metric: WorkflowOperation): string {
     const labels: Record<string, string> = {
-      CLASSIFICATION: 'Detalle de clasificacion IA',
+      CLASSIFICATION: 'Detalle de clasificación IA',
       EVENT_MATCHING: 'Detalle de matching de evento',
-      ANALYSIS: 'Detalle de analisis IA',
-      CONTENT_GENERATION: 'Detalle de generacion de contenido',
-      TELEGRAM_PUBLICATION: 'Detalle de publicacion Telegram'
+      ANALYSIS: 'Detalle de análisis IA',
+      CONTENT_GENERATION: 'Detalle de generación de contenido',
+      TELEGRAM_PUBLICATION: 'Detalle de publicación Telegram'
     };
-    return labels[metric.operationType] ?? 'Detalle de operacion IA';
+    return labels[metric.operationType] ?? 'Detalle de operación IA';
+  }
+
+  protected operationTypeLabel(operation: WorkflowOperation): string {
+    const labels: Record<string, string> = {
+      CLASSIFICATION: 'Clasificación IA',
+      EVENT_MATCHING: 'Matching de evento',
+      ANALYSIS: 'Análisis IA',
+      CONTENT_GENERATION: 'Generación de contenido',
+      TELEGRAM_PUBLICATION: 'Publicación en Telegram'
+    };
+    return labels[operation.operationType] ?? this.humanizeDetailKey(operation.operationType);
+  }
+
+  protected relatedEntityLabel(operation: WorkflowOperation): string {
+    const labels: Record<string, string> = {
+      NEWS: 'Noticia',
+      EVENT: 'Evento',
+      CONTENT: 'Contenido',
+      PUBLICATION: 'Publicación'
+    };
+    return labels[operation.relatedEntityType ?? ''] ?? operation.relatedEntityType ?? '-';
   }
 
   protected entityDetailLink(metric: WorkflowOperation): string[] | null {
@@ -883,52 +989,12 @@ export class SettingsPageComponent implements OnInit {
   }
 
   protected operationDetailEntries(operation: WorkflowOperation): { label: string; value: string }[] {
-    const labels: Record<string, string> = {
-      newsTitle: 'Noticia',
-      category: 'Categoria',
-      subcategory: 'Subcategoria',
-      relevance: 'Relevancia',
-      impact: 'Impacto',
-      urgency: 'Urgencia',
-      keywords: 'Keywords',
-      entities: 'Entidades',
-      aiSummary: 'Resumen IA',
-      finalNewsStatus: 'Estado noticia',
-      discardReason: 'Motivo descarte',
-      candidateCount: 'Eventos candidatos',
-      confidence: 'Confianza',
-      automaticMatchThreshold: 'Umbral automatico',
-      decision: 'Decision',
-      finalEventId: 'Evento final',
-      reason: 'Razon IA',
-      newsCount: 'Noticias analizadas',
-      analysisId: 'Analisis',
-      executiveSummary: 'Resumen ejecutivo',
-      unionSummary: 'Resumen sindical',
-      keyPoints: 'Puntos clave',
-      risks: 'Riesgos',
-      opportunities: 'Oportunidades',
-      contentId: 'Contenido',
-      channel: 'Canal',
-      tone: 'Tono',
-      length: 'Longitud',
-      title: 'Titulo',
-      excerpt: 'Extracto',
-      hashtags: 'Hashtags',
-      editorialStatus: 'Estado editorial',
-      publicationId: 'Publicacion',
-      publicationStatus: 'Estado publicacion',
-      triggerType: 'Tipo',
-      externalId: 'Mensaje externo',
-      scheduledAt: 'Programada',
-      publishedAt: 'Publicada',
-      auditDetail: 'Detalle auditoria',
-      error: 'Error'
-    };
-    const hiddenKeys = new Set(['workflowCode', 'newsId', 'eventId', 'createdBy', 'auditAction', 'discarded', 'aiMatch', 'aiSuggestedEventId', 'created', 'matched', 'eventTitle', 'eventCategory', 'eventImportance', 'modelUsed', 'contentTitle']);
     return Object.entries(operation.details ?? {})
-      .filter(([key, value]) => !hiddenKeys.has(key) && value !== null && value !== undefined && this.formatDetailValue(value) !== '')
-      .map(([key, value]) => ({ label: labels[key] ?? key, value: this.formatDetailValue(value) }));
+      .filter(([key, value]) => !HIDDEN_OPERATION_DETAIL_KEYS.has(key) && value !== null && value !== undefined && this.formatDetailValue(value) !== '')
+      .map(([key, value]) => ({
+        label: OPERATION_DETAIL_LABELS[key] ?? this.humanizeDetailKey(key),
+        value: this.formatDetailValue(value)
+      }));
   }
 
   private updateForm(workflowCode: AutomationWorkflowCode, patch: Partial<AutomationSettingForm>): void {
@@ -1165,10 +1231,23 @@ export class SettingsPageComponent implements OnInit {
       }
       return value;
     }
-    if (typeof value === 'number' || typeof value === 'boolean') {
+    if (typeof value === 'boolean') {
+      return value ? 'Sí' : 'No';
+    }
+    if (typeof value === 'number') {
       return value.toString();
     }
     return '';
+  }
+
+  private humanizeDetailKey(key: string): string {
+    const words = key
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+      .replace(/([a-z\d])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ')
+      .trim()
+      .toLocaleLowerCase('es');
+    return words ? `${words.charAt(0).toLocaleUpperCase('es')}${words.slice(1)}` : 'Detalle';
   }
 
   private todayInputValue(): string {
