@@ -4175,6 +4175,40 @@ Verificacion:
 
 ---
 
+## 19.64 Rotulación legible de diálogos de detalle en settings - 2026-07-27
+
+Tarea de mantenimiento correctivo posterior a los Sprints 12 y 14 sobre Fases
+11/12, correspondiente a T12.24/T12.35 y T14.6/T14.7, observabilidad IA,
+configuración ADMIN y revisión transversal de diálogos.
+
+Completado en esta iteración:
+
+- [x] Auditadas las claves de detalle emitidas por `WF-02` a `WF-06`.
+- [x] Añadidas etiquetas funcionales en español para las 64 claves visibles y
+  conservadas ocultas las 15 claves internas existentes.
+- [x] Corregidas expresamente `candidateEventIds`, `reducedContextRetry` y el
+  resto de claves técnicas que se mostraban sin espacios.
+- [x] Añadido un fallback que separa automáticamente futuras claves
+  `camelCase`, `snake_case` o `kebab-case`.
+- [x] Presentados los booleanos como `Sí/No` y traducidos los tipos de
+  operación y entidad en los diálogos de detalle y error.
+- [x] Añadida prueba de regresión Angular para todas las claves visibles
+  actuales y para una clave futura desconocida.
+- [x] Versión del frontend subida a `0.0.51`.
+
+Verificación:
+
+- Cruce backend/frontend: 79 claves únicas, 64 visibles etiquetadas, 15
+  internas ocultas y 0 claves visibles sin etiqueta.
+- Frontend focal settings:
+  `npm.cmd test -- --watch=false --browsers=ChromeHeadless --include=src/app/features/settings/settings-page.component.spec.ts`
+  OK, 19 tests.
+- Frontend completo:
+  `npm.cmd test -- --watch=false --browsers=ChromeHeadless` OK, 169 tests.
+- Frontend build: `npm.cmd run build` OK. Bundle inicial: `542.80 kB`.
+
+---
+
 # 20. [ ] Sprint 15 - Preparación de entrega TFM
 
 **Fecha:** 25/07/2026
