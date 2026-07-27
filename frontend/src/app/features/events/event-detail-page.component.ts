@@ -9,6 +9,7 @@ import { EventAnalysisItem, EventDetail, EventNewsItem } from '../../core/models
 import { AnalysisService } from '../../core/services/analysis.service';
 import { ContentService } from '../../core/services/content.service';
 import { EventService } from '../../core/services/event.service';
+import { ExpandableTextComponent } from '../../shared/components/expandable-text/expandable-text.component';
 import { StandardTableComponent } from '../../shared/components/standard-table/standard-table.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
@@ -17,7 +18,7 @@ type SortDirection = 'asc' | 'desc';
 
 @Component({
   selector: 'app-event-detail-page',
-  imports: [ButtonModule, FormsModule, InputTextModule, MessageModule, RouterLink, StandardTableComponent, StatusBadgeComponent],
+  imports: [ButtonModule, ExpandableTextComponent, FormsModule, InputTextModule, MessageModule, RouterLink, StandardTableComponent, StatusBadgeComponent],
   templateUrl: './event-detail-page.component.html',
   styleUrl: './event-detail-page.component.scss'
 })

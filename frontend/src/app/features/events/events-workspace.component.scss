@@ -102,15 +102,11 @@
   font-size: 0.95rem;
 }
 
-.events-page .event-title-cell > span {
+.events-page .event-title-cell app-expandable-text {
   color: var(--events-muted);
-  display: -webkit-box;
   font-size: 0.8rem;
   line-height: 1.4;
   margin-top: 0.3rem;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
 
 .events-page .category-label {

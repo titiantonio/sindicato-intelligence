@@ -1,0 +1,25 @@
+<div class="expandable-text">
+  <p
+    #contentElement
+    class="expandable-text__content"
+    [class.expandable-text__content--collapsed]="!expanded()"
+    [id]="contentId"
+    [style.--expandable-text-lines]="maxLines()"
+  >
+    {{ text() }}
+  </p>
+
+  @if (hasOverflow()) {
+    <button
+      type="button"
+      class="expandable-text__toggle"
+      [attr.aria-controls]="contentId"
+      [attr.aria-expanded]="expanded()"
+      [attr.aria-label]="(expanded() ? 'Mostrar menos: ' : 'Mostrar más: ') + label()"
+      (click)="toggle()"
+    >
+      {{ expanded() ? 'Mostrar menos' : 'Mostrar más' }}
+      <i [class]="expanded() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" aria-hidden="true"></i>
+    </button>
+  }
+</div>

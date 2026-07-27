@@ -44,7 +44,7 @@ Módulos principales: `source`, `news`, `classification`, `event`, `analysis`,
 - Sprint 13 de calidad E2E implementado con suites mockeadas y opt-in real.
 - Sprint 14 de consolidación visual y accesibilidad completado.
 - Sprint 15 de preparación de entrega TFM en curso.
-- Versiones actuales: backend `0.0.121-SNAPSHOT` y frontend `0.0.49`.
+- Versiones actuales: backend `0.0.121-SNAPSHOT` y frontend `0.0.50`.
 - Repositorio público verificado el 26/07/2026.
 - `Secret Protection` y `Push protection` activos en GitHub desde el
   26/07/2026.

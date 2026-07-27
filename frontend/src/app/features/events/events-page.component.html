@@ -181,7 +181,11 @@
           <td class="event-title-cell">
             <a [routerLink]="['/events', event.id]">{{ event.title }}</a>
             @if (event.description) {
-              <span>{{ event.description }}</span>
+              <app-expandable-text
+                [text]="event.description"
+                [maxLines]="2"
+                [label]="'descripción del evento #' + event.id"
+              />
             }
           </td>
           <td class="table-cell-nowrap"><span class="category-label">{{ event.category }}</span></td>
