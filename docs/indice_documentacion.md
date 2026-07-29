@@ -1,6 +1,6 @@
 # Índice de documentación
 
-**Actualizado:** 25/07/2026  
+**Actualizado:** 29/07/2026
 **Objetivo:** identificar la documentación vigente y evitar que versiones históricas se interpreten como contratos actuales.
 
 ## Punto de entrada
@@ -9,8 +9,9 @@
 2. [`../README.md`](../README.md): descripción, instalación, credenciales de demostración y enlaces de entrega.
 3. [`guia_ejecucion_tfm.md`](guia_ejecucion_tfm.md): recorrido reproducible para evaluación.
 4. [`Documentacion_Final/Manual_Operativo_Usuario.md`](Documentacion_Final/Manual_Operativo_Usuario.md): uso funcional del backoffice.
-5. [`Documentacion_Final/2026_07_25_informe_preparacion_entrega_tfm.md`](Documentacion_Final/2026_07_25_informe_preparacion_entrega_tfm.md): auditoría final y pendientes externos.
-6. [`Documentacion_Final/2026_07_25_guion_video_tfm.md`](Documentacion_Final/2026_07_25_guion_video_tfm.md): guion de demostración de 7–8 minutos.
+5. [`Documentacion_Final/2026_07_25_informe_preparacion_entrega_tfm.md`](Documentacion_Final/2026_07_25_informe_preparacion_entrega_tfm.md): auditoría y cierre final de la entrega.
+6. [`Documentacion_Final/2026_07_25_guion_video_tfm.md`](Documentacion_Final/2026_07_25_guion_video_tfm.md): guion del vídeo adjuntado mediante el formulario.
+7. [`Documentacion_Final/2026_07_26_checklist_cierre_entrega_tfm.md`](Documentacion_Final/2026_07_26_checklist_cierre_entrega_tfm.md): registro final de validación y entrega.
 
 ## Referencias técnicas vigentes
 

@@ -43,7 +43,7 @@ Módulos principales: `source`, `news`, `classification`, `event`, `analysis`,
 - Fases 0 a 12 y Sprints 10 a 12 completados.
 - Sprint 13 de calidad E2E implementado con suites mockeadas y opt-in real.
 - Sprint 14 de consolidación visual y accesibilidad completado.
-- Sprint 15 de preparación de entrega TFM en curso.
+- Sprint 15 de preparación de entrega TFM completado.
 - Versiones actuales: backend `0.0.121-SNAPSHOT` y frontend `0.0.51`.
 - Repositorio público verificado el 26/07/2026.
 - `Secret Protection` y `Push protection` activos en GitHub desde el
@@ -51,8 +51,9 @@ Módulos principales: `source`, `news`, `classification`, `event`, `analysis`,
 - Fecha límite efectiva confirmada por el autor: 24/08/2026.
 - Slides publicadas y verificadas en GitHub Pages el 26/07/2026:
   `https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html`.
-- Pendientes de entrega externos: grabar y publicar el vídeo, registrar su URL
-  definitiva y enviar el formulario.
+- Vídeo adjuntado mediante el formulario oficial de entrega.
+- Enlaces y credenciales de demostración validados antes del envío.
+- TFM entregado mediante el formulario oficial el 29/07/2026.
 - Checklist operativa de cierre disponible en
   `docs/Documentacion_Final/2026_07_26_checklist_cierre_entrega_tfm.md`.
 

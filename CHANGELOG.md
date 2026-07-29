@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Backend/Frontend publicaciones: el detalle de publicaciones generadas resuelve el autor desde el contenido original y recupera los destinos enviados desde el snapshot de Telegram cuando no existen destinos persistidos.
 - Frontend settings: los diálogos de detalle de operaciones y errores muestran etiquetas legibles en español para todas las claves visibles de WF-02 a WF-06; los booleanos se presentan como `Sí/No` y las claves futuras se separan automáticamente.
 - Frontend eventos: las descripciones extensas y los contenidos generados se muestran como previsualizaciones expandibles con `Mostrar más/menos`; las entidades HTML como `Educaci&oacute;n` se decodifican de forma segura antes de mostrarse.
 - Frontend settings: el proveedor IA `Determinista local` queda limitado a activacion o pausa; ya no muestra ni permite guardar/eliminar claves API ni recargar modelos.
@@ -85,6 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Entrega TFM: registrado el cierre formal del proyecto, con el vídeo adjuntado
+  mediante el formulario y los enlaces y credenciales validados.
 - Frontend version: subida la versión del paquete frontend a `0.0.51`.
 - Versionado backend actualizado a `0.0.121-SNAPSHOT`.
 - Entrega TFM: actualizados README, guion, informe, checklist y backlog con la

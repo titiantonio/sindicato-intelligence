@@ -1,5 +1,8 @@
 package es.sindicato.intelligence.publication.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import es.sindicato.intelligence.content.api.GeneratedContentResponse;
 import es.sindicato.intelligence.content.domain.GeneratedContent;
 import es.sindicato.intelligence.event.api.EventDetailResponse;
@@ -25,6 +28,8 @@ import es.sindicato.intelligence.publication.domain.TelegramPublicationSettingsR
 import es.sindicato.intelligence.user.domain.UserAccount;
 import es.sindicato.intelligence.user.domain.UserRepository;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,6 +50,8 @@ import java.util.Map;
 @RequestMapping("/api/v1/publications")
 public class PublicationController {
 
+    private static final Logger log = LoggerFactory.getLogger(PublicationController.class);
+
     private final PublishContentUseCase publishContentUseCase;
     private final ListPublicationsUseCase listPublicationsUseCase;
     private final GetPublicationUseCase getPublicationUseCase;
@@ -56,6 +63,7 @@ public class PublicationController {
     private final TelegramPublicationSettingsRepository telegramSettingsRepository;
     private final UserRepository userRepository;
     private final EventResponseMapper eventResponseMapper;
+    private final ObjectMapper objectMapper;
 
     public PublicationController(
             PublishContentUseCase publishContentUseCase,
@@ -68,7 +76,8 @@ public class PublicationController {
             PublicationAttachmentRepository attachmentRepository,
             TelegramPublicationSettingsRepository telegramSettingsRepository,
             UserRepository userRepository,
-            EventResponseMapper eventResponseMapper
+            EventResponseMapper eventResponseMapper,
+            ObjectMapper objectMapper
     ) {
         this.publishContentUseCase = publishContentUseCase;
         this.listPublicationsUseCase = listPublicationsUseCase;
@@ -81,6 +90,7 @@ public class PublicationController {
         this.telegramSettingsRepository = telegramSettingsRepository;
         this.userRepository = userRepository;
         this.eventResponseMapper = eventResponseMapper;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping
@@ -100,7 +110,10 @@ public class PublicationController {
         PublicationDetail detail = getPublicationDetailUseCase.execute(id);
         EventDetailResponse event = detail.eventDetail() == null ? null : eventResponseMapper.toDetailResponse(detail.eventDetail());
         return new PublicationDetailResponse(
-                toResponse(detail.publication()),
+                toResponse(
+                        detail.publication(),
+                        detail.content() == null ? null : detail.content().getCreatedBy()
+                ),
                 detail.content() == null ? null : toContentResponse(detail.content()),
                 event
         );
@@ -170,9 +183,16 @@ public class PublicationController {
     }
 
     private PublicationResponse toResponse(Publication publication) {
-        UserAccount requestedBy = publication.getRequestedBy() == null
+        return toResponse(publication, null);
+    }
+
+    private PublicationResponse toResponse(Publication publication, Long fallbackRequestedBy) {
+        Long requestedById = publication.getRequestedBy() == null
+                ? fallbackRequestedBy
+                : publication.getRequestedBy();
+        UserAccount requestedBy = requestedById == null
                 ? null
-                : userRepository.findById(publication.getRequestedBy()).orElse(null);
+                : userRepository.findById(requestedById).orElse(null);
         return new PublicationResponse(
                 publication.getId(),
                 publication.getContentId(),
@@ -180,7 +200,7 @@ public class PublicationController {
                 publication.getPublicationType(),
                 publication.getTitleSnapshot(),
                 publication.getMessageSnapshot(),
-                publication.getRequestedBy(),
+                requestedById,
                 requestedBy == null ? null : requestedBy.getName(),
                 requestedBy == null ? null : requestedBy.getEmail(),
                 publication.getExternalId(),
@@ -188,9 +208,59 @@ public class PublicationController {
                 publication.getPublishedAt(),
                 publication.getResponsePayload(),
                 publication.getScheduledAt(),
-                targetRepository.findByPublicationId(publication.getId()).stream().map(this::toTargetResponse).toList(),
+                resolveTargetResponses(publication),
                 attachmentRepository.findByPublicationId(publication.getId()).stream().map(this::toAttachmentResponse).toList()
         );
+    }
+
+    private List<PublicationTargetResponse> resolveTargetResponses(Publication publication) {
+        List<PublicationTargetResponse> persistedTargets = targetRepository.findByPublicationId(publication.getId()).stream()
+                .map(this::toTargetResponse)
+                .toList();
+        if (!persistedTargets.isEmpty() || publication.getResponsePayload() == null) {
+            return persistedTargets;
+        }
+
+        try {
+            JsonNode targets = objectMapper.readTree(publication.getResponsePayload()).path("targets");
+            if (!targets.isArray()) {
+                return List.of();
+            }
+
+            java.util.ArrayList<PublicationTargetResponse> snapshots = new java.util.ArrayList<>();
+            int position = 0;
+            for (JsonNode target : targets) {
+                String destinationName = optionalText(target.path("destinationName"));
+                if (destinationName == null) {
+                    continue;
+                }
+                snapshots.add(new PublicationTargetResponse(
+                        -(long) ++position,
+                        optionalLong(target.path("destinationId")),
+                        destinationName,
+                        publication.getStatus(),
+                        optionalText(target.path("messageId")),
+                        null,
+                        publication.getPublishedAt()
+                ));
+            }
+            return List.copyOf(snapshots);
+        } catch (JsonProcessingException exception) {
+            log.warn("publication target snapshot could not be parsed: publicationId={}", publication.getId());
+            return List.of();
+        }
+    }
+
+    private Long optionalLong(JsonNode value) {
+        return value.canConvertToLong() ? value.longValue() : null;
+    }
+
+    private String optionalText(JsonNode value) {
+        if (value.isMissingNode() || value.isNull()) {
+            return null;
+        }
+        String text = value.asText();
+        return text.isBlank() ? null : text;
     }
 
     private List<ManualPublicationFile> toManualFiles(List<MultipartFile> files) {

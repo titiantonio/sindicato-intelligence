@@ -23,6 +23,8 @@ import es.sindicato.intelligence.publication.application.PublishingRequest;
 import es.sindicato.intelligence.publication.application.PublishingResult;
 import es.sindicato.intelligence.source.domain.Source;
 import es.sindicato.intelligence.source.domain.SourceRepository;
+import es.sindicato.intelligence.user.domain.UserAccount;
+import es.sindicato.intelligence.user.domain.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -73,6 +75,9 @@ class PublicationControllerTest {
 
     @Autowired
     private TelegramPublicationSettingsRepository telegramSettingsRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Test
     void publishesApprovedContent() throws Exception {
@@ -129,6 +134,46 @@ class PublicationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(publication.getId()))
                 .andExpect(jsonPath("$.status").value("PENDING"));
+    }
+
+    @Test
+    void getsGeneratedPublicationDetailWithContentAuthorAndDestinationSnapshots() throws Exception {
+        UserAccount author = userRepository.findByEmail("admin@sindicato.es").orElseThrow();
+        Source source = sourceRepository.save(source());
+        NewsArticle newsArticle = newsRepository.save(newsArticle(source.getId()));
+        Event event = eventRepository.save(event(newsArticle.getId()));
+        OffsetDateTime publishedAt = OffsetDateTime.now();
+        GeneratedContent content = contentRepository.save(new GeneratedContent(
+                null,
+                event.getId(),
+                author.getId(),
+                "TELEGRAM",
+                "INFORMATIVO",
+                "Titulo",
+                "Mensaje",
+                ContentStatus.APPROVED,
+                publishedAt.minusMinutes(2),
+                publishedAt.minusMinutes(1)
+        ));
+        Publication publication = Publication.pending(content.getId(), "TELEGRAM");
+        publication.markPublished(
+                "message-991",
+                publishedAt,
+                """
+                {"ok":true,"targets":[{"destinationId":41,"destinationName":"Canal general","messageId":"991"}]}
+                """
+        );
+        Publication savedPublication = publicationRepository.save(publication);
+
+        mockMvc.perform(get("/api/v1/publications/{id}/detail", savedPublication.getId()).with(adminJwt()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.publication.requestedBy").value(author.getId()))
+                .andExpect(jsonPath("$.publication.requestedByName").value(author.getName()))
+                .andExpect(jsonPath("$.publication.requestedByEmail").value(author.getEmail()))
+                .andExpect(jsonPath("$.publication.targets[0].destinationId").value(41))
+                .andExpect(jsonPath("$.publication.targets[0].destinationName").value("Canal general"))
+                .andExpect(jsonPath("$.publication.targets[0].status").value("PUBLISHED"))
+                .andExpect(jsonPath("$.publication.targets[0].externalId").value("991"));
     }
 
     @Test

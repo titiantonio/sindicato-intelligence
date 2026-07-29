@@ -1003,6 +1003,8 @@ Nota posterior 2026-06-27: anadido detalle navegable `/publications/:id` con res
 
 Nota posterior 2026-06-27: mejorada la legibilidad del resultado de publicacion en Angular para traducir payloads tecnicos de Telegram como `{"ok":true,"messageId":"459"}` a mensajes operativos con el identificador de mensaje.
 
+Nota posterior 2026-07-29: corregido el detalle de publicaciones generadas para resolver el autor desde `generated_content.created_by` cuando `requested_by` no existe y mostrar los destinos historicos desde el snapshot `response_payload.targets` cuando no hay filas en `publication_targets`. Cubierto por regresion de API en `PublicationControllerTest`.
+
 Nota posterior 2026-06-10: validado el arranque del frontend con `npm run build` y `npm test -- --watch=false --browsers=ChromeHeadless` en `frontend`.
 
 ---
@@ -4209,7 +4211,7 @@ Verificación:
 
 ---
 
-# 20. [ ] Sprint 15 - Preparación de entrega TFM
+# 20. [x] Sprint 15 - Preparación de entrega TFM
 
 **Fecha:** 25/07/2026
 **Correspondencia Documento 30:** cierre transversal de las fases 0 a 12 y preparación académica.
@@ -4245,7 +4247,7 @@ Verificación:
 - [x] Actualizados los Documentos 12, 13, 14 y 15.
 - [x] Actualizado el estado de ejecución del Documento 30.
 - [x] Creado un índice de documentación canónica e histórica.
-- [x] Creado el informe fechado de preparación de entrega.
+- [x] Creado y actualizado el informe final de entrega.
 - [x] Creado el guion fechado del vídeo.
 - [x] Completado el registro de intervención en `docs/Docs_Asistentes`.
 
@@ -4261,17 +4263,18 @@ Verificación:
   modelo de dominio en la slide 04.
 - [x] Enlazadas las slides desde README.
 
-## T15.5 [ ] Completar acciones externas de entrega
+## T15.5 [x] Completar acciones externas de entrega
 
-- [x] Preparada checklist operativa de publicación, vídeo y formulario.
+- [x] Preparado y cerrado el registro final de validación y entrega.
 - [x] Repositorio público y accesible sin sesión verificado el 26/07/2026.
 - [x] Confirmados y subidos los cambios de preparación en el commit `00e6fd4`.
 - [x] Slides publicadas y verificadas mediante GitHub Pages:
   `https://titiantonio.github.io/sindicato-intelligence/slides/tfm_presentacion.html`.
 - [x] `Secret Protection` y `Push protection` activados en GitHub.
-- [ ] Grabar el vídeo de 5 a 10 minutos con voz y captura de pantalla.
-- [ ] Publicar el vídeo y registrar su URL pública.
-- [ ] Decidir si se ofrece despliegue público y, si existe, verificar su URL.
-- [ ] Rellenar y enviar el formulario de entrega.
+- [x] Grabado el vídeo de presentación con voz y captura de pantalla.
+- [x] Vídeo adjuntado mediante el formulario oficial de entrega.
+- [x] Despliegue público no incluido; ejecución local reproducible con Docker.
+- [x] Enlaces y credenciales de demostración validados.
+- [x] Formulario oficial enviado y proyecto entregado el 29/07/2026.
 
-El Sprint 15 no puede marcarse completo hasta que las acciones externas anteriores estén realizadas y verificadas.
+Sprint 15 completado y entrega formal realizada.

@@ -2,7 +2,7 @@
 
 **Versión:** 1.1
 **Estado:** plan maestro ejecutado y consolidado
-**Última revisión:** 25/07/2026
+**Última revisión:** 29/07/2026
 
 ---
 
@@ -21,9 +21,9 @@ Las fases 0 a 12 del MVP están implementadas. El estado vigente es:
 - pruebas unitarias, integración y Playwright.
 
 La preparación de entrega TFM se controla como Sprint 15 en el Documento 31.
-El repositorio ya es público; los únicos pendientes obligatorios de entrega son
-externos al código: publicar los cambios locales, habilitar las slides públicas
-y grabar/publicar el vídeo.
+El Sprint 15 está completado: el repositorio y las slides son públicos, el vídeo
+se adjuntó mediante el formulario, los enlaces y credenciales fueron validados
+y el proyecto se entregó el 29/07/2026.
 
 ---
 

@@ -1,22 +1,18 @@
-# Informe de preparación de entrega TFM
+# Informe final de entrega TFM
 
 **Fecha de auditoría:** 25/07/2026
-**Estado corregido:** 26/07/2026
+**Estado corregido:** 29/07/2026
 **Proyecto:** Sindicato Intelligence
 **Repositorio:** <https://github.com/titiantonio/sindicato-intelligence>
 **Requisitos revisados:** `Documentacion-TFM-Fundae-1.pdf`
 
 ## 1. Veredicto ejecutivo
 
-**El proyecto está técnicamente verificado, el repositorio ya es público y las
-slides están publicadas, pero todavía no está listo para enviar el formulario
-de entrega.**
+**El proyecto fue entregado mediante el formulario oficial el 29/07/2026.**
 
-Bloqueos obligatorios:
-
-1. el vídeo obligatorio todavía debe grabarse y publicarse;
-2. su URL definitiva debe incorporarse al README y al formulario;
-3. debe enviarse el formulario de entrega.
+Antes del envío se validaron el repositorio, las slides y las credenciales de
+demostración. El vídeo se adjuntó directamente en el formulario y su URL no
+forma parte de la documentación del repositorio.
 
 Las slides cumplen el requisito como PPTX y PDF dentro del repositorio y como
 presentación HTML pública en GitHub Pages:
@@ -32,11 +28,11 @@ La fecha límite efectiva confirmada por el autor es el **24/08/2026**.
 | --- | --- | --- |
 | README completo | descripción, stack, instalación, estructura, funcionalidades y credenciales | Cumplido |
 | Código accesible | repositorio público verificado el 26/07/2026 | Cumplido |
-| Aplicación desplegada | no hay URL pública verificada; existe Docker local | Recomendado pendiente |
+| Aplicación desplegada | ejecución local reproducible con Docker | No incluida; no obligatoria |
 | Slides | PPTX y PDF en el repositorio; HTML público en GitHub Pages | Cumplido y verificado |
-| Vídeo con voz y pantalla | guion preparado; falta grabación y URL | Bloqueante |
+| Vídeo con voz y pantalla | adjuntado mediante el formulario oficial | Cumplido |
 | Credenciales de prueba | `admin@sindicato.es` / `Admin@12345` y `editor@sindicato.es` / `Admin@12345` | Cumplido |
-| Enlaces en documentación | README con repositorio y slides públicas | Parcial hasta disponer de la URL del vídeo |
+| Enlaces en documentación | README con repositorio y slides públicas | Cumplido |
 
 ### Desglose exacto del PDF de requisitos
 
@@ -51,11 +47,11 @@ La fecha límite efectiva confirmada por el autor es el **24/08/2026**.
 | 2 Código fuente | repositorio público en GitHub |
 | 3 Despliegue recomendado | ejecución Docker completa; sin URL pública |
 | 4 Slides | PPTX, PDF y HTML incluidos en `slides/` |
-| 5 Vídeo con explicación y pantalla | guion completo; grabación y URL pendientes |
+| 5 Vídeo con explicación y pantalla | adjuntado mediante el formulario oficial |
 | Documentación dentro del código | `README.md`, `docs/` e índice documental |
 | Información de despliegue | README, guía Docker y Documento 14 |
 | Slides dentro del código | documentos y fuente reproducible en `slides/` |
-| Formulario | checklist preparada; nombre, email y URL finales debe completarlos el autor |
+| Formulario | enviado con los datos, enlaces, credenciales y vídeo requeridos |
 
 El repositorio devuelve HTTP 200 sin sesión y GitHub informa visibilidad
 `public`. El commit de preparación `00e6fd4` está publicado en `main`. La
@@ -131,18 +127,18 @@ Verificaciones realizadas:
 - Documento 31 - Sprint 15 de entrega;
 - guía de pruebas E2E;
 - guion de vídeo;
-- checklist operativa de publicación y cierre;
+- registro final de validación y entrega;
 - presentación editable, PDF y HTML.
 
-## 5. Qué retirar
+## 5. Elementos excluidos de la entrega
 
-### Retirado
+### Archivo retirado
 
 - `backend/backend-startup.log`: log generado de un arranque antiguo fallido. No es código ni documentación y podía confundir al evaluador.
 
 También se han añadido `*.log` y `tmp/` a `.gitignore`.
 
-### No debe entrar nunca en la entrega
+### Archivos locales y datos sensibles excluidos
 
 - `.env`;
 - tokens, API keys o contraseñas reales;
@@ -155,63 +151,11 @@ También se han añadido `*.log` y `tmp/` a `.gitignore`.
 - adjuntos reales de Telegram;
 - dumps de base de datos con datos personales.
 
-Estos elementos deben comprobarse antes de publicar.
+La documentación histórica y `docs/Docs_Asistentes/` se conservan como
+trazabilidad técnica, pero el README y `docs/indice_documentacion.md` son los
+puntos de entrada para la evaluación.
 
-### Opcional: simplificación documental
-
-No se recomienda borrar ahora documentación histórica porque explica la evolución y existen reglas de trazabilidad. Si se quiere una entrega más limpia:
-
-- mover versiones sustituidas a `docs/historico/`;
-- mantener el índice documental como entrada;
-- revisar todos los enlaces después del movimiento.
-
-`CLAUDE.md` solo remite a `AGENTS.md` y puede retirarse en una limpieza posterior si ninguna herramienta lo necesita. No es un bloqueo.
-
-`docs/Docs_Asistentes/` contiene registros exigidos por el proyecto. Debe mantenerse mientras siga vigente `AGENTS.md`, aunque no sea documentación principal del evaluador.
-
-## 6. Qué falta añadir o completar
-
-### Obligatorio
-
-- vídeo de 5 a 10 minutos con voz y captura de pantalla.
-- URL pública del vídeo.
-- incorporar la URL del vídeo al README.
-- envío del formulario.
-
-### Recomendado
-
-- decidir si el repositorio público tendrá una licencia de software explícita;
-- despliegue temporal accesible para el evaluador;
-- GitHub Actions con backend, frontend, Playwright y validadores;
-- release o tag final después de completar enlaces;
-
-La licencia no debe añadirse sin decidir antes si la publicación es solo
-académica o de código abierto.
-
-## 7. Seguridad antes de publicar los cambios finales
-
-1. ejecutar un escaneo final de secretos en archivos rastreados;
-2. mantener activos `Secret Protection` y `Push protection`, habilitados en
-   GitHub el 26/07/2026, como complemento al escaneo dirigido ya realizado
-   sobre el historial de `main`;
-3. confirmar que `.env` no está rastreado;
-4. mantener solo credenciales claramente identificadas como demostración;
-5. comprobar que screenshots y vídeos no muestran tokens;
-6. revisar settings, Swagger y n8n antes de grabar;
-7. rotar cualquier secreto que haya estado expuesto.
-
-## 8. Orden recomendado para cerrar la entrega
-
-1. confirmar y subir esta actualización documental de enlaces;
-2. decidir la política de licencia;
-3. grabar el vídeo siguiendo el guion;
-4. subir el vídeo como público u oculto accesible por enlace;
-5. añadir la URL definitiva del vídeo al README;
-6. crear un tag o release final;
-7. verificar todo antes del 24/08/2026;
-8. rellenar y enviar el formulario.
-
-## 9. Tabla final de verificación
+## 6. Tabla final de verificación
 
 | Verificación | Resultado |
 | --- | --- |
@@ -229,11 +173,12 @@ académica o de código abierto.
 | PPTX / PDF / HTML | 10 slides verificadas |
 | Repositorio público | Sí; verificado el 26/07/2026 |
 | Slides públicas | Sí; GitHub Pages verificado el 26/07/2026 |
-| Vídeo público | No |
+| Vídeo | Adjuntado mediante el formulario oficial |
+| Credenciales de demostración | Validadas antes del envío |
+| Formulario oficial | Enviado el 29/07/2026 |
 
-## 10. Decisión de entrega
+## 7. Decisión de entrega
 
-El código, la documentación y las slides están publicados y todas las
-verificaciones técnicas previstas están en verde. La entrega formal solo estará
-lista cuando el vídeo esté publicado, su URL se incorpore al README y se
-complete el formulario.
+El código, la documentación y las slides cumplen los requisitos revisados. El
+vídeo se adjuntó mediante el formulario, los enlaces y credenciales fueron
+validados y la entrega formal está completada.

@@ -1,5 +1,7 @@
 # Guion del vídeo de presentación del TFM
 
+**Estado:** vídeo adjuntado mediante el formulario oficial de entrega.
+
 **Duración objetivo:** 7 minutos 30 segundos  
 **Formato:** voz propia + captura de pantalla  
 **Proyecto:** Sindicato Intelligence  
@@ -68,7 +70,8 @@ No leas las slides. Úsalas como apoyo mientras explicas.
 
 **Di:**
 
-> Hola. Voy a presentar Sindicato Intelligence, una plataforma interna de inteligencia informativa para un sindicato docente de Andalucía. El proyecto busca reducir el trabajo manual de seguimiento de noticias educativas, agrupar información repetida y preparar contenido fiable para revisión y publicación.
+> Hola. Voy a presentar Sindicato Intelligence, una plataforma interna de inteligencia informativa para un sindicato docente de Andalucía.
+> El proyecto busca reducir el trabajo manual de seguimiento de noticias educativas, agrupar información repetida y preparar contenido fiable para su revisión y publicación.
 
 > La idea principal es sencilla: la noticia no es la unidad de trabajo final. Varias noticias pueden hablar del mismo hecho y deben convertirse en un único evento.
 
@@ -78,7 +81,7 @@ No leas las slides. Úsalas como apoyo mientras explicas.
 
 **Di:**
 
-> En el proceso tradicional hay que revisar muchas fuentes RSS, detectar duplicados, clasificar cada noticia, relacionarla con asuntos ya abiertos y redactar después un contenido sindical. Esto consume tiempo y puede provocar duplicidades.
+> En el proceso tradicional hay que revisar muchas fuentes, detectar duplicados, clasificar cada noticia y relacionarla con asuntos ya abiertos, redactar un contenido sindical. Esto consume tiempo y puede provocar duplicidades.
 
 > Sindicato Intelligence automatiza la parte repetitiva, pero conserva la decisión humana. La IA clasifica, agrupa, analiza y propone; un editor revisa, corrige, aprueba y decide si se publica.
 
@@ -88,9 +91,9 @@ No leas las slides. Úsalas como apoyo mientras explicas.
 
 **Di:**
 
-> La solución utiliza Angular para el backoffice, Spring Boot para toda la lógica de negocio y PostgreSQL para persistencia. La arquitectura del backend sigue DDD, Clean Architecture y un monolito modular.
+> La solución utiliza Angular para el backoffice, Spring Boot para toda la lógica de negocio y PostgreSQL para persistencia.
 
-> n8n tiene una responsabilidad limitada: el workflow WF-01 captura RSS o XML y envía las noticias al backend. La clasificación, la detección de eventos, el análisis, el contenido y Telegram se ejecutan en Spring Boot.
+> n8n tiene una responsabilidad limitada: el workflow WF-01 captura y envía las noticias al backend. La clasificación, la detección de eventos, el análisis, la cracion del contenido y su publicación se ejecutan en Spring Boot.
 
 **Haz:** avanza a la slide 4, modelo de dominio.
 
@@ -102,7 +105,7 @@ No leas las slides. Úsalas como apoyo mientras explicas.
 
 **Di:**
 
-> El acceso está protegido con JWT y existen dos roles: ADMIN y EDITOR. También se implementan refresh token, recuperación, contraseña temporal y cambio obligatorio.
+> El acceso está protegido con JWT y existen dos roles: ADMIN y EDITOR.
 
 > En el dashboard se resume el trabajo del día: noticias, eventos, análisis, contenido pendiente y avisos editoriales. Los eventos prioritarios permiten empezar por aquello que necesita una decisión.
 
@@ -134,7 +137,6 @@ No leas las slides. Úsalas como apoyo mientras explicas.
 
 > También se registra observabilidad: proveedor, modelo, latencia, resultado, entidad y error resumido. Si el evento recibe noticias nuevas, el análisis puede marcarse como desactualizado.
 
-> Para esta demostración utilizo un proveedor determinista local. Así se recorre el flujo sin depender de una API de pago.
 
 ### 3:50–4:45 — Generación y revisión editorial
 
@@ -192,9 +194,9 @@ No leas las slides. Úsalas como apoyo mientras explicas.
 
 **Di:**
 
-> El backend dispone de 347 pruebas y el frontend de 163 pruebas unitarias. Playwright cubre login, roles, navegación, flujo editorial, responsive y accesibilidad con una API simulada. El build de producción está verificado y las dependencias enviadas al navegador no presentan vulnerabilidades conocidas en la auditoría realizada.
+> El backend dispone de 347 pruebas y el frontend de 163 pruebas unitarias. Playwright cubre desde el login, navegación, haste el flujo editorial. El build de producción está verificado y las dependencias enviadas al navegador no presentan vulnerabilidades conocidas en la auditoría realizada.
 
-> En seguridad se aplican JWT, roles en backend, rate limiting de autenticación, cambio obligatorio de contraseña, cifrado o enmascarado de settings sensibles y logs sin secretos.
+> En seguridad se aplican JWT, roles en backend, cambio obligatorio de contraseña, cifrado o enmascarado de settings sensibles y logs sin secretos.
 
 ### 7:05–7:35 — Cierre
 
